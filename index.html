@@ -130,7 +130,7 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .keys{list-style:none;margin:0 0 6px;padding:0}
 .keys li{display:flex;align-items:center;gap:10px;padding:6px 2px;font-size:15px}
 .keys i{width:18px;height:18px;border-radius:50%;flex:none;box-shadow:0 0 0 2.5px #fff,0 1px 4px rgba(0,0,0,.3)}
-.group .seg{display:flex;background:var(--fill)}.group .seg button{flex:1}.group .seg button.on{background:var(--tint);color:var(--onTint)}
+.group .seg{display:flex;background:var(--fill)}.group .seg button{flex:1;padding:6px 10px;white-space:nowrap}.group .seg button.on{background:var(--tint);color:var(--onTint)}
 .latrow{border-top:.5px solid var(--line);padding:10px 0 4px}
 .latrow .lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .scrim.clear{background:transparent;animation:none;z-index:40}
@@ -525,7 +525,9 @@ function resOptions() {
 
 // ---------- dibujo ----------
 const passer = pb => (pb && (pb.qb || pb.snap)) || 'Q';
-const startOf = (p, rt) => rt && rt.motion ? [p[0] + rt.motion[0], p[1] + rt.motion[1]] : p;
+// movimiento antes del saque: lista de puntos desde donde se para (puede cambiar de dirección); las viejas traen un solo [adelante, lateral]
+const movsOf = rt => !rt || !rt.motion || !rt.motion.length ? [] : typeof rt.motion[0] === 'number' ? [rt.motion] : rt.motion;
+const startOf = (p, rt) => { const m = movsOf(rt).slice(-1)[0]; return m ? [p[0] + m[0], p[1] + m[1]] : p };
 // camino del balón antes de la jugada: saque al que lo recibe y, si se la da a otro, a ese (at = dónde está cada posición al saque)
 function snapSegs(pb, at, ball) {
   const sn = pb && (pb.snap || 'Q');
@@ -536,7 +538,8 @@ function snapSegs(pb, at, ball) {
 }
 function routeSegs(rt, a0, b0) {
   const out = []; let a = a0, b = b0;
-  if (rt.motion) { out.push({pts: [[a, b], [a + rt.motion[0], b + rt.motion[1]]], dash: true}); a += rt.motion[0]; b += rt.motion[1] }
+  const mv = movsOf(rt);
+  if (mv.length) { out.push({pts: [[a0, b0], ...mv.map(([x, y]) => [a0 + x, b0 + y])], dash: true}); [a, b] = startOf([a0, b0], rt) }
   if (rt.pts && rt.pts.length) out.push({pts: [[a, b], ...rt.pts.map(([f, l]) => [a + f, b + l])], hot: !!rt.hot});
   return out;
 }
@@ -593,7 +596,7 @@ function jugadaAnim(pb, L, pos, at, f) {
   const ruta = r => { const rt = pb.routes[r], st = at(r); return rt && rt.pts ? [st, ...rt.pts.map(([a, b]) => [st[0] + a, st[1] + b])] : [st] };
   const en = t => clamp((t - T_SAQUE) / (T_FIN - T_SAQUE), 0, 1); // qué tanto de su ruta lleva cada quien en el tiempo t
   const p = L.map((pl, i) => { const rt = pb.routes[pl.r]; if (!rt) return '';
-    const P = [pos[i], ...(rt.motion ? [at(pl.r)] : []), ...ruta(pl.r).slice(1)], m = rt.motion ? 2 : 1;
+    const mv = movsOf(rt), P = [pos[i], ...mv.map(([x, y]) => [pos[i][0] + x, pos[i][1] + y]), ...ruta(pl.r).slice(1)], m = 1 + mv.length;
     return motion(P, [[0, 1], [T_MOV[0], 1], [T_MOV[1], m], [T_SAQUE, m], [T_FIN, P.length], [1, P.length]]) });
   // balón: saque al que lo recibe; si se la da a otro, se la da ya corriendo; el último corre con ella o lanza al receptor principal
   const sn = pb.snap || 'Q', qb = passer(pb), hot = Object.keys(pb.routes).find(r => pb.routes[r].hot);
@@ -606,7 +609,7 @@ function jugadaAnim(pb, L, pos, at, f) {
   else { const tl = Math.max(T_LANZA, t0); va(tramo(ruta(tiene), en(t0), en(tl)).slice(1), tl); if (hot) va([ruta(hot).slice(-1)[0]], T_FIN) }
   stops.push([1, B.length]);
   // letrero de lo que va pasando
-  const aNom = r => r === 'Q' ? 'al QB' : 'a ' + r, Nom = r => r === 'Q' ? 'El QB' : r, movs = L.map(q => q.r).filter(r => pb.routes[r] && pb.routes[r].motion);
+  const aNom = r => r === 'Q' ? 'al QB' : 'a ' + r, Nom = r => r === 'Q' ? 'El QB' : r, movs = L.map(q => q.r).filter(r => movsOf(pb.routes[r]).length);
   const fases = [];
   if (movs.length) fases.push([0, T_MOV[1], `${movs.map(Nom).join(' y ')} se mueve${movs.length > 1 ? 'n' : ''} antes del saque`]);
   fases.push([movs.length ? T_MOV[1] : 0, T_SAQUE + .06, `Saque ${aNom(sn)}`]);
@@ -785,7 +788,8 @@ function openEd(name) {
   const pb = PLAYBOOK[name];
   ed = {name, desc: pb ? pb.desc || '' : '', snap: pb && pb.snap || 'Q', qb: pb && pb.qb || '', sel: null, sec: S.secOf[name] || '',
     pos: Object.fromEntries(dflt().lines.O.map(p => [p.r, pb && pb.pos[p.r] ? pb.pos[p.r].slice() : [p.dx, p.dy]])),
-    routes: JSON.parse(JSON.stringify(pb ? pb.routes : {}))};
+    routes: JSON.parse(JSON.stringify(pb ? pb.routes : {})), modo: 'ruta'};
+  Object.values(ed.routes).forEach(rt => { if (rt.motion) rt.motion = movsOf(rt).map(m => m.slice()) });
 }
 function edSvg(w, h) {
   // cuadro fijo alrededor de la jugada (12 yd hacia atrás de la línea, 17 hacia adelante); lo que sobre se reparte
@@ -801,14 +805,19 @@ function edArt() {
   s += segSvg(snapSegs({snap: ed.snap, qb: ed.qb}, at, [0, 0]), f, p(3), p(10), .9);
   ROLES.forEach(r => { const rt = ed.routes[r]; if (rt) s += segSvg(routeSegs(rt, ...ed.pos[r]), f, p(4), p(12), !ed.sel || ed.sel === r ? 1 : .4) });
   s += `<ellipse rx="${p(8)}" ry="${p(13)}" fill="#a0522d" stroke="#fff" stroke-width="${p(2.5)}" pointer-events="none"/>`;
-  const rt = ed.sel && ed.routes[ed.sel];
-  if (rt) { const st = at(ed.sel); (rt.pts || []).forEach(([fa, fb], i) => { const [x, y] = f([st[0] + fa, st[1] + fb]); s += `<g data-e="v:${ed.sel}:${i}" transform="translate(${x} ${y})"><circle r="${p(22)}" fill="transparent"/><circle r="${p(9)}" fill="#bf5af2" stroke="#fff" stroke-width="${p(2.5)}"/></g>` }) }
   ROLES.forEach(r => {
     const [x, y] = f(ed.pos[r]), n = (L.find(q => q.r === r) || {}).name;
     s += `<g data-e="p:${r}" transform="translate(${x} ${y})"><circle r="${p(30)}" fill="transparent"/>${ed.sel === r ? `<circle r="${p(26)}" fill="none" stroke="#fff" stroke-width="${p(3.5)}"/>` : ''}
       <circle cy="${p(2.5)}" r="${p(20)}" fill="#000" fill-opacity=".25"/><circle r="${p(20)}" fill="${colorOf(n)}" stroke="#fff" stroke-width="${p(2.5)}"/>
       <text y="${p(5.5)}" font-size="${p(15)}" font-weight="700" text-anchor="middle" fill="#111">${r}</text>${n ? `<text y="${p(38)}" font-size="${p(13)}" font-weight="700" text-anchor="middle" fill="#fff" stroke="#000" stroke-opacity=".55" stroke-width="${p(3)}" paint-order="stroke">${esc(n)}</text>` : ''}</g>`;
   });
+  // puntos del seleccionado, encima de los jugadores para que siempre se puedan agarrar: blancos = movimiento antes del saque, morados = ruta
+  const rt = ed.sel && ed.routes[ed.sel], dot = (id, a, b, col) => { const [x, y] = f([a, b]); return `<g data-e="${id}" transform="translate(${x} ${y})"><circle r="${p(20)}" fill="transparent"/><circle r="${p(9)}" fill="${col}" stroke="${col === '#fff' ? '#111' : '#fff'}" stroke-width="${p(2.5)}"/></g>` };
+  if (rt) {
+    const p0 = ed.pos[ed.sel], st = at(ed.sel);
+    movsOf(rt).forEach(([a, b], i) => s += dot(`m:${ed.sel}:${i}`, p0[0] + a, p0[1] + b, '#fff'));
+    (rt.pts || []).forEach(([a, b], i) => s += dot(`v:${ed.sel}:${i}`, st[0] + a, st[1] + b, '#bf5af2'));
+  }
   return s;
 }
 // dedo → [adelante, lateral] en medias yardas
@@ -819,6 +828,10 @@ function edPt(e) {
 }
 // punto de la ruta relativo a donde arranca el jugador (después del movimiento), sin decimales largos
 const edRel = (r, a, b) => { const st = startOf(ed.pos[r], ed.routes[r]), c = v => Math.round(v * 100) / 100; return [c(a - st[0]), c(b - st[1])] };
+// punto del movimiento antes del saque: relativo a donde se para, y siempre detrás de la línea
+const edMov = (r, a, b) => { const p0 = ed.pos[r], c = v => Math.round(v * 100) / 100; return [c(Math.min(a, 0) - p0[0]), c(b - p0[1])] };
+// quita lo vacío: movimiento sin puntos, y jugadores sin ruta ni movimiento
+const edLimpia = r => { const rt = ed.routes[r]; if (!rt) return; if (rt.motion && !rt.motion.length) delete rt.motion; if (!rt.motion && !(rt.pts && rt.pts.length)) delete ed.routes[r] };
 // hoja Jugadores: la formación como está parada (la de la última jugada elegida); tamaños en px para que nada se encime
 function lineupSvg(w) {
   const L = S.lines[S.side], P = L.map(q => S.side === 'O' ? [q.dy, -q.dx] : [q.dy, q.dx]);
@@ -969,14 +982,15 @@ function vEd() {
     <div class="ghead">Descripción</div><div class="group"><input data-c="eddesc" value="${esc(ed.desc)}" placeholder="Qué hace cada quien" style="width:100%"></div>
     <div class="ghead">¿Quién recibe el saque?</div><div class="group"><div class="pchips">${ROLES.map(r => chip(r, ed.snap === r, 'edsnap')).join('')}</div></div>
     <div class="ghead">¿Se la da a alguien?</div><div class="group"><p>El que tenga el balón al final es el que lanza o corre.</p><div class="pchips"><button class="pchip${ed.qb ? '' : ' on'}" style="padding-left:14px" data-a="edqb" data-v="">Nadie</button>${ROLES.filter(r => r !== ed.snap).map(r => chip(r, ed.qb === r, 'edqb')).join('')}</div></div>`;
-  q += ed.sel ? `<div class="ghead">Ruta de ${who(ed.sel)}</div><div class="group"><p>Toca el campo para agregar puntos. Arrastra los puntos morados para moverlos.</p>
-      <div class="row tight"><button data-a="edpop"${rt && rt.pts && rt.pts.length ? '' : ' disabled'}>Quitar último punto</button><button class="x" data-a="edclr"${rt ? '' : ' disabled'}>Borrar ruta</button></div>
-      <button class="rtile${rt && rt.hot ? ' on' : ''}" style="width:100%;margin-top:10px" data-a="edhot"><b>Receptor principal</b><small>Su ruta sale en morado</small></button>
-      <button class="rtile${rt && rt.motion ? ' on' : ''}" style="width:100%;margin-top:10px" data-a="edmot"${rt && (rt.motion || (rt.pts && rt.pts.length)) ? '' : ' disabled'}><b>Movimiento antes del saque</b><small>El primer tramo se corre antes del saque (línea blanca)</small></button></div>`
+  const mov = ed.modo === 'mov', hay = rt && (mov ? movsOf(rt).length : rt.pts && rt.pts.length);
+  q += ed.sel ? `<div class="ghead">${who(ed.sel)}</div><div class="group"><div class="seg" style="margin-bottom:12px"><button class="${mov ? '' : 'on'}" data-a="edmodo" data-v="ruta">Ruta</button><button class="${mov ? 'on' : ''}" data-a="edmodo" data-v="mov">Antes del saque</button></div>
+      <p>${mov ? 'Toca el campo punto por punto para el movimiento antes del saque; puede cambiar de dirección las veces que quieras. Línea blanca, puntos blancos.' : 'Toca el campo para agregar puntos de su ruta (empieza donde termina su movimiento). Arrastra los puntos morados para moverlos.'}</p>
+      <div class="row tight"><button data-a="edpop"${hay ? '' : ' disabled'}>Quitar último punto</button><button class="x" data-a="edclr"${hay ? '' : ' disabled'}>Borrar ${mov ? 'movimiento' : 'ruta'}</button></div>
+      ${mov ? '' : `<button class="rtile${rt && rt.hot ? ' on' : ''}" style="width:100%;margin-top:10px" data-a="edhot"><b>Receptor principal</b><small>Su ruta sale en morado</small></button>`}</div>`
     : `<div class="ghead">Rutas</div><div class="group"><p>Toca a un jugador para dibujar su ruta. Arrástralo para cambiar dónde se para.</p></div>`;
   return `<div class="how"><div class="hmain"><div id="edbox"></div>
     <div class="htop"><button class="pill glass" data-a="edcancel">Cancelar</button><div class="htitle glass">${esc(ed.name)}<small>Dibujar jugada</small></div><span></span></div>
-    <div class="hhint glass">${ed.sel ? `Toca el campo para la ruta de ${who(ed.sel)}` : 'Toca a un jugador para dibujar su ruta'}</div></div>
+    <div class="hhint glass">${!ed.sel ? 'Toca a un jugador para dibujar su ruta' : ed.modo === 'mov' ? `Toca el campo para el movimiento de ${who(ed.sel)} antes del saque` : `Toca el campo para la ruta de ${who(ed.sel)}`}</div></div>
     <aside class="insp"><div class="scroll">${q}</div><div class="ifoot"><button class="tint" data-a="edsave">Guardar jugada</button></div></aside></div>`;
 }
 
@@ -1280,17 +1294,12 @@ const A = {
   edqb: v => { ed.qb = v },
   edsec: v => { ed.sec = ed.sec === v ? '' : v },
   ednewsec() { const v = (prompt('Nombre de la sección nueva') || '').trim(); if (!v) return; if (uniq(S.secs, v)) S.secs.push(v); ed.sec = v },
-  edpop() { const rt = ed.routes[ed.sel]; rt.pts.pop(); if (!rt.pts.length && !rt.motion) delete ed.routes[ed.sel] },
-  edclr() { delete ed.routes[ed.sel] },
+  edmodo: v => { ed.modo = v },
+  edpop() { const rt = ed.routes[ed.sel]; ((ed.modo === 'mov' ? rt.motion : rt.pts) || []).pop(); edLimpia(ed.sel) },
+  edclr() { const rt = ed.routes[ed.sel]; if (ed.modo === 'mov') delete rt.motion; else rt.pts = []; edLimpia(ed.sel) },
   edhot() { const r = ed.sel, rt = ed.routes[r] = ed.routes[r] || {pts: []}, on = !rt.hot; Object.values(ed.routes).forEach(x => delete x.hot); if (on) rt.hot = 1 },
-  // el primer tramo pasa a ser movimiento antes del saque (o al revés), sin mover nada de lugar en el dibujo
-  edmot() {
-    const rt = ed.routes[ed.sel], m = rt.motion, pts = rt.pts || [], c = v => Math.round(v * 100) / 100;
-    if (m) { rt.pts = [m, ...pts.map(([a, b]) => [c(a + m[0]), c(b + m[1])])]; delete rt.motion }
-    else { const [f0] = pts; rt.motion = f0; rt.pts = pts.slice(1).map(([a, b]) => [c(a - f0[0]), c(b - f0[1])]) }
-  },
   edsave() {
-    Object.keys(ed.routes).forEach(r => { const rt = ed.routes[r]; if (!rt.motion && !(rt.pts && rt.pts.length)) delete ed.routes[r] });
+    Object.keys(ed.routes).forEach(edLimpia);
     const def = {desc: ed.desc.trim(), pos: ed.pos, routes: ed.routes, ...(ed.snap !== 'Q' ? {snap: ed.snap} : {}), ...(ed.qb ? {qb: ed.qb} : {})};
     S.pb[ed.name] = PLAYBOOK[ed.name] = def; if (!S.off.includes(ed.name)) S.off.push(ed.name);
     if (ed.sec) S.secOf[ed.name] = ed.sec; else delete S.secOf[ed.name];
@@ -1400,6 +1409,7 @@ document.addEventListener('pointermove', e => {
   edDrag.moved = true;
   const [a, b] = edPt(e), [k, r, i] = edDrag.id.split(':');
   if (k === 'p') ed.pos[r] = [Math.min(a, 0), b]; // nadie sale adelante de la línea
+  else if (k === 'm') ed.routes[r].motion[+i] = edMov(r, a, b);
   else ed.routes[r].pts[+i] = edRel(r, a, b);
   $('#ed-art').innerHTML = edArt();
 });
@@ -1408,8 +1418,10 @@ document.addEventListener('pointerup', e => {
   if (t.moved) noClick = Date.now() + 350;
   else {
     const [k, r] = t.id.split(':');
-    if (k === 'p') ed.sel = ed.sel === r ? null : r;
-    else if (k === 'bg' && ed.sel) { const [a, b] = edPt(e), rt = ed.routes[ed.sel] = ed.routes[ed.sel] || {pts: []}; (rt.pts = rt.pts || []).push(edRel(ed.sel, a, b)) }
+    // tocar a otro jugador lo elige; tocar al elegido (o el campo) agrega un punto ahí, así el primero puede ir pegado a él
+    if (k === 'p' && r !== ed.sel) ed.sel = r;
+    else if ((k === 'bg' || k === 'p') && ed.sel) { const [a, b] = edPt(e), rt = ed.routes[ed.sel] = ed.routes[ed.sel] || {pts: []};
+      if (ed.modo === 'mov') (rt.motion = rt.motion || []).push(edMov(ed.sel, a, b)); else (rt.pts = rt.pts || []).push(edRel(ed.sel, a, b)) }
   }
   render();
 });
@@ -1485,7 +1497,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014010609';
+const VERSION = '20261014011633';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
