@@ -661,12 +661,14 @@ function artInner(o) {
   let gap = Infinity;
   PP.forEach((a, i) => PP.forEach((b, j) => { if (j > i) gap = Math.min(gap, Math.hypot(X(a.x) - X(b.x), Y(a.y) - Y(b.y)) / o.k) }));
   const R = clamp(gap * .42, 12, 20), side = O ? -1 : 1; // radio en px; el nombre va del lado de atrás
-  if (o.players) for (let i = 0; i < 5; i++) {
-    const pl = S.lines[o.side][i], q = PP[i], mk = o.sel && o.sel[0] === i ? o.sel[1] : '';
-    const dim = o.focus && !o.focus.includes(i), attr = (dim ? 'opacity=".3" ' : '') + (o.pick ? `data-a="who" data-v="${i}"` : '');
-    s += `<g ${attr} transform="translate(${X(q.x)} ${Y(q.y)})${dim ? ' scale(.65)' : ''}"><circle r="${p(Math.max(R + 8, 22))}" fill="transparent"/>
+  // swap = arrastrando a un jugador encima de otro para intercambiar roles: el arrastrado va bajo el dedo y hasta arriba, el de destino con aro amarillo
+  const sw = o.swap, order = [0,1,2,3,4].filter(i => !sw || i !== sw.from).concat(sw ? [sw.from] : []);
+  if (o.players) for (const i of order) {
+    const lift = sw && i === sw.from, pl = S.lines[o.side][i], q = lift ? sw.at : PP[i], mk = sw && i === sw.to ? '#ffd60a' : o.sel && o.sel[0] === i ? o.sel[1] : '';
+    const dim = !lift && o.focus && !o.focus.includes(i), attr = (dim ? 'opacity=".3" ' : '') + (o.pick ? `data-a="who" data-v="${i}"` : '');
+    s += `<g ${attr} transform="translate(${X(q.x)} ${Y(q.y)})${dim ? ' scale(.65)' : lift ? ' scale(1.15)' : ''}"><circle r="${p(Math.max(R + 8, 22))}" fill="transparent"/>
     <circle cy="${p(2.5)}" r="${p(R)}" fill="#000" fill-opacity=".25"/>
-    ${mk ? `<circle r="${p(R + 6)}" fill="none" stroke="${mk}" stroke-width="${p(4)}"/>` : ''}
+    ${mk ? `<circle r="${p(sw && i === sw.to ? R + 13 : R + 6)}" fill="none" stroke="${mk}" stroke-width="${p(sw && i === sw.to ? 5 : 4)}"/>` : ''}
     <circle r="${p(R)}" fill="${colorOf(pl.name)}" stroke="#fff" stroke-width="${p(2.5)}"/>
     ${T(0, p(R * .26), esc(pl.r), R * .7, '#111')}
     ${pl.name ? `<text x="${side * p(R + 7)}" y="${p(4.5)}" font-size="${p(13)}" font-weight="700" text-anchor="${O ? 'end' : 'start'}" fill="#fff" stroke="#000" stroke-opacity=".6" stroke-width="${p(3)}" paint-order="stroke">${esc(pl.name)}</text>` : ''}</g>`;
@@ -906,7 +908,7 @@ function fieldHint(e) {
   else if (d.res === 'Pase completo') t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#0a84ff')}atrapó ${dot('#ffd60a')}terminó`;
   else if (e.aim) t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#ff453a')}a dónde iba${d.res === 'Intercepción' ? ' ' + dot('#ffd60a') + 'terminó' : ''}`;
   else if (d.res && !['Castigo','Incompleto'].includes(d.res)) t = `Arrastra ${dot('#ffd60a')} a donde terminó`;
-  if (!t && !w) t = 'Toca a un jugador para cambiar quién jugó ahí, o arrástralo a donde se paró';
+  if (!t && !w) t = 'Toca a un jugador para cambiar quién jugó ahí, o arrástralo encima de otro para intercambiarlos';
   if (!t) return '';
   const s = w && d[w[0]] != null && !d.lat.some(l => l.to == null) && S.lines[S.side][d[w[0]]], again = s ? `<span class="mut"> · Toca otra vez a ${esc(s.name || s.r)} para cambiarlo</span>` : '';
   return `<div class="hhint glass">${t}${again}${recvRoute() && d.route ? '<button class="plain" data-a="resetroute">Ruta original</button>' : ''}</div>`;
@@ -1319,8 +1321,6 @@ function ptIn(sel, e, yu) { const s = $(sel), p = s.createSVGPoint(); p.x = e.cl
 function moveHandle(id, pt) {
   const v = d.vb; pt = {x: Math.round(clamp(pt.x, Math.max(0, v[0] / 10), Math.min(70, (v[0] + v[2]) / 10)) * 2) / 2, y: Math.round(clamp(pt.y, 0, 25) * 2) / 2};
   if (id === 'end') { d.end = pt; d.td = null }
-  // jugador: se para donde de verdad se paró en esta jugada (su ruta se mueve con él); nadie pasa la línea
-  else if (id[0] === 'P') { const i = +id.slice(1), p = S.lines[S.side][i]; p.dx = Math.min(0, pt.x - S.ball.x); p.dy = pt.y - S.ball.y; if (i === d.tgt) d.route = null }
   else if (id[0] === 'l') { const l = d.lat[+id.slice(2)]; l[id[1]] = pt; legal(l) }
   else { const rr = recvRoute(); if (rr) { const pts = rr.pts.map(q => q.slice()); pts[id === 'catch' ? pts.length - 1 : +id.slice(1)] = [pt.x, pt.y]; d.route = pts } else d.catch = pt }
   const e = draft();
@@ -1344,12 +1344,22 @@ document.addEventListener('pointermove', e => {
   // al jugador se le captura el dedo hasta que de verdad se arrastra: si se capturara al tocar, el toque ya no lo elegiría
   if (!drag.moved && drag.pl) try { $('#sub').setPointerCapture(e.pointerId) } catch {}
   drag.moved = true;
+  if (drag.pl) return swapMove(ptIn('#sub', e, 10));
   moveHandle(drag.id, ptIn('#sub', e, 10));
 });
+// arrastrar a un jugador encima de otro: la formación no cambia, se intercambian los roles (el que era X pasa a Y y viceversa)
+function swapMove(pt) {
+  const i = +drag.id.slice(1);
+  let to = null, best = 2.5; // yardas: el más cercano al dedo, si está a menos de esto
+  S.lines[S.side].forEach((_, j) => { const q = lineXY(S.side, j), dd = Math.hypot(q.x - pt.x, q.y - pt.y); if (j !== i && dd < best) { best = dd; to = j } });
+  drag.to = to;
+  $('#sub-art').innerHTML = artInner({...howOpts(draft()), swap: {from: i, at: pt, to}});
+}
 const endDrag = () => {
   if (!drag) return;
   const t = drag; drag = null;
   if (!t.moved) return;
+  if (t.pl && t.to != null) { const L = S.lines[S.side], i = +t.id.slice(1); [L[i].name, L[t.to].name] = [L[t.to].name, L[i].name] }
   noClick = Date.now() + 350; save(); render();
 };
 // editor: arrastrar jugadores y puntos de ruta; un toque elige jugador o agrega un punto a su ruta.
@@ -1382,7 +1392,7 @@ document.addEventListener('pointerup', e => {
 });
 document.addEventListener('pointercancel', () => { edDrag = null });
 document.addEventListener('pointerup', endDrag);
-document.addEventListener('pointercancel', endDrag);
+document.addEventListener('pointercancel', () => { if (drag) drag.to = null; endDrag() }); // si el iPad corta el gesto, no se intercambia nada
 document.addEventListener('click', e => {
   if (Date.now() < noClick) return;
   if (e.target.closest('#field') && tab === 'field' && !d.stage) {
@@ -1452,7 +1462,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014004823';
+const VERSION = '20261014005856';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
