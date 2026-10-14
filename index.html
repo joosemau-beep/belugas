@@ -906,7 +906,7 @@ function fieldHint(e) {
   else if (d.res === 'Pase completo') t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#0a84ff')}atrapó ${dot('#ffd60a')}terminó`;
   else if (e.aim) t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#ff453a')}a dónde iba${d.res === 'Intercepción' ? ' ' + dot('#ffd60a') + 'terminó' : ''}`;
   else if (d.res && !['Castigo','Incompleto'].includes(d.res)) t = `Arrastra ${dot('#ffd60a')} a donde terminó`;
-  if (!t && !w) t = 'Toca a un jugador para cambiar quién jugó ahí';
+  if (!t && !w) t = 'Toca a un jugador para cambiar quién jugó ahí, o arrástralo a donde se paró';
   if (!t) return '';
   const s = w && d[w[0]] != null && !d.lat.some(l => l.to == null) && S.lines[S.side][d[w[0]]], again = s ? `<span class="mut"> · Toca otra vez a ${esc(s.name || s.r)} para cambiarlo</span>` : '';
   return `<div class="hhint glass">${t}${again}${recvRoute() && d.route ? '<button class="plain" data-a="resetroute">Ruta original</button>' : ''}</div>`;
@@ -1319,6 +1319,8 @@ function ptIn(sel, e, yu) { const s = $(sel), p = s.createSVGPoint(); p.x = e.cl
 function moveHandle(id, pt) {
   const v = d.vb; pt = {x: Math.round(clamp(pt.x, Math.max(0, v[0] / 10), Math.min(70, (v[0] + v[2]) / 10)) * 2) / 2, y: Math.round(clamp(pt.y, 0, 25) * 2) / 2};
   if (id === 'end') { d.end = pt; d.td = null }
+  // jugador: se para donde de verdad se paró en esta jugada (su ruta se mueve con él); nadie pasa la línea
+  else if (id[0] === 'P') { const i = +id.slice(1), p = S.lines[S.side][i]; p.dx = Math.min(0, pt.x - S.ball.x); p.dy = pt.y - S.ball.y; if (i === d.tgt) d.route = null }
   else if (id[0] === 'l') { const l = d.lat[+id.slice(2)]; l[id[1]] = pt; legal(l) }
   else { const rr = recvRoute(); if (rr) { const pts = rr.pts.map(q => q.slice()); pts[id === 'catch' ? pts.length - 1 : +id.slice(1)] = [pt.x, pt.y]; d.route = pts } else d.catch = pt }
   const e = draft();
@@ -1328,7 +1330,9 @@ function moveHandle(id, pt) {
 }
 let drag = null;
 document.addEventListener('pointerdown', e => {
-  const h = tab === 'field' && d.stage === 'how' && e.target.closest('[data-h]');
+  if (tab !== 'field' || d.stage !== 'how' || ed) return;
+  const h = e.target.closest('[data-h]'), pl = !h && e.target.closest('#sub [data-a="who"]');
+  if (pl) { drag = {id: 'P' + pl.dataset.v, sx: e.clientX, sy: e.clientY, moved: false, pl: true}; return } // un toque sigue eligiendo al jugador
   if (!h) return;
   drag = {id: h.dataset.h, sx: e.clientX, sy: e.clientY, moved: false};
   try { h.setPointerCapture(e.pointerId) } catch {}
@@ -1336,7 +1340,9 @@ document.addEventListener('pointerdown', e => {
 });
 document.addEventListener('pointermove', e => {
   if (!drag) return;
-  if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 3) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < (drag.pl ? 8 : 3)) return;
+  // al jugador se le captura el dedo hasta que de verdad se arrastra: si se capturara al tocar, el toque ya no lo elegiría
+  if (!drag.moved && drag.pl) try { $('#sub').setPointerCapture(e.pointerId) } catch {}
   drag.moved = true;
   moveHandle(drag.id, ptIn('#sub', e, 10));
 });
@@ -1446,7 +1452,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014001827';
+const VERSION = '20261014004823';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
