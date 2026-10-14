@@ -332,9 +332,9 @@ const save = () => {
 };
 // nube: copia del equipo en Supabase, para que nada se pierda aunque el navegador borre sus datos.
 // La clave viaja en el link (#k=...), nunca en el código: el repositorio es público
-const NUBE = 'https://REF.supabase.co/rest/v1/rpc/', ANON = 'ANON';
+const NUBE = 'https://zyuwghznifofdkaiozfb.supabase.co/rest/v1/rpc/', ANON = 'sb_publishable_b48BypnxEtWiDy6_AoQ0cg_8uGHNd2H'; // llave pública: solo deja usar las dos funciones
 const lsGet = k => { try { return localStorage[k] } catch {} }, lsSet = (k, v) => { try { localStorage[k] = v } catch {} };
-const clave = (location.hash.match(/k=([\w-]{24,})/) || [])[1] || lsGet('tochito.k');
+let clave = (location.hash.match(/k=([\w-]{24,})/) || [])[1] || lsGet('tochito.k');
 if (clave) { lsSet('tochito.k', clave); if (!location.hash.includes(clave)) history.replaceState(null, '', '#k=' + clave) }
 let nube = {t: null, dirty: false, ...(() => { try { return JSON.parse(lsGet('tochito.nube')) } catch {} })()}, nubeEst = clave ? 'Conectando' : '', nubeAt = 0, subiendo = false, tSubir;
 const nubeSave = () => lsSet('tochito.nube', JSON.stringify(nube));
@@ -1007,7 +1007,8 @@ function vTeam() {
   return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
     <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>
   <div class="card"><h2>Partidos</h2><button class="tint" style="width:100%;margin-bottom:10px;min-height:50px" data-a="newgame">Nuevo partido</button>${g}</div></div>
-  <div class="card"><h2>Respaldo</h2>${clave ? `<p class="nube${!nubeEst && !nube.dirty ? ' ok' : ''}">${esc(nubeTxt())}</p>` : ''}<div class="row tight"><button data-a="export">Exportar datos</button><button onclick="document.getElementById('imp').click()">Importar datos</button><input type="file" id="imp" accept=".json" hidden></div>
+  <div class="card"><h2>Respaldo</h2><p class="nube${clave && !nubeEst && !nube.dirty ? ' ok' : ''}">${esc(nubeTxt())}</p>
+  ${clave ? '' : '<div class="row tight" style="margin-bottom:12px"><input id="linknube" placeholder="Pega aquí el link del equipo" style="flex:1"><button class="tint" data-a="conectar">Conectar</button></div>'}<div class="row tight"><button data-a="export">Exportar datos</button><button onclick="document.getElementById('imp').click()">Importar datos</button><input type="file" id="imp" accept=".json" hidden></div>
   <p class="mut" style="margin:10px 0 0;font-size:15px">Los datos viven solo donde abres la app: Safari y el ícono de la pantalla de inicio guardan cada uno lo suyo. Usa siempre el ícono (Compartir, Añadir a pantalla de inicio) para que Safari no los borre. Si ya tienes partidos en Safari: exporta aquí, abre la app desde el ícono e importa.</p></div>`;
 }
 
@@ -1159,6 +1160,11 @@ const A = {
   ss: v => { sf.side = v; sf.play = '' },
   fscope: v => { ff.scope = v }, sp: v => sf.play = v,
   addplay() { const v = $('#newplay').value.trim(), l = sf.side === 'O' ? S.off : S.def; if (!uniq(l, v)) return; l.push(v); if (sf.side === 'O') openEd(v) },
+  conectar() {
+    const k = ($('#linknube').value.match(/k=([\w-]{24,})/) || [])[1];
+    if (!k) return alert('Ese link no trae la clave del equipo. Cópialo completo.');
+    clave = k; lsSet('tochito.k', k); history.replaceState(null, '', '#k=' + k); nubeEst = 'Conectando'; bajar();
+  },
   // editor de jugadas
   edopen: v => openEd(v),
   edcancel: () => { ed = null },
@@ -1326,8 +1332,10 @@ async function bajar() {
     const [r] = await rpc('tochito_leer', {p_clave: clave});
     if (!r) { nubeEst = 'La clave del link no sirve'; return pinta() }
     if (r.actualizado !== nube.t) {
-      if (!nube.dirty || !tieneDatos(S)) { if (tieneDatos(S)) lsSet('tochito.previo', JSON.stringify(S)); S = Object.assign(dflt(), r.datos); nube.dirty = false }
-      else S = juntar(S, r.datos);
+      const remoto = Object.assign(dflt(), r.datos);
+      // con cambios sin subir, o la primera vez que este aparato se conecta: se junta lo de los dos y se sube
+      if (tieneDatos(S) && (nube.dirty || nube.t == null)) { S = juntar(S, remoto); nube.dirty = true }
+      else { if (tieneDatos(S)) lsSet('tochito.previo', JSON.stringify(S)); S = remoto; nube.dirty = false }
       initColors(); mergePb(); if (!cur()) newGame(''); S.ball.y = 12.5; fixFilter(); d = fresh();
       nube.t = r.actualizado; guardado = JSON.stringify(S); lsSet(KEY, guardado); nubeSave();
     }
@@ -1349,9 +1357,9 @@ async function subir() {
 }
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : bajar());
 addEventListener('online', bajar);
-const nubeTxt = () => !clave ? 'Sin nube: abre la app con el link del equipo para que se respalde en internet.'
+const nubeTxt = () => !clave ? 'Sin nube: lo que captures solo vive en este aparato. Pega el link del equipo para respaldarlo.'
   : nubeEst === 'Sin señal' ? `Sin señal${nube.dirty ? ': lo nuevo se sube solo en cuanto haya internet' : ''}.`
-  : nubeEst ? nubeEst + '.' : nube.dirty ? 'Subiendo a la nube…' : `Todo respaldado en la nube${nubeAt ? ' · ' + new Date(nubeAt).toLocaleTimeString('es-MX', {hour: 'numeric', minute: '2-digit'}) : ''}.`;
+  : nubeEst ? nubeEst + '.' : nube.dirty ? 'Subiendo a la nube…' : `Todo respaldado en la nube${nubeAt ? ' · ' + new Date(nubeAt).toLocaleTimeString('es-MX', {hour: 'numeric', minute: '2-digit'}) : ''}`;
 // avisar si la app se abrió de una forma que no guarda (directo del archivo o con el guardado bloqueado)
 function warn() {
   const fileOpen = location.protocol === 'file:';
