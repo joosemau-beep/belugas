@@ -219,6 +219,8 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .scoring div{display:flex;justify-content:space-between;border-bottom:.5px solid var(--line);padding:6px 0}
 @media(min-width:900px){.cols2{grid-template-columns:1fr 1fr}}
 .seg.sm button{padding:5px 20px;min-height:34px;font-size:15px}
+.tiles.pk{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))} /* 4 por fila: una sección cabe sin bajar */
+.pksegs{display:flex;margin:0 0 16px}.pksegs button{flex:1;min-height:46px;padding:8px 10px;font-size:17px}.pksegs .n{opacity:.55;font-weight:500;margin-left:6px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -282,6 +284,7 @@ const ourTD = e => e.side === 'O' ? e.td : e.ret, theirTD = e => e.side === 'O' 
 // Libro de jugadas leído de la tarjeta. pos = [adelante, lateral] en yardas desde el balón (lateral: + hacia la derecha de la tarjeta).
 // rutas = puntos acumulados desde donde sale el jugador; motion = movimiento antes del snap; hot = receptor principal.
 // snap = quién recibe el saque (Q si no se dice); qb = a quién se la da después, y ese es el que lanza o corre.
+// short = descripción corta; fin = último letrero de la animación cuando el normal ("X lanza a Y") no la explica.
 // Las que dibujan ustedes en la app viven en S.pb y tienen prioridad sobre estas.
 const PLAYBOOK = {
   'Pantalla izquierda': {short: 'Todos hacen pantalla para el pase a la izquierda', desc: 'Pase normal. X finge ir abierto pero en el set se pega al centro; todos hacen pantalla para el pase a la izquierda.',
@@ -296,7 +299,7 @@ const PLAYBOOK = {
   'Pase normal 1': {short: 'Y sube 4 y abre en diagonal a la derecha', desc: 'Pase normal.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-4.8], Y:[0,-2.4], Z:[0,2.4]},
     routes: {X:{pts:[[4,0],[6,-2.5]]}, C:{pts:[[2,0],[2,-5.5]]}, Y:{hot:1, pts:[[4,0],[7,1],[9,3.5]]}, Z:{pts:[[1.5,2.5],[2,5.5]]}}},
-  'Z cierra': {short: 'Z recibe el saque y se la da al QB', desc: 'Z cierra y pide el balón, se lo da al QB. Se puede correr o pasar y Z queda como opción de pase.', snap: 'Z', qb: 'Q',
+  'Z cierra': {short: 'Z recibe el saque y se la da al QB', desc: 'Z cierra y pide el balón, se lo da al QB. Se puede correr o pasar y Z queda como opción de pase.', snap: 'Z', qb: 'Q', fin: 'El QB corre o lanza; Z queda de opción',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-6.6], Y:[0,-4.1], Z:[-1,4.7]},
     routes: {Z:{hot:1, motion:[0,-3.1], pts:[[0,-3.4],[4,-3.4],[4.5,3.1]]}, X:{pts:[[3.5,0],[7.5,4.5],[6,4.5]]}, Y:{pts:[[2,-1.5],[2,.8]]}, C:{pts:[[7,0],[7.5,6]]}}},
   'Pase normal 2': {short: 'Tres a la derecha; X se va largo', desc: 'Pase normal.',
@@ -306,12 +309,12 @@ const PLAYBOOK = {
   'Poste de Z': {short: 'Z en diagonal al centro; la derecha llena de opciones', desc: 'Pase normal, buena cerca de la zona de anotación. Z sube 8 y se mete en diagonal hacia el centro (principal). El centro sube 7 y sale a la derecha, Y cruza corto a la derecha y X sale a la banda izquierda.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Y:[0,-4.5], Z:[0,7.5]},
     routes: {Z:{hot:1, pts:[[7.5,0],[12,-8]]}, C:{pts:[[7,0],[8.5,8]]}, Y:{pts:[[1.5,0],[2,10.5]]}, X:{pts:[[6.5,0],[6.5,-2.5]]}}},
-  'Falso QB': {short: 'Z de falso QB; el QB finge dársela o la lanza', desc: 'Engaño con corrida. El saque va a Z (falso QB), que se la pasa rápido al QB. Z le da la vuelta por detrás hacia la derecha y el QB finge dársela: decide si se la da o se la queda y lanza, para que no sepan quién la trae.', snap: 'Z', qb: 'Q',
+  'Falso QB': {short: 'Z de falso QB; el QB finge dársela o la lanza', desc: 'Engaño con corrida. El saque va a Z (falso QB), que se la pasa rápido al QB. Z le da la vuelta por detrás hacia la derecha y el QB finge dársela: decide si se la da o se la queda y lanza, para que no sepan quién la trae.', snap: 'Z', qb: 'Q', fin: 'El QB decide: se la da a Z o la lanza',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Z:[0,-3], Y:[0,9]},
     routes: {Z:{hot:1, pts:[[-2.7,1],[-4.3,3],[-3.5,5.3],[-0.5,8.3],[2,9.8]]}, X:{pts:[[6.5,0],[12,7]]}, C:{pts:[[8,0],[8,-5.5]]}, Y:{pts:[[12,0]]}}},
   'Z silencioso': {short: 'Saque sin hut; Y recibe de Z y corre por la izquierda', desc: 'Engaño con corrida. Saque silencioso, sin "hut": Z pasa en movimiento por detrás del centro y el centro se la da. Z se la lanza de lado a Y, que viene en sentido contrario, y sigue corriendo hacia la derecha para el engaño. Y corre con el balón por la izquierda, pegado a la línea, y sube por la banda. X se mete en diagonal hacia el centro para llevarse a su marcador.', snap: 'Z', qb: 'Y',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-7.4], Z:[0,-3.5], Y:[0,4.1]},
-    routes: {Z:{motion:[-1,4.1], pts:[[1,3.5],[4,5.8],[10,6.5]]}, Y:{hot:1, pts:[[-0.5,-4.1],[-0.5,-12],[3,-12.6],[7,-12.7]]}, X:{pts:[[1,0],[5.2,6.9]]}}},
+    routes: {Z:{motion:[-2,4.1], pts:[[2,3.5],[5,5.8],[11,6.5]]}, Y:{hot:1, pts:[[-3,-4.1],[-3,-12],[2,-12.6],[7,-12.7]]}, X:{pts:[[1,0],[5.2,6.9]]}}},
   // diseñadas para completar las secciones (mínimo 4 por sección)
   'Cruce corto': {short: 'Y y el centro se cruzan corto', desc: 'Pase rápido. Y y el centro se cruzan corto por el centro (Y a 2 yardas, el centro a 3), casi rozándose, para que sus marcadores se estorben. X y Z se van largo para abrir espacio. Lanza al que salga libre del cruce.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[-1,-3.5], Z:[0,8.5]},
@@ -396,6 +399,7 @@ const fresh = () => ({stage: null, play: null, res: null, cause: null, td: null,
   lat: [], pen: {fav: false, yd: 5, extra: false}, foul: null, ret: false, qb: 0}); // qb = posición de quien lanzó (0 = Q)
 let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
+let pickSec = null; // sección que se ve al elegir jugada
 let d = fresh(), tab = 'field', pop = null, popAt = null, popSheet = false, sf = {game: 'all', side: 'O', play: ''}, ff = {scope: 'game', game: null}, noClick = 0;
 let MY = 20; // unidades por yarda a lo ancho en el campo principal; se ajusta para llenar la pantalla
 
@@ -564,39 +568,53 @@ function diagram(name, side, anim) {
   const f = side === 'O' ? ([a, b]) => [b, -a] : ([a, b]) => [b, a];
   const at = r => { const i = L.findIndex(p => p.r === r); return startOf(pos[i], pb.routes[r]) };
   const mov = anim && pb && !matchMedia('(prefers-reduced-motion: reduce)').matches ? jugadaAnim(pb, L, pos, at, f) : null;
-  let s = '<svg viewBox="-13 -13 26 21.5" style="width:100%;background:#2b7a47;border-radius:10px;display:block"><line x1="-13" x2="13" y1="0" y2="0" stroke="#fff" stroke-opacity=".55" stroke-width=".15" stroke-dasharray=".6 .4"/>';
+  let s = `<svg viewBox="${mov ? '-13 -15.2 26 23.7' : '-13 -13 26 21.5'}" style="width:100%;background:#2b7a47;border-radius:10px;display:block"><line x1="-13" x2="13" y1="0" y2="0" stroke="#fff" stroke-opacity=".55" stroke-width=".15" stroke-dasharray=".6 .4"/>`;
   if (pb) s += segSvg(snapSegs(pb, at, [0, 0]), f, .35, .7);
   if (pb) L.forEach((p, i) => { const rt = pb.routes[p.r]; if (rt) s += segSvg(routeSegs(rt, ...pos[i]), f, .35, .9, mov ? .55 : 1) });
   L.forEach((p, i) => { const [x, y] = f(pos[i]); s += `<g transform="translate(${x} ${y})">${mov ? mov.p[i] : ''}<circle r="1.15" fill="${p.name ? colorOf(p.name) : '#f2f2f7'}" stroke="#fff" stroke-width=".18"/><text y=".45" font-size="1.25" font-weight="700" text-anchor="middle" fill="#111">${esc(p.r)}</text></g>` });
   if (mov && mov.ball) s += `<g>${mov.ball}<ellipse rx=".42" ry=".62" fill="#a0522d" stroke="#fff" stroke-width=".12"/></g>`;
+  if (mov) s += mov.cap;
   return s + '</svg>';
 }
-// tiempos del ciclo (fracciones de ANIM): movimiento antes del saque, saque, rutas, pausa al final
-const ANIM = 4.5, T_MOV = [.05, .2], T_SAQUE = .28, T_LANZA = .54, T_FIN = .8;
+// tiempos del ciclo (fracciones de ANIM): movimiento antes del saque, saque, entrega (si hay), lanzamiento, rutas, pausa al final
+const ANIM = 6, T_MOV = [.04, .18], T_SAQUE = .26, T_ENT = .36, T_RECIBE = .41, T_LANZA = .56, T_FIN = .82;
 function jugadaAnim(pb, L, pos, at, f) {
-  const largo = P => P.slice(1).reduce((a, q, i) => a + Math.hypot(q[0] - P[i][0], q[1] - P[i][1]), 0);
-  // primeros r (0 a 1) del recorrido P
-  const tramo = (P, r) => { let left = largo(P) * r; const out = [P[0]];
-    for (let i = 1; i < P.length; i++) { const dd = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); if (left <= dd) { const k = dd ? left / dd : 0; out.push([P[i - 1][0] + (P[i][0] - P[i - 1][0]) * k, P[i - 1][1] + (P[i][1] - P[i - 1][1]) * k]); return out } out.push(P[i]); left -= dd }
-    return out };
+  const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]), largo = P => P.slice(1).reduce((a, q, i) => a + dist(P[i], q), 0);
+  // punto a la fracción r (0 a 1) del recorrido P, y el pedazo de recorrido entre r0 y r1
+  const punto = (P, r) => { let left = largo(P) * r;
+    for (let i = 1; i < P.length; i++) { const dd = dist(P[i - 1], P[i]); if (left <= dd) { const k = dd ? left / dd : 0; return [P[i - 1][0] + (P[i][0] - P[i - 1][0]) * k, P[i - 1][1] + (P[i][1] - P[i - 1][1]) * k] } left -= dd }
+    return P[P.length - 1] };
+  const tramo = (P, r0, r1) => { const tot = largo(P) || 1, out = [punto(P, r0)]; let acc = 0;
+    for (let i = 1; i < P.length; i++) { acc += dist(P[i - 1], P[i]); if (acc / tot > r0 && acc / tot < r1) out.push(P[i]) }
+    return [...out, punto(P, r1)] };
   // stops = [[tiempo, puntos hasta ahí]]: el movimiento se reparte igual dentro de cada tramo de tiempo
   const motion = (P, stops) => { const F = P.map(f), o = F[0], tot = largo(P); if (!tot) return '';
     return `<animateMotion dur="${ANIM}s" repeatCount="indefinite" calcMode="linear" keyTimes="${stops.map(x => x[0]).join(';')}" keyPoints="${stops.map(x => +(largo(P.slice(0, x[1])) / tot).toFixed(4)).join(';')}" path="M${F.map(([x, y]) => `${+(x - o[0]).toFixed(2)},${+(y - o[1]).toFixed(2)}`).join(' L')}"/>` };
   const ruta = r => { const rt = pb.routes[r], st = at(r); return rt && rt.pts ? [st, ...rt.pts.map(([a, b]) => [st[0] + a, st[1] + b])] : [st] };
+  const en = t => clamp((t - T_SAQUE) / (T_FIN - T_SAQUE), 0, 1); // qué tanto de su ruta lleva cada quien en el tiempo t
   const p = L.map((pl, i) => { const rt = pb.routes[pl.r]; if (!rt) return '';
     const P = [pos[i], ...(rt.motion ? [at(pl.r)] : []), ...ruta(pl.r).slice(1)], m = rt.motion ? 2 : 1;
     return motion(P, [[0, 1], [T_MOV[0], 1], [T_MOV[1], m], [T_SAQUE, m], [T_FIN, P.length], [1, P.length]]) });
-  // balón: del saque al que lo recibe, a quien se la da; ese corre o lanza al receptor principal
+  // balón: saque al que lo recibe; si se la da a otro, se la da ya corriendo; el último corre con ella o lanza al receptor principal
   const sn = pb.snap || 'Q', qb = passer(pb), hot = Object.keys(pb.routes).find(r => pb.routes[r].hot);
-  const B = [[0, 0], at(sn), ...(pb.qb && pb.qb !== sn ? [at(pb.qb)] : [])], stops = [[0, 1], [T_MOV[1], 1], [T_SAQUE, B.length]];
-  const R = ruta(qb);
-  if (hot === qb) { B.push(...R.slice(1)); stops.push([T_FIN, B.length]) }
-  else {
-    const parte = tramo(R, (T_LANZA - T_SAQUE) / (T_FIN - T_SAQUE)).slice(1); B.push(...parte); stops.push([T_LANZA, B.length]);
-    if (hot) { B.push(ruta(hot).slice(-1)[0]); stops.push([T_FIN, B.length]) }
-  }
+  const B = [[0, 0]], stops = [[0, 1], [T_MOV[1], 1]], va = (pts, t) => { B.push(...pts); stops.push([t, B.length]) };
+  va([at(sn)], T_SAQUE);
+  let tiene = sn, t0 = T_SAQUE;
+  const entrega = pb.qb && pb.qb !== sn;
+  if (entrega) { va(tramo(ruta(sn), 0, en(T_ENT)).slice(1), T_ENT); va([punto(ruta(qb), en(T_RECIBE))], T_RECIBE); tiene = qb; t0 = T_RECIBE }
+  if (hot === tiene) va(tramo(ruta(tiene), en(t0), 1).slice(1), T_FIN);
+  else { const tl = Math.max(T_LANZA, t0); va(tramo(ruta(tiene), en(t0), en(tl)).slice(1), tl); if (hot) va([ruta(hot).slice(-1)[0]], T_FIN) }
   stops.push([1, B.length]);
-  return {p, ball: motion(B, stops)};
+  // letrero de lo que va pasando
+  const aNom = r => r === 'Q' ? 'al QB' : 'a ' + r, Nom = r => r === 'Q' ? 'El QB' : r, movs = L.map(q => q.r).filter(r => pb.routes[r] && pb.routes[r].motion);
+  const fases = [];
+  if (movs.length) fases.push([0, T_MOV[1], `${movs.map(Nom).join(' y ')} se mueve${movs.length > 1 ? 'n' : ''} antes del saque`]);
+  fases.push([movs.length ? T_MOV[1] : 0, T_SAQUE + .06, `Saque ${aNom(sn)}`]);
+  if (entrega) fases.push([T_SAQUE + .06, T_RECIBE + .06, `${Nom(sn)} se la da ${aNom(qb)}`]);
+  fases.push([entrega ? T_RECIBE + .06 : T_SAQUE + .06, 1, pb.fin || (hot === tiene ? `${Nom(tiene)} corre con el balón` : hot ? `${Nom(tiene)} lanza ${aNom(hot)}` : `${Nom(tiene)} lanza`)]);
+  const cap = fases.map(([a, b, t]) => { const kt = [0, a, b].filter((v, i, x) => i === 0 || v > x[i - 1]), vals = kt.map(v => v === a ? 1 : 0); if (b >= 1) { kt.splice(kt.indexOf(1), 1); vals.splice(-1, 1) }
+    return `<g opacity="0"><animate attributeName="opacity" dur="${ANIM}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${kt.join(';')}" values="${vals.join(';')}"/><rect x="${-t.length * .29 - .7}" y="-14.6" width="${t.length * .58 + 1.4}" height="1.9" rx=".95" fill="#000" fill-opacity=".55"/><text y="-13.2" font-size="1.1" font-weight="700" text-anchor="middle" fill="#fff">${esc(t)}</text></g>` }).join('');
+  return {p, ball: motion(B, stops), cap};
 }
 // campo: x = 10 unidades por yarda a lo largo; y = o.yu unidades por yarda a lo ancho; k = unidades por pixel (para tamaños fijos en pantalla)
 function artInner(o) {
@@ -852,10 +870,14 @@ function vField() {
 
 function vPick() {
   const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end);
+  // secciones arriba para brincar directo; se queda la última que usaron
+  const gs = O ? secGroups(S.off) : [['', S.def]], g = gs.find(x => x[0] === pickSec) || gs[0];
+  const tile = n => { const dg = diagram(n, S.side), ds = O ? corta(n) : '';
+    return `<button class="tile" data-a="pick" data-v="${esc(n)}">${dg || '<div class="noimg">Sin dibujo</div>'}<b>${esc(n)}</b>${ds ? `<small>${esc(ds)}</small>` : ''}</button>` };
   return `<div class="scrim" data-a="cancelpick"></div><div class="sheet">
   <div class="shead"><div><h1>${O ? '¿Qué jugada hicimos?' : '¿Qué defensa usamos?'}</h1><p>${d.end ? `${verb(y)} ${sg(y)} yd` : 'Sin avance'} · ${S.down}ª</p></div><button class="xbtn" data-a="cancelpick">${icon('x')}</button></div>
-  ${(O ? secGroups(S.off) : [['', S.def]]).map(([s, l], i) => `${s ? `<div class="ghead sech"${i ? '' : ' style="margin-top:0"'}>${esc(s)}</div>` : ''}<div class="tiles">${l.map(n => { const dg = diagram(n, S.side), ds = O && PLAYBOOK[n] ? PLAYBOOK[n].desc : '';
-    return `<button class="tile" data-a="pick" data-v="${esc(n)}">${dg || '<div class="noimg">Sin dibujo</div>'}<b>${esc(n)}</b>${ds ? `<small>${esc(ds)}</small>` : ''}</button>` }).join('')}</div>`).join('')}</div>`;
+  ${gs.length > 1 ? `<div class="seg pksegs">${gs.map(([s, l]) => `<button class="${s === g[0] ? 'on' : ''}" data-a="pksec" data-v="${esc(s)}">${esc(s)}<span class="n">${l.length}</span></button>`).join('')}</div>` : ''}
+  <div class="tiles pk">${g[1].map(tile).join('')}</div></div>`;
 }
 
 function vHow() {
@@ -924,7 +946,7 @@ function vPlays() {
     const a = v.a, w = a.n || 1, tc = topCause(g[n] || []);
     return `<div class="card"><div class="item" style="border:0;padding:0"><b style="font-size:19px">${esc(n)}</b><span class="badge ${v.k}">${v.t}</span></div>
     ${O && corta(n) ? `<div class="mut" style="font-size:15px;margin-top:2px">${esc(corta(n))}</div>` : ''}
-    <div style="max-width:360px;margin:10px 0">${diagram(n, sf.side, true)}</div><div style="margin:6px 0">${esc(v.why)}</div>
+    <div style="margin:12px 0">${diagram(n, sf.side, true)}</div><div style="margin:6px 0">${esc(v.why)}</div>
     <div class="stack"><i style="width:${a.ok / w * 100}%;background:var(--ok)"></i><i style="width:${a.nos / w * 100}%;background:var(--nos)"></i><i style="width:${a.rv / w * 100}%;background:var(--bad)"></i></div>
     <div class="mut" style="font-size:15px">${a.n} ${a.n === 1 ? 'vez' : 'veces'} · ${f1(a.avg)} yd por jugada · <span class="g">${a.ok} bien</span> · <span class="a">${a.nos} falla nuestra</span> · <span class="r">${a.rv} frenada</span>${tc ? ' · más repetido: ' + esc(tc) : ''}</div>
     <div class="row tight" style="margin-top:12px">${O ? `<button data-a="edopen" data-v="${esc(n)}">Dibujar</button>` : ''}<button data-a="renplay" data-v="${esc(n)}">Renombrar</button><button class="x" data-a="archplay" data-v="${esc(n)}">Quitar del libro</button></div></div>`;
@@ -1175,7 +1197,8 @@ const A = {
   cancel: () => { d = fresh() },
   // si venías de recrear la jugada, regresa ahí sin perder nada
   cancelpick: () => { d.stage = d.play || d.res ? 'how' : null },
-  repick: () => { d.stage = 'pick' },
+  repick: () => { d.stage = 'pick'; if (S.secOf[d.play]) pickSec = S.secOf[d.play] },
+  pksec: v => { pickSec = v },
   pick(v) {
     const f = S.forms[S.side + ':' + v] || (S.side === 'O' && pbPos(v));
     if (f) S.lines[S.side].forEach((p, i) => { p.dx = f[i][0]; p.dy = f[i][1] });
@@ -1462,7 +1485,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014005856';
+const VERSION = '20261014010609';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
