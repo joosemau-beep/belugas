@@ -1279,7 +1279,8 @@ function vPop() {
     <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
     <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
       : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div>
-    <div class="ghead" style="margin-top:18px">Vinieron hoy · ${h.length} de ${S.players.length}</div><div class="group">${chipsAsist()}</div></div>`;
+    <div class="ghead" style="margin-top:18px">Vinieron hoy · ${h.length} de ${S.players.length}</div><div class="group">${chipsAsist()}
+      <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Nombre del jugador nuevo"><button class="tint" data-a="addasist">${icon('plus')} Agregar jugador</button></div></div></div>`;
   if (pop == null || !popAt) return '';
   const p = L[pop], W = 470;
   let x = popAt.x + 34; if (x + W > innerWidth - 12) x = popAt.x - 34 - W;
@@ -1686,7 +1687,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014021757';
+const VERSION = '20261014022005';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
