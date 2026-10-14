@@ -431,11 +431,16 @@ const RET = ['Intercepción','Fumble','Fumble forzado'];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lineXY = (side, i) => { const p = S.lines[side][i]; return {x: clamp(S.ball.x + p.dx, 0.5, 69.5), y: clamp(S.ball.y + p.dy, 1, 24)} };
 // ruta del receptor (pase completo, incompleto o intercepción): sale de la tarjeta y se puede estirar
+// la ruta del receptor (su último punto es donde atrapó) o la de quien corrió (todos sus puntos se arrastran y de ahí sigue a donde terminó)
 function recvRoute() {
-  if (S.side !== 'O' || !(d.res === 'Pase completo' || ZERO.includes(d.res)) || d.tgt == null) return null;
-  const pb = PLAYBOOK[d.play], p = S.lines.O[d.tgt], rt = pb && pb.routes[p.r]; if (!rt || !rt.pts) return null;
-  const q = lineXY('O', d.tgt), main = routeSegs(rt, q.x, q.y).find(s => !s.dash); if (!main) return null;
-  return {start: main.pts[0], orig: main.pts.slice(1), pts: d.route || main.pts.slice(1)};
+  const run = d.res === 'Corrida';
+  if (S.side !== 'O' || !(run || d.res === 'Pase completo' || ZERO.includes(d.res)) || d.tgt == null) return null;
+  const pb = PLAYBOOK[d.play], p = S.lines.O[d.tgt], rt = pb && pb.routes[p.r], q = lineXY('O', d.tgt);
+  const main = rt && rt.pts && rt.pts.length && routeSegs(rt, q.x, q.y).find(s => !s.dash);
+  if (!main && !run) return null;
+  // si en la jugada no tiene ruta, un punto a la mitad para acomodar por dónde corrió
+  const st = main ? main.pts[0] : startOf([q.x, q.y], rt), end = d.end || S.ball, orig = main ? main.pts.slice(1) : [[(st[0] + end.x) / 2, (st[1] + end.y) / 2]];
+  return {start: st, orig, pts: d.route || orig, run};
 }
 // estado del borrador: yardas, si funcionó, qué falta preguntar
 function draft() {
@@ -464,6 +469,7 @@ function draft() {
     e.air = airOf(side, S.ball, e.catch); e.yac = yds - e.air;
     e.path = rr ? [rr.start, ...rr.pts] : null;
   }
+  if (d.res === 'Corrida') { const rr = recvRoute(); e.path = rr ? [rr.start, ...rr.pts] : null }
   // incompleto o intercepción: a dónde iba el pase
   if (O && ZERO.includes(d.res) && d.tgt != null) {
     const rr = recvRoute(), last = rr && rr.pts[rr.pts.length - 1];
@@ -747,7 +753,7 @@ function howExtra(e) {
   if (e.aim) return s + L(lineXY('O', d.qb), e.aim, '#ff453a', 4, true) + (d.res === 'Intercepción' && d.end ? L(e.aim, end, '#ffd60a', 5) : '');
   if (d.res === 'Incompleto') return s;
   if (e.catch) { s += L(S.side === 'O' ? lineXY('O', d.qb) : S.ball, e.catch, '#0a84ff', 4, true); at = e.catch }
-  else if (d.res === 'Corrida' && d.tgt != null) at = lineXY(S.side, d.tgt);
+  else if (d.res === 'Corrida' && d.tgt != null) { const l = rr && rr.pts[rr.pts.length - 1]; at = l ? {x: l[0], y: l[1]} : lineXY(S.side, d.tgt) }
   if (at) { d.lat.forEach(l => { s += L(at, l.t, '#ffd60a', 6) + L(l.t, l.c, '#ff9f0a', 4, true); at = l.c }); s += L(at, end, '#ffd60a', 6) }
   else if (d.end) s += L(S.ball, end, '#ffd60a', 5);
   return s;
@@ -769,7 +775,7 @@ function howHandles(e) {
   if (e.catch) s += H1('catch', '#0a84ff', 13, 'Atrapó');
   else if (e.aim) s += H1('catch', '#ff453a', 13, 'Iba aquí');
   d.lat.forEach((_, k) => s += H1('lt' + k, '#ff9f0a', 11, 'Lanzó') + H1('lc' + k, '#0a84ff', 12, 'Recibió'));
-  if (rr) rr.pts.slice(0, -1).forEach((_, j) => s += H1('r' + j, '#bf5af2', 9, '', 16));
+  if (rr) (rr.run ? rr.pts : rr.pts.slice(0, -1)).forEach((_, j) => s += H1('r' + j, '#bf5af2', rr.run ? 11 : 9, '', rr.run ? 22 : 16));
   return s;
 }
 function howOpts(e) {
@@ -954,6 +960,7 @@ function fieldHint(e) {
   if (w && d[w[0]] == null) t = ask[w[0]];
   else if (d.lat.some(l => l.to == null)) t = 'Toca a quien recibió el pase';
   else if (d.res === 'Pase completo') t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#0a84ff')}atrapó ${dot('#ffd60a')}terminó`;
+  else if (d.res === 'Corrida' && recvRoute()) t = `Arrastra ${dot('#bf5af2')}por dónde corrió ${dot('#ffd60a')}terminó`;
   else if (e.aim) t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#ff453a')}a dónde iba${d.res === 'Intercepción' ? ' ' + dot('#ffd60a') + 'terminó' : ''}`;
   else if (d.res && !['Castigo','Incompleto'].includes(d.res)) t = `Arrastra ${dot('#ffd60a')} a donde terminó`;
   if (!t && !w) t = 'Toca a un jugador para cambiar quién jugó ahí, o arrástralo encima de otro para intercambiarlos';
@@ -1251,7 +1258,8 @@ const A = {
   },
   addlat() {
     const e = draft(), end = d.end || S.ball, dir = S.side === 'O' ? 1 : -1;
-    const from = d.lat.length ? d.lat[d.lat.length - 1].c : e.catch || lineXY(S.side, d.tgt), h = v => Math.round(v * 2) / 2;
+    const rr = recvRoute(), rl = rr && rr.run && rr.pts[rr.pts.length - 1];
+    const from = d.lat.length ? d.lat[d.lat.length - 1].c : e.catch || (rl ? {x: rl[0], y: rl[1]} : lineXY(S.side, d.tgt)), h = v => Math.round(v * 2) / 2;
     const t = {x: h((from.x + end.x) / 2), y: h((from.y + end.y) / 2)}, l = {to: null, t, c: {x: t.x - 2 * dir, y: clamp(h(t.y + (t.y < 12.5 ? 3 : -3)), 1, 24)}};
     legal(l); d.lat.push(l);
   },
@@ -1512,7 +1520,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014013257';
+const VERSION = '20261014013728';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
