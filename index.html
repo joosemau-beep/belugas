@@ -402,7 +402,7 @@ const colorOf = name => {
 };
 
 const dflt = () => ({
-  players: [], pb: {}, off: Object.keys(PLAYBOOK),
+  players: [], pb: {}, off: Object.keys(PLAYBOOK), pruebas: [], // pruebas = propuestas que todavía no entran al playbook
   // secciones de ataque, por lo que se necesita en ese momento; secOf = en cuál va cada jugada
   secs: ['Rápidas', 'De avance', 'Engaños'],
   secOf: {'Pantalla rápida': 'Rápidas', 'Pantalla izquierda': 'De avance', 'Pase normal 1': 'De avance', 'Pase normal 2': 'De avance', 'Corto y largo': 'De avance', 'Z cierra': 'Engaños', ...NUEVAS}, seen: [], def: ['Carriles','Persona','Zona'], arch: [], archSide: {},
@@ -885,7 +885,7 @@ function drawFields() {
 // como en la tarjeta: adelante = arriba. En el dibujo x = lateral y y = -adelante (yardas desde el balón)
 function openEd(name) {
   const pb = PLAYBOOK[name];
-  ed = {name, desc: pb ? pb.desc || '' : '', snap: pb && pb.snap || 'Q', qb: pb && pb.qb || '', entrega: pb && pb.entrega || '', sel: null, sec: S.secOf[name] || '',
+  ed = {name, prueba: S.pruebas.includes(name), autor: pb && pb.autor || '', desc: pb ? pb.desc || '' : '', snap: pb && pb.snap || 'Q', qb: pb && pb.qb || '', entrega: pb && pb.entrega || '', sel: null, sec: S.secOf[name] || '',
     pos: Object.fromEntries(dflt().lines.O.map(p => [p.r, pb && pb.pos[p.r] ? pb.pos[p.r].slice() : [p.dx, p.dy]])),
     routes: JSON.parse(JSON.stringify(pb ? pb.routes : {})), modo: 'ruta'};
   Object.values(ed.routes).forEach(rt => { if (rt.motion) rt.motion = movsOf(rt).map(m => m.slice()) });
@@ -1088,14 +1088,28 @@ function vPlays() {
   ${O ? secGroups(list).map(([s, l]) => { const a = agg(l.flatMap(n => g[n] || [])), vn = Object.fromEntries(vs);
     return `<div class="sect"><h2>${esc(s)}</h2><span class="mut">${a.n ? `${a.n} ${a.n === 1 ? 'vez' : 'veces'} · funcionó ${Math.round(a.pct)}% · ${f1(a.avg)} yd por jugada` : 'Sin jugadas registradas'}</span>${s !== 'Sin sección' ? `<button class="plain" data-a="rensec" data-v="${esc(s)}">Renombrar</button>` : ''}</div>
     <div class="cols2">${l.map(n => card([n, vn[n]])).join('')}</div>` }).join('') : `<div class="cols2">${vs.map(card).join('')}</div>`}
+  ${O ? vPruebas() : ''}
   ${archived.length ? `<div class="card"><h2>Fuera del libro</h2>${archived.map(n => `<div class="item"><span>${esc(n)}</span><button class="plain" data-a="unarch" data-v="${esc(n)}">Regresar</button></div>`).join('')}</div>` : ''}`;
 }
 
+// jugadas de prueba: cualquiera propone y dibuja; el equipo decide si pasa al playbook (en qué sección) o se borra. No salen en el partido
+function vPruebas() {
+  const quien = hoy().length ? hoy() : S.players;
+  const card = n => { const pb = PLAYBOOK[n], dg = diagram(n, 'O', true);
+    return `<div class="card"><div class="item" style="border:0;padding:0"><b style="font-size:19px">${esc(n)}</b><span class="badge">Prueba</span></div>
+    <div class="mut" style="font-size:15px;margin-top:2px">${pb && pb.autor ? 'Propuesta de ' + esc(pb.autor) : 'Propuesta'}${pb && corta(n) ? ' · ' + esc(corta(n)) : ''}</div>
+    <div style="margin:12px 0">${dg || '<div style="aspect-ratio:26/21.5;border-radius:10px;background:#2b7a47;display:grid;place-items:center;color:#fffa">Sin dibujo todavía</div>'}</div>
+    <div class="ghead" style="margin:0 2px 8px">Pasar al playbook en</div><div class="row tight">${S.secs.map(s => `<button data-a="aplaybook" data-v="${esc(n)}|${esc(s)}">${esc(s)}</button>`).join('')}</div>
+    <div class="row tight" style="margin-top:10px"><button data-a="edopen" data-v="${esc(n)}">Dibujar</button><button class="x" data-a="borraprueba" data-v="${esc(n)}">Borrar</button></div></div>` };
+  return `<div class="sect"><h2>Pruebas</h2><span class="mut">${S.pruebas.length ? S.pruebas.length + ' propuesta' + (S.pruebas.length === 1 ? '' : 's') + ' · ' : ''}no salen en el partido hasta pasarlas al playbook</span></div>
+  <div class="card"><h2>Proponer jugada</h2><div class="row tight"><input id="newprueba" placeholder="Nombre de la jugada" style="flex:1"><select id="autor"><option value="">¿Quién la propone?</option>${quien.map(n => `<option>${esc(n)}</option>`).join('')}</select><button class="tint" data-a="addprueba">Dibujar</button></div></div>
+  ${S.pruebas.length ? `<div class="cols2">${S.pruebas.map(card).join('')}</div>` : ''}`;
+}
 function vEd() {
   const L = S.lines.O, nm = r => (L.find(q => q.r === r) || {}).name, rt = ed.sel && ed.routes[ed.sel], who = r => esc(nm(r) || r);
   const chip = (r, on, a) => `<button class="pchip${on ? ' on' : ''}" data-a="${a}" data-v="${r}"><i style="background:${colorOf(nm(r))}">${r}</i>${who(r)}</button>`;
-  let q = `<div class="ghead">Sección</div><div class="group"><div class="pchips">${S.secs.map(s => `<button class="pchip${ed.sec === s ? ' on' : ''}" style="padding-left:14px" data-a="edsec" data-v="${esc(s)}">${esc(s)}</button>`).join('')}<button class="pchip" style="padding-left:12px" data-a="ednewsec">${icon('plus')}Nueva</button></div></div>
-    <div class="ghead">Descripción</div><div class="group"><input data-c="eddesc" value="${esc(ed.desc)}" placeholder="Qué hace cada quien" style="width:100%"></div>
+  let q = ed.prueba ? `<p class="mut" style="margin:0 2px 14px">Jugada de prueba${ed.autor ? ' de ' + esc(ed.autor) : ''}: la sección se escoge al pasarla al playbook.</p>` : `<div class="ghead">Sección</div><div class="group"><div class="pchips">${S.secs.map(s => `<button class="pchip${ed.sec === s ? ' on' : ''}" style="padding-left:14px" data-a="edsec" data-v="${esc(s)}">${esc(s)}</button>`).join('')}<button class="pchip" style="padding-left:12px" data-a="ednewsec">${icon('plus')}Nueva</button></div></div>`;
+  q += `<div class="ghead">Descripción</div><div class="group"><input data-c="eddesc" value="${esc(ed.desc)}" placeholder="Qué hace cada quien" style="width:100%"></div>
     <div class="ghead">¿Quién recibe el saque?</div><div class="group"><div class="pchips">${ROLES.map(r => chip(r, ed.snap === r, 'edsnap')).join('')}</div></div>
     <div class="ghead">¿Se la da a alguien?</div><div class="group"><p>El que tenga el balón al final es el que lanza o corre.</p><div class="pchips"><button class="pchip${ed.qb ? '' : ' on'}" style="padding-left:14px" data-a="edqb" data-v="">Nadie</button>${ROLES.filter(r => r !== ed.snap).map(r => chip(r, ed.qb === r, 'edqb')).join('')}</div>
       ${ed.qb ? `<div class="seg" style="margin-top:12px"><button class="${ed.entrega ? '' : 'on'}" data-a="edent" data-v="">Luego luego</button><button class="${ed.entrega ? 'on' : ''}" data-a="edent" data-v="corriendo">Ya corriendo</button></div>` : ''}</div>`;
@@ -1106,7 +1120,7 @@ function vEd() {
       ${mov ? '' : `<button class="rtile${rt && rt.hot ? ' on' : ''}" style="width:100%;margin-top:10px" data-a="edhot"><b>Receptor principal</b><small>Su ruta sale en morado</small></button>`}</div>`
     : `<div class="ghead">Rutas</div><div class="group"><p>Toca a un jugador para dibujar su ruta. Arrástralo para cambiar dónde se para.</p></div>`;
   return `<div class="how"><div class="hmain"><div id="edbox"></div>
-    <div class="htop"><button class="pill glass" data-a="edcancel">Cancelar</button><div class="htitle glass">${esc(ed.name)}<small>Dibujar jugada</small></div><span></span></div>
+    <div class="htop"><button class="pill glass" data-a="edcancel">Cancelar</button><div class="htitle glass">${esc(ed.name)}<small>${ed.prueba ? 'Jugada de prueba' : 'Dibujar jugada'}</small></div><span></span></div>
     <div class="hhint glass">${!ed.sel ? 'Toca a un jugador para dibujar su ruta' : ed.modo === 'mov' ? `Toca el campo para el movimiento de ${who(ed.sel)} antes del saque` : `Toca el campo para la ruta de ${who(ed.sel)}`}</div></div>
     <aside class="insp"><div class="scroll">${q}</div><div class="ifoot"><button class="tint" data-a="edsave">Guardar jugada</button></div></aside></div>`;
 }
@@ -1462,6 +1476,14 @@ const A = {
     if (!k) return alert('Ese link no trae la clave del equipo. Cópialo completo.');
     clave = k; lsSet('tochito.k', k); history.replaceState(null, '', '#k=' + k); nubeEst = 'Conectando'; bajar();
   },
+  // jugadas de prueba
+  addprueba() {
+    const v = $('#newprueba').value.trim(), au = $('#autor').value; if (!v) return;
+    if ([...S.off, ...S.def, ...S.pruebas, ...S.arch].includes(v)) return alert('Ya hay una jugada con ese nombre');
+    S.pruebas.push(v); openEd(v); ed.autor = au;
+  },
+  aplaybook(v) { const [n, sec] = v.split('|'); if (!confirm(`¿Pasar "${n}" al playbook en ${sec}?`)) return; S.pruebas = S.pruebas.filter(x => x !== n); if (!S.off.includes(n)) S.off.push(n); S.secOf[n] = sec },
+  borraprueba(v) { if (!confirm(`¿Borrar la jugada de prueba "${v}"?`)) return; S.pruebas = S.pruebas.filter(x => x !== v); delete S.pb[v]; delete PLAYBOOK[v]; delete S.secOf[v] },
   // editor de jugadas
   edopen: v => openEd(v),
   edcancel: () => { ed = null },
@@ -1476,9 +1498,10 @@ const A = {
   edhot() { const r = ed.sel, rt = ed.routes[r] = ed.routes[r] || {pts: []}, on = !rt.hot; Object.values(ed.routes).forEach(x => delete x.hot); if (on) rt.hot = 1 },
   edsave() {
     Object.keys(ed.routes).forEach(edLimpia);
-    const def = {desc: ed.desc.trim(), pos: ed.pos, routes: ed.routes, ...(ed.snap !== 'Q' ? {snap: ed.snap} : {}), ...(ed.qb ? {qb: ed.qb} : {}), ...(ed.qb && ed.entrega ? {entrega: ed.entrega} : {})};
-    S.pb[ed.name] = PLAYBOOK[ed.name] = def; if (!S.off.includes(ed.name)) S.off.push(ed.name);
-    if (ed.sec) S.secOf[ed.name] = ed.sec; else delete S.secOf[ed.name];
+    const def = {desc: ed.desc.trim(), pos: ed.pos, routes: ed.routes, ...(ed.snap !== 'Q' ? {snap: ed.snap} : {}), ...(ed.qb ? {qb: ed.qb} : {}), ...(ed.qb && ed.entrega ? {entrega: ed.entrega} : {}), ...(ed.autor ? {autor: ed.autor} : {})};
+    S.pb[ed.name] = PLAYBOOK[ed.name] = def;
+    if (ed.prueba) { if (!S.pruebas.includes(ed.name)) S.pruebas.push(ed.name) } // las de prueba no entran al playbook hasta que lo decidan
+    else { if (!S.off.includes(ed.name)) S.off.push(ed.name); if (ed.sec) S.secOf[ed.name] = ed.sec; else delete S.secOf[ed.name] }
     ed = null;
   },
   renplay(v) {
@@ -1625,7 +1648,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => { const t = e.target.closest('[data-c]'); if (!t) return; C[t.dataset.c](t.value, +t.dataset.i); save(); if (t.dataset.c === 'renp') t.value = S.players[+t.dataset.i]; else render() });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  const m = {newp: 'addp', newname: 'addname', newplay: 'addplay', newasist: 'addasist'}[e.target.id];
+  const m = {newp: 'addp', newname: 'addname', newplay: 'addplay', newasist: 'addasist', newprueba: 'addprueba'}[e.target.id];
   if (m) { A[m](); save(); render() }
 });
 addEventListener('resize', () => { if (!drag) { d.vb = null; drawFields() } });
@@ -1644,7 +1667,8 @@ const pinta = () => { if (!document.activeElement || !document.activeElement.mat
 function juntar(a, b) {
   const g = new Map(b.games.map(x => [x.id, x]));
   a.games.forEach(x => { const y = g.get(x.id); if (!y || x.events.length >= y.events.length) g.set(x.id, x) });
-  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}});
+  const off = a.off || b.off || [], pruebas = [...new Set([...(a.pruebas || []), ...(b.pruebas || [])])].filter(n => !off.includes(n));
+  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pruebas});
 }
 async function bajar() {
   if (!clave || d.stage || drag) return;
@@ -1687,7 +1711,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014022005';
+const VERSION = '20261014022350';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
