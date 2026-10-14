@@ -717,7 +717,7 @@ function artInner(o) {
     ${mk ? `<circle r="${p(sw && i === sw.to ? R + 13 : R + 6)}" fill="none" stroke="${mk}" stroke-width="${p(sw && i === sw.to ? 5 : 4)}"/>` : ''}
     <circle r="${p(R)}" fill="${colorOf(pl.name)}" stroke="#fff" stroke-width="${p(2.5)}"/>
     ${T(0, p(R * .26), esc(pl.r), R * .7, '#111')}
-    ${pl.name ? `<text x="${side * p(R + 7)}" y="${p(4.5)}" font-size="${p(13)}" font-weight="700" text-anchor="${O ? 'end' : 'start'}" fill="#fff" stroke="#000" stroke-opacity=".6" stroke-width="${p(3)}" paint-order="stroke">${esc(pl.name)}</text>` : ''}</g>`;
+    ${pl.name && !o.noNames ? `<text x="${side * p(R + 7)}" y="${p(4.5)}" font-size="${p(13)}" font-weight="700" text-anchor="${O ? 'end' : 'start'}" fill="#fff" stroke="#000" stroke-opacity=".6" stroke-width="${p(3)}" paint-order="stroke">${esc(pl.name)}</text>` : ''}</g>`;
   }
   if (o.ball) {
     const b = o.ball;
@@ -734,7 +734,9 @@ function fieldSvg(o) {
 function mainSvg(w, h) {
   MY = 700 * h / w / 25;
   const O = S.side === 'O', toMid = O ? S.ball.x < MID : S.ball.x > MID, need = Math.max(0, Math.round(Math.abs((O ? (toMid ? MID : GOAL_R) : (toMid ? MID : GOAL_L)) - S.ball.x)));
-  return fieldSvg({id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${S.down}ª · ${need} yd`});
+  // con la jugada escogida antes del saque, el campo ya enseña a los jugadores en su formación y sus rutas
+  const pl = !!S.prox && (O ? S.off : S.def).includes(S.prox);
+  return fieldSvg({id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${S.down}ª · ${need} yd`, players: pl, noNames: true, routes: pl ? routesField(S.prox) : null, faint: pl && !!d.end});
 }
 // vista de recrear: misma escala en ambos ejes (10 unidades = 1 yarda), acercada a la jugada
 function howFrame(w, h) {
@@ -1197,6 +1199,8 @@ function render() {
 }
 
 // ---------- acciones ----------
+// acomoda a los jugadores en la formación de la jugada
+const ponForma = v => { const f = S.forms[S.side + ':' + v] || (S.side === 'O' && pbPos(v)); if (f) S.lines[S.side].forEach((p, i) => { p.dx = f[i][0]; p.dy = f[i][1] }) };
 // jugada escogida antes del saque (botón Jugada): si sigue en el libro, se usa sin preguntar
 const usaPlan = () => { if (S.prox && (S.side === 'O' ? S.off : S.def).includes(S.prox)) A.pick(S.prox) };
 const tog = (k, v) => { d[k] = d[k] === v ? null : v };
@@ -1248,9 +1252,8 @@ const A = {
   repick: () => { d.stage = 'pick'; if (S.secOf[d.play]) pickSec = S.secOf[d.play] },
   pksec: v => { pickSec = v },
   pick(v) {
-    if (d.plan) { S.prox = v; d = fresh(); return } // escogida antes del saque
-    const f = S.forms[S.side + ':' + v] || (S.side === 'O' && pbPos(v));
-    if (f) S.lines[S.side].forEach((p, i) => { p.dx = f[i][0]; p.dy = f[i][1] });
+    ponForma(v);
+    if (d.plan) { S.prox = v; d = fresh(); return } // escogida antes del saque: el campo ya la enseña
     if (d.play !== v && d.res !== 'Castigo') Object.assign(d, {res: null, cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: []});
     d.play = v; d.stage = 'how'; d.vb = null;
     if (S.side === 'O') d.qb = Math.max(0, S.lines.O.findIndex(p => p.r === passer(PLAYBOOK[v])));
@@ -1543,7 +1546,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014015110';
+const VERSION = '20261014015413';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
