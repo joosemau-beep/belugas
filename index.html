@@ -346,6 +346,39 @@ const PLAYBOOK = {
 const NUEVAS = {'Poste de Z': 'De avance', 'Falso QB': 'Engaños', 'Z silencioso': 'Engaños', 'Cruce corto': 'Rápidas', 'Diagonales rápidas': 'Rápidas', 'Corre y lanza': 'Engaños', 'Regresos cortos': 'Rápidas'};
 // jugadas que cambiaron de sección: se aplica una sola vez (si después ustedes la mueven, se respeta)
 const CAMBIOS = {'Pantalla izquierda': 'De avance'};
+// castigos del reglamento IFAF de flag football 2023: [nombre, yardas, si quita el down (ofensiva) o da Primera automática (defensa), qué es].
+// Se cobran desde la línea; los que el reglamento cobra desde donde fue la falta se ajustan con + y −
+const FALTAS = {
+  O: [ // de quien trae el balón
+    ['Salida en falso', 5, false, 'Alguien se mueve o simula el inicio antes del saque, o está adelante de la línea'],
+    ['Movimiento ilegal', 5, false, 'Más de uno en movimiento al saque, o el que se mueve va hacia adelante'],
+    ['Retraso de juego', 5, false, 'No sacan dentro de los 25 segundos'],
+    ['Retraso de pase', 0, true, 'El QB no lanza ni entrega en 7 segundos'],
+    ['Shielding', 5, false, 'Usa el cuerpo para tapar a un rival y que no llegue'],
+    ['Flag guarding', 5, true, 'El que trae el balón protege su bandera con la mano, el brazo o el balón'],
+    ['Saltar o lanzarse', 5, true, 'El que trae el balón brinca o se avienta para que no le quiten la bandera'],
+    ['Pase adelante ilegal', 5, true, 'Lanzó pasando la línea, o fue un segundo pase hacia adelante'],
+    ['Entrega o pase atrás ilegal', 5, true, 'Entrega o pase hacia atrás fuera de las reglas'],
+    ['Corrida ilegal', 5, true, 'El QB pasó la línea sin entregar, o corrieron en la zona de no correr (a 5 de la anotación)'],
+    ['Interferencia de pase', 10, true, 'Contacto con el rival mientras el pase va en el aire'],
+    ['Contacto ilegal', 10, true, 'Empujar, agarrar o chocar; el que trae el balón tiene que evitar el contacto'],
+    ['Antideportiva', 10, false, 'Insultos, gestos, o no regresar el balón o la bandera'],
+    ['Más de 5 jugando', 5, false, 'Participación ilegal'],
+  ],
+  D: [ // de la defensa
+    ['Fuera de lugar', 5, false, 'Un defensa estaba adelante de la línea al saque'],
+    ['Señal de blitz ilegal', 5, false, 'Pidió blitz a menos de 7 yardas, o más de 2 lo piden'],
+    ['Blitz ilegal', 5, false, 'Cruzó la línea estando a menos de 7 yardas antes de que el QB entregara o lanzara'],
+    ['Shielding', 5, false, 'Usa el cuerpo para tapar a un rival'],
+    ['Bandera ilegal', 5, false, 'Quitó la bandera a alguien que no traía el balón'],
+    ['Interferencia de pase', 10, true, 'Contacto con el receptor mientras el pase va en el aire'],
+    ['Contacto ilegal', 10, true, 'Agarrar, empujar o chocar al rival'],
+    ['Antideportiva', 10, false, 'Insultos, gestos, o no regresar el balón o la bandera'],
+    ['Más de 5 jugando', 5, false, 'Participación ilegal'],
+  ]
+};
+// quién cometió el castigo que se está capturando: 'O' = el que trae el balón, 'D' = la defensa
+const quienFalta = () => d.pen.fav ? (S.side === 'O' ? 'D' : 'O') : S.side;
 // jugadas de prueba que se borran de todo (una sola vez)
 const BORRAR = ['aaa', 'aaaa'];
 // jugadas que ustedes editaron y ya pasé al libro: su copia se quita una sola vez para que se use la del libro
@@ -416,7 +449,7 @@ mergePb();
 // route = ruta del receptor ya estirada (su último punto es donde atrapó); vb = encuadre de la vista de recrear
 // lat = pases después de atrapar o correr: t = dónde lanzó, c = dónde la recibió, to = quién. pen = castigo
 const fresh = () => ({stage: null, play: null, res: null, cause: null, td: null, end: null, setBall: false, tgt: null, who: null, miss: null, route: null, catch: null, vb: null,
-  lat: [], pen: {fav: false, yd: 5, extra: false}, foul: null, ret: false, qb: 0}); // qb = posición de quien lanzó (0 = Q)
+  lat: [], pen: {fav: false, yd: 5, extra: false, tipo: null}, foul: null, ret: false, qb: 0}); // qb = posición de quien lanzó (0 = Q)
 let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
@@ -821,7 +854,7 @@ function howSvg(w, h) {
   return fieldSvg({...howOpts(e), handles: howHandles(e), lock: S.side === 'O' && RUN.includes(d.res) && pending()});
 }
 function readoutText(e) {
-  if (e.penEnd) return `Castigo ${d.pen.fav ? 'a favor' : 'en contra'} · ${sg(e.yds)} yd`;
+  if (e.penEnd) return `${d.pen.tipo || 'Castigo'} ${d.pen.fav ? 'a favor' : 'en contra'} · ${sg(e.yds)} yd`;
   if (RUN.includes(d.res) && (e.catch || d.tgt != null)) return pieces(e).filter(([l, y], i, a) => y || l === 'Pase' || i === a.length - 1).map(([l, y]) => `${l} ${y ? sg(y) : '0'}`).join(' · ') + ` = ${sg(e.yds)} yd`;
   if (ZERO.includes(d.res)) return e.aim ? `${rl(d.res)} · iba a ${S.lines.O[d.tgt].name || S.lines.O[d.tgt].r} · pase de ${sg(e.airAim)} yd` : `${rl(d.res)} · 0 yd`;
   return d.end ? `${verb(e.raw)} ${sg(e.raw)} yd` : 'Sin avance';
@@ -956,8 +989,11 @@ function vHow() {
   if (d.res === 'Castigo') {
     const p = d.pen, xl = O ? (p.fav ? 'Primera automática' : 'Perdemos el down') : (p.fav ? 'Pierden el down' : 'Primera para el rival');
     const xd = (O ? p.fav : !p.fav) ? 'Primera sin importar las yardas' : 'Además de las yardas, se gasta este down';
-    q += `<div class="ghead">Castigo</div><div class="group"><div class="seg"><button class="${p.fav ? 'on' : ''}" data-a="penfav" data-v="1">A favor</button><button class="${p.fav ? '' : 'on'}" data-a="penfav" data-v="0">En contra</button></div>
-      <div class="yrow" style="margin-top:12px"><span>${(O ? p.fav : !p.fav) ? 'Avanzan' : 'Retroceden'}</span><div class="stepper"><button data-a="penyd" data-v="-1">−</button><b>${p.yd} yd</b><button data-a="penyd" data-v="1">+</button></div></div>
+    const qf = quienFalta(), fx = qf === 'O' ? ' y pierde el down' : ' y Primera automática', ft = FALTAS[qf].find(f => f[0] === p.tipo);
+    q += `<div class="ghead">Castigo</div><div class="group"><div class="seg"><button class="${p.fav ? 'on' : ''}" data-a="penfav" data-v="1">A favor</button><button class="${p.fav ? '' : 'on'}" data-a="penfav" data-v="0">En contra</button></div></div>
+      <div class="ghead">¿Qué fue? ${qf === 'O' ? '(de quien trae el balón)' : '(de la defensa)'}</div><div class="group"><div class="tiles2">${FALTAS[qf].map(([n, yd, x]) => `<button class="rtile${p.tipo === n ? ' on' : ''}" style="min-height:54px" data-a="pentipo" data-v="${esc(n)}"><b>${esc(n)}</b><small>${yd ? yd + ' yd' : 'Sin yardas'}${x ? fx : ''}</small></button>`).join('')}</div>
+      ${ft ? `<p style="margin:10px 2px 0">${esc(ft[3])}. Reglamento: ${ft[1] ? ft[1] + ' yardas' : 'sin yardas'}${ft[2] ? fx : ', se repite el down'}.</p>` : ''}</div>
+      <div class="group"><div class="yrow"><span>${(O ? p.fav : !p.fav) ? 'Avanzan' : 'Retroceden'}</span><div class="stepper"><button data-a="penyd" data-v="-1">−</button><b>${p.yd} yd</b><button data-a="penyd" data-v="1">+</button></div></div>
       <button class="rtile${p.extra ? ' on' : ''}" style="width:100%;margin-top:12px" data-a="penx"><b>${xl}</b><small>${xd}</small></button>
       <p style="margin:10px 2px 0">${p.extra ? '' : 'Si no marcas esto, se repite el mismo down.'}</p></div>`;
     if (!p.fav) q += `<div class="ghead">¿Quién la cometió?</div><div class="group"><div class="pchips">${L.map((pl, i) => chip(pl, i, d.foul === i, 'foul', i)).join('')}</div></div>`;
@@ -1084,6 +1120,8 @@ function vStats() {
     <p class="mut" style="margin:10px 0 0;font-size:15px"><span class="a">Naranja</span>: falla nuestra. <span class="r">Rojo</span>: nos la frenaron.</p></div>
   <div class="card"><h2>Por down</h2><table>${head('Down')}${Object.keys(downs).sort().map(n => row(n + 'ª', downs[n])).join('')}</table></div></div>
   ${O ? `<div class="card"><h2>Por sección</h2><table>${head('Sección')}${secGroups(S.off).map(([s, l]) => [s, L.filter(e => l.includes(e.play))]).filter(([, x]) => x.length).map(([s, x]) => row(s, x)).join('')}</table></div>` : ''}
+  ${pens.length ? (() => { const ct = {}; pens.forEach(e => { const k = (e.pen.tipo || 'Sin decir cuál') + '|' + (e.pen.fav ? 1 : 0); ct[k] = (ct[k] || 0) + 1 });
+    return `<div class="card"><h2>Castigos</h2>${Object.entries(ct).sort((a, b) => b[1] - a[1]).map(([k, n]) => { const [t, f] = k.split('|'); return `<div class="item"><span>${esc(t)} <span class="mut">· ${+f ? 'a favor' : 'en contra'}</span></span><b class="${+f ? 'g' : 'r'}">${n}</b></div>` }).join('')}</div>` })() : ''}
   ${pl ? `<div class="card"><h2>Por jugador</h2><table>${pl}</table></div>` : ''}
   <div class="card"><h2>Dónde terminó cada jugada</h2><div class="row"><button class="${sf.play ? '' : 'on'}" data-a="sp" data-v="">Todas</button>${chips(plays, sf.play, 'sp')}</div>
   ${fieldSvg({side: sf.side, dots, yu: 14, k: .8, style: 'width:100%;height:auto;border-radius:12px;display:block'})}
@@ -1318,7 +1356,8 @@ const A = {
     legal(l); d.lat.push(l);
   },
   dellat: v => { d.lat.splice(+v, 1) },
-  penfav: v => { d.pen.fav = v === '1'; d.pen.extra = false; d.foul = null },
+  penfav: v => { d.pen.fav = v === '1'; d.pen.extra = false; d.pen.tipo = null; d.foul = null },
+  pentipo(v) { const f = FALTAS[quienFalta()].find(x => x[0] === v); if (!f) return; if (d.pen.tipo === v) { d.pen.tipo = null; return } Object.assign(d.pen, {tipo: v, yd: f[1], extra: f[2]}) },
   penyd: v => { d.pen.yd = clamp(d.pen.yd + +v, 0, 30) },
   penx: () => { d.pen.extra = !d.pen.extra },
   foul: v => tog('foul', +v),
@@ -1588,7 +1627,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014020148';
+const VERSION = '20261014020613';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
