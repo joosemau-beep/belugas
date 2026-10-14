@@ -469,6 +469,9 @@ let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
 let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
+// modo partido: lo decide cada aparato (no viaja a la nube), así un compañero que ve la app no queda capturando sin querer
+let enJuego = (() => { try { return localStorage['tochito.juego'] === '1' } catch { return false } })();
+const ponJuego = v => { enJuego = v; try { localStorage['tochito.juego'] = v ? '1' : '0' } catch {} };
 let d = fresh(), tab = 'field', pop = null, popAt = null, popSheet = false, sf = {game: 'all', side: 'O', play: ''}, ff = {scope: 'game', game: null}, noClick = 0;
 let MY = 20; // unidades por yarda a lo ancho en el campo principal; se ajusta para llenar la pantalla
 
@@ -961,7 +964,7 @@ function vField() {
   const toMid = O ? S.ball.x < MID : S.ball.x > MID, tgt = O ? (toMid ? MID : GOAL_R) : (toMid ? MID : GOAL_L);
   const need = Math.max(0, Math.round(Math.abs(tgt - S.ball.x)));
   // fuera del partido, el campo solo invita a seguirlo o empezar otro
-  const fl = S.juego ? '' : `<span class="t">vs ${esc(g.rival || 'Rival')}</span><button class="tint" data-a="entrar">Seguir partido</button><button data-a="newgame">Nuevo partido</button>`;
+  const fl = enJuego ? '' : `<span class="t">vs ${esc(g.rival || 'Rival')}</span><button class="tint" data-a="entrar">Seguir partido</button><button data-a="newgame">Nuevo partido</button>`;
   return `<div class="fscreen">
   <div class="topbar">
     <div class="l"><img src="logo.webp" alt="Belugas"><div>vs ${esc(g.rival || 'Rival')}<small>${fav} – ${con}${ev.length ? ` · ${ev.length} jugada${ev.length === 1 ? '' : 's'}` : ''}</small></div></div>
@@ -1306,7 +1309,7 @@ function vPop() {
 
 function render() {
   const pg = $('.page') ? $('.page').scrollTop : 0, is = $('.insp .scroll') ? $('.insp .scroll').scrollTop : 0;
-  const juego = S.juego && (tab === 'field' || tab === 'plays');
+  const juego = enJuego && (tab === 'field' || tab === 'plays');
   $('#tabs').classList.toggle('gbar', !!juego);
   $('#tabs').innerHTML = juego ? barraJuego() : TABS.map(([k, n]) => `<button class="${tab === k ? 'on' : ''}" data-a="tab" data-v="${k}">${icon(k)}${n}</button>`).join('');
   $('#app').innerHTML = tab === 'field' ? vField() : `<div class="page">${{plays: vPlays, stats: vStats, fantasy: vFantasy, team: vTeam}[tab]()}</div>`;
@@ -1457,12 +1460,12 @@ const A = {
   },
   addname() { const v = $('#newname').value.trim(), g = cur(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); if (g.asist && !g.asist.includes(v)) g.asist.push(v); A.setname(v) },
   // modo partido y asistencia
-  entrar: () => { S.juego = true; tab = 'field' },
-  salir: () => { S.juego = false; d = fresh() },
+  entrar: () => { ponJuego(true); tab = 'field' },
+  salir: () => { ponJuego(false); d = fresh() },
   asist(v) { const g = cur(); g.asist = g.asist || S.players.slice(); const i = g.asist.indexOf(v); if (i >= 0) g.asist.splice(i, 1); else g.asist.push(v); llenaCancha() },
   asistall: v => { cur().asist = v === '1' ? S.players.slice() : []; llenaCancha() },
   addasist() { const v = $('#newasist').value.trim(), g = cur(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); g.asist = g.asist || []; if (!g.asist.includes(v)) g.asist.push(v); llenaCancha() },
-  empezar: () => { asistOpen = false; S.juego = true; llenaCancha(); tab = 'field'; d = fresh() },
+  empezar: () => { asistOpen = false; ponJuego(true); llenaCancha(); tab = 'field'; d = fresh() },
   ahorano: () => { asistOpen = false },
   ss: v => { sf.side = v; sf.play = '' },
   fscope: v => { ff.scope = v }, sp: v => sf.play = v,
@@ -1634,7 +1637,7 @@ document.addEventListener('pointerup', endDrag);
 document.addEventListener('pointercancel', () => { if (drag) drag.to = null; endDrag() }); // si el iPad corta el gesto, no se intercambia nada
 document.addEventListener('click', e => {
   if (Date.now() < noClick) return;
-  if (e.target.closest('#field') && tab === 'field' && !d.stage && !S.convPend && S.juego) {
+  if (e.target.closest('#field') && tab === 'field' && !d.stage && !S.convPend && enJuego) {
     const p = ptIn('#field', e, MY), pt = {x: Math.round(clamp(p.x, 0, 70) * 2) / 2, y: Math.round(clamp(p.y, 0, 25) * 2) / 2};
     if (d.setBall) { S.ball = {x: pt.x, y: 12.5}; if (!S.series.length) S.sstart = {...S.ball}; d.setBall = false } else { d = fresh(); d.end = pt }
     save(); return render();
@@ -1711,7 +1714,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014022350';
+const VERSION = '20261014022646';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
