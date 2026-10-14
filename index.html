@@ -243,8 +243,23 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .seg.sm button{padding:5px 20px;min-height:34px;font-size:15px}
 .tiles.pk{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))} /* 4 por fila: una sección cabe sin bajar */
 .pksegs{display:flex;margin:0 0 16px}.pksegs button{flex:1;min-height:46px;padding:8px 10px;font-size:17px}.pksegs .n{opacity:.55;font-weight:500;margin-left:6px}
+/* pulsera del QB: tarjetas del tamaño real de la ventana de la pulsera (PULSERA, en cm), fondo blanco para gastar poca tinta; se corta por la línea punteada */
+.wbhoja{display:flex;flex-direction:column;align-items:center;gap:.6cm;padding:.4cm 0}
+.wb{background:#fff;color:#111;border:1px dashed #777;padding:.15cm .2cm .2cm;display:flex;flex-direction:column;break-inside:avoid;font-family:-apple-system,system-ui,sans-serif}
+.wbt{display:flex;justify-content:space-between;align-items:baseline;font-size:9pt;font-weight:800;line-height:1;margin-bottom:.12cm;text-transform:uppercase;letter-spacing:.04em}
+.wbt span{color:#777;font-size:6.5pt;font-weight:600}
+.wbg{flex:1;display:grid;gap:.1cm;min-height:0}
+.wbc{border:1px solid #cfcfcf;border-radius:.12cm;display:flex;flex-direction:column;min-height:0;min-width:0;padding:.05cm .08cm .03cm}
+.wbn{font-size:7pt;font-weight:600;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wbn b{font-size:10pt;font-weight:800;margin-right:.08cm}
+.wbc svg{flex:1;min-height:0;width:100%;display:block}
+.wbsin{flex:1;display:grid;place-items:center;color:#999;font-size:7pt}
 /* imprimir o guardar en PDF (el reporte): sin barras ni botones, con los colores del equipo */
 @media print{
+  /* las tarjetas juntas en una sola hoja: 3 × 7.5 cm + poco espacio caben en carta o A4 aunque la impresora deje orilla */
+  html:has(.wbhoja),html:has(.wbhoja) body{background:#fff!important}
+  html:has(.wbhoja) .page{padding:.8cm 0 0!important}
+  .wbhoja{gap:.25cm;padding:0}
   @page{size:A4;margin:0}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;animation:none!important}
   html,body{height:auto!important;overflow:visible!important;background:var(--bg)}
@@ -493,6 +508,7 @@ let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
 let verPruebas = false; // en Jugadas: la pastilla está en Pruebas
+let verPulsera = false; // en Jugadas: las tarjetas de la pulsera para imprimir
 // preguntas y avisos dentro de la app: las ventanas del navegador (confirm, prompt) a veces no salen en el ícono del iPad
 let dlg = null;
 const pregunta = (t, si, fn, input = null) => { dlg = {t, si, fn, input} };
@@ -658,9 +674,10 @@ function arrow(x1, y1, x2, y2, size, col) {
   const ang = Math.atan2(y2 - y1, x2 - x1), c = Math.cos(ang), s = Math.sin(ang), p = (u, v) => `${x2 + u * c - v * s},${y2 + u * s + v * c}`;
   return `<polygon points="${p(size, 0)} ${p(-size * .6, size * .7)} ${p(-size * .6, -size * .7)}" fill="${col}"/>`;
 }
-function segSvg(segs, f, sw, size, op = 1) {
+const SEGCOL = {ball: '#e0a36b', dash: '#fff', hot: '#bf5af2', ruta: '#64b5ff'};
+function segSvg(segs, f, sw, size, op = 1, pal = SEGCOL) {
   return segs.map(sg => {
-    const P = sg.pts.map(f), col = sg.ball ? '#e0a36b' : sg.dash ? '#fff' : sg.hot ? '#bf5af2' : '#64b5ff', w = sg.hot ? sw * 1.4 : sw;
+    const P = sg.pts.map(f), col = sg.ball ? pal.ball : sg.dash ? pal.dash : sg.hot ? pal.hot : pal.ruta, w = sg.hot ? sw * 1.4 : sw;
     const [x1, y1] = P[P.length - 2], [x2, y2] = P[P.length - 1];
     const da = sg.ball ? ` stroke-dasharray="${sw * .1} ${sw * 1.8}"` : sg.dash ? ` stroke-dasharray="${sw * 2} ${sw * 1.4}"` : '';
     return `<g opacity="${op}"><polyline points="${P.map(p => p.join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="${sg.ball ? w * 1.3 : w}" stroke-linejoin="round" stroke-linecap="round"${da}/>${arrow(x1, y1, x2, y2, size, col)}</g>`;
@@ -1166,7 +1183,8 @@ function vPlays() {
     <div class="row tight" style="margin-top:12px">${O ? `<button data-a="edopen" data-v="${esc(n)}">Dibujar</button>` : ''}<button data-a="renplay" data-v="${esc(n)}">Renombrar</button><button class="x" data-a="archplay" data-v="${esc(n)}">Quitar del libro</button></div></div>`;
   };
   const archived = S.arch.filter(n => S.archSide[n] === sf.side);
-  const head = `<h1 class="lt">Jugadas</h1><div class="row"><div class="seg sm"><button class="${O && !verPruebas ? 'on' : ''}" data-a="ss" data-v="O">Ataque</button><button class="${O || verPruebas ? '' : 'on'}" data-a="ss" data-v="D">Defensa</button><button class="${verPruebas ? 'on' : ''}" data-a="verpru">Pruebas${S.pruebas.length ? ' · ' + S.pruebas.length : ''}</button></div></div>`;
+  const head = `<h1 class="lt">Jugadas</h1><div class="row"><div class="seg sm"><button class="${O && !verPruebas ? 'on' : ''}" data-a="ss" data-v="O">Ataque</button><button class="${O || verPruebas ? '' : 'on'}" data-a="ss" data-v="D">Defensa</button><button class="${verPruebas ? 'on' : ''}" data-a="verpru">Pruebas${S.pruebas.length ? ' · ' + S.pruebas.length : ''}</button></div>${O && !verPruebas ? '<button style="margin-left:auto" data-a="pulsera">Imprimir pulsera</button>' : ''}</div>`;
+  if (verPulsera) return vPulsera();
   if (verPruebas) return head + vPruebas();
   return head + `
   <div class="card"><h2>Qué hacemos con cada una</h2>${sum || '<span class="mut">Registra jugadas en Campo y aquí aparece qué mantener y qué quitar.</span>'}</div>
@@ -1190,6 +1208,40 @@ function vPruebas() {
   return `<div class="sect"><h2>Pruebas</h2><span class="mut">${S.pruebas.length ? S.pruebas.length + ' propuesta' + (S.pruebas.length === 1 ? '' : 's') + ' · ' : ''}no salen en el partido hasta pasarlas al playbook</span></div>
   <div class="card"><h2>Proponer jugada</h2><div class="row tight"><input id="newprueba" placeholder="Nombre de la jugada" style="flex:1"><select id="autor"><option value="">¿Quién la propone?</option>${quien.map(n => `<option>${esc(n)}</option>`).join('')}</select><button class="tint" data-a="addprueba">Dibujar</button></div></div>
   ${S.pruebas.length ? `<div class="cols2">${S.pruebas.map(card).join('')}</div>` : ''}`;
+}
+// pulsera del QB: una tarjeta por sección con sus jugadas numeradas (decena = sección, unidad = lugar: 23 = la 3ª de la 2ª sección)
+const PULSERA = [14, 7.5]; // cm, ancho × alto de la ventana de su pulsera. ponytail: si compran otra, cambiar aquí
+function vPulsera() {
+  const gs = secGroups(S.off), [W, H] = PULSERA;
+  const card = ([s, l], i) => { const n = l.length, cols = n <= 3 ? n : n === 4 ? 2 : Math.ceil(n / 2), rows = Math.ceil(n / cols);
+    return `<div class="wb" style="width:${W}cm;height:${H}cm"><div class="wbt"><b>${esc(s)}</b><span>Belugas</span></div>
+      <div class="wbg" style="grid-template-columns:repeat(${cols},minmax(0,1fr));grid-template-rows:repeat(${rows},minmax(0,1fr))">${l.map((p, j) => `<div class="wbc"><div class="wbn"><b>${i + 1}${j + 1}</b>${esc(p)}</div>${diagPulsera(p, (W - .4 - (cols - 1) * .1) / cols - .2, (H - .85 - (rows - 1) * .1) / rows - .5)}</div>`).join('')}</div></div>` };
+  return `<div class="row noprint" style="margin-bottom:6px;justify-content:space-between"><button class="plain" data-a="pulback">${icon('back')} Volver</button><button class="tint" data-a="pdf">Imprimir</button></div>
+  <h1 class="lt noprint">Pulsera</h1><p class="mut noprint" style="margin:0 0 6px">Una tarjeta por sección, de ${W} × ${H} cm, todas en una sola hoja. Imprime a tamaño real (100%, sin ajustar a la página) y corta por la línea punteada. El número se lee: primero la sección, luego la jugada.</p>
+  <div class="wbhoja">${gs.length ? gs.map(card).join('') : '<p class="mut noprint">No hay jugadas de ataque en el libro.</p>'}</div>`;
+}
+// dibujo de la pulsera: papel blanco, cada posición con su color (círculo y ruta del mismo color; el movimiento antes del saque punteado),
+// el principal con la ruta más gruesa y el balón (saque, entrega y pase) punteado café
+const COL_PULSERA = {Q: '#7b3fb8', C: '#e07a10', X: '#1a9850', Y: '#1f6fd6', Z: '#d7263d'}, BALON_PULSERA = '#8a4b1c';
+const palDe = r => { const c = COL_PULSERA[r] || '#1a1a1a'; return {ball: BALON_PULSERA, dash: c, hot: c, ruta: c} };
+// wcm × hcm = espacio del dibujo en el papel: círculos, letras y líneas miden lo mismo en todas las jugadas
+function diagPulsera(name, wcm, hcm) {
+  const pb = PLAYBOOK[name], L = S.lines.O;
+  if (!pb) return '<div class="wbsin">Sin dibujo</div>';
+  const pos = L.map(p => pb.pos[p.r]), f = ([a, b]) => [b, -a], at = r => startOf(pos[L.findIndex(p => p.r === r)], pb.routes[r]), pase = pasePlan(pb, at).pase;
+  const deCada = L.map((p, i) => pb.routes[p.r] ? routeSegs(pb.routes[p.r], ...pos[i]) : []), rutas = deCada.flat();
+  // acercado a lo que ocupa la jugada (el cuadro de la pulsera es chico): cuadro mínimo de 12 × 8 yd alrededor de la jugada
+  const P = [...pos, ...rutas.flatMap(sg => sg.pts)].map(f), xs = P.map(q => q[0]), ys = [0, ...P.map(q => q[1])];
+  let x0 = Math.min(...xs) - 1.8, x1 = Math.max(...xs) + 1.8, y0 = Math.min(...ys) - 1.8, y1 = Math.max(...ys) + 1.8;
+  if (x1 - x0 < 12) { const c = (x0 + x1) / 2; x0 = c - 6; x1 = c + 6 }
+  if (y1 - y0 < 8) { const c = (y0 + y1) / 2; y0 = c - 4; y1 = c + 4 }
+  const r2 = v => +v.toFixed(2), u = Math.max((x1 - x0) / wcm, (y1 - y0) / hcm), c = cm => r2(cm * u); // u = yardas del dibujo por cm de papel
+  let s = `<svg viewBox="${r2(x0)} ${r2(y0)} ${r2(x1 - x0)} ${r2(y1 - y0)}"><line x1="${r2(x0)}" x2="${r2(x1)}" y1="0" y2="0" stroke="#9a9a9a" stroke-width="${c(.02)}" stroke-dasharray="${c(.08)} ${c(.06)}"/>`;
+  const balon = palDe('');
+  s += segSvg(snapSegs(pb, at, [0, 0]), f, c(.04), c(.09), 1, balon) + L.map((p, i) => segSvg(deCada[i], f, c(.05), c(.13), 1, palDe(p.r))).join('');
+  if (pase) s += segSvg([{pts: [pase.lanza, pase.atrapa], ball: true}], f, c(.04), c(.09), 1, balon);
+  L.forEach((p, i) => { const [x, y] = f(pos[i]); s += `<g transform="translate(${x} ${y})"><circle r="${c(.2)}" fill="${COL_PULSERA[p.r] || '#1a1a1a'}" stroke="#fff" stroke-width="${c(.025)}"/><text y="${c(.08)}" font-size="${c(.23)}" font-weight="800" text-anchor="middle" fill="#fff">${p.r}</text></g>` });
+  return s + '</svg>';
 }
 function vEd() {
   const L = S.lines.O, nm = r => (L.find(q => q.r === r) || {}).name, rt = ed.sel && ed.routes[ed.sel], who = r => esc(nm(r) || r);
@@ -1540,7 +1592,9 @@ function afterSave(e, end) {
   S.down++;
 }
 const A = {
-  tab: v => { tab = v; pop = null },
+  tab: v => { tab = v; pop = null; verPulsera = false },
+  pulsera: () => { verPulsera = true },
+  pulback: () => { verPulsera = false },
   side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; S.prox = null; newSeries() } d = fresh() },
   down: v => { S.down = +v; S.series = S.series.filter(x => x.down < S.down); if (S.down === 1) newSeries() },
   castigo: () => { d = fresh(); d.res = 'Castigo'; d.stage = 'how' },
@@ -1904,7 +1958,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014034521';
+const VERSION = '20261014171307';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
