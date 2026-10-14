@@ -713,17 +713,18 @@ function artInner(o) {
   let gap = Infinity;
   PP.forEach((a, i) => PP.forEach((b, j) => { if (j > i) gap = Math.min(gap, Math.hypot(X(a.x) - X(b.x), Y(a.y) - Y(b.y)) / o.k) }));
   const R = clamp(gap * .42, 12, 20), side = O ? -1 : 1; // radio en px; el nombre va del lado de atrás
+  const spots = o.players && o.smartNames ? nameSpots(o, PP, R) : null;
   // swap = arrastrando a un jugador encima de otro para intercambiar roles: el arrastrado va bajo el dedo y hasta arriba, el de destino con aro amarillo
   const sw = o.swap, order = [0,1,2,3,4].filter(i => !sw || i !== sw.from).concat(sw ? [sw.from] : []);
   if (o.players) for (const i of order) {
     const lift = sw && i === sw.from, pl = S.lines[o.side][i], q = lift ? sw.at : PP[i], mk = sw && i === sw.to ? '#ffd60a' : o.sel && o.sel[0] === i ? o.sel[1] : '';
-    const dim = !lift && o.focus && !o.focus.includes(i), attr = (dim ? 'opacity=".3" ' : '') + (o.pick ? `data-a="who" data-v="${i}"` : '');
+    const dim = !lift && o.focus && !o.focus.includes(i), attr = (dim ? 'opacity=".3" ' : '') + (o.pick ? `data-a="who" data-v="${i}"` : o.mover ? `data-p="${i}"` : ''), sp = spots && spots[i];
     s += `<g ${attr} transform="translate(${X(q.x)} ${Y(q.y)})${dim ? ' scale(.65)' : lift ? ' scale(1.15)' : ''}"><circle r="${p(Math.max(R + 8, 22))}" fill="transparent"/>
     <circle cy="${p(2.5)}" r="${p(R)}" fill="#000" fill-opacity=".25"/>
     ${mk ? `<circle r="${p(sw && i === sw.to ? R + 13 : R + 6)}" fill="none" stroke="${mk}" stroke-width="${p(sw && i === sw.to ? 5 : 4)}"/>` : ''}
     <circle r="${p(R)}" fill="${colorOf(pl.name)}" stroke="#fff" stroke-width="${p(2.5)}"/>
     ${T(0, p(R * .26), esc(pl.r), R * .7, '#111')}
-    ${pl.name && !o.noNames ? `<text x="${side * p(R + 7)}" y="${p(4.5)}" font-size="${p(13)}" font-weight="700" text-anchor="${O ? 'end' : 'start'}" fill="#fff" stroke="#000" stroke-opacity=".6" stroke-width="${p(3)}" paint-order="stroke">${esc(pl.name)}</text>` : ''}</g>`;
+    ${pl.name && !o.noNames ? `<text x="${sp ? p(sp.dx) : side * p(R + 7)}" y="${p(sp ? sp.dy : 4.5)}" font-size="${p(13)}" font-weight="700" text-anchor="${sp ? sp.a : O ? 'end' : 'start'}" fill="#fff" stroke="#000" stroke-opacity=".6" stroke-width="${p(3)}" paint-order="stroke">${esc(pl.name)}</text>` : ''}</g>`;
   }
   if (o.ball) {
     const b = o.ball;
@@ -732,17 +733,33 @@ function artInner(o) {
   }
   return s;
 }
+// dónde va el nombre de cada jugador para no encimarse (campo completo, donde la formación queda apretada):
+// atrás, abajo, arriba o adelante, el primer lugar que no pise a otro jugador ni a otro nombre
+function nameSpots(o, PP, R) {
+  const bk = o.side === 'O' ? -1 : 1, pts = PP.map(q => [q.x * 10 / o.k, q.y * o.yu / o.k]), boxes = [];
+  const hit = b => pts.some(([x, y]) => b.x1 < x + R && b.x2 > x - R && b.y1 < y + R && b.y2 > y - R) || boxes.some(c => b.x1 < c.x2 && b.x2 > c.x1 && b.y1 < c.y2 && b.y2 > c.y1);
+  return PP.map((q, i) => {
+    const n = S.lines[o.side][i].name; if (!n) return null;
+    const w = n.length * 7.6 + 4, [cx, cy] = pts[i], back = bk < 0 ? cx - R - 7 - w : cx + R + 7, front = bk < 0 ? cx + R + 7 : cx - R - 7 - w;
+    const cand = [{dx: bk * (R + 7), dy: 4.5, a: bk < 0 ? 'end' : 'start', x1: back, y1: cy - 8}, {dx: 0, dy: R + 15, a: 'middle', x1: cx - w / 2, y1: cy + R + 3},
+      {dx: 0, dy: -R - 7, a: 'middle', x1: cx - w / 2, y1: cy - R - 21}, {dx: -bk * (R + 7), dy: 4.5, a: bk < 0 ? 'start' : 'end', x1: front, y1: cy - 8}];
+    cand.forEach(c => { c.x2 = c.x1 + w; c.y2 = c.y1 + 16 });
+    const c = cand.find(c => !hit(c)) || cand[0]; boxes.push(c); return c;
+  });
+}
 function fieldSvg(o) {
   const vb = o.vb || [0, 0, 700, 25 * o.yu];
   return `<svg id="${o.id || ''}" viewBox="${vb.join(' ')}" preserveAspectRatio="xMidYMid meet" style="${o.style || ''}"><g id="${o.id ? o.id + '-art' : ''}">${artInner(o)}</g>${o.handles ? `<g id="hnd"${o.lock ? ' pointer-events="none"' : ''}>${o.handles}</g>` : ''}</svg>`;
 }
 // campo principal: llena exactamente el espacio disponible
-function mainSvg(w, h) {
+function mainSvg(w, h) { return fieldSvg(mainOpts(w, h)) }
+function mainOpts(w, h) {
   MY = 700 * h / w / 25;
   const O = S.side === 'O', toMid = O ? S.ball.x < MID : S.ball.x > MID, need = Math.max(0, Math.round(Math.abs((O ? (toMid ? MID : GOAL_R) : (toMid ? MID : GOAL_L)) - S.ball.x)));
   // con la jugada escogida antes del saque, el campo ya enseña a los jugadores en su formación y sus rutas
   const pl = !!S.prox && (O ? S.off : S.def).includes(S.prox);
-  return fieldSvg({id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, noNames: true, routes: pl ? routesField(S.prox) : null, faint: pl && !!d.end});
+  // nombres donde no se enciman y jugadores que se arrastran encima de otro para intercambiarlos
+  return {id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, smartNames: true, mover: pl, routes: pl ? routesField(S.prox) : null, faint: pl && !!d.end};
 }
 // vista de recrear: misma escala en ambos ejes (10 unidades = 1 yarda), acercada a la jugada
 function howFrame(w, h) {
@@ -898,7 +915,7 @@ function vField() {
   if (S.convPend) fl = `<span class="t">${S.convPend === 'O' ? 'Touchdown. ¿Por cuánto van?' : 'TD del rival. ¿Por cuánto van?'}</span><button class="tint" data-a="conv" data-v="1">1 punto · desde la 5</button><button class="tint" data-a="conv" data-v="2">2 puntos · desde la 10</button><button data-a="conv" data-v="0">No la intentaron</button>`;
   else if (d.setBall) fl = `<span class="t">Toca el campo para mover el balón</span><button data-a="setball">Cancelar</button>`;
   else if (d.end) { const y = yardsOf(S.side, null, S.ball, d.end); fl = `<span class="t">${verb(y)} ${sg(y)} yd</span><button data-a="cancel">Cancelar</button><button class="tint" data-a="confirm">Confirmar</button>` }
-  else fl = `<span class="t mut">Toca donde quedó el balón</span><button data-a="castigo">Castigo</button><button data-a="noadv">Sin avance</button>`;
+  else fl = `<span class="t mut">Toca donde quedó el balón</span><button data-a="castigo">Castigo</button><button data-a="noadv">Sin avance</button>${S.prox ? '<button data-a="noplan">Cancelar jugada</button>' : ''}`;
   return `<div class="fscreen">
   <div class="topbar">
     <div class="l"><img src="logo.webp" alt="Belugas"><div>vs ${esc(g.rival || 'Rival')}<small>${fav} – ${con}${ev.length ? ` · ${ev.length} jugada${ev.length === 1 ? '' : 's'}` : ''}</small></div></div>
@@ -1422,6 +1439,9 @@ function moveHandle(id, pt) {
 }
 let drag = null;
 document.addEventListener('pointerdown', e => {
+  // campo principal con la jugada escogida: arrastrar a un jugador encima de otro los intercambia (un toque sigue marcando el balón)
+  const pm = tab === 'field' && !d.stage && !ed && e.target.closest('#field [data-p]');
+  if (pm) { drag = {id: 'P' + pm.dataset.p, sx: e.clientX, sy: e.clientY, moved: false, pl: true, main: true}; return }
   if (tab !== 'field' || d.stage !== 'how' || ed) return;
   const h = e.target.closest('[data-h]'), pl = !h && e.target.closest('#sub [data-a="who"]');
   if (pl) { drag = {id: 'P' + pl.dataset.v, sx: e.clientX, sy: e.clientY, moved: false, pl: true}; return } // un toque sigue eligiendo al jugador
@@ -1434,9 +1454,9 @@ document.addEventListener('pointermove', e => {
   if (!drag) return;
   if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < (drag.pl ? 8 : 3)) return;
   // al jugador se le captura el dedo hasta que de verdad se arrastra: si se capturara al tocar, el toque ya no lo elegiría
-  if (!drag.moved && drag.pl) try { $('#sub').setPointerCapture(e.pointerId) } catch {}
+  if (!drag.moved && drag.pl) try { $(drag.main ? '#field' : '#sub').setPointerCapture(e.pointerId) } catch {}
   drag.moved = true;
-  if (drag.pl) return swapMove(ptIn('#sub', e, 10));
+  if (drag.pl) return swapMove(drag.main ? ptIn('#field', e, MY) : ptIn('#sub', e, 10));
   moveHandle(drag.id, ptIn('#sub', e, 10));
 });
 // arrastrar a un jugador encima de otro: la formación no cambia, se intercambian los roles (el que era X pasa a Y y viceversa)
@@ -1445,7 +1465,9 @@ function swapMove(pt) {
   let to = null, best = 2.5; // yardas: el más cercano al dedo, si está a menos de esto
   S.lines[S.side].forEach((_, j) => { const q = lineXY(S.side, j), dd = Math.hypot(q.x - pt.x, q.y - pt.y); if (j !== i && dd < best) { best = dd; to = j } });
   drag.to = to;
-  $('#sub-art').innerHTML = artInner({...howOpts(draft()), swap: {from: i, at: pt, to}});
+  const sw = {swap: {from: i, at: pt, to}}, fb = $('#fbox');
+  if (drag.main) $('#field-art').innerHTML = artInner({...mainOpts(fb.clientWidth, fb.clientHeight), ...sw});
+  else $('#sub-art').innerHTML = artInner({...howOpts(draft()), ...sw});
 }
 const endDrag = () => {
   if (!drag) return;
@@ -1566,7 +1588,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014015845';
+const VERSION = '20261014020148';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
