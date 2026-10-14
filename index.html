@@ -284,47 +284,54 @@ const ourTD = e => e.side === 'O' ? e.td : e.ret, theirTD = e => e.side === 'O' 
 // snap = quién recibe el saque (Q si no se dice); qb = a quién se la da después, y ese es el que lanza o corre.
 // Las que dibujan ustedes en la app viven en S.pb y tienen prioridad sobre estas.
 const PLAYBOOK = {
-  'Pantalla izquierda': {desc: 'Pase normal. X finge ir abierto pero en el set se pega al centro; todos hacen pantalla para el pase a la izquierda.',
+  'Pantalla izquierda': {short: 'Todos hacen pantalla para el pase a la izquierda', desc: 'Pase normal. X finge ir abierto pero en el set se pega al centro; todos hacen pantalla para el pase a la izquierda.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-6], Y:[-1,5], Z:[0,9]},
     routes: {X:{motion:[0,4], pts:[[7.5,2.8],[9,4.2],[9.5,9]]}, C:{pts:[[3,.5],[3,6.5]]}, Z:{pts:[[6,0],[7.5,-1],[5.5,-1.8]]}, Y:{hot:1, pts:[[7,0],[8,-4],[8,-9]]}, Q:{pts:[[1.5,1.5]]}}},
-  'Corto y largo': {desc: 'Pase normal buscando corto. Uno hace el engaño de que va corto y se va largo.',
+  'Corto y largo': {short: 'Finge que va corto y se va largo', desc: 'Pase normal buscando corto. Uno hace el engaño de que va corto y se va largo.',
     pos: {Q:[-6,0], C:[-1.3,0], Z:[0,-5.3], Y:[0,3.3], X:[0,6]},
     routes: {Z:{pts:[[3,0],[3,.8]]}, C:{pts:[[3,0],[3,-.8]]}, Y:{hot:1, pts:[[3,0],[3.5,-1],[11,-1]]}, X:{pts:[[2.5,0],[2.5,-1]]}}},
-  'Pantalla rápida': {desc: 'Pantalla para pase corto. El centro va al mismo ritmo que el QB para pase rápido y avanzar las pocas yardas que faltan; los demás dan opción.',
+  'Pantalla rápida': {short: 'Pase rápido al centro para pocas yardas', desc: 'Pantalla para pase corto. El centro va al mismo ritmo que el QB para pase rápido y avanzar las pocas yardas que faltan; los demás dan opción.',
     pos: {Q:[-5.5,0], C:[-1.3,0], X:[0,-6.7], Y:[-1,-2.6], Z:[0,5.6]},
     routes: {C:{hot:1, pts:[[1.2,-4]]}, Q:{pts:[[-.5,-3.5]]}, X:{pts:[[1.5,1.5],[2,2.3]]}, Y:{pts:[[4,0],[5,-3]]}, Z:{pts:[[3,0],[2.3,-.6]]}}},
-  'Pase normal 1': {desc: 'Pase normal.',
+  'Pase normal 1': {short: 'Y sube 4 y abre en diagonal a la derecha', desc: 'Pase normal.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-4.8], Y:[0,-2.4], Z:[0,2.4]},
     routes: {X:{pts:[[4,0],[6,-2.5]]}, C:{pts:[[2,0],[2,-5.5]]}, Y:{hot:1, pts:[[4,0],[7,1],[9,3.5]]}, Z:{pts:[[1.5,2.5],[2,5.5]]}}},
-  'Z cierra': {desc: 'Z cierra y pide el balón, se lo da al QB. Se puede correr o pasar y Z queda como opción de pase.', snap: 'Z', qb: 'Q',
+  'Z cierra': {short: 'Z recibe el saque y se la da al QB', desc: 'Z cierra y pide el balón, se lo da al QB. Se puede correr o pasar y Z queda como opción de pase.', snap: 'Z', qb: 'Q',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-6.6], Y:[0,-4.1], Z:[-1,4.7]},
     routes: {Z:{hot:1, motion:[0,-3.1], pts:[[0,-3.4],[4,-3.4],[4.5,3.1]]}, X:{pts:[[3.5,0],[7.5,4.5],[6,4.5]]}, Y:{pts:[[2,-1.5],[2,.8]]}, C:{pts:[[7,0],[7.5,6]]}}},
-  'Pase normal 2': {desc: 'Pase normal.',
+  'Pase normal 2': {short: 'Tres a la derecha; X se va largo', desc: 'Pase normal.',
     pos: {Q:[-6,0], C:[-1.3,0], Z:[0,2.6], Y:[0,5.2], X:[0,8]},
     routes: {C:{pts:[[2,2],[2.5,6]]}, Z:{pts:[[1,-1],[2.5,-5.5]]}, Y:{pts:[[5,0],[8,-3]]}, X:{hot:1, pts:[[10,0]]}}},
   // de los videos que mandó Mau (14-oct)
-  'Poste de Z': {desc: 'Pase normal, buena cerca de la zona de anotación. Z sube 8 y se mete en diagonal hacia el centro (principal). El centro sube 7 y sale a la derecha, Y cruza corto a la derecha y X sale a la banda izquierda.',
+  'Poste de Z': {short: 'Z en diagonal al centro; la derecha llena de opciones', desc: 'Pase normal, buena cerca de la zona de anotación. Z sube 8 y se mete en diagonal hacia el centro (principal). El centro sube 7 y sale a la derecha, Y cruza corto a la derecha y X sale a la banda izquierda.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Y:[0,-4.5], Z:[0,7.5]},
     routes: {Z:{hot:1, pts:[[7.5,0],[12,-8]]}, C:{pts:[[7,0],[8.5,8]]}, Y:{pts:[[1.5,0],[2,10.5]]}, X:{pts:[[6.5,0],[6.5,-2.5]]}}},
-  'Falso QB': {desc: 'Engaño con corrida. El saque va a Z (falso QB), que se la pasa rápido al QB. Z le da la vuelta por detrás hacia la derecha y el QB finge dársela: decide si se la da o se la queda y lanza, para que no sepan quién la trae.', snap: 'Z', qb: 'Q',
+  'Falso QB': {short: 'Z de falso QB; el QB finge dársela o la lanza', desc: 'Engaño con corrida. El saque va a Z (falso QB), que se la pasa rápido al QB. Z le da la vuelta por detrás hacia la derecha y el QB finge dársela: decide si se la da o se la queda y lanza, para que no sepan quién la trae.', snap: 'Z', qb: 'Q',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Z:[0,-3], Y:[0,9]},
     routes: {Z:{hot:1, pts:[[-2.7,1],[-4.3,3],[-3.5,5.3],[-0.5,8.3],[2,9.8]]}, X:{pts:[[6.5,0],[12,7]]}, C:{pts:[[8,0],[8,-5.5]]}, Y:{pts:[[12,0]]}}},
-  'Z silencioso': {desc: 'Engaño con corrida. Saque silencioso, sin "hut": Z pasa en movimiento por detrás del centro y el centro se la da. Z la lanza de lado a Y y sigue corriendo hacia él para el engaño; Y corre con el balón hacia el lado contrario. X se va largo por la izquierda para abrirle espacio.', snap: 'Z', qb: 'Y',
-    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-6.5], Z:[0,-3.2], Y:[0,3.7]},
-    routes: {Z:{motion:[-1.2,3.9], pts:[[1.2,3],[3,5],[8,5.6]]}, Y:{hot:1, pts:[[-1.5,-1.5],[-1.5,-7],[5,-8.5]]}, X:{pts:[[2,-1],[9,-2.5]]}}},
+  'Z silencioso': {short: 'Saque sin hut; Y recibe de Z y corre por la izquierda', desc: 'Engaño con corrida. Saque silencioso, sin "hut": Z pasa en movimiento por detrás del centro y el centro se la da. Z se la lanza de lado a Y, que viene en sentido contrario, y sigue corriendo hacia la derecha para el engaño. Y corre con el balón por la izquierda, pegado a la línea, y sube por la banda. X se mete en diagonal hacia el centro para llevarse a su marcador.', snap: 'Z', qb: 'Y',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-7.4], Z:[0,-3.5], Y:[0,4.1]},
+    routes: {Z:{motion:[-1,4.1], pts:[[1,3.5],[4,5.8],[10,6.5]]}, Y:{hot:1, pts:[[-0.5,-4.1],[-0.5,-12],[3,-12.6],[7,-12.7]]}, X:{pts:[[1,0],[5.2,6.9]]}}},
   // diseñadas para completar las secciones (mínimo 4 por sección)
-  'Cruce corto': {desc: 'Pase rápido. Y y el centro se cruzan corto por el centro (Y a 2 yardas, el centro a 3), casi rozándose, para que sus marcadores se estorben. X y Z se van largo para abrir espacio. Lanza al que salga libre del cruce.',
+  'Cruce corto': {short: 'Y y el centro se cruzan corto', desc: 'Pase rápido. Y y el centro se cruzan corto por el centro (Y a 2 yardas, el centro a 3), casi rozándose, para que sus marcadores se estorben. X y Z se van largo para abrir espacio. Lanza al que salga libre del cruce.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[-1,-3.5], Z:[0,8.5]},
     routes: {Y:{hot:1, pts:[[3,1],[3,9]]}, C:{pts:[[4.3,-1],[4.3,-8]]}, X:{pts:[[11,0]]}, Z:{pts:[[11,0]]}}},
-  'Diagonales rápidas': {desc: 'Pase rápido. X y Z dan dos pasos y se meten en diagonal hacia el centro; Y sale plano a la banda izquierda por debajo de X y el centro sube 4 y se regresa hacia el QB. Lanzar en cuanto uno quede libre.',
+  'Diagonales rápidas': {short: 'X y Z en diagonal rápida al centro', desc: 'Pase rápido. X y Z dan dos pasos y se meten en diagonal hacia el centro; Y sale plano a la banda izquierda por debajo de X y el centro sube 4 y se regresa hacia el QB. Lanzar en cuanto uno quede libre.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[0,-4.5], Z:[0,8.5]},
     routes: {Z:{hot:1, pts:[[1.5,0],[4.5,-4]]}, X:{pts:[[1.5,0],[4.5,4]]}, Y:{pts:[[1,0],[1,-5.5]]}, C:{pts:[[5.3,0],[4.6,0.6]]}}},
-  'Corre y lanza': {desc: 'Engaño. Antes del saque Y se acomoda junto al QB. El QB se la da y Y corre hacia la derecha como si fuera corrida; cuando la defensa se le acerca, Y lanza largo a X, que fingió quedarse y luego se fue profundo. Si nadie se acerca, Y sigue corriendo.', qb: 'Y',
+  'Corre y lanza': {short: 'Y corre como corrida y lanza largo a X', desc: 'Engaño. Antes del saque Y se acomoda junto al QB. El QB se la da y Y corre hacia la derecha como si fuera corrida; cuando la defensa se le acerca, Y lanza largo a X, que fingió quedarse y luego se fue profundo. Si nadie se acerca, Y sigue corriendo.', qb: 'Y',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[-1,3.5], Z:[0,8.5]},
-    routes: {X:{hot:1, pts:[[2,0],[3,1],[12,3]]}, Y:{motion:[-4.5,-2], pts:[[0,5],[2,8]]}, Z:{pts:[[4,0],[4,3]]}, C:{pts:[[3.3,0],[3.3,-4]]}}}
+    routes: {X:{hot:1, pts:[[2,0],[3,1],[12,3]]}, Y:{motion:[-4.5,-2], pts:[[0,5],[2,8]]}, Z:{pts:[[4,0],[4,3]]}, C:{pts:[[3.3,0],[3.3,-4]]}}},
+  'Regresos cortos': {short: 'Suben 5 y se regresan hacia el QB', desc: 'Pase rápido. X, Y y Z suben 5 yardas y se regresan hacia el QB; el centro sale plano a la derecha. Lanza al que se regrese libre; sirve cuando la defensa se queda lejos.',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Y:[0,-4.5], Z:[0,8.5]},
+    routes: {Z:{hot:1, pts:[[5,0],[4.2,-0.6]]}, X:{pts:[[5,0],[4.2,0.6]]}, Y:{pts:[[5,0],[4.2,0.6]]}, C:{pts:[[2.3,1],[2.8,6]]}}}
 };
 // jugadas que se agregan al libro después: entran una sola vez a quien ya tenía datos (si luego las quitan o renombran, no regresan)
-const NUEVAS = {'Poste de Z': 'De avance', 'Falso QB': 'Engaños', 'Z silencioso': 'Engaños', 'Cruce corto': 'Rápidas', 'Diagonales rápidas': 'Rápidas', 'Corre y lanza': 'Engaños'};
+const NUEVAS = {'Poste de Z': 'De avance', 'Falso QB': 'Engaños', 'Z silencioso': 'Engaños', 'Cruce corto': 'Rápidas', 'Diagonales rápidas': 'Rápidas', 'Corre y lanza': 'Engaños', 'Regresos cortos': 'Rápidas'};
+// jugadas que cambiaron de sección: se aplica una sola vez (si después ustedes la mueven, se respeta)
+const CAMBIOS = {'Pantalla izquierda': 'De avance'};
+// descripción corta: la de la jugada, o la primera frase de su descripción
+const corta = n => { const pb = PLAYBOOK[n]; return pb ? pb.short || (pb.desc || '').split('. ')[0] : '' };
 const pbPos = name => PLAYBOOK[name] && ROLES.map(r => PLAYBOOK[name].pos[r]);
 const grpOf = (side, c) => [CAUSES[side], ...(side === 'O' ? [INC] : [])].map(g => Object.keys(g).find(k => g[k].includes(c))).find(Boolean);
 const PALETTE = ['#4dabf7','#ff6b6b','#ffd43b','#da77f2','#ffa94d','#3bc9db','#f783ac','#f1f3f5','#9775fa','#e0b27a'];
@@ -337,7 +344,7 @@ const dflt = () => ({
   players: [], pb: {}, off: Object.keys(PLAYBOOK),
   // secciones de ataque, por lo que se necesita en ese momento; secOf = en cuál va cada jugada
   secs: ['Rápidas', 'De avance', 'Engaños'],
-  secOf: {'Pantalla rápida': 'Rápidas', 'Pantalla izquierda': 'Rápidas', 'Pase normal 1': 'De avance', 'Pase normal 2': 'De avance', 'Corto y largo': 'De avance', 'Z cierra': 'Engaños', ...NUEVAS}, seen: [], def: ['Carriles','Persona','Zona'], arch: [], archSide: {},
+  secOf: {'Pantalla rápida': 'Rápidas', 'Pantalla izquierda': 'De avance', 'Pase normal 1': 'De avance', 'Pase normal 2': 'De avance', 'Corto y largo': 'De avance', 'Z cierra': 'Engaños', ...NUEVAS}, seen: [], def: ['Carriles','Persona','Zona'], arch: [], archSide: {},
   forms: {
     'D:Carriles': [[-4,-10],[-4,-5],[-4,0],[-4,5],[-4,10]],
     'D:Persona': [[-2,-9],[-2,-4.5],[-2,0],[-2,4.5],[-2,9]],
@@ -378,6 +385,7 @@ Object.entries(S.pbAlias || {}).forEach(([nv, old]) => { if (PLAYBOOK[old]) PLAY
 const mergePb = () => {
   Object.assign(PLAYBOOK, S.pb);
   Object.entries(NUEVAS).forEach(([n, s]) => { if (S.seen.includes(n)) return; S.seen.push(n); if (!S.off.includes(n) && !S.arch.includes(n)) S.off.push(n); if (!S.secOf[n]) S.secOf[n] = s });
+  Object.entries(CAMBIOS).forEach(([n, s]) => { const k = 'sec:' + n; if (S.seen.includes(k)) return; S.seen.push(k); S.secOf[n] = s });
 };
 mergePb();
 
@@ -548,16 +556,47 @@ function routesField(play, only) {
     ...S.lines.O.map((p, i) => { const rt = pb.routes[p.r]; if (!rt || (only && !only.includes(i))) return []; const q = lineXY('O', i); return routeSegs(rt, q.x, q.y) }).flat()];
 }
 // dibujo como en la tarjeta: hacia adelante = arriba. Ataque con rutas; defensa con su acomodo.
-function diagram(name, side) {
+// anim = cada jugador corre su ruta y el balón va del saque al que lanza y de ahí al receptor principal, en ciclo
+function diagram(name, side, anim) {
   const pb = side === 'O' && PLAYBOOK[name], L = S.lines[side], f0 = S.forms[side + ':' + name];
   if (!pb && !f0) return '';
   const pos = L.map((p, i) => pb ? pb.pos[p.r] : f0[i]);
   const f = side === 'O' ? ([a, b]) => [b, -a] : ([a, b]) => [b, a];
+  const at = r => { const i = L.findIndex(p => p.r === r); return startOf(pos[i], pb.routes[r]) };
+  const mov = anim && pb && !matchMedia('(prefers-reduced-motion: reduce)').matches ? jugadaAnim(pb, L, pos, at, f) : null;
   let s = '<svg viewBox="-13 -13 26 21.5" style="width:100%;background:#2b7a47;border-radius:10px;display:block"><line x1="-13" x2="13" y1="0" y2="0" stroke="#fff" stroke-opacity=".55" stroke-width=".15" stroke-dasharray=".6 .4"/>';
-  if (pb) s += segSvg(snapSegs(pb, r => { const i = L.findIndex(p => p.r === r); return startOf(pos[i], pb.routes[r]) }, [0, 0]), f, .35, .7);
-  if (pb) L.forEach((p, i) => { const rt = pb.routes[p.r]; if (rt) s += segSvg(routeSegs(rt, ...pos[i]), f, .35, .9) });
-  L.forEach((p, i) => { const [x, y] = f(pos[i]); s += `<circle cx="${x}" cy="${y}" r="1.15" fill="${p.name ? colorOf(p.name) : '#f2f2f7'}" stroke="#fff" stroke-width=".18"/><text x="${x}" y="${y + .45}" font-size="1.25" font-weight="700" text-anchor="middle" fill="#111">${esc(p.r)}</text>` });
+  if (pb) s += segSvg(snapSegs(pb, at, [0, 0]), f, .35, .7);
+  if (pb) L.forEach((p, i) => { const rt = pb.routes[p.r]; if (rt) s += segSvg(routeSegs(rt, ...pos[i]), f, .35, .9, mov ? .55 : 1) });
+  L.forEach((p, i) => { const [x, y] = f(pos[i]); s += `<g transform="translate(${x} ${y})">${mov ? mov.p[i] : ''}<circle r="1.15" fill="${p.name ? colorOf(p.name) : '#f2f2f7'}" stroke="#fff" stroke-width=".18"/><text y=".45" font-size="1.25" font-weight="700" text-anchor="middle" fill="#111">${esc(p.r)}</text></g>` });
+  if (mov && mov.ball) s += `<g>${mov.ball}<ellipse rx=".42" ry=".62" fill="#a0522d" stroke="#fff" stroke-width=".12"/></g>`;
   return s + '</svg>';
+}
+// tiempos del ciclo (fracciones de ANIM): movimiento antes del saque, saque, rutas, pausa al final
+const ANIM = 4.5, T_MOV = [.05, .2], T_SAQUE = .28, T_LANZA = .54, T_FIN = .8;
+function jugadaAnim(pb, L, pos, at, f) {
+  const largo = P => P.slice(1).reduce((a, q, i) => a + Math.hypot(q[0] - P[i][0], q[1] - P[i][1]), 0);
+  // primeros r (0 a 1) del recorrido P
+  const tramo = (P, r) => { let left = largo(P) * r; const out = [P[0]];
+    for (let i = 1; i < P.length; i++) { const dd = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); if (left <= dd) { const k = dd ? left / dd : 0; out.push([P[i - 1][0] + (P[i][0] - P[i - 1][0]) * k, P[i - 1][1] + (P[i][1] - P[i - 1][1]) * k]); return out } out.push(P[i]); left -= dd }
+    return out };
+  // stops = [[tiempo, puntos hasta ahí]]: el movimiento se reparte igual dentro de cada tramo de tiempo
+  const motion = (P, stops) => { const F = P.map(f), o = F[0], tot = largo(P); if (!tot) return '';
+    return `<animateMotion dur="${ANIM}s" repeatCount="indefinite" calcMode="linear" keyTimes="${stops.map(x => x[0]).join(';')}" keyPoints="${stops.map(x => +(largo(P.slice(0, x[1])) / tot).toFixed(4)).join(';')}" path="M${F.map(([x, y]) => `${+(x - o[0]).toFixed(2)},${+(y - o[1]).toFixed(2)}`).join(' L')}"/>` };
+  const ruta = r => { const rt = pb.routes[r], st = at(r); return rt && rt.pts ? [st, ...rt.pts.map(([a, b]) => [st[0] + a, st[1] + b])] : [st] };
+  const p = L.map((pl, i) => { const rt = pb.routes[pl.r]; if (!rt) return '';
+    const P = [pos[i], ...(rt.motion ? [at(pl.r)] : []), ...ruta(pl.r).slice(1)], m = rt.motion ? 2 : 1;
+    return motion(P, [[0, 1], [T_MOV[0], 1], [T_MOV[1], m], [T_SAQUE, m], [T_FIN, P.length], [1, P.length]]) });
+  // balón: del saque al que lo recibe, a quien se la da; ese corre o lanza al receptor principal
+  const sn = pb.snap || 'Q', qb = passer(pb), hot = Object.keys(pb.routes).find(r => pb.routes[r].hot);
+  const B = [[0, 0], at(sn), ...(pb.qb && pb.qb !== sn ? [at(pb.qb)] : [])], stops = [[0, 1], [T_MOV[1], 1], [T_SAQUE, B.length]];
+  const R = ruta(qb);
+  if (hot === qb) { B.push(...R.slice(1)); stops.push([T_FIN, B.length]) }
+  else {
+    const parte = tramo(R, (T_LANZA - T_SAQUE) / (T_FIN - T_SAQUE)).slice(1); B.push(...parte); stops.push([T_LANZA, B.length]);
+    if (hot) { B.push(ruta(hot).slice(-1)[0]); stops.push([T_FIN, B.length]) }
+  }
+  stops.push([1, B.length]);
+  return {p, ball: motion(B, stops)};
 }
 // campo: x = 10 unidades por yarda a lo largo; y = o.yu unidades por yarda a lo ancho; k = unidades por pixel (para tamaños fijos en pantalla)
 function artInner(o) {
@@ -882,7 +921,8 @@ function vPlays() {
   const card = ([n, v]) => {
     const a = v.a, w = a.n || 1, tc = topCause(g[n] || []);
     return `<div class="card"><div class="item" style="border:0;padding:0"><b style="font-size:19px">${esc(n)}</b><span class="badge ${v.k}">${v.t}</span></div>
-    <div style="max-width:360px;margin:10px 0">${diagram(n, sf.side)}</div><div style="margin:6px 0">${esc(v.why)}</div>
+    ${O && corta(n) ? `<div class="mut" style="font-size:15px;margin-top:2px">${esc(corta(n))}</div>` : ''}
+    <div style="max-width:360px;margin:10px 0">${diagram(n, sf.side, true)}</div><div style="margin:6px 0">${esc(v.why)}</div>
     <div class="stack"><i style="width:${a.ok / w * 100}%;background:var(--ok)"></i><i style="width:${a.nos / w * 100}%;background:var(--nos)"></i><i style="width:${a.rv / w * 100}%;background:var(--bad)"></i></div>
     <div class="mut" style="font-size:15px">${a.n} ${a.n === 1 ? 'vez' : 'veces'} · ${f1(a.avg)} yd por jugada · <span class="g">${a.ok} bien</span> · <span class="a">${a.nos} falla nuestra</span> · <span class="r">${a.rv} frenada</span>${tc ? ' · más repetido: ' + esc(tc) : ''}</div>
     <div class="row tight" style="margin-top:12px">${O ? `<button data-a="edopen" data-v="${esc(n)}">Dibujar</button>` : ''}<button data-a="renplay" data-v="${esc(n)}">Renombrar</button><button class="x" data-a="archplay" data-v="${esc(n)}">Quitar del libro</button></div></div>`;
@@ -1406,7 +1446,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014001156';
+const VERSION = '20261014001827';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
