@@ -61,6 +61,10 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .downs button.on{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--tint)}
 .downs button.dok{background:var(--ok);color:#fff}.downs button.dbad{background:var(--bad);color:#fff}
 .dwrap{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:76px}
+/* jugada escogida antes del saque */
+.downs button.jplan{width:70px;height:auto;min-height:70px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;font-size:12px;font-weight:600}
+.jplan .ico{width:24px;height:24px}.jplan b{font-size:11px;line-height:1.15;font-weight:700;overflow-wrap:break-word}.jplan span{font-size:11px;opacity:.8}
+.downs button.jplan.on{background:var(--tint);color:var(--onTint)}
 .dwrap small{font-size:13px;font-weight:700}
 .need{margin-top:auto;text-align:center;padding:0 6px}
 .need b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em}
@@ -895,6 +899,7 @@ function vField() {
   <div class="frow">
     <div class="downs"><span class="cap">Down</span>${[1,2,3,4].map(n => { const it = S.series.find(x => x.down === n);
       return `<div class="dwrap"><button class="${S.down === n ? 'on' : it ? (it.ok ? 'dok' : 'dbad') : ''}" data-a="down" data-v="${n}">${n}ª</button>${it ? `<small class="${it.ok ? 'g' : 'r'}">${sg(it.yds)}</small>` : ''}</div>` }).join('')}
+      <button class="jplan${S.prox ? ' on' : ''}" data-a="plan">${S.prox ? `<span>Jugada</span><b>${esc(S.prox)}</b>` : `${icon('plays')}<span>Jugada</span>`}</button>
       <div class="need"><b>${need}</b><span>yd para ${toMid ? 'Primera' : 'Goal'}${O ? '' : ' del rival'}</span></div></div>
     <div class="fbox" id="fboxwrap"><div id="fbox" style="position:absolute;inset:0"></div>
       ${S.msg ? `<div class="toast glass">${esc(S.msg)}</div>` : ''}
@@ -903,13 +908,14 @@ function vField() {
 }
 
 function vPick() {
-  const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end);
+  const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), pre = d.plan;
   // secciones arriba para brincar directo; se queda la última que usaron
   const gs = O ? secGroups(S.off) : [['', S.def]], g = gs.find(x => x[0] === pickSec) || gs[0];
   const tile = n => { const dg = diagram(n, S.side), ds = O ? corta(n) : '';
     return `<button class="tile" data-a="pick" data-v="${esc(n)}">${dg || '<div class="noimg">Sin dibujo</div>'}<b>${esc(n)}</b>${ds ? `<small>${esc(ds)}</small>` : ''}</button>` };
   return `<div class="scrim" data-a="cancelpick"></div><div class="sheet">
-  <div class="shead"><div><h1>${O ? '¿Qué jugada hicimos?' : '¿Qué defensa usamos?'}</h1><p>${d.end ? `${verb(y)} ${sg(y)} yd` : 'Sin avance'} · ${S.down}ª</p></div><button class="xbtn" data-a="cancelpick">${icon('x')}</button></div>
+  <div class="shead"><div><h1>${pre ? (O ? '¿Qué jugada vamos a hacer?' : '¿Qué defensa vamos a usar?') : O ? '¿Qué jugada hicimos?' : '¿Qué defensa usamos?'}</h1><p>${pre ? `${S.down}ª · al terminar solo marcas dónde quedó el balón` : `${d.end ? `${verb(y)} ${sg(y)} yd` : 'Sin avance'} · ${S.down}ª`}</p></div>
+    <div class="row tight">${pre && S.prox ? '<button class="plain" data-a="noplan">Quitar</button>' : ''}<button class="xbtn" data-a="cancelpick">${icon('x')}</button></div></div>
   ${gs.length > 1 ? `<div class="seg pksegs">${gs.map(([s, l]) => `<button class="${s === g[0] ? 'on' : ''}" data-a="pksec" data-v="${esc(s)}">${esc(s)}<span class="n">${l.length}</span></button>`).join('')}</div>` : ''}
   <div class="tiles pk">${g[1].map(tile).join('')}</div></div>`;
 }
@@ -1191,6 +1197,8 @@ function render() {
 }
 
 // ---------- acciones ----------
+// jugada escogida antes del saque (botón Jugada): si sigue en el libro, se usa sin preguntar
+const usaPlan = () => { if (S.prox && (S.side === 'O' ? S.off : S.def).includes(S.prox)) A.pick(S.prox) };
 const tog = (k, v) => { d[k] = d[k] === v ? null : v };
 const uniq = (arr, v) => v && !arr.includes(v);
 // jugadas agrupadas por sección, en el orden de las secciones; las que no tienen van al final
@@ -1225,18 +1233,22 @@ function afterSave(e, end) {
 }
 const A = {
   tab: v => { tab = v; pop = null },
-  side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; newSeries() } d = fresh() },
+  side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; S.prox = null; newSeries() } d = fresh() },
   down: v => { S.down = +v; S.series = S.series.filter(x => x.down < S.down); if (S.down === 1) newSeries() },
   castigo: () => { d = fresh(); d.res = 'Castigo'; d.stage = 'how' },
   setball: () => { const b = !d.setBall; d = fresh(); d.setBall = b },
-  confirm: () => { d.stage = 'pick' },
-  noadv: () => { d = fresh(); d.stage = 'pick' },
+  // si ya escogieron la jugada antes del saque, se salta la hoja y va directo a cómo estuvo
+  confirm: () => { d.stage = 'pick'; usaPlan() },
+  noadv: () => { d = fresh(); d.stage = 'pick'; usaPlan() },
+  plan: () => { d = fresh(); d.stage = 'pick'; d.plan = true; if (S.secOf[S.prox]) pickSec = S.secOf[S.prox] },
+  noplan: () => { S.prox = null; d = fresh() },
   cancel: () => { d = fresh() },
   // si venías de recrear la jugada, regresa ahí sin perder nada
   cancelpick: () => { d.stage = d.play || d.res ? 'how' : null },
   repick: () => { d.stage = 'pick'; if (S.secOf[d.play]) pickSec = S.secOf[d.play] },
   pksec: v => { pickSec = v },
   pick(v) {
+    if (d.plan) { S.prox = v; d = fresh(); return } // escogida antes del saque
     const f = S.forms[S.side + ':' + v] || (S.side === 'O' && pbPos(v));
     if (f) S.lines[S.side].forEach((p, i) => { p.dx = f[i][0]; p.dy = f[i][1] });
     if (d.play !== v && d.res !== 'Castigo') Object.assign(d, {res: null, cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: []});
@@ -1286,7 +1298,7 @@ const A = {
       pre: {side: S.side, ball: {...S.ball}, down: S.down, series: S.series.slice(), sstart: {...S.sstart}, fd: S.fd}};
     e.worked = works(e);
     g.events.push(e);
-    afterSave(e, end || S.ball);
+    afterSave(e, end || S.ball); S.prox = null; // la siguiente jugada se escoge otra vez
     d = fresh();
   },
   undo() { const g = cur(), e = g && g.events.pop(); if (e) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, msg: ''}) } d = fresh() },
@@ -1531,7 +1543,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014014612';
+const VERSION = '20261014015110';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
