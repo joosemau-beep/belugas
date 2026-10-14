@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -67,8 +67,9 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .need span{font-size:12px;color:var(--mut);line-height:1.2;display:block}
 .fbox{flex:1;min-width:0;position:relative;border-radius:18px;overflow:hidden;background:#1d5c34}
 #fbox>svg,#howbox>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-*{touch-action:manipulation} /* sin zoom al tocar dos veces */
-#field,#sub{touch-action:none;cursor:pointer}
+*{touch-action:manipulation} /* sin zoom al tocar dos veces; con dos dedos sí, para poder regresar */
+#fbox,#howbox,#field,#sub{touch-action:none}
+#field,#sub{cursor:pointer}
 .scrim{cursor:pointer}
 .float{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:7px 7px 7px 20px;border-radius:999px;box-shadow:var(--shadow);white-space:nowrap;animation:rise .25s cubic-bezier(.2,.9,.3,1)}
 .float .t{font-size:17px;font-weight:600;margin-right:6px}
@@ -130,6 +131,7 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .latrow{border-top:.5px solid var(--line);padding:10px 0 4px}
 .latrow .lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .scrim.clear{background:transparent;animation:none;z-index:40}
+.scrim.top,.sheet.top{z-index:45} /* Jugadores también encima de recrear la jugada */
 .pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px}
 .pname{display:flex;align-items:center;gap:8px;min-height:46px;padding:6px 10px;text-align:left;font-size:16px}
 .pname span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -143,6 +145,7 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .minput input{flex:1;min-height:38px;padding:6px 10px}
 .minput button{min-height:38px;padding:4px 14px}
 .badge2{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13px;color:#111;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.nube{margin:0 0 12px;font-weight:600;color:var(--nos)}.nube.ok{color:var(--ok)}
 .lineup{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}
 #lbox{border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
 #lbox g{cursor:pointer}
@@ -318,8 +321,20 @@ const dflt = () => ({
 });
 let S = (() => { try { return Object.assign(dflt(), JSON.parse(localStorage[KEY])) } catch { return dflt() } })();
 // si no se puede guardar, que se vea: no queremos capturar un partido que se va a perder
-let saveFail = false;
-const save = () => { try { localStorage[KEY] = JSON.stringify(S); saveFail = false } catch { saveFail = true } };
+let saveFail = false, guardado = '';
+const save = () => {
+  const j = JSON.stringify(S); if (j === guardado) return; guardado = j;
+  try { localStorage[KEY] = j; saveFail = false } catch { saveFail = true }
+  nube.dirty = true; nubeSave(); clearTimeout(tSubir); tSubir = setTimeout(subir, 1500);
+};
+// nube: copia del equipo en Supabase, para que nada se pierda aunque el navegador borre sus datos.
+// La clave viaja en el link (#k=...), nunca en el código: el repositorio es público
+const NUBE = 'https://REF.supabase.co/rest/v1/rpc/', ANON = 'ANON';
+const lsGet = k => { try { return localStorage[k] } catch {} }, lsSet = (k, v) => { try { localStorage[k] = v } catch {} };
+const clave = (location.hash.match(/k=([\w-]{24,})/) || [])[1] || lsGet('tochito.k');
+if (clave) { lsSet('tochito.k', clave); if (!location.hash.includes(clave)) history.replaceState(null, '', '#k=' + clave) }
+let nube = {t: null, dirty: false, ...(() => { try { return JSON.parse(lsGet('tochito.nube')) } catch {} })()}, nubeEst = clave ? 'Conectando' : '', nubeAt = 0, subiendo = false, tSubir;
+const nubeSave = () => lsSet('tochito.nube', JSON.stringify(nube));
 const cur = () => S.games.find(g => g.id === S.cur);
 const dateStr = () => new Date().toLocaleDateString('es-MX', {day: 'numeric', month: 'short'});
 function newGame(rival) { const g = {id: Date.now(), date: dateStr(), rival: rival || '', events: []}; S.games.push(g); S.cur = g.id; return g }
@@ -740,7 +755,7 @@ function vHow() {
   <div class="hmain"><div id="howbox"></div>
     <div class="htop"><button class="pill glass" data-a="repick">${icon('back')}Jugadas</button>
       <div class="htitle glass">${esc(d.play || 'Castigo')}<small>${S.down}ª · ${O ? 'Ataque' : 'Defensa'}</small></div>
-      <button class="pill glass" data-a="cancel">Cancelar</button></div>
+      <div class="row tight"><button class="pill glass" data-a="lineup">${icon('team')}Jugadores</button><button class="pill glass" data-a="cancel">Cancelar</button></div></div>
     ${fieldHint(e)}
     <div class="readout glass" id="readout">${esc(readoutText(e))}</div>
     ${O && RUN.includes(d.res) && d.tgt != null ? `<button class="pill glass addlat" data-a="addlat">${icon('plus')}Agregar pase</button>` : ''}</div>
@@ -760,8 +775,9 @@ function fieldHint(e) {
   else if (d.res === 'Pase completo') t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#0a84ff')}atrapó ${dot('#ffd60a')}terminó`;
   else if (e.aim) t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#ff453a')}a dónde iba${d.res === 'Intercepción' ? ' ' + dot('#ffd60a') + 'terminó' : ''}`;
   else if (d.res && !['Castigo','Incompleto'].includes(d.res)) t = `Arrastra ${dot('#ffd60a')} a donde terminó`;
+  if (!t && !w) t = 'Toca a un jugador para cambiar quién jugó ahí';
   if (!t) return '';
-  const again = '';
+  const s = w && d[w[0]] != null && !d.lat.some(l => l.to == null) && S.lines[S.side][d[w[0]]], again = s ? `<span class="mut"> · Toca otra vez a ${esc(s.name || s.r)} para cambiarlo</span>` : '';
   return `<div class="hhint glass">${t}${again}${recvRoute() && d.route ? '<button class="plain" data-a="resetroute">Ruta original</button>' : ''}</div>`;
 }
 
@@ -912,24 +928,23 @@ function vTeam() {
   return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
     <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>
   <div class="card"><h2>Partidos</h2><button class="tint" style="width:100%;margin-bottom:10px;min-height:50px" data-a="newgame">Nuevo partido</button>${g}</div></div>
-  <div class="card"><h2>Respaldo</h2><div class="row tight"><button data-a="export">Exportar datos</button><button onclick="document.getElementById('imp').click()">Importar datos</button><input type="file" id="imp" accept=".json" hidden></div>
+  <div class="card"><h2>Respaldo</h2>${clave ? `<p class="nube${!nubeEst && !nube.dirty ? ' ok' : ''}">${esc(nubeTxt())}</p>` : ''}<div class="row tight"><button data-a="export">Exportar datos</button><button onclick="document.getElementById('imp').click()">Importar datos</button><input type="file" id="imp" accept=".json" hidden></div>
   <p class="mut" style="margin:10px 0 0;font-size:15px">Los datos viven solo donde abres la app: Safari y el ícono de la pantalla de inicio guardan cada uno lo suyo. Usa siempre el ícono (Compartir, Añadir a pantalla de inicio) para que Safari no los borre. Si ya tienes partidos en Safari: exporta aquí, abre la app desde el ícono e importa.</p></div>`;
 }
 
 // lista para cambiar quién juega en una posición; si ya juega en otra, se intercambian
-// fijo = desde recrear: solo nombres libres (no se mueve a nadie); desde Jugadores sí se intercambian
-function menuRows(i, fijo) {
+function menuRows(i) {
   const L = S.lines[S.side], p = L[i];
   const where = n => { const j = L.findIndex(q => q.name === n); return j >= 0 && j !== i ? L[j].r : '' };
   // cuadrícula: todos los nombres a la vista; la etiqueta dice en qué posición juega ahora (se intercambian)
-  return `<div class="pgrid">${S.players.map(n => { const w = where(n); return `<button class="pname${p.name === n ? ' on' : ''}" data-a="setname" data-v="${esc(n)}"${fijo && w ? ' disabled' : ''}><i class="dot" style="background:${colorOf(n)}"></i><span>${esc(n)}</span>${w ? `<small>${esc(w)}</small>` : ''}</button>` }).join('')}</div>`
+  return `<div class="pgrid">${S.players.map(n => { const w = where(n); return `<button class="pname${p.name === n ? ' on' : ''}" data-a="setname" data-v="${esc(n)}"><i class="dot" style="background:${colorOf(n)}"></i><span>${esc(n)}</span>${w ? `<small>${esc(w)}</small>` : ''}</button>` }).join('')}</div>`
     + `<div class="mfoot"><input id="newname" placeholder="Nuevo jugador"><button class="tint" data-a="addname">Agregar</button></div>`
     + (p.name ? '<div class="mfoot"><button class="plain danger" data-a="setname" data-v="">Dejar sin nombre</button></div>' : '');
 }
 function vPop() {
   const L = S.lines[S.side];
-  if (popSheet) return `<div class="scrim" data-a="closepop"></div><div class="sheet">
-    <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Los nombres solo cambian aquí</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
+  if (popSheet) return `<div class="scrim top" data-a="closepop"></div><div class="sheet top">
+    <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
     <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
       : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div></div>`;
   if (pop == null || !popAt) return '';
@@ -938,7 +953,7 @@ function vPop() {
   x = clamp(x, 12, innerWidth - W - 12);
   const y = clamp(popAt.y - 60, 12, Math.max(12, innerHeight - 460));
   return `<div class="scrim clear" data-a="closepop"></div><div class="menu glass" style="left:${x}px;top:${y}px;width:${W}px">
-    <div class="mtitle"><i class="badge2" style="background:${colorOf(p.name)}">${esc(p.r)}</i>${p.name ? esc(p.name) : 'Sin nombre'}</div>${menuRows(pop, true)}</div>`;
+    <div class="mtitle"><i class="badge2" style="background:${colorOf(p.name)}">${esc(p.r)}</i>${p.name ? esc(p.name) : 'Sin nombre'}</div>${menuRows(pop)}</div>`;
 }
 
 function render() {
@@ -1008,13 +1023,15 @@ const A = {
   },
   res(v) { tog('res', v); Object.assign(d, {cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: [], foul: null}) },
   cause: v => tog('cause', v),
-  // tocar un jugador en el campo: primero el que atrapó o corrió, luego quien recibió cada pase extra
+  // tocar un jugador en el campo: primero el que atrapó o corrió, luego quien recibió cada pase extra.
+  // Otro toque al mismo (o cualquier toque si no hay a quién elegir) abre los nombres para cambiar quién jugó ahí
   who(v) {
     const w = askWho(), i = +v, L = S.lines[S.side];
     const names = () => { pop = i; popAt = {...tapAt}; popSheet = false; noClick = Date.now() + 350 };
-    if (!w) { if (!L[i].name) names(); return }
+    if (!w) return names();
     const l = d[w[0]] != null && d.lat.find(x => x.to == null);
     if (l) { l.to = i; if (!L[i].name) names(); return }
+    if (d[w[0]] === i) return names();
     const was = d.lat.findIndex(x => x.to === i); if (d.lat.length && was >= 0 && d[w[0]] != null) { d.lat[was].to = null }
     d[w[0]] = i; if (w[0] === 'tgt') d.route = null;
     if (!L[i].name) names();
@@ -1055,7 +1072,6 @@ const A = {
   popi: v => { pop = pop === +v ? null : +v },
   setname(v) {
     const L = S.lines[S.side], p = L[pop], o = L.find((q, i) => i !== pop && v && q.name === v);
-    if (o && !popSheet) return; // fuera de Jugadores no se mueve a nadie de su posición
     if (o) o.name = p.name; p.name = v;
     if (popSheet) pop = null; else A.closepop();
   },
@@ -1159,19 +1175,61 @@ document.addEventListener('keydown', e => {
 addEventListener('resize', () => { if (!drag) { d.vb = null; drawFields() } });
 // pedir al navegador que no borre los datos de la app
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist() } catch {}
-// sin zoom con dos dedos: en el iPad Safari ignora user-scalable=no, y con el campo a pantalla completa no hay cómo regresar
-['gesturestart', 'gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
 // abrir sin señal (solo en la dirección publicada; en la Mac no, para ver los cambios al momento)
 if (location.protocol === 'https:' && 'serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 // si la app está abierta en otra pestaña y guarda, esta toma lo nuevo (así una pestaña vieja no borra lo de la otra)
 addEventListener('storage', e => { if (e.key === KEY && e.newValue && !drag) { try { S = Object.assign(dflt(), JSON.parse(e.newValue)); render() } catch {} } });
+// ---------- nube ----------
+const rpc = (f, body, keepalive) => fetch(NUBE + f, {method: 'POST', keepalive, headers: {apikey: ANON, 'Content-Type': 'application/json'}, body: JSON.stringify(body)}).then(r => r.ok ? r.json() : Promise.reject(r.status));
+const tieneDatos = x => x.players.length || x.games.some(g => g.events.length);
+// redibujar sin tumbar lo que estás escribiendo
+const pinta = () => { if (!document.activeElement || !document.activeElement.matches('input')) render() };
+// dos aparatos cambiaron a la vez: se juntan partidos (por id, gana el que tenga más jugadas) y nombres; lo demás queda como en este aparato
+function juntar(a, b) {
+  const g = new Map(b.games.map(x => [x.id, x]));
+  a.games.forEach(x => { const y = g.get(x.id); if (!y || x.events.length >= y.events.length) g.set(x.id, x) });
+  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}});
+}
+async function bajar() {
+  if (!clave || d.stage || drag) return;
+  try {
+    const [r] = await rpc('tochito_leer', {p_clave: clave});
+    if (!r) { nubeEst = 'La clave del link no sirve'; return pinta() }
+    if (r.actualizado !== nube.t) {
+      if (!nube.dirty || !tieneDatos(S)) { if (tieneDatos(S)) lsSet('tochito.previo', JSON.stringify(S)); S = Object.assign(dflt(), r.datos); nube.dirty = false }
+      else S = juntar(S, r.datos);
+      initColors(); if (!cur()) newGame(''); S.ball.y = 12.5; fixFilter(); d = fresh();
+      nube.t = r.actualizado; guardado = JSON.stringify(S); lsSet(KEY, guardado); nubeSave();
+    }
+    nubeEst = ''; nubeAt = Date.now();
+    if (nube.dirty) subir(); else pinta();
+  } catch { nubeEst = 'Sin señal'; pinta() }
+}
+async function subir() {
+  clearTimeout(tSubir); if (!clave || subiendo || !nube.dirty) return; subiendo = true;
+  const v = JSON.stringify(S);
+  try {
+    const t = await rpc('tochito_guardar', {p_clave: clave, p_datos: S, p_base: nube.t}, v.length < 60000);
+    subiendo = false;
+    if (t === null) return bajar(); // alguien más guardó antes: se juntan y se vuelve a subir
+    nube.t = t; if (JSON.stringify(S) === v) nube.dirty = false; else tSubir = setTimeout(subir, 1500);
+    nubeSave(); nubeEst = ''; nubeAt = Date.now();
+  } catch { subiendo = false; nubeEst = 'Sin señal' }
+  if (tab === 'team') pinta();
+}
+document.addEventListener('visibilitychange', () => document.hidden ? subir() : bajar());
+addEventListener('online', bajar);
+const nubeTxt = () => !clave ? 'Sin nube: abre la app con el link del equipo para que se respalde en internet.'
+  : nubeEst === 'Sin señal' ? `Sin señal${nube.dirty ? ': lo nuevo se sube solo en cuanto haya internet' : ''}.`
+  : nubeEst ? nubeEst + '.' : nube.dirty ? 'Subiendo a la nube…' : `Todo respaldado en la nube${nubeAt ? ' · ' + new Date(nubeAt).toLocaleTimeString('es-MX', {hour: 'numeric', minute: '2-digit'}) : ''}.`;
 // avisar si la app se abrió de una forma que no guarda (directo del archivo o con el guardado bloqueado)
 function warn() {
   const fileOpen = location.protocol === 'file:';
-  $('#warn').innerHTML = fileOpen || saveFail ? `<div class="warn">${fileOpen ? 'Así no se guardan los datos: abre la app desde su dirección (http://localhost:4455) o desde el ícono del iPad.' : 'No se pudo guardar. Exporta un respaldo en Equipo antes de seguir.'}</div>` : '';
+  $('#warn').innerHTML = fileOpen || saveFail ? `<div class="warn">${fileOpen ? 'Así no se guardan los datos: abre la app desde su dirección (http://localhost:4455) o desde el ícono del iPad.' : clave ? 'Este navegador no guarda datos: solo quedan en la nube, y sin señal se pierden. Abre la app desde el ícono.' : 'No se pudo guardar. Exporta un respaldo en Equipo antes de seguir.'}</div>` : '';
 }
 const _render = render; render = () => { _render(); warn() };
 render();
+bajar();
 </script>
 </body>
 </html>
