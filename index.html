@@ -243,6 +243,16 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .seg.sm button{padding:5px 20px;min-height:34px;font-size:15px}
 .tiles.pk{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))} /* 4 por fila: una sección cabe sin bajar */
 .pksegs{display:flex;margin:0 0 16px}.pksegs button{flex:1;min-height:46px;padding:8px 10px;font-size:17px}.pksegs .n{opacity:.55;font-weight:500;margin-left:6px}
+/* imprimir o guardar en PDF (el reporte): sin barras ni botones, con los colores del equipo */
+@media print{
+  @page{size:A4;margin:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;animation:none!important}
+  html,body{height:auto!important;overflow:visible!important;background:var(--bg)}
+  #tabs,#pop,#ov,#warn,.noprint{display:none!important}
+  .page{position:static!important;overflow:visible!important;padding:26px 28px!important}
+  .cols2{grid-template-columns:1fr 1fr}
+  .card,.mvp,.aw,.rhero,.kpi,.tl,.lrow,tr{break-inside:avoid}
+}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -272,7 +282,8 @@ const ICONS = {
   back: '<path d="M15 4 7 12l8 8"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
   check: '<path d="M5 12.5 10 17.5 19 7"/>',
-  plus: '<path d="M12 5v14M5 12h14"/>'
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  flip: '<path d="M12 3v18" stroke-dasharray="2 2.4"/><path d="M9 7 4 17h5zM15 7l5 10h-5z"/>'
 };
 const icon = n => `<svg class="ico" viewBox="0 0 24 24">${ICONS[n]}</svg>`;
 const TABS = [['field','Campo'],['plays','Jugadas'],['stats','Análisis'],['fantasy','Fantasy'],['team','Equipo']];
@@ -402,6 +413,10 @@ const AL_LIBRO = ['Falso QB'];
 // descripción corta: la de la jugada, o la primera frase de su descripción
 const corta = n => { const pb = PLAYBOOK[n]; return pb ? pb.short || (pb.desc || '').split('. ')[0] : '' };
 const pbPos = name => PLAYBOOK[name] && ROLES.map(r => PLAYBOOK[name].pos[r]);
+// invertida = la misma jugada en espejo: lo que iba a la derecha va a la izquierda (se voltea lo lateral)
+const espejo = pb => pb && {...pb, pos: Object.fromEntries(Object.entries(pb.pos).map(([r, [a, b]]) => [r, [a, -b]])),
+  routes: Object.fromEntries(Object.entries(pb.routes).map(([r, rt]) => [r, {...rt, pts: rt.pts && rt.pts.map(([a, b]) => [a, -b]), motion: movsOf(rt).map(([a, b]) => [a, -b])}]))};
+const jug = (n, inv) => inv ? espejo(PLAYBOOK[n]) : PLAYBOOK[n];
 const grpOf = (side, c) => [CAUSES[side], ...(side === 'O' ? [INC] : [])].map(g => Object.keys(g).find(k => g[k].includes(c))).find(Boolean);
 const PALETTE = ['#4dabf7','#ff6b6b','#ffd43b','#da77f2','#ffa94d','#3bc9db','#f783ac','#f1f3f5','#9775fa','#e0b27a'];
 const colorOf = name => {
@@ -511,7 +526,7 @@ const lineXY = (side, i) => { const p = S.lines[side][i]; return {x: clamp(S.bal
 function recvRoute() {
   const run = d.res === 'Corrida';
   if (S.side !== 'O' || !(run || d.res === 'Pase completo' || ZERO.includes(d.res)) || d.tgt == null) return null;
-  const pb = PLAYBOOK[d.play], p = S.lines.O[d.tgt], rt = pb && pb.routes[p.r], q = lineXY('O', d.tgt);
+  const pb = jug(d.play, d.inv), p = S.lines.O[d.tgt], rt = pb && pb.routes[p.r], q = lineXY('O', d.tgt);
   const main = rt && rt.pts && rt.pts.length && routeSegs(rt, q.x, q.y).find(s => !s.dash);
   if (!main && !run) return null;
   // si en la jugada no tiene ruta, un punto a la mitad para acomodar por dónde corrió
@@ -650,16 +665,16 @@ function segSvg(segs, f, sw, size, op = 1) {
   }).join('');
 }
 // rutas de la jugada sobre el campo, desde donde está parado cada jugador
-function routesField(play, only) {
-  const pb = S.side === 'O' && PLAYBOOK[play]; if (!pb) return [];
+function routesField(play, only, inv) {
+  const pb = S.side === 'O' && jug(play, inv); if (!pb) return [];
   const at = r => { const i = S.lines.O.findIndex(p => p.r === r), q = lineXY('O', i); return startOf([q.x, q.y], pb.routes[r]) };
   return [...(only ? [] : snapSegs(pb, at, [S.ball.x, S.ball.y])),
     ...S.lines.O.map((p, i) => { const rt = pb.routes[p.r]; if (!rt || (only && !only.includes(i))) return []; const q = lineXY('O', i); return routeSegs(rt, q.x, q.y) }).flat()];
 }
 // dibujo como en la tarjeta: hacia adelante = arriba. Ataque con rutas; defensa con su acomodo.
 // anim = cada jugador corre su ruta y el balón va del saque al que lanza y de ahí al receptor principal, en ciclo
-function diagram(name, side, anim) {
-  const pb = side === 'O' && PLAYBOOK[name], L = S.lines[side], f0 = S.forms[side + ':' + name];
+function diagram(name, side, anim, inv) {
+  const pb = side === 'O' && jug(name, inv), L = S.lines[side], f0 = S.forms[side + ':' + name];
   if (!pb && !f0) return '';
   const pos = L.map((p, i) => pb ? pb.pos[p.r] : f0[i]);
   const f = side === 'O' ? ([a, b]) => [b, -a] : ([a, b]) => [b, a];
@@ -825,12 +840,12 @@ function mainOpts(w, h) {
   // con la jugada escogida antes del saque, el campo ya enseña a los jugadores en su formación y sus rutas
   const pl = !!S.prox && (O ? S.off : S.def).includes(S.prox);
   // nombres donde no se enciman y jugadores que se arrastran encima de otro para intercambiarlos
-  return {id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, smartNames: true, mover: pl, routes: pl ? routesField(S.prox) : null, faint: pl && !!d.end};
+  return {id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, smartNames: true, mover: pl, routes: pl ? routesField(S.prox, null, S.proxInv) : null, faint: pl && !!d.end};
 }
 // vista de recrear: misma escala en ambos ejes (10 unidades = 1 yarda), acercada a la jugada
 function howFrame(w, h) {
   if (d.vb && d.vbKey === w + 'x' + h) return d.vb;
-  const P = [S.ball, ...(d.end ? [d.end] : []), ...S.lines[S.side].map((p, i) => lineXY(S.side, i)), ...routesField(d.play).flatMap(s => s.pts.map(([x, y]) => ({x, y})))];
+  const P = [S.ball, ...(d.end ? [d.end] : []), ...S.lines[S.side].map((p, i) => lineXY(S.side, i)), ...routesField(d.play, null, d.inv).flatMap(s => s.pts.map(([x, y]) => ({x, y})))];
   const xs = P.map(p => p.x), ys = P.map(p => p.y);
   let x0 = Math.min(...xs) - 5, x1 = Math.max(...xs) + 5, y0 = Math.min(...ys) - 3.5, y1 = Math.max(...ys) + 3.5;
   if (x1 - x0 < 22) { const c = (x0 + x1) / 2; x0 = c - 11; x1 = c + 11 }
@@ -880,7 +895,7 @@ function howOpts(e) {
   // ya elegido el que trae el balón, los demás se hacen chicos y no estorban (salvo que falte elegir a alguien)
   const focus = (RUN.includes(d.res) || (S.side === 'O' && ZERO.includes(d.res))) && d.tgt != null && !pending() ? [...(S.side === 'O' ? [d.qb] : []), d.tgt, ...d.lat.map(l => l.to)] : null;
   return {id: 'sub', side: S.side, yu: 10, k: d.vk, vb: d.vb, ball: S.ball, end: d.end, players: true, pick: true, how: true, focus,
-    sel: w && d[w[0]] != null ? [d[w[0]], col[w[0]]] : null, routes: routesField(d.play, focus && [d.tgt]), faint: !!rr || !!focus, extra: howExtra(e)};
+    sel: w && d[w[0]] != null ? [d[w[0]], col[w[0]]] : null, routes: routesField(d.play, focus && [d.tgt], d.inv), faint: !!rr || !!focus, extra: howExtra(e)};
 }
 function howSvg(w, h) {
   howFrame(w, h); const e = draft();
@@ -988,7 +1003,7 @@ function vField() {
   <div class="frow">
     <div class="downs"><span class="cap">${S.conv ? 'Conv.' : 'Down'}</span>${S.conv ? `<div class="convbox"><b>+${S.conv.pts}</b><span>${S.conv.pts === 1 ? 'desde la 5' : 'desde la 10'}</span><button class="plain" data-a="convback">Cambiar</button></div>` : [1,2,3,4].map(n => { const it = S.series.find(x => x.down === n);
       return `<div class="dwrap"><button class="${S.down === n ? 'on' : it ? (it.ok ? 'dok' : 'dbad') : ''}" data-a="down" data-v="${n}">${n}ª</button>${it ? `<small class="${it.ok ? 'g' : 'r'}">${sg(it.yds)}</small>` : ''}</div>` }).join('')}
-      <button class="jplan${S.prox ? ' on' : ''}" data-a="plan">${S.prox ? `<span>Jugada</span><b>${esc(S.prox)}</b>` : `${icon('plays')}<span>Jugada</span>`}</button>
+      <button class="jplan${S.prox ? ' on' : ''}" data-a="plan">${S.prox ? `<span>${S.proxInv && O ? 'Invertida' : 'Jugada'}</span><b>${esc(S.prox)}</b>` : `${icon('plays')}<span>Jugada</span>`}</button>
       <div class="need"><b>${need}</b><span>yd para ${toMid ? 'Primera' : 'Goal'}${O ? '' : ' del rival'}</span></div></div>
     <div class="fbox" id="fboxwrap"><div id="fbox" style="position:absolute;inset:0"></div>
       ${S.msg ? `<div class="toast glass">${esc(S.msg)}</div>` : ''}
@@ -1013,11 +1028,11 @@ function vPick() {
   const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), pre = d.plan;
   // secciones arriba para brincar directo; se queda la última que usaron
   const gs = O ? secGroups(S.off) : [['', S.def]], g = gs.find(x => x[0] === pickSec) || gs[0];
-  const tile = n => { const dg = diagram(n, S.side), ds = O ? corta(n) : '';
+  const tile = n => { const dg = diagram(n, S.side, false, O && d.inv), ds = O ? corta(n) : '';
     return `<button class="tile" data-a="pick" data-v="${esc(n)}">${dg || '<div class="noimg">Sin dibujo</div>'}<b>${esc(n)}</b>${ds ? `<small>${esc(ds)}</small>` : ''}</button>` };
   return `<div class="scrim" data-a="cancelpick"></div><div class="sheet">
   <div class="shead"><div><h1>${pre ? (O ? '¿Qué jugada vamos a hacer?' : '¿Qué defensa vamos a usar?') : O ? '¿Qué jugada hicimos?' : '¿Qué defensa usamos?'}</h1><p>${pre ? `${dlbl()} · al terminar solo marcas dónde quedó el balón` : `${d.end ? `${verb(y)} ${sg(y)} yd` : 'Sin avance'} · ${dlbl()}`}</p></div>
-    <div class="row tight">${pre && S.prox ? '<button class="plain" data-a="noplan">Quitar</button>' : ''}<button class="xbtn" data-a="cancelpick">${icon('x')}</button></div></div>
+    <div class="row tight">${O ? `<button class="pill${d.inv ? ' on' : ''}" data-a="inv">${icon('flip')}Invertida</button>` : ''}${pre && S.prox ? '<button class="plain" data-a="noplan">Quitar</button>' : ''}<button class="xbtn" data-a="cancelpick">${icon('x')}</button></div></div>
   ${gs.length > 1 ? `<div class="seg pksegs">${gs.map(([s, l]) => `<button class="${s === g[0] ? 'on' : ''}" data-a="pksec" data-v="${esc(s)}">${esc(s)}<span class="n">${l.length}</span></button>`).join('')}</div>` : ''}
   <div class="tiles pk">${g[1].map(tile).join('')}</div></div>`;
 }
@@ -1026,6 +1041,7 @@ function vHow() {
   const O = S.side === 'O', e = draft(), w = askWho(), L = S.lines[S.side], rr = recvRoute();
   let q = d.res === 'Castigo' || d.res === 'Incompleto' ? '' : `<div class="group yrow"><span>${verb(e.raw)}</span><div class="stepper"><button data-a="yd" data-v="-1">−</button><b>${sg(e.raw)} yd</b><button data-a="yd" data-v="1">+</button></div></div>`;
   const y0 = d.end ? yardsOf(S.side, null, S.ball, d.end) : 0;
+  if (O && d.play) q += `<div class="ghead">¿Cómo la hicimos?</div><div class="group"><div class="seg"><button class="${d.inv ? '' : 'on'}" data-a="inv" data-v="0">Normal</button><button class="${d.inv ? 'on' : ''}" data-a="inv" data-v="1">Invertida</button></div></div>`;
   q += `<div class="ghead">¿Qué pasó?</div><div class="group"><div class="tiles2">${resOptions().map(r => `<button class="rtile${d.res === r ? ' on' : ''}" data-a="res" data-v="${esc(r)}"><b>${esc(rl(r))}</b><small>${esc(RES_TXT[S.side][r])}</small></button>`).join('')}</div>
     ${!d.res && y0 > 0 ? '<p style="margin:10px 2px 0">¿Fue incompleto? Baja las yardas a 0 con el botón −.</p>' : ''}</div>`;
   const chip = (p, i, on, a, v) => `<button class="pchip${on ? ' on' : ''}" data-a="${a}" data-v="${v}"><i style="background:${colorOf(p.name)}">${esc(p.r)}</i>${p.name ? esc(p.name) : 'Sin nombre'}</button>`;
@@ -1054,7 +1070,7 @@ function vHow() {
   return `<div class="how">
   <div class="hmain"><div id="howbox"></div>
     <div class="htop"><button class="pill glass" data-a="repick">${icon('back')}Jugadas</button>
-      <div class="htitle glass">${esc(d.play || 'Castigo')}<small>${dlbl()} · ${O ? 'Ataque' : 'Defensa'}</small></div>
+      <div class="htitle glass">${esc(d.play || 'Castigo')}<small>${dlbl()} · ${O ? (d.inv ? 'Ataque · invertida' : 'Ataque') : 'Defensa'}</small></div>
       <div class="row tight"><button class="pill glass" data-a="lineup">${icon('team')}Jugadores</button><button class="pill glass" data-a="cancel">Cancelar</button></div></div>
     ${fieldHint(e)}
     <div class="readout glass" id="readout">${esc(readoutText(e))}</div>
@@ -1316,7 +1332,7 @@ function vReport() {
   const lista = l => l.length ? l.map(([k, n]) => `<div class="item"><span>${esc(k)}</span><b>${n}</b></div>`).join('') : '<span class="mut">Nada</span>';
   const ct = {}; pens.forEach(e => { const k = (e.pen.tipo || 'Castigo') + '|' + (e.pen.fav ? 1 : 0); ct[k] = (ct[k] || 0) + 1 });
   const kpi = (t, v) => `<div class="kpi"><span>${t}</span><b>${v}</b></div>`;
-  return `<div class="row" style="margin-bottom:6px"><button class="plain" data-a="repback">${icon('back')} Volver</button></div>
+  return `<div class="row noprint" style="margin-bottom:6px;justify-content:space-between"><button class="plain" data-a="repback">${icon('back')} Volver</button><button data-a="pdf">Guardar PDF</button></div>
   <div class="rhero"><img src="logo.webp" alt="Belugas"><div class="rh"><span class="res ${res[1]}">${res[0]}</span><div class="sc">${pf} – ${pc}</div><div class="mut">Belugas HDP vs ${esc(riv)} · ${esc(g.date || '')}</div></div></div>
   <div class="card"><h2>Resumen</h2><p style="margin:0;font-size:18px;line-height:1.45">${resumen}</p></div>
   ${tl ? `<div class="card"><h2>Cómo se anotó</h2>${tl}</div>` : ''}
@@ -1419,9 +1435,9 @@ function iguala(de, a) {
   S.lines[a].forEach(p => { if (!p.name || !A.includes(p.name)) p.name = falta.shift() || '' });
 }
 // acomoda a los jugadores en la formación de la jugada
-const ponForma = v => { const f = S.forms[S.side + ':' + v] || (S.side === 'O' && pbPos(v)); if (f) S.lines[S.side].forEach((p, i) => { p.dx = f[i][0]; p.dy = f[i][1] }) };
+const ponForma = (v, inv) => { const f = S.forms[S.side + ':' + v] || (S.side === 'O' && pbPos(v)); if (f) S.lines[S.side].forEach((p, i) => { p.dx = f[i][0]; p.dy = inv ? -f[i][1] : f[i][1] }) };
 // jugada escogida antes del saque (botón Jugada): si sigue en el libro, se usa sin preguntar
-const usaPlan = () => { if (S.prox && (S.side === 'O' ? S.off : S.def).includes(S.prox)) A.pick(S.prox) };
+const usaPlan = () => { if (S.prox && (S.side === 'O' ? S.off : S.def).includes(S.prox)) { d.inv = S.side === 'O' && !!S.proxInv; A.pick(S.prox) } };
 const tog = (k, v) => { d[k] = d[k] === v ? null : v };
 const uniq = (arr, v) => v && !arr.includes(v);
 // jugadas agrupadas por sección, en el orden de las secciones; las que no tienen van al final
@@ -1465,7 +1481,9 @@ const A = {
   // si ya escogieron la jugada antes del saque, se salta la hoja y va directo a cómo estuvo
   confirm: () => { d.stage = 'pick'; usaPlan() },
   noadv: () => { d = fresh(); d.stage = 'pick'; usaPlan() },
-  plan: () => { d = fresh(); d.stage = 'pick'; d.plan = true; if (S.secOf[S.prox]) pickSec = S.secOf[S.prox] },
+  plan: () => { d = fresh(); d.stage = 'pick'; d.plan = true; d.inv = !!(S.prox && S.proxInv); if (S.secOf[S.prox]) pickSec = S.secOf[S.prox] },
+  // la misma jugada en espejo; lo que ya arrastraron de la ruta se regresa al dibujo volteado
+  inv(v) { const nv = v == null ? !d.inv : v === '1'; if (nv === !!d.inv) return; d.inv = nv; if (d.play) { ponForma(d.play, d.inv); Object.assign(d, {route: null, catch: null, vb: null}); if (S.prox === d.play) S.proxInv = d.inv } },
   noplan: () => { S.prox = null; d = fresh() },
   // conversión después de un TD: el que anotó ataca desde la 5 (1 punto) o la 10 (2 puntos); 0 = no la intentaron
   conv(v) {
@@ -1480,8 +1498,8 @@ const A = {
   repick: () => { d.stage = 'pick'; if (S.secOf[d.play]) pickSec = S.secOf[d.play] },
   pksec: v => { pickSec = v },
   pick(v) {
-    ponForma(v);
-    if (d.plan) { S.prox = v; d = fresh(); return } // escogida antes del saque: el campo ya la enseña
+    ponForma(v, d.inv);
+    if (d.plan) { S.prox = v; S.proxInv = !!d.inv; d = fresh(); return } // escogida antes del saque: el campo ya la enseña
     if (d.play !== v && d.res !== 'Castigo') Object.assign(d, {res: null, cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: []});
     d.play = v; d.stage = 'how'; d.vb = null;
     if (S.side === 'O') d.qb = Math.max(0, S.lines.O.findIndex(p => p.r === passer(PLAYBOOK[v])));
@@ -1523,7 +1541,7 @@ const A = {
     const L = S.lines[S.side], nm = i => i == null ? null : (L[i].name || null);
     const cause = r.auto ? r.auto[0] : (r.needWhy ? d.cause : null);
     const end = r.penEnd || r.end, last = d.lat.length ? d.lat[d.lat.length - 1].to : d.tgt;
-    const e = {id: Date.now(), ...(S.conv ? {conv: S.conv.pts} : {}), side: S.side, play: d.play, res: d.res, td: r.td, ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
+    const e = {id: Date.now(), ...(S.conv ? {conv: S.conv.pts} : {}), ...(d.inv && d.play ? {inv: true} : {}), side: S.side, play: d.play, res: d.res, td: r.td, ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
       cause, grp: r.auto ? r.auto[1] : (cause ? grpOf(S.side, cause) : 'ok'), catch: r.catch || null, aim: r.aim || null, path: r.path || null,
       chain: d.lat.map(l => ({t: l.t, c: l.c, to: nm(l.to)})), last: nm(last), pen: r.pen || null, foul: nm(d.foul),
       qb: S.side === 'O' ? nm(d.qb) : null, tgt: nm(d.tgt), who: nm(d.who), miss: nm(d.miss),
@@ -1549,6 +1567,8 @@ const A = {
   entrar: () => { ponJuego(true); tab = 'field' },
   salir: () => { ponJuego(false); d = fresh(); repG = S.cur; repFrom = 'field'; tab = 'report' }, // al salir, el reporte del partido
   report: v => { repG = +v || S.cur; repFrom = tab; tab = 'report' },
+  // el reporte en PDF: abre la hoja de imprimir del iPad (de ahí se guarda en Archivos o se comparte)
+  pdf: () => setTimeout(() => window.print(), 60),
   repback: () => { tab = repFrom === 'report' ? 'team' : repFrom },
   asist(v) { const g = cur(); g.asist = g.asist || S.players.slice(); const i = g.asist.indexOf(v); if (i >= 0) g.asist.splice(i, 1); else g.asist.push(v); llenaCancha() },
   asistall: v => { cur().asist = v === '1' ? S.players.slice() : []; llenaCancha() },
@@ -1805,7 +1825,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014023616';
+const VERSION = '20261014024614';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
