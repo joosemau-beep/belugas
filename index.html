@@ -301,8 +301,30 @@ const PLAYBOOK = {
     routes: {Z:{hot:1, motion:[0,-3.1], pts:[[0,-3.4],[4,-3.4],[4.5,3.1]]}, X:{pts:[[3.5,0],[7.5,4.5],[6,4.5]]}, Y:{pts:[[2,-1.5],[2,.8]]}, C:{pts:[[7,0],[7.5,6]]}}},
   'Pase normal 2': {desc: 'Pase normal.',
     pos: {Q:[-6,0], C:[-1.3,0], Z:[0,2.6], Y:[0,5.2], X:[0,8]},
-    routes: {C:{pts:[[2,2],[2.5,6]]}, Z:{pts:[[1,-1],[2.5,-5.5]]}, Y:{pts:[[5,0],[8,-3]]}, X:{hot:1, pts:[[10,0]]}}}
+    routes: {C:{pts:[[2,2],[2.5,6]]}, Z:{pts:[[1,-1],[2.5,-5.5]]}, Y:{pts:[[5,0],[8,-3]]}, X:{hot:1, pts:[[10,0]]}}},
+  // de los videos que mandó Mau (14-oct)
+  'Poste de Z': {desc: 'Pase normal, buena cerca de la zona de anotación. Z sube 8 y se mete en diagonal hacia el centro (principal). El centro sube 7 y sale a la derecha, Y cruza corto a la derecha y X sale a la banda izquierda.',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Y:[0,-4.5], Z:[0,7.5]},
+    routes: {Z:{hot:1, pts:[[7.5,0],[12,-8]]}, C:{pts:[[7,0],[8.5,8]]}, Y:{pts:[[1.5,0],[2,10.5]]}, X:{pts:[[6.5,0],[6.5,-2.5]]}}},
+  'Falso QB': {desc: 'Engaño con corrida. El saque va a Z (falso QB), que se la pasa rápido al QB. Z le da la vuelta por detrás hacia la derecha y el QB finge dársela: decide si se la da o se la queda y lanza, para que no sepan quién la trae.', snap: 'Z', qb: 'Q',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Z:[0,-3], Y:[0,9]},
+    routes: {Z:{hot:1, pts:[[-2.7,1],[-4.3,3],[-3.5,5.3],[-0.5,8.3],[2,9.8]]}, X:{pts:[[6.5,0],[12,7]]}, C:{pts:[[8,0],[8,-5.5]]}, Y:{pts:[[12,0]]}}},
+  'Z silencioso': {desc: 'Engaño con corrida. Saque silencioso, sin "hut": Z pasa en movimiento por detrás del centro y el centro se la da. Z la lanza de lado a Y y sigue corriendo hacia él para el engaño; Y corre con el balón hacia el lado contrario. X se va largo por la izquierda para abrirle espacio.', snap: 'Z', qb: 'Y',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-6.5], Z:[0,-3.2], Y:[0,3.7]},
+    routes: {Z:{motion:[-1.2,3.9], pts:[[1.2,3],[3,5],[8,5.6]]}, Y:{hot:1, pts:[[-1.5,-1.5],[-1.5,-7],[5,-8.5]]}, X:{pts:[[2,-1],[9,-2.5]]}}},
+  // diseñadas para completar las secciones (mínimo 4 por sección)
+  'Cruce corto': {desc: 'Pase rápido. Y y el centro se cruzan corto por el centro (Y a 2 yardas, el centro a 3), casi rozándose, para que sus marcadores se estorben. X y Z se van largo para abrir espacio. Lanza al que salga libre del cruce.',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[-1,-3.5], Z:[0,8.5]},
+    routes: {Y:{hot:1, pts:[[3,1],[3,9]]}, C:{pts:[[4.3,-1],[4.3,-8]]}, X:{pts:[[11,0]]}, Z:{pts:[[11,0]]}}},
+  'Diagonales rápidas': {desc: 'Pase rápido. X y Z dan dos pasos y se meten en diagonal hacia el centro; Y sale plano a la banda izquierda por debajo de X y el centro sube 4 y se regresa hacia el QB. Lanzar en cuanto uno quede libre.',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[0,-4.5], Z:[0,8.5]},
+    routes: {Z:{hot:1, pts:[[1.5,0],[4.5,-4]]}, X:{pts:[[1.5,0],[4.5,4]]}, Y:{pts:[[1,0],[1,-5.5]]}, C:{pts:[[5.3,0],[4.6,0.6]]}}},
+  'Corre y lanza': {desc: 'Engaño. Antes del saque Y se acomoda junto al QB. El QB se la da y Y corre hacia la derecha como si fuera corrida; cuando la defensa se le acerca, Y lanza largo a X, que fingió quedarse y luego se fue profundo. Si nadie se acerca, Y sigue corriendo.', qb: 'Y',
+    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[-1,3.5], Z:[0,8.5]},
+    routes: {X:{hot:1, pts:[[2,0],[3,1],[12,3]]}, Y:{motion:[-4.5,-2], pts:[[0,5],[2,8]]}, Z:{pts:[[4,0],[4,3]]}, C:{pts:[[3.3,0],[3.3,-4]]}}}
 };
+// jugadas que se agregan al libro después: entran una sola vez a quien ya tenía datos (si luego las quitan o renombran, no regresan)
+const NUEVAS = {'Poste de Z': 'De avance', 'Falso QB': 'Engaños', 'Z silencioso': 'Engaños', 'Cruce corto': 'Rápidas', 'Diagonales rápidas': 'Rápidas', 'Corre y lanza': 'Engaños'};
 const pbPos = name => PLAYBOOK[name] && ROLES.map(r => PLAYBOOK[name].pos[r]);
 const grpOf = (side, c) => [CAUSES[side], ...(side === 'O' ? [INC] : [])].map(g => Object.keys(g).find(k => g[k].includes(c))).find(Boolean);
 const PALETTE = ['#4dabf7','#ff6b6b','#ffd43b','#da77f2','#ffa94d','#3bc9db','#f783ac','#f1f3f5','#9775fa','#e0b27a'];
@@ -315,7 +337,7 @@ const dflt = () => ({
   players: [], pb: {}, off: Object.keys(PLAYBOOK),
   // secciones de ataque, por lo que se necesita en ese momento; secOf = en cuál va cada jugada
   secs: ['Rápidas', 'De avance', 'Engaños'],
-  secOf: {'Pantalla rápida': 'Rápidas', 'Pantalla izquierda': 'Rápidas', 'Pase normal 1': 'De avance', 'Pase normal 2': 'De avance', 'Corto y largo': 'De avance', 'Z cierra': 'Engaños'}, def: ['Carriles','Persona','Zona'], arch: [], archSide: {},
+  secOf: {'Pantalla rápida': 'Rápidas', 'Pantalla izquierda': 'Rápidas', 'Pase normal 1': 'De avance', 'Pase normal 2': 'De avance', 'Corto y largo': 'De avance', 'Z cierra': 'Engaños', ...NUEVAS}, seen: [], def: ['Carriles','Persona','Zona'], arch: [], archSide: {},
   forms: {
     'D:Carriles': [[-4,-10],[-4,-5],[-4,0],[-4,5],[-4,10]],
     'D:Persona': [[-2,-9],[-2,-4.5],[-2,0],[-2,4.5],[-2,9]],
@@ -353,7 +375,10 @@ if (!cur()) newGame('');
 // jugadas renombradas conservan su dibujo
 Object.entries(S.pbAlias || {}).forEach(([nv, old]) => { if (PLAYBOOK[old]) PLAYBOOK[nv] = PLAYBOOK[old] });
 // las que dibujaron ustedes (o editaron) mandan sobre las de la tarjeta
-const mergePb = () => Object.assign(PLAYBOOK, S.pb);
+const mergePb = () => {
+  Object.assign(PLAYBOOK, S.pb);
+  Object.entries(NUEVAS).forEach(([n, s]) => { if (S.seen.includes(n)) return; S.seen.push(n); if (!S.off.includes(n) && !S.arch.includes(n)) S.off.push(n); if (!S.secOf[n]) S.secOf[n] = s });
+};
 mergePb();
 
 // borrador de la jugada. stage: null = campo, 'pick' = elegir jugada, 'how' = recrear cómo estuvo
