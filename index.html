@@ -349,7 +349,7 @@ Object.entries(S.pbAlias || {}).forEach(([nv, old]) => { if (PLAYBOOK[old]) PLAY
 // route = ruta del receptor ya estirada (su último punto es donde atrapó); vb = encuadre de la vista de recrear
 // lat = pases después de atrapar o correr: t = dónde lanzó, c = dónde la recibió, to = quién. pen = castigo
 const fresh = () => ({stage: null, play: null, res: null, cause: null, td: null, end: null, setBall: false, tgt: null, who: null, miss: null, route: null, catch: null, vb: null,
-  lat: [], pen: {fav: false, yd: 5, extra: false}, foul: null, ret: false});
+  lat: [], pen: {fav: false, yd: 5, extra: false}, foul: null, ret: false, qb: 0}); // qb = posición de quien lanzó (0 = Q)
 let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let d = fresh(), tab = 'field', pop = null, popAt = null, popSheet = false, sf = {game: 'all', side: 'O', play: ''}, ff = {scope: 'game', game: null}, noClick = 0;
 let MY = 20; // unidades por yarda a lo ancho en el campo principal; se ajusta para llenar la pantalla
@@ -618,9 +618,9 @@ function howExtra(e) {
   if (e.penEnd) return L(S.ball, e.penEnd, e.worked ? '#30d158' : '#ff453a', 6, true) + `<circle cx="${X(e.penEnd.x)}" cy="${Y(e.penEnd.y)}" r="${p(12)}" fill="${e.worked ? '#30d158' : '#ff453a'}" stroke="#fff" stroke-width="${p(3)}"/>`;
   let s = '', at = null;
   if (rr) s += segSvg([{pts: [rr.start, ...rr.pts], hot: true}], ([a, b]) => [X(a), Y(b)], p(5), p(14));
-  if (e.aim) return s + L(lineXY('O', 0), e.aim, '#ff453a', 4, true) + (d.res === 'Intercepción' && d.end ? L(e.aim, end, '#ffd60a', 5) : '');
+  if (e.aim) return s + L(lineXY('O', d.qb), e.aim, '#ff453a', 4, true) + (d.res === 'Intercepción' && d.end ? L(e.aim, end, '#ffd60a', 5) : '');
   if (d.res === 'Incompleto') return s;
-  if (e.catch) { s += L(S.side === 'O' ? lineXY('O', 0) : S.ball, e.catch, '#0a84ff', 4, true); at = e.catch }
+  if (e.catch) { s += L(S.side === 'O' ? lineXY('O', d.qb) : S.ball, e.catch, '#0a84ff', 4, true); at = e.catch }
   else if (d.res === 'Corrida' && d.tgt != null) at = lineXY(S.side, d.tgt);
   if (at) { d.lat.forEach(l => { s += L(at, l.t, '#ffd60a', 6) + L(l.t, l.c, '#ff9f0a', 4, true); at = l.c }); s += L(at, end, '#ffd60a', 6) }
   else if (d.end) s += L(S.ball, end, '#ffd60a', 5);
@@ -649,7 +649,7 @@ function howHandles(e) {
 function howOpts(e) {
   const w = askWho(), rr = recvRoute(), col = {tgt: '#ffd60a', who: '#30d158', miss: '#ff453a'};
   // ya elegido el que trae el balón, los demás se hacen chicos y no estorban (salvo que falte elegir a alguien)
-  const focus = (RUN.includes(d.res) || (S.side === 'O' && ZERO.includes(d.res))) && d.tgt != null && !pending() ? [...(S.side === 'O' ? [0] : []), d.tgt, ...d.lat.map(l => l.to)] : null;
+  const focus = (RUN.includes(d.res) || (S.side === 'O' && ZERO.includes(d.res))) && d.tgt != null && !pending() ? [...(S.side === 'O' ? [d.qb] : []), d.tgt, ...d.lat.map(l => l.to)] : null;
   return {id: 'sub', side: S.side, yu: 10, k: d.vk, vb: d.vb, ball: S.ball, end: d.end, players: true, pick: true, how: true, focus,
     sel: w && d[w[0]] != null ? [d[w[0]], col[w[0]]] : null, routes: routesField(d.play, focus && [d.tgt]), faint: !!rr || !!focus, extra: howExtra(e)};
 }
@@ -741,6 +741,8 @@ function vHow() {
       <p style="margin:10px 2px 0">${p.extra ? '' : 'Si no marcas esto, se repite el mismo down.'}</p></div>`;
     if (!p.fav) q += `<div class="ghead">¿Quién la cometió?</div><div class="group"><div class="pchips">${L.map((pl, i) => chip(pl, i, d.foul === i, 'foul', i)).join('')}</div></div>`;
   }
+  // no siempre lanza el Q: puede haber QB falso o jugada de engaño
+  if (O && ['Pase completo', 'Incompleto', 'Intercepción'].includes(d.res)) q += `<div class="ghead">¿Quién lanzó?</div><div class="group"><div class="pchips">${L.map((pl, i) => chip(pl, i, d.qb === i, 'qb', i)).join('')}</div></div>`;
   if (O && RUN.includes(d.res)) {
     const n0 = d.res === 'Pase completo' ? 2 : 1;
     q += `<div class="ghead">¿Se la pasó a otro?</div><div class="group"><p>Siempre puede pasarla hacia atrás. Hacia adelante solo detrás de la línea (zona de lanzamiento).</p>
@@ -1023,6 +1025,7 @@ const A = {
   },
   res(v) { tog('res', v); Object.assign(d, {cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: [], foul: null}) },
   cause: v => tog('cause', v),
+  qb: v => { d.qb = +v },
   // tocar un jugador en el campo: primero el que atrapó o corrió, luego quien recibió cada pase extra.
   // Otro toque al mismo (o cualquier toque si no hay a quién elegir) abre los nombres para cambiar quién jugó ahí
   who(v) {
@@ -1059,7 +1062,7 @@ const A = {
     const e = {id: Date.now(), side: S.side, play: d.play, res: d.res, td: r.td, ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
       cause, grp: r.auto ? r.auto[1] : (cause ? grpOf(S.side, cause) : 'ok'), catch: r.catch || null, aim: r.aim || null, path: r.path || null,
       chain: d.lat.map(l => ({t: l.t, c: l.c, to: nm(l.to)})), last: nm(last), pen: r.pen || null, foul: nm(d.foul),
-      qb: S.side === 'O' ? nm(0) : null, tgt: nm(d.tgt), who: nm(d.who), miss: nm(d.miss),
+      qb: S.side === 'O' ? nm(d.qb) : null, tgt: nm(d.tgt), who: nm(d.who), miss: nm(d.miss),
       pre: {side: S.side, ball: {...S.ball}, down: S.down, series: S.series.slice(), sstart: {...S.sstart}, fd: S.fd}};
     e.worked = works(e);
     g.events.push(e);
