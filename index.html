@@ -40,6 +40,14 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .tabbar button{background:none;box-shadow:none;border-radius:0;display:flex;align-items:center;justify-content:center;gap:8px;flex:0 1 170px;color:var(--mut);font-size:14px;font-weight:600}
 .tabbar button.on{color:var(--tint);background:none}
 .tabbar .ico{width:25px;height:25px}
+/* modo partido: Campo y Jugadas | lo que toca hacer | salir */
+.tabbar.gbar{justify-content:space-between;align-items:center;gap:10px;padding-left:10px;padding-right:12px}
+.gbar .gl,.gbar .gr{display:flex;align-items:center;height:100%;flex:none}.gbar .gl button{flex:none;height:100%;padding:0 14px}
+.gbar .gc{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;overflow:hidden}
+.gbar .gc .t{font-size:16px;font-weight:600;margin-right:4px;color:var(--tx)}.gbar .gc .t.mut{color:var(--mut)}
+.gbar .gc button,.gbar .salir{flex:none;background:var(--fill);box-shadow:inset 0 0 0 1px var(--edge);border-radius:999px;height:40px;padding:0 16px;color:var(--tx);font-size:15px;font-weight:600}
+.gbar .gc button.tint{background:var(--tint);color:var(--onTint)}.gbar .salir{color:var(--badTx)}
+@media (max-width:1000px){.gbar .gc .t{display:none}.gbar .gl button{padding:0 10px}}
 
 /* campo */
 .fscreen{position:fixed;inset:0 0 calc(var(--tabh) + env(safe-area-inset-bottom)) 0;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 8px) 14px 10px}
@@ -460,6 +468,7 @@ const fresh = () => ({stage: null, play: null, res: null, cause: null, td: null,
 let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
+let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
 let d = fresh(), tab = 'field', pop = null, popAt = null, popSheet = false, sf = {game: 'all', side: 'O', play: ''}, ff = {scope: 'game', game: null}, noClick = 0;
 let MY = 20; // unidades por yarda a lo ancho en el campo principal; se ajusta para llenar la pantalla
 
@@ -951,11 +960,8 @@ function vField() {
   const fav = puntos(ev, true), con = puntos(ev, false);
   const toMid = O ? S.ball.x < MID : S.ball.x > MID, tgt = O ? (toMid ? MID : GOAL_R) : (toMid ? MID : GOAL_L);
   const need = Math.max(0, Math.round(Math.abs(tgt - S.ball.x)));
-  let fl;
-  if (S.convPend) fl = `<span class="t">${S.convPend === 'O' ? 'Touchdown. ¿Por cuánto van?' : 'TD del rival. ¿Por cuánto van?'}</span><button class="tint" data-a="conv" data-v="1">1 punto · desde la 5</button><button class="tint" data-a="conv" data-v="2">2 puntos · desde la 10</button><button data-a="conv" data-v="0">No la intentaron</button>`;
-  else if (d.setBall) fl = `<span class="t">Toca el campo para mover el balón</span><button data-a="setball">Cancelar</button>`;
-  else if (d.end) { const y = yardsOf(S.side, null, S.ball, d.end); fl = `<span class="t">${verb(y)} ${sg(y)} yd</span><button data-a="cancel">Cancelar</button><button class="tint" data-a="confirm">Confirmar</button>` }
-  else fl = `<span class="t mut">Toca donde quedó el balón</span><button data-a="castigo">Castigo</button><button data-a="noadv">Sin avance</button>${S.prox ? '<button data-a="noplan">Cancelar jugada</button>' : ''}`;
+  // fuera del partido, el campo solo invita a seguirlo o empezar otro
+  const fl = S.juego ? '' : `<span class="t">vs ${esc(g.rival || 'Rival')}</span><button class="tint" data-a="entrar">Seguir partido</button><button data-a="newgame">Nuevo partido</button>`;
   return `<div class="fscreen">
   <div class="topbar">
     <div class="l"><img src="logo.webp" alt="Belugas"><div>vs ${esc(g.rival || 'Rival')}<small>${fav} – ${con}${ev.length ? ` · ${ev.length} jugada${ev.length === 1 ? '' : 's'}` : ''}</small></div></div>
@@ -969,10 +975,23 @@ function vField() {
       <div class="need"><b>${need}</b><span>yd para ${toMid ? 'Primera' : 'Goal'}${O ? '' : ' del rival'}</span></div></div>
     <div class="fbox" id="fboxwrap"><div id="fbox" style="position:absolute;inset:0"></div>
       ${S.msg ? `<div class="toast glass">${esc(S.msg)}</div>` : ''}
-      <div class="float glass">${fl}</div></div>
+      ${fl ? `<div class="float glass">${fl}</div>` : ''}</div>
   </div></div>`;
 }
 
+// modo partido: lo que toca hacer en el campo (va en la barra de abajo)
+function accionesCampo() {
+  if (S.convPend) return `<span class="t">${S.convPend === 'O' ? 'Touchdown. ¿Por cuánto van?' : 'TD del rival. ¿Por cuánto van?'}</span><button class="tint" data-a="conv" data-v="1">1 punto · desde la 5</button><button class="tint" data-a="conv" data-v="2">2 puntos · desde la 10</button><button data-a="conv" data-v="0">No la intentaron</button>`;
+  if (d.setBall) return `<span class="t">Toca el campo para mover el balón</span><button data-a="setball">Cancelar</button>`;
+  if (d.end) { const y = yardsOf(S.side, null, S.ball, d.end); return `<span class="t">${verb(y)} ${sg(y)} yd</span><button data-a="cancel">Cancelar</button><button class="tint" data-a="confirm">Confirmar</button>` }
+  return `<span class="t mut">Toca donde quedó el balón</span><button data-a="castigo">Castigo</button><button data-a="noadv">Sin avance</button>${S.prox ? '<button data-a="noplan">Cancelar jugada</button>' : ''}`;
+}
+// barra de abajo en modo partido: Campo y Jugadas a la izquierda, lo que toca hacer en medio, salir a la derecha
+function barraJuego() {
+  return `<div class="gl">${[['field', 'Campo'], ['plays', 'Jugadas']].map(([k, n]) => `<button class="${tab === k ? 'on' : ''}" data-a="tab" data-v="${k}">${icon(k)}${n}</button>`).join('')}</div>
+  <div class="gc">${tab === 'field' && !d.stage ? accionesCampo() : ''}</div>
+  <div class="gr"><button class="salir" data-a="salir">Salir del partido</button></div>`;
+}
 function vPick() {
   const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), pre = d.plan;
   // secciones arriba para brincar directo; se queda la última que usaron
@@ -1229,20 +1248,38 @@ function vTeam() {
 }
 
 // lista para cambiar quién juega en una posición; si ya juega en otra, se intercambian
+// los que vinieron al partido actual (si no se dijo, todo el equipo)
+const hoy = () => { const g = cur(); return g && g.asist ? S.players.filter(n => g.asist.includes(n)) : S.players };
+// saca de la cancha a quien no vino y llena los lugares vacíos con los que sí vinieron (ataque manda; defensa queda con los mismos 5)
+function llenaCancha() {
+  const h = hoy();
+  ['O', 'D'].forEach(sd => S.lines[sd].forEach(p => { if (p.name && !h.includes(p.name)) p.name = '' }));
+  const libres = h.filter(n => !S.lines.O.some(p => p.name === n));
+  S.lines.O.forEach(p => { if (!p.name) p.name = libres.shift() || '' });
+  iguala('O', 'D');
+}
 function menuRows(i) {
   const L = S.lines[S.side], p = L[i];
   const where = n => { const j = L.findIndex(q => q.name === n); return j >= 0 && j !== i ? L[j].r : '' };
   // cuadrícula: todos los nombres a la vista; la etiqueta dice en qué posición juega ahora (se intercambian)
-  return `<div class="pgrid">${S.players.map(n => { const w = where(n); return `<button class="pname${p.name === n ? ' on' : ''}" data-a="setname" data-v="${esc(n)}"><i class="dot" style="background:${colorOf(n)}"></i><span>${esc(n)}</span>${w ? `<small>${esc(w)}</small>` : ''}</button>` }).join('')}</div>`
+  return `<div class="pgrid">${hoy().map(n => { const w = where(n); return `<button class="pname${p.name === n ? ' on' : ''}" data-a="setname" data-v="${esc(n)}"><i class="dot" style="background:${colorOf(n)}"></i><span>${esc(n)}</span>${w ? `<small>${esc(w)}</small>` : ''}</button>` }).join('')}</div>`
     + `<div class="mfoot"><input id="newname" placeholder="Nuevo jugador"><button class="tint" data-a="addname">Agregar</button></div>`
     + (p.name ? '<div class="mfoot"><button class="plain danger" data-a="setname" data-v="">Dejar sin nombre</button></div>' : '');
 }
 function vPop() {
-  const L = S.lines[S.side];
+  const L = S.lines[S.side], h = hoy(), g = cur();
+  const chipsAsist = () => `<div class="pchips">${S.players.map(n => `<button class="pchip${h.includes(n) ? ' on' : ''}" style="padding-left:6px" data-a="asist" data-v="${esc(n)}"><i style="background:${colorOf(n)}"></i>${esc(n)}</button>`).join('')}</div>`;
+  if (asistOpen) return `<div class="scrim top"></div><div class="sheet top">
+    <div class="shead"><div><h1>¿Quiénes vinieron?</h1><p>Partido vs ${esc(g.rival || 'Rival')}. Solo ellos salen al escoger nombres; lo puedes cambiar en Jugadores</p></div></div>
+    <div class="row tight" style="margin-bottom:12px"><button data-a="asistall" data-v="1">Todos</button><button data-a="asistall" data-v="0">Nadie</button></div>
+    ${chipsAsist()}
+    <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Jugador nuevo"><button data-a="addasist">Agregar</button></div>
+    <div class="row tight" style="margin-top:18px"><button class="plain" data-a="ahorano">Ahora no</button><button class="tint" style="flex:1;min-height:54px;font-size:18px;border-radius:14px" data-a="empezar">Empezar partido · ${h.length} jugador${h.length === 1 ? '' : 'es'}</button></div></div>`;
   if (popSheet) return `<div class="scrim top" data-a="closepop"></div><div class="sheet top">
     <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
     <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
-      : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div></div>`;
+      : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div>
+    <div class="ghead" style="margin-top:18px">Vinieron hoy · ${h.length} de ${S.players.length}</div><div class="group">${chipsAsist()}</div></div>`;
   if (pop == null || !popAt) return '';
   const p = L[pop], W = 470;
   let x = popAt.x + 34; if (x + W > innerWidth - 12) x = popAt.x - 34 - W;
@@ -1254,7 +1291,9 @@ function vPop() {
 
 function render() {
   const pg = $('.page') ? $('.page').scrollTop : 0, is = $('.insp .scroll') ? $('.insp .scroll').scrollTop : 0;
-  $('#tabs').innerHTML = TABS.map(([k, n]) => `<button class="${tab === k ? 'on' : ''}" data-a="tab" data-v="${k}">${icon(k)}${n}</button>`).join('');
+  const juego = S.juego && (tab === 'field' || tab === 'plays');
+  $('#tabs').classList.toggle('gbar', !!juego);
+  $('#tabs').innerHTML = juego ? barraJuego() : TABS.map(([k, n]) => `<button class="${tab === k ? 'on' : ''}" data-a="tab" data-v="${k}">${icon(k)}${n}</button>`).join('');
   $('#app').innerHTML = tab === 'field' ? vField() : `<div class="page">${{plays: vPlays, stats: vStats, fantasy: vFantasy, team: vTeam}[tab]()}</div>`;
   $('#ov').innerHTML = ed ? vEd() : tab !== 'field' ? '' : d.stage === 'pick' ? vPick() : d.stage === 'how' ? vHow() : '';
   const still = n => n.style.animation = 'none', ok = (ed ? 'ed' : tab) + d.stage, fl = d.setBall ? 's' : d.end ? 'e' : 'n';
@@ -1262,8 +1301,8 @@ function render() {
   if (fl === lastFl) document.querySelectorAll('.float').forEach(still);
   lastOv = ok; lastFl = fl;
   $('#pop').innerHTML = vPop();
-  if (lastPop && (pop != null || popSheet)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
-  lastPop = pop != null || popSheet;
+  if (lastPop && (pop != null || popSheet || asistOpen)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
+  lastPop = pop != null || popSheet || asistOpen;
   drawFields();
   const mn = $('.menu'); if (mn) { const r = mn.getBoundingClientRect(); mn.style.top = clamp(r.top, 12, Math.max(12, innerHeight - r.height - 12)) + 'px'; mn.style.left = clamp(r.left, 12, Math.max(12, innerWidth - r.width - 12)) + 'px' }
   if ($('.page')) $('.page').scrollTop = pg;
@@ -1401,7 +1440,15 @@ const A = {
     if (o) o.name = p.name; p.name = v; iguala(S.side, S.side === 'O' ? 'D' : 'O');
     if (popSheet) pop = null; else A.closepop();
   },
-  addname() { const v = $('#newname').value.trim(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); A.setname(v) },
+  addname() { const v = $('#newname').value.trim(), g = cur(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); if (g.asist && !g.asist.includes(v)) g.asist.push(v); A.setname(v) },
+  // modo partido y asistencia
+  entrar: () => { S.juego = true; tab = 'field' },
+  salir: () => { S.juego = false; d = fresh() },
+  asist(v) { const g = cur(); g.asist = g.asist || S.players.slice(); const i = g.asist.indexOf(v); if (i >= 0) g.asist.splice(i, 1); else g.asist.push(v); llenaCancha() },
+  asistall: v => { cur().asist = v === '1' ? S.players.slice() : []; llenaCancha() },
+  addasist() { const v = $('#newasist').value.trim(), g = cur(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); g.asist = g.asist || []; if (!g.asist.includes(v)) g.asist.push(v); llenaCancha() },
+  empezar: () => { asistOpen = false; S.juego = true; llenaCancha(); tab = 'field'; d = fresh() },
+  ahorano: () => { asistOpen = false },
   ss: v => { sf.side = v; sf.play = '' },
   fscope: v => { ff.scope = v }, sp: v => sf.play = v,
   addplay() { const v = $('#newplay').value.trim(), l = sf.side === 'O' ? S.off : S.def; if (!uniq(l, v)) return; l.push(v); if (sf.side === 'O') openEd(v) },
@@ -1450,7 +1497,7 @@ const A = {
   unarch(v) { S.arch = S.arch.filter(n => n !== v); (sf.side === 'O' ? S.off : S.def).push(v) },
   addp() { const v = $('#newp').value.trim(); if (uniq(S.players, v)) S.players.push(v) },
   delp(v) { const n = S.players[+v]; delete S.colors[n]; ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === n) p.name = '' })); S.players.splice(+v, 1) },
-  newgame() { const r = prompt('¿Contra quién juegan?'); if (r === null) return; keepState(); newGame(r.trim()); loadState(); tab = 'field' },
+  newgame() { const r = prompt('¿Contra quién juegan?'); if (r === null) return; keepState(); const ant = cur(); newGame(r.trim()); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); tab = 'field'; asistOpen = true },
   setgame: v => { keepState(); S.cur = +v; loadState(); tab = 'field' },
   rengame(v) { const g = S.games.find(x => x.id === +v), r = prompt('Rival', g.rival); if (r !== null) g.rival = r.trim() },
   delgame(v) { if (!confirm('¿Borrar este partido y todas sus jugadas?')) return; S.games = S.games.filter(g => g.id !== +v); if (S.cur === +v || !S.games.length) { S.games.length ? S.cur = S.games[S.games.length - 1].id : newGame(''); loadState() } fixFilter() },
@@ -1563,7 +1610,7 @@ document.addEventListener('pointerup', endDrag);
 document.addEventListener('pointercancel', () => { if (drag) drag.to = null; endDrag() }); // si el iPad corta el gesto, no se intercambia nada
 document.addEventListener('click', e => {
   if (Date.now() < noClick) return;
-  if (e.target.closest('#field') && tab === 'field' && !d.stage && !S.convPend) {
+  if (e.target.closest('#field') && tab === 'field' && !d.stage && !S.convPend && S.juego) {
     const p = ptIn('#field', e, MY), pt = {x: Math.round(clamp(p.x, 0, 70) * 2) / 2, y: Math.round(clamp(p.y, 0, 25) * 2) / 2};
     if (d.setBall) { S.ball = {x: pt.x, y: 12.5}; if (!S.series.length) S.sstart = {...S.ball}; d.setBall = false } else { d = fresh(); d.end = pt }
     save(); return render();
@@ -1577,7 +1624,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => { const t = e.target.closest('[data-c]'); if (!t) return; C[t.dataset.c](t.value, +t.dataset.i); save(); if (t.dataset.c === 'renp') t.value = S.players[+t.dataset.i]; else render() });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  const m = {newp: 'addp', newname: 'addname', newplay: 'addplay'}[e.target.id];
+  const m = {newp: 'addp', newname: 'addname', newplay: 'addplay', newasist: 'addasist'}[e.target.id];
   if (m) { A[m](); save(); render() }
 });
 addEventListener('resize', () => { if (!drag) { d.vb = null; drawFields() } });
@@ -1639,7 +1686,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014021107';
+const VERSION = '20261014021757';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
