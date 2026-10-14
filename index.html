@@ -148,7 +148,8 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .latrow{border-top:.5px solid var(--line);padding:10px 0 4px}
 .latrow .lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
 .scrim.clear{background:transparent;animation:none;z-index:40}
-.scrim.top,.sheet.top{z-index:45} /* Jugadores también encima de recrear la jugada */
+.scrim.top,.sheet.top{z-index:45}
+.sheet.dlg{width:min(460px,calc(100vw - 40px))}.dlgt{margin:0;font-size:18px;font-weight:600;line-height:1.4} /* Jugadores también encima de recrear la jugada */
 .pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px}
 .pname{display:flex;align-items:center;gap:8px;min-height:46px;padding:6px 10px;text-align:left;font-size:16px}
 .pname span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -231,6 +232,7 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px}
 .aw{background:var(--card);box-shadow:inset 0 0 0 1px var(--line);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center}
 .aw .av{width:38px;height:38px;font-size:15px}
+.aw.bad{box-shadow:inset 0 0 0 1px rgba(255,69,58,.55);background:linear-gradient(135deg,rgba(255,69,58,.12),var(--card))}
 .aw small{display:block;color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .aw b{display:block;font-size:16px}
 .aw span{font-size:13px;color:var(--mut)}
@@ -474,6 +476,11 @@ const fresh = () => ({stage: null, play: null, res: null, cause: null, td: null,
 let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
+let verPruebas = false; // en Jugadas: la pastilla está en Pruebas
+// preguntas y avisos dentro de la app: las ventanas del navegador (confirm, prompt) a veces no salen en el ícono del iPad
+let dlg = null;
+const pregunta = (t, si, fn, input = null) => { dlg = {t, si, fn, input} };
+const aviso = t => { dlg = {t, si: 'Entendido', fn: () => {}, solo: true} };
 let repG = null, repFrom = 'team'; // reporte del partido que se está viendo
 let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
 // modo partido: lo decide cada aparato (no viaja a la nube), así un compañero que ve la app no queda capturando sin querer
@@ -1091,14 +1098,15 @@ function vPlays() {
     <div class="row tight" style="margin-top:12px">${O ? `<button data-a="edopen" data-v="${esc(n)}">Dibujar</button>` : ''}<button data-a="renplay" data-v="${esc(n)}">Renombrar</button><button class="x" data-a="archplay" data-v="${esc(n)}">Quitar del libro</button></div></div>`;
   };
   const archived = S.arch.filter(n => S.archSide[n] === sf.side);
-  return `<h1 class="lt">Jugadas</h1><div class="row"><div class="seg sm"><button class="${O ? 'on' : ''}" data-a="ss" data-v="O">Ataque</button><button class="${O ? '' : 'on'}" data-a="ss" data-v="D">Defensa</button></div></div>
+  const head = `<h1 class="lt">Jugadas</h1><div class="row"><div class="seg sm"><button class="${O && !verPruebas ? 'on' : ''}" data-a="ss" data-v="O">Ataque</button><button class="${O || verPruebas ? '' : 'on'}" data-a="ss" data-v="D">Defensa</button><button class="${verPruebas ? 'on' : ''}" data-a="verpru">Pruebas${S.pruebas.length ? ' · ' + S.pruebas.length : ''}</button></div></div>`;
+  if (verPruebas) return head + vPruebas();
+  return head + `
   <div class="card"><h2>Qué hacemos con cada una</h2>${sum || '<span class="mut">Registra jugadas en Campo y aquí aparece qué mantener y qué quitar.</span>'}</div>
   <div class="card"><h2>Agregar ${O ? 'jugada nueva' : 'tipo de defensa'}</h2><div class="row tight"><input id="newplay" placeholder="Nombre" style="flex:1"><button class="tint" data-a="addplay">Agregar</button></div>
   <p class="mut" style="margin:10px 0 0;font-size:15px">Las nuevas quedan "A prueba" hasta tener 4 intentos.</p></div>
   ${O ? secGroups(list).map(([s, l]) => { const a = agg(l.flatMap(n => g[n] || [])), vn = Object.fromEntries(vs);
     return `<div class="sect"><h2>${esc(s)}</h2><span class="mut">${a.n ? `${a.n} ${a.n === 1 ? 'vez' : 'veces'} · funcionó ${Math.round(a.pct)}% · ${f1(a.avg)} yd por jugada` : 'Sin jugadas registradas'}</span>${s !== 'Sin sección' ? `<button class="plain" data-a="rensec" data-v="${esc(s)}">Renombrar</button>` : ''}</div>
     <div class="cols2">${l.map(n => card([n, vn[n]])).join('')}</div>` }).join('') : `<div class="cols2">${vs.map(card).join('')}</div>`}
-  ${O ? vPruebas() : ''}
   ${archived.length ? `<div class="card"><h2>Fuera del libro</h2>${archived.map(n => `<div class="item"><span>${esc(n)}</span><button class="plain" data-a="unarch" data-v="${esc(n)}">Regresar</button></div>`).join('')}</div>` : ''}`;
 }
 
@@ -1285,6 +1293,17 @@ function vReport() {
     best('Manos seguras', p => p.rec, p => `${p.rec} rec sin que se le cayera`, p => p.rec > 0 && !p.drop),
     best('El muro', p => p.def, p => `${p.def} pts en defensa`)
   ].join('');
+  // lo que no salió: los peores del partido (en rojo)
+  const worst = (label, f, fmt) => { const c = F.filter(p => f(p) > 0).sort((x, y) => f(y) - f(x))[0]; return c ? `<div class="aw bad">${avatar(c.n)}<div><small>${label}</small><b>${esc(c.n)}</b><span>${fmt(c)}</span></div></div>` : '' };
+  const peor = O.filter(isTO)[0] || O.filter(e => !e.worked).sort((x, y) => x.yds - y.yds)[0], duele = D.filter(e => !e.worked).sort((x, y) => y.yds - x.yds)[0], ult = F.length > 2 ? F[F.length - 1] : null;
+  const malos = [
+    peor ? `<div class="aw bad"><i class="av" style="background:var(--bad);color:#fff">${peor.yds < 0 ? peor.yds : '−'}</i><div><small>Peor jugada nuestra</small><b>${esc(peor.play || 'Jugada')}</b><span>${esc(peor.res)}${peor.tgt ? ' · iba a ' + esc(peor.tgt) : ''}${peor.cause ? ' · ' + esc(peor.cause) : ''}</span></div></div>` : '',
+    duele ? `<div class="aw bad"><i class="av" style="background:var(--bad);color:#fff">${sg(duele.yds)}</i><div><small>Lo que más nos dolió</small><b>${duele.td ? 'TD de ' + esc(riv) : 'Avance de ' + esc(riv)}</b><span>${duele.play ? 'Defendíamos con ' + esc(duele.play) : ''}${duele.miss ? ' · se le fue a ' + esc(duele.miss) : ''}</span></div></div>` : '',
+    ult ? `<div class="aw bad">${avatar(ult.n)}<div><small>Último del fantasy</small><b>${esc(ult.n)}</b><span>${ult.pts} pts</span></div></div>` : '',
+    worst('Se le cayó', p => p.drop, p => `${p.drop} pase${p.drop > 1 ? 's' : ''} que se le cayó`),
+    worst('Se le fueron', p => p.miss, p => `${p.miss} ${p.miss > 1 ? 'veces' : 'vez'} en defensa`),
+    worst('Más castigos', p => p.foul, p => `${p.foul} castigo${p.foul > 1 ? 's' : ''}`)
+  ].join('');
   // jugadas de este partido: qué funcionó y qué no
   const porJ = Object.entries(by(O.filter(e => e.play), 'play')).map(([n, l]) => [n, agg(l), l]).sort((x, y) => y[1].pct - x[1].pct || y[1].avg - x[1].avg);
   const rows = porJ.map(([n, a2], i) => `<tr><td>${esc(n)}${i === 0 && porJ.length > 1 ? ' <span class="g">· la mejor</span>' : i === porJ.length - 1 && porJ.length > 1 ? ' <span class="r">· la peor</span>' : ''}</td><td>${a2.n}</td><td>${a2.ok}/${a2.n}</td><td>${f1(a2.avg)}</td><td>${a2.td}</td></tr>`).join('');
@@ -1305,7 +1324,8 @@ function vReport() {
   <div class="card"><h2>Defensa</h2><div class="kpis" style="margin:0">${kpi('Jugadas', aD.n)}${kpi('Yd permitidas', f1(aD.avg))}${kpi('Los paramos', Math.round(aD.pct) + '%')}${kpi('Sacks', D.filter(e => e.res === 'Sack').length)}${kpi('INT', D.filter(e => e.res === 'Intercepción').length)}</div></div></div>
   ${top ? `<div class="mvp"><img src="logo.webp" alt="">${avatar(top.n)}<div class="who"><span class="tag">MVP DEL PARTIDO</span><h2>${esc(top.n)}</h2><div class="mut">${esc(fLine(top))}</div></div><div class="pts"><b>${top.pts}</b><span>puntos</span></div></div>` : ''}
   ${awards ? `<div class="awards">${awards}</div>` : ''}
-  ${F.length > 1 ? `<div class="card"><h2>Fantasy del partido</h2><div class="lb">${F.slice(0, 5).map((p, i) => `<div class="lrow"><span class="rk">${i + 1}</span>${avatar(p.n)}<div class="nm"><b>${esc(p.n)}</b><small>${esc(fLine(p))}</small><div class="bar"><i style="width:${Math.max(0, p.pts) / Math.max(1, top.pts) * 100}%"></i></div></div><div class="p">${p.pts}<small>pts</small></div></div>`).join('')}</div></div>` : ''}
+  ${malos ? `<div class="ghead" style="margin:4px 6px 8px">Lo que no salió</div><div class="awards">${malos}</div>` : ''}
+  ${F.length > 1 ? `<div class="card"><h2>Fantasy del partido</h2><div class="lb">${F.map((p, i) => `<div class="lrow"><span class="rk">${i + 1}</span>${avatar(p.n)}<div class="nm"><b>${esc(p.n)}</b><small>${esc(fLine(p))}</small><div class="bar"><i style="width:${Math.max(0, p.pts) / Math.max(1, top.pts) * 100}%"></i></div></div><div class="p">${p.pts}<small>pts</small></div></div>`).join('')}</div></div>` : ''}
   ${rows ? `<div class="card"><h2>Nuestras jugadas</h2><table><tr><th>Jugada</th><th>Veces</th><th>Funcionó</th><th>Yd prom</th><th>TD</th></tr>${rows}</table>${ideas.length ? `<div style="margin-top:12px">${ideas.join('')}</div>` : ''}</div>` : ''}
   <div class="cols2"><div class="card"><h2>Para la práctica</h2><div class="ghead" style="margin:0 0 6px">${GL.O.nos}</div>${lista(causas(O, 'nos'))}<div class="ghead" style="margin:14px 0 6px">${GL.O.rv}</div>${lista(causas(O, 'rv'))}</div>
   <div class="card"><h2>Castigos</h2>${pens.length ? Object.entries(ct).sort((x, y) => y[1] - x[1]).map(([k, n]) => { const [t, f] = k.split('|'); return `<div class="item"><span>${esc(t)} <span class="mut">· ${+f ? 'a favor' : 'en contra'}</span></span><b class="${+f ? 'g' : 'r'}">${n}</b></div>` }).join('') : '<span class="mut">Ninguno</span>'}</div></div>`;
@@ -1345,6 +1365,8 @@ function menuRows(i) {
     + (p.name ? '<div class="mfoot"><button class="plain danger" data-a="setname" data-v="">Dejar sin nombre</button></div>' : '');
 }
 function vPop() {
+  if (dlg) return `<div class="scrim top" data-a="dlgno"></div><div class="sheet top dlg"><p class="dlgt">${esc(dlg.t)}</p>${dlg.input != null ? `<input id="dlgin" value="${esc(dlg.input)}" style="width:100%;margin-top:14px">` : ''}
+    <div class="row tight" style="margin-top:18px;justify-content:flex-end">${dlg.solo ? '' : '<button data-a="dlgno">Cancelar</button>'}<button class="tint" data-a="dlgok">${esc(dlg.si)}</button></div></div>`;
   const L = S.lines[S.side], h = hoy(), g = cur();
   const chipsAsist = () => `<div class="pchips">${S.players.map(n => `<button class="pchip${h.includes(n) ? ' on' : ''}" style="padding-left:6px" data-a="asist" data-v="${esc(n)}"><i style="background:${colorOf(n)}"></i>${esc(n)}</button>`).join('')}</div>`;
   if (asistOpen) return `<div class="scrim top"></div><div class="sheet top">
@@ -1380,8 +1402,9 @@ function render() {
   if (fl === lastFl) document.querySelectorAll('.float').forEach(still);
   lastOv = ok; lastFl = fl;
   $('#pop').innerHTML = vPop();
-  if (lastPop && (pop != null || popSheet || asistOpen)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
-  lastPop = pop != null || popSheet || asistOpen;
+  if (lastPop && (pop != null || popSheet || asistOpen || dlg)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
+  lastPop = pop != null || popSheet || asistOpen || !!dlg;
+  const di = $('#dlgin'); if (di && document.activeElement !== di) { di.focus(); di.select() }
   drawFields();
   const mn = $('.menu'); if (mn) { const r = mn.getBoundingClientRect(); mn.style.top = clamp(r.top, 12, Math.max(12, innerHeight - r.height - 12)) + 'px'; mn.style.left = clamp(r.left, 12, Math.max(12, innerWidth - r.width - 12)) + 'px' }
   if ($('.page')) $('.page').scrollTop = pg;
@@ -1511,6 +1534,8 @@ const A = {
     d = fresh();
   },
   undo() { const g = cur(), e = g && g.events.pop(); if (e) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, conv: e.pre.conv || null, convPend: null, msg: ''}) } d = fresh() },
+  dlgok() { const f = dlg.fn, v = dlg.input != null ? ($('#dlgin') || {value: ''}).value : true; dlg = null; f(v) },
+  dlgno: () => { dlg = null },
   closepop: () => { pop = null; popAt = null; popSheet = false },
   lineup: () => { popSheet = true; pop = null; popAt = null },
   popi: v => { pop = pop === +v ? null : +v },
@@ -1530,26 +1555,27 @@ const A = {
   addasist() { const v = $('#newasist').value.trim(), g = cur(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); g.asist = g.asist || []; if (!g.asist.includes(v)) g.asist.push(v); llenaCancha() },
   empezar: () => { asistOpen = false; ponJuego(true); llenaCancha(); tab = 'field'; d = fresh() },
   ahorano: () => { asistOpen = false },
-  ss: v => { sf.side = v; sf.play = '' },
+  ss: v => { sf.side = v; sf.play = ''; verPruebas = false },
+  verpru: () => { verPruebas = true },
   fscope: v => { ff.scope = v }, sp: v => sf.play = v,
   addplay() { const v = $('#newplay').value.trim(), l = sf.side === 'O' ? S.off : S.def; if (!uniq(l, v)) return; l.push(v); if (sf.side === 'O') openEd(v) },
   rensec(v) {
-    const nv = (prompt('Nuevo nombre de la sección', v) || '').trim(); if (!uniq(S.secs, nv)) return;
-    S.secs[S.secs.indexOf(v)] = nv; Object.keys(S.secOf).forEach(k => { if (S.secOf[k] === v) S.secOf[k] = nv });
+    pregunta('Nuevo nombre de la sección', 'Guardar', nv => { nv = nv.trim(); if (!uniq(S.secs, nv)) return;
+      S.secs[S.secs.indexOf(v)] = nv; Object.keys(S.secOf).forEach(k => { if (S.secOf[k] === v) S.secOf[k] = nv }) }, v);
   },
   conectar() {
     const k = ($('#linknube').value.match(/k=([\w-]{24,})/) || [])[1];
-    if (!k) return alert('Ese link no trae la clave del equipo. Cópialo completo.');
+    if (!k) return aviso('Ese link no trae la clave del equipo. Cópialo completo.');
     clave = k; lsSet('tochito.k', k); history.replaceState(null, '', '#k=' + k); nubeEst = 'Conectando'; bajar();
   },
   // jugadas de prueba
   addprueba() {
     const v = $('#newprueba').value.trim(), au = $('#autor').value; if (!v) return;
-    if ([...S.off, ...S.def, ...S.pruebas, ...S.arch].includes(v)) return alert('Ya hay una jugada con ese nombre');
+    if ([...S.off, ...S.def, ...S.pruebas, ...S.arch].includes(v)) return aviso('Ya hay una jugada con ese nombre');
     S.pruebas.push(v); openEd(v); ed.autor = au;
   },
-  aplaybook(v) { const [n, sec] = v.split('|'); if (!confirm(`¿Pasar "${n}" al playbook en ${sec}?`)) return; S.pruebas = S.pruebas.filter(x => x !== n); if (!S.off.includes(n)) S.off.push(n); S.secOf[n] = sec },
-  borraprueba(v) { if (!confirm(`¿Borrar la jugada de prueba "${v}"?`)) return; S.pruebas = S.pruebas.filter(x => x !== v); delete S.pb[v]; delete PLAYBOOK[v]; delete S.secOf[v] },
+  aplaybook(v) { const [n, sec] = v.split('|'); pregunta(`¿Pasar "${n}" al playbook en ${sec}?`, 'Pasar', () => { S.pruebas = S.pruebas.filter(x => x !== n); if (!S.off.includes(n)) S.off.push(n); S.secOf[n] = sec }) },
+  borraprueba(v) { pregunta(`¿Borrar la jugada de prueba "${v}"?`, 'Borrar', () => { S.pruebas = S.pruebas.filter(x => x !== v); delete S.pb[v]; delete PLAYBOOK[v]; delete S.secOf[v] }) },
   // editor de jugadas
   edopen: v => openEd(v),
   edcancel: () => { ed = null },
@@ -1557,7 +1583,7 @@ const A = {
   edqb: v => { ed.qb = v },
   edent: v => { ed.entrega = v },
   edsec: v => { ed.sec = ed.sec === v ? '' : v },
-  ednewsec() { const v = (prompt('Nombre de la sección nueva') || '').trim(); if (!v) return; if (uniq(S.secs, v)) S.secs.push(v); ed.sec = v },
+  ednewsec() { pregunta('Nombre de la sección nueva', 'Crear', v => { v = v.trim(); if (!v) return; if (uniq(S.secs, v)) S.secs.push(v); ed.sec = v }, '') },
   edmodo: v => { ed.modo = v },
   edpop() { const rt = ed.routes[ed.sel]; ((ed.modo === 'mov' ? rt.motion : rt.pts) || []).pop(); edLimpia(ed.sel) },
   edclr() { const rt = ed.routes[ed.sel]; if (ed.modo === 'mov') delete rt.motion; else rt.pts = []; edLimpia(ed.sel) },
@@ -1571,26 +1597,27 @@ const A = {
     ed = null;
   },
   renplay(v) {
-    const nv = (prompt('Nuevo nombre', v) || '').trim(), l = sf.side === 'O' ? S.off : S.def;
+    pregunta('Nuevo nombre de la jugada', 'Guardar', nv => { nv = nv.trim(); const l = sf.side === 'O' ? S.off : S.def;
     if (!uniq(l, nv)) return; l[l.indexOf(v)] = nv;
     S.games.forEach(g => g.events.forEach(e => { if (e.side === sf.side && e.play === v) e.play = nv }));
     const k = sf.side + ':'; if (S.forms[k + v]) { S.forms[k + nv] = S.forms[k + v]; delete S.forms[k + v] }
     if (sf.side === 'O' && PLAYBOOK[v]) { const al = S.pbAlias = S.pbAlias || {}, orig = al[v] || v; delete al[v]; al[nv] = orig; PLAYBOOK[nv] = PLAYBOOK[orig] }
     if (S.pb[v]) { S.pb[nv] = PLAYBOOK[nv] = S.pb[v]; delete S.pb[v] }
     if (S.secOf[v]) { S.secOf[nv] = S.secOf[v]; delete S.secOf[v] }
+    }, v);
   },
   archplay(v) {
-    if (!confirm('¿Quitar "' + v + '" del libro? Su historial se guarda y puede regresar.')) return;
+    pregunta('¿Quitar "' + v + '" del libro? Su historial se guarda y puede regresar.', 'Quitar', () => {
     const l = sf.side === 'O' ? S.off : S.def; l.splice(l.indexOf(v), 1);
-    S.arch.push(v); S.archSide[v] = sf.side;
+    S.arch.push(v); S.archSide[v] = sf.side });
   },
   unarch(v) { S.arch = S.arch.filter(n => n !== v); (sf.side === 'O' ? S.off : S.def).push(v) },
   addp() { const v = $('#newp').value.trim(); if (uniq(S.players, v)) S.players.push(v) },
   delp(v) { const n = S.players[+v]; delete S.colors[n]; ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === n) p.name = '' })); S.players.splice(+v, 1) },
-  newgame() { const r = prompt('¿Contra quién juegan?'); if (r === null) return; keepState(); const ant = cur(); newGame(r.trim()); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); tab = 'field'; asistOpen = true },
+  newgame() { pregunta('¿Contra quién juegan?', 'Siguiente', r => { keepState(); const ant = cur(); newGame(r.trim()); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); tab = 'field'; asistOpen = true }, '') },
   setgame: v => { keepState(); S.cur = +v; loadState(); tab = 'field' },
-  rengame(v) { const g = S.games.find(x => x.id === +v), r = prompt('Rival', g.rival); if (r !== null) g.rival = r.trim() },
-  delgame(v) { if (!confirm('¿Borrar este partido y todas sus jugadas?')) return; S.games = S.games.filter(g => g.id !== +v); if (S.cur === +v || !S.games.length) { S.games.length ? S.cur = S.games[S.games.length - 1].id : newGame(''); loadState() } fixFilter() },
+  rengame(v) { const g = S.games.find(x => x.id === +v); pregunta('Rival', 'Guardar', r => { g.rival = r.trim() }, g.rival || '') },
+  delgame(v) { pregunta('¿Borrar este partido y todas sus jugadas? No se puede deshacer.', 'Borrar', () => { S.borrados = [...(S.borrados || []), +v]; S.games = S.games.filter(g => g.id !== +v); if (S.cur === +v || !S.games.length) { S.games.length ? S.cur = S.games[S.games.length - 1].id : newGame(''); loadState() } fixFilter() }) },
   export() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S)], {type: 'application/json'})); a.download = 'tochito-respaldo.json'; a.click() }
 };
 const GST = ['side','ball','down','series','sstart','fd','conv','convPend'];
@@ -1609,7 +1636,7 @@ const C = {
 };
 function doImport(e) {
   const f = e.target.files[0]; if (!f) return;
-  f.text().then(t => { const x = JSON.parse(t); if (!Array.isArray(x.games)) throw 0; if (confirm('Esto reemplaza todo lo que hay en este iPad. ¿Seguro?')) { S = Object.assign(dflt(), x); initColors(); mergePb(); if (!cur()) newGame(''); fixFilter(); save(); render() } }).catch(() => alert('Archivo no válido'));
+  f.text().then(t => { const x = JSON.parse(t); if (!Array.isArray(x.games)) throw 0; pregunta('Esto reemplaza todo lo que hay en este iPad. ¿Seguro?', 'Reemplazar', () => { S = Object.assign(dflt(), x); initColors(); mergePb(); if (!cur()) newGame(''); fixFilter(); save(); render() }); render() }).catch(() => { aviso('Archivo no válido'); render() });
 }
 
 // ---------- gestos ----------
@@ -1714,7 +1741,7 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => { const t = e.target.closest('[data-c]'); if (!t) return; C[t.dataset.c](t.value, +t.dataset.i); save(); if (t.dataset.c === 'renp') t.value = S.players[+t.dataset.i]; else render() });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
-  const m = {newp: 'addp', newname: 'addname', newplay: 'addplay', newasist: 'addasist', newprueba: 'addprueba'}[e.target.id];
+  const m = {newp: 'addp', newname: 'addname', newplay: 'addplay', newasist: 'addasist', newprueba: 'addprueba', dlgin: 'dlgok'}[e.target.id];
   if (m) { A[m](); save(); render() }
 });
 addEventListener('resize', () => { if (!drag) { d.vb = null; drawFields() } });
@@ -1731,10 +1758,11 @@ const tieneDatos = x => x.players.length || x.games.some(g => g.events.length);
 const pinta = () => { if (!document.activeElement || !document.activeElement.matches('input')) render() };
 // dos aparatos cambiaron a la vez: se juntan partidos (por id, gana el que tenga más jugadas) y nombres; lo demás queda como en este aparato
 function juntar(a, b) {
-  const g = new Map(b.games.map(x => [x.id, x]));
+  const g = new Map(b.games.map(x => [x.id, x])), borr = [...new Set([...(a.borrados || []), ...(b.borrados || [])])];
   a.games.forEach(x => { const y = g.get(x.id); if (!y || x.events.length >= y.events.length) g.set(x.id, x) });
+  borr.forEach(id => g.delete(id)); // lo borrado en cualquier aparato no regresa
   const off = a.off || b.off || [], pruebas = [...new Set([...(a.pruebas || []), ...(b.pruebas || [])])].filter(n => !off.includes(n));
-  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pruebas});
+  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pruebas, borrados: borr});
 }
 async function bajar() {
   if (!clave || d.stage || drag) return;
@@ -1777,7 +1805,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014023107';
+const VERSION = '20261014023616';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
