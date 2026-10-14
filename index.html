@@ -534,7 +534,9 @@ const verb = y => S.side === 'O' ? (y < 0 ? 'Retrocedimos' : 'Avanzamos') : (y <
 // solo las opciones que tienen sentido con las yardas marcadas: con avance no hay incompleto, sin avance no hay pase completo
 function resOptions() {
   const y = d.end ? yardsOf(S.side, null, S.ball, d.end) : 0, F = S.side === 'O' ? 'Fumble' : 'Fumble forzado';
-  const list = y > 0 ? ['Pase completo','Corrida','Intercepción',F,'Castigo'] : y < 0 ? ['Sack','Corrida','Pase completo',F,'Castigo'] : ['Incompleto','Intercepción','Corrida','Castigo'];
+  // sin avance solo puede ser pase incompleto o corrida frenada en la línea: intercepción y fumble mueven el balón (se marcan tocando dónde quedó)
+  // y el castigo tiene su propio botón en el campo
+  const list = y > 0 ? ['Pase completo','Corrida','Intercepción',F,'Castigo'] : y < 0 ? ['Sack','Corrida','Pase completo',F,'Castigo'] : ['Incompleto','Corrida'];
   if (d.res && !list.includes(d.res)) list.unshift(d.res);
   return list;
 }
@@ -1520,7 +1522,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014013728';
+const VERSION = '20261014014114';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
