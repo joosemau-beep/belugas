@@ -1403,7 +1403,19 @@ async function subir() {
   } catch { subiendo = false; nubeEst = 'Sin señal' }
   if (tab === 'team') pinta();
 }
-document.addEventListener('visibilitychange', () => document.hidden ? subir() : bajar());
+document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
+// la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
+// si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
+const VERSION = '20261014001051';
+async function revisarVersion() {
+  if (location.protocol !== 'https:') return;
+  try {
+    const v = (await (await fetch('version.txt', {cache: 'no-store'})).text()).trim(), antes = (lsGet('tochito.recarga') || '').split(':');
+    if (!/^\d+$/.test(v) || v === VERSION || d.stage || ed || drag || pop != null || popSheet || nube.dirty || subiendo || saveFail) return;
+    if (antes[0] === v && Date.now() - +antes[1] < 60000) return; // ya se intentó hace poco: no recargar en círculos
+    lsSet('tochito.recarga', v + ':' + Date.now()); location.reload();
+  } catch {}
+}
 addEventListener('online', bajar);
 const nubeTxt = () => !clave ? 'Sin nube: lo que captures solo vive en este aparato. Pega el link del equipo para respaldarlo.'
   : nubeEst === 'Sin señal' ? `Sin señal${nube.dirty ? ': lo nuevo se sube solo en cuanto haya internet' : ''}.`
@@ -1416,6 +1428,7 @@ function warn() {
 const _render = render; render = () => { _render(); warn() };
 render();
 bajar();
+revisarVersion();
 </script>
 </body>
 </html>
