@@ -222,6 +222,12 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .lrow .bar i{display:block;height:100%;background:linear-gradient(90deg,#5aaeff,#9fd0ff)}
 .lrow .p{font-size:24px;font-weight:800;letter-spacing:-.02em;text-align:right;min-width:70px}
 .lrow .p small{display:block;font-size:12px;color:var(--mut);font-weight:600}
+.rhero{position:relative;overflow:hidden;display:flex;align-items:center;gap:20px;padding:24px;border-radius:22px;background:linear-gradient(135deg,#1d3f78,#13336a 55%,#0d2347);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:16px}
+.rhero img{width:96px;height:96px;object-fit:contain;flex:none}.rhero .sc{font-size:56px;font-weight:800;letter-spacing:-.03em;line-height:1.05}
+.res{display:inline-block;padding:4px 12px;border-radius:99px;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase}.res.w{background:var(--ok);color:#fff}.res.l{background:var(--bad);color:#fff}.res.t{background:var(--fill)}
+.tl{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:.5px solid var(--line)}.tl:last-child{border-bottom:0}
+.tl .mk{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:800;font-size:13px;color:#fff}.tl .mk.us{background:var(--ok)}.tl .mk.th{background:var(--bad)}
+.tl .mut{font-size:14px}.tl .sc2{margin-left:auto;font-weight:700;font-size:18px;white-space:nowrap;padding-left:10px}
 .awards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:16px}
 .aw{background:var(--card);box-shadow:inset 0 0 0 1px var(--line);border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center}
 .aw .av{width:38px;height:38px;font-size:15px}
@@ -468,6 +474,7 @@ const fresh = () => ({stage: null, play: null, res: null, cause: null, td: null,
 let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
+let repG = null, repFrom = 'team'; // reporte del partido que se está viendo
 let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
 // modo partido: lo decide cada aparato (no viaja a la nube), así un compañero que ve la app no queda capturando sin querer
 let enJuego = (() => { try { return localStorage['tochito.juego'] === '1' } catch { return false } })();
@@ -1203,12 +1210,12 @@ function fantasy(evs) {
 }
 function fLine(p) {
   const o = [];
-  if (p.att) o.push(`${p.comp}/${p.att} pases, ${p.pYd} yd${p.pTD ? `, ${p.pTD} TD` : ''}${p.int ? `, ${p.int} INT` : ''}`);
+  if (p.att) o.push(`${p.comp}/${p.att} pases, ${p.pYd} yd${p.pTD ? `, ${p.pTD} TD` : ''}${p.int ? `, ${p.int} INT lanzada${p.int > 1 ? 's' : ''}` : ''}`);
   if (p.tgt || p.rec) o.push(`${p.rec} rec, ${p.rYd} yd`);
   if (p.car) o.push(`${p.car} corrida${p.car > 1 ? 's' : ''}, ${p.ruYd} yd`);
   if (p.td) o.push(`${p.td} TD`);
   if (p.cv || p.cvp) o.push([p.cv && `conversión +${p.cv}`, p.cvp && `pase de conversión +${p.cvp}`].filter(Boolean).join(', '));
-  const df = [p.sack && `${p.sack} sack`, p.dInt && `${p.dInt} INT`, p.ff && `${p.ff} fumble forzado`, p.pbu && `${p.pbu} tapado${p.pbu > 1 ? 's' : ''}`, p.dTD && `${p.dTD} TD defensa`].filter(Boolean);
+  const df = [p.sack && `${p.sack} sack`, p.dInt && `${p.dInt} INT en defensa`, p.ff && `${p.ff} fumble forzado`, p.pbu && `${p.pbu} tapado${p.pbu > 1 ? 's' : ''}`, p.dTD && `${p.dTD} TD defensa`].filter(Boolean);
   if (df.length) o.push(df.join(', '));
   const bad = [p.drop && `${p.drop} se le cayó`, p.fum && `${p.fum} fumble`, p.miss && `${p.miss} se le fue`, p.foul && `${p.foul} falta${p.foul > 1 ? 's' : ''}`].filter(Boolean);
   if (bad.length) o.push(bad.join(', '));
@@ -1226,7 +1233,7 @@ function vFantasy() {
   const evs = season ? S.games.flatMap(g => g.events) : game.events;
   const L = fantasy(evs).filter(p => p.pts || p.att || p.rec || p.car || p.def);
   const head = `<h1 class="lt">Fantasy</h1><div class="row"><div class="seg sm"><button class="${season ? '' : 'on'}" data-a="fscope" data-v="game">Partido</button><button class="${season ? 'on' : ''}" data-a="fscope" data-v="season">Temporada</button></div>
-    ${season ? `<span class="mut">${S.games.length} partido${S.games.length === 1 ? '' : 's'}</span>` : `<select data-c="fgame">${S.games.slice().reverse().map(g => `<option value="${g.id}"${g.id === game.id ? ' selected' : ''}>${esc(g.date)} vs ${esc(g.rival || 'rival')}</option>`).join('')}</select>`}</div>`;
+    ${season ? `<span class="mut">${S.games.length} partido${S.games.length === 1 ? '' : 's'}</span>` : `<select data-c="fgame">${S.games.slice().reverse().map(g => `<option value="${g.id}"${g.id === game.id ? ' selected' : ''}>${esc(g.date)} vs ${esc(g.rival || 'rival')}</option>`).join('')}</select><button data-a="report" data-v="${game.id}">Reporte del partido</button>`}</div>`;
   if (!L.length) return head + '<div class="card mut">Todavía no hay puntos. Registra jugadas con quién lanzó, atrapó, corrió o hizo la jugada y aquí aparece el ranking.</div>';
   const top = L[0], max = Math.max(...L.map(p => p.pts), 1);
   const per = season ? S.games.map(g => fantasy(g.events)) : null;
@@ -1250,11 +1257,65 @@ function vFantasy() {
   <div class="card"><h2>Cómo se cuentan los puntos</h2><div class="scoring">${PTS_TXT.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div></div>`;
 }
 
+// reporte del partido, como el reporte semanal del fantasy: marcador, resumen, cómo se anotó, números, MVP, premios, jugadas y qué practicar
+function vReport() {
+  const g = S.games.find(x => x.id === repG) || cur(), ev = g.events, riv = g.rival || 'el rival';
+  const pf = puntos(ev, true), pc = puntos(ev, false), res = pf > pc ? ['Victoria', 'w'] : pf < pc ? ['Derrota', 'l'] : ['Empate', 't'];
+  const O = ev.filter(e => e.side === 'O' && !e.conv && e.res !== 'Castigo'), D = ev.filter(e => e.side === 'D' && !e.conv && e.res !== 'Castigo');
+  const aO = agg(O), aD = agg(D), pens = ev.filter(e => e.res === 'Castigo');
+  const quien = e => e.res === 'Pase completo' ? `${e.qb || 'el QB'} a ${e.last || e.tgt || 'un receptor'}` : e.res === 'Corrida' ? `${e.last || e.tgt || 'el corredor'} corrió` : e.res;
+  // cómo se anotó: TD y conversiones en orden, con el marcador en ese momento
+  let a = 0, b = 0;
+  const tl = ev.map(e => {
+    if (e.conv) { if (!e.td) return `<div class="tl"><i class="mk ${e.side === 'O' ? 'us' : 'th'}" style="opacity:.45">${e.conv}</i><div><b>Conversión de ${e.conv} que no entró</b><div class="mut">${e.side === 'O' ? 'Nuestra' : 'Del rival'}${e.play ? ' · ' + esc(e.play) : ''}</div></div><span class="sc2">${a} – ${b}</span></div>`;
+      if (e.side === 'O') a += e.conv; else b += e.conv;
+      return `<div class="tl"><i class="mk ${e.side === 'O' ? 'us' : 'th'}">+${e.conv}</i><div><b>${e.side === 'O' ? 'Entró la conversión' : 'Entró su conversión'} de ${e.conv}</b><div class="mut">${e.side === 'O' ? esc(quien(e)) + (e.play ? ' · ' + esc(e.play) : '') : 'Del rival'}</div></div><span class="sc2">${a} – ${b}</span></div>` }
+    if (ourTD(e)) { a += 6; return `<div class="tl"><i class="mk us">TD</i><div><b>${e.side === 'O' ? `${esc(quien(e))}, ${e.yds} yd` : `TD de la defensa: ${esc(e.who || 'la defensa')} (${esc(e.res)})`}</b><div class="mut">${e.play ? esc(e.play) : ''}${e.down ? ` · ${e.down}ª` : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
+    if (theirTD(e)) { b += 6; return `<div class="tl"><i class="mk th">TD</i><div><b>TD de ${esc(riv)}${e.side === 'D' ? `, ${e.yds} yd` : ` tras ${esc(e.res)}`}</b><div class="mut">${e.side === 'D' && e.play ? 'Defendimos con ' + esc(e.play) : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
+    return '' }).join('');
+  // resumen en una frase
+  const big = O.filter(e => e.worked).sort((x, y) => y.yds - x.yds)[0], take = D.filter(takeaway).length;
+  const resumen = `${res[0] === 'Victoria' ? `Ganamos por ${pf - pc}` : res[0] === 'Derrota' ? `Perdimos por ${pc - pf}` : 'Empatamos'} contra ${esc(riv)}. El ataque anotó ${O.filter(e => e.td).length} TD en ${aO.n} jugadas (${f1(aO.avg)} yd por jugada, funcionó ${Math.round(aO.pct)}%) y la defensa ${take ? `forzó ${take} pérdida${take > 1 ? 's' : ''}` : `permitió ${f1(aD.avg)} yd por jugada`}.${big ? ` La jugada del partido: ${esc(quien(big))} ${sg(big.yds)} yd en ${esc(big.play || 'una jugada')}.` : ''}`;
+  // fantasy del partido
+  const F = fantasy(ev).filter(p => p.pts || p.att || p.rec || p.car || p.def), top = F[0];
+  const best = (label, f, fmt, ok = p => f(p) > 0) => { const c = F.filter(ok).sort((x, y) => f(y) - f(x))[0]; return c ? `<div class="aw">${avatar(c.n)}<div><small>${label}</small><b>${esc(c.n)}</b><span>${fmt(c)}</span></div></div>` : '' };
+  const awards = [
+    big ? `<div class="aw"><i class="av" style="background:#ffd60a;color:#2a2000">${sg(big.yds)}</i><div><small>Jugada del partido</small><b>${esc(big.play || 'Jugada')}</b><span>${esc(quien(big))}</span></div></div>` : '',
+    best('Imparable', p => p.td, p => `${p.td} TD`),
+    best('Manos seguras', p => p.rec, p => `${p.rec} rec sin que se le cayera`, p => p.rec > 0 && !p.drop),
+    best('El muro', p => p.def, p => `${p.def} pts en defensa`)
+  ].join('');
+  // jugadas de este partido: qué funcionó y qué no
+  const porJ = Object.entries(by(O.filter(e => e.play), 'play')).map(([n, l]) => [n, agg(l), l]).sort((x, y) => y[1].pct - x[1].pct || y[1].avg - x[1].avg);
+  const rows = porJ.map(([n, a2], i) => `<tr><td>${esc(n)}${i === 0 && porJ.length > 1 ? ' <span class="g">· la mejor</span>' : i === porJ.length - 1 && porJ.length > 1 ? ' <span class="r">· la peor</span>' : ''}</td><td>${a2.n}</td><td>${a2.ok}/${a2.n}</td><td>${f1(a2.avg)}</td><td>${a2.td}</td></tr>`).join('');
+  const ideas = [];
+  const sigue = porJ.filter(([, a2]) => a2.n >= 2 && a2.pct >= 60).map(([n]) => n), prac = porJ.filter(([, a2]) => a2.n >= 2 && a2.pct < 50 && a2.nos >= a2.rv).map(([n]) => n), ajus = porJ.filter(([, a2]) => a2.n >= 2 && a2.pct < 50 && a2.rv > a2.nos).map(([n]) => n);
+  if (sigue.length) ideas.push(`<div class="item"><span class="g">Siguen funcionando</span><span>${sigue.map(esc).join(', ')}</span></div>`);
+  if (prac.length) ideas.push(`<div class="item"><span class="a">Practicar (falla nuestra)</span><span>${prac.map(esc).join(', ')}</span></div>`);
+  if (ajus.length) ideas.push(`<div class="item"><span class="r">Ajustar (nos la frenaron)</span><span>${ajus.map(esc).join(', ')}</span></div>`);
+  const causas = (l, grp) => { const c = {}; l.filter(e => !e.worked && e.cause && e.grp === grp).forEach(e => c[e.cause] = (c[e.cause] || 0) + 1); return Object.entries(c).sort((x, y) => y[1] - x[1]).slice(0, 4) };
+  const lista = l => l.length ? l.map(([k, n]) => `<div class="item"><span>${esc(k)}</span><b>${n}</b></div>`).join('') : '<span class="mut">Nada</span>';
+  const ct = {}; pens.forEach(e => { const k = (e.pen.tipo || 'Castigo') + '|' + (e.pen.fav ? 1 : 0); ct[k] = (ct[k] || 0) + 1 });
+  const kpi = (t, v) => `<div class="kpi"><span>${t}</span><b>${v}</b></div>`;
+  return `<div class="row" style="margin-bottom:6px"><button class="plain" data-a="repback">${icon('back')} Volver</button></div>
+  <div class="rhero"><img src="logo.webp" alt="Belugas"><div class="rh"><span class="res ${res[1]}">${res[0]}</span><div class="sc">${pf} – ${pc}</div><div class="mut">Belugas HDP vs ${esc(riv)} · ${esc(g.date || '')}</div></div></div>
+  <div class="card"><h2>Resumen</h2><p style="margin:0;font-size:18px;line-height:1.45">${resumen}</p></div>
+  ${tl ? `<div class="card"><h2>Cómo se anotó</h2>${tl}</div>` : ''}
+  <div class="cols2"><div class="card"><h2>Ataque</h2><div class="kpis" style="margin:0">${kpi('Jugadas', aO.n)}${kpi('Yd por jugada', f1(aO.avg))}${kpi('Funcionó', Math.round(aO.pct) + '%')}${kpi('Primeras', O.filter(e => e.fd).length)}${kpi('Pérdidas', aO.to)}</div></div>
+  <div class="card"><h2>Defensa</h2><div class="kpis" style="margin:0">${kpi('Jugadas', aD.n)}${kpi('Yd permitidas', f1(aD.avg))}${kpi('Los paramos', Math.round(aD.pct) + '%')}${kpi('Sacks', D.filter(e => e.res === 'Sack').length)}${kpi('INT', D.filter(e => e.res === 'Intercepción').length)}</div></div></div>
+  ${top ? `<div class="mvp"><img src="logo.webp" alt="">${avatar(top.n)}<div class="who"><span class="tag">MVP DEL PARTIDO</span><h2>${esc(top.n)}</h2><div class="mut">${esc(fLine(top))}</div></div><div class="pts"><b>${top.pts}</b><span>puntos</span></div></div>` : ''}
+  ${awards ? `<div class="awards">${awards}</div>` : ''}
+  ${F.length > 1 ? `<div class="card"><h2>Fantasy del partido</h2><div class="lb">${F.slice(0, 5).map((p, i) => `<div class="lrow"><span class="rk">${i + 1}</span>${avatar(p.n)}<div class="nm"><b>${esc(p.n)}</b><small>${esc(fLine(p))}</small><div class="bar"><i style="width:${Math.max(0, p.pts) / Math.max(1, top.pts) * 100}%"></i></div></div><div class="p">${p.pts}<small>pts</small></div></div>`).join('')}</div></div>` : ''}
+  ${rows ? `<div class="card"><h2>Nuestras jugadas</h2><table><tr><th>Jugada</th><th>Veces</th><th>Funcionó</th><th>Yd prom</th><th>TD</th></tr>${rows}</table>${ideas.length ? `<div style="margin-top:12px">${ideas.join('')}</div>` : ''}</div>` : ''}
+  <div class="cols2"><div class="card"><h2>Para la práctica</h2><div class="ghead" style="margin:0 0 6px">${GL.O.nos}</div>${lista(causas(O, 'nos'))}<div class="ghead" style="margin:14px 0 6px">${GL.O.rv}</div>${lista(causas(O, 'rv'))}</div>
+  <div class="card"><h2>Castigos</h2>${pens.length ? Object.entries(ct).sort((x, y) => y[1] - x[1]).map(([k, n]) => { const [t, f] = k.split('|'); return `<div class="item"><span>${esc(t)} <span class="mut">· ${+f ? 'a favor' : 'en contra'}</span></span><b class="${+f ? 'g' : 'r'}">${n}</b></div>` }).join('') : '<span class="mut">Ninguno</span>'}</div></div>`;
+}
+
 function vTeam() {
   const g = S.games.slice().reverse().map(x => {
     const a = puntos(x.events, true), b = puntos(x.events, false);
     return `<div class="item"><div><b>${esc(x.date)} vs ${esc(x.rival || 'rival')}</b><div class="mut" style="font-size:15px">${x.events.length} jugada${x.events.length === 1 ? '' : 's'} · ${a} – ${b}</div></div>
-    <div class="row tight"><button class="${x.id === S.cur ? 'on' : ''}" data-a="setgame" data-v="${x.id}">${x.id === S.cur ? 'Actual' : 'Usar'}</button><button data-a="rengame" data-v="${x.id}">Rival</button><button class="x" data-a="delgame" data-v="${x.id}">Borrar</button></div></div>`;
+    <div class="row tight"><button class="${x.id === S.cur ? 'on' : ''}" data-a="setgame" data-v="${x.id}">${x.id === S.cur ? 'Actual' : 'Usar'}</button><button data-a="report" data-v="${x.id}">Reporte</button><button data-a="rengame" data-v="${x.id}">Rival</button><button class="x" data-a="delgame" data-v="${x.id}">Borrar</button></div></div>`;
   }).join('');
   return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
     <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>
@@ -1312,7 +1373,7 @@ function render() {
   const juego = enJuego && (tab === 'field' || tab === 'plays');
   $('#tabs').classList.toggle('gbar', !!juego);
   $('#tabs').innerHTML = juego ? barraJuego() : TABS.map(([k, n]) => `<button class="${tab === k ? 'on' : ''}" data-a="tab" data-v="${k}">${icon(k)}${n}</button>`).join('');
-  $('#app').innerHTML = tab === 'field' ? vField() : `<div class="page">${{plays: vPlays, stats: vStats, fantasy: vFantasy, team: vTeam}[tab]()}</div>`;
+  $('#app').innerHTML = tab === 'field' ? vField() : `<div class="page">${{plays: vPlays, stats: vStats, fantasy: vFantasy, team: vTeam, report: vReport}[tab]()}</div>`;
   $('#ov').innerHTML = ed ? vEd() : tab !== 'field' ? '' : d.stage === 'pick' ? vPick() : d.stage === 'how' ? vHow() : '';
   const still = n => n.style.animation = 'none', ok = (ed ? 'ed' : tab) + d.stage, fl = d.setBall ? 's' : d.end ? 'e' : 'n';
   if (ok === lastOv) $('#ov').querySelectorAll('.how,.scrim,.sheet').forEach(still);
@@ -1461,7 +1522,9 @@ const A = {
   addname() { const v = $('#newname').value.trim(), g = cur(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); if (g.asist && !g.asist.includes(v)) g.asist.push(v); A.setname(v) },
   // modo partido y asistencia
   entrar: () => { ponJuego(true); tab = 'field' },
-  salir: () => { ponJuego(false); d = fresh() },
+  salir: () => { ponJuego(false); d = fresh(); repG = S.cur; repFrom = 'field'; tab = 'report' }, // al salir, el reporte del partido
+  report: v => { repG = +v || S.cur; repFrom = tab; tab = 'report' },
+  repback: () => { tab = repFrom === 'report' ? 'team' : repFrom },
   asist(v) { const g = cur(); g.asist = g.asist || S.players.slice(); const i = g.asist.indexOf(v); if (i >= 0) g.asist.splice(i, 1); else g.asist.push(v); llenaCancha() },
   asistall: v => { cur().asist = v === '1' ? S.players.slice() : []; llenaCancha() },
   addasist() { const v = $('#newasist').value.trim(), g = cur(); if (!v) return; if (uniq(S.players, v)) S.players.push(v); g.asist = g.asist || []; if (!g.asist.includes(v)) g.asist.push(v); llenaCancha() },
@@ -1714,7 +1777,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014022646';
+const VERSION = '20261014023107';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
