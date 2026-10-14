@@ -312,9 +312,10 @@ const PLAYBOOK = {
   'Falso QB': {short: 'Z de falso QB; el QB finge dársela o la lanza', desc: 'Engaño con corrida. El saque va a Z (falso QB), que se la pasa rápido al QB. Z le da la vuelta por detrás hacia la derecha y el QB finge dársela: decide si se la da o se la queda y lanza, para que no sepan quién la trae.', snap: 'Z', qb: 'Q', fin: 'El QB decide: se la da a Z o la lanza',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-9], Z:[0,-3], Y:[0,9]},
     routes: {Z:{hot:1, pts:[[-2.7,1],[-4.3,3],[-3.5,5.3],[-0.5,8.3],[2,9.8]]}, X:{pts:[[6.5,0],[12,7]]}, C:{pts:[[8,0],[8,-5.5]]}, Y:{pts:[[12,0]]}}},
-  'Z silencioso': {short: 'Saque sin hut; Y recibe de Z y corre por la izquierda', desc: 'Engaño con corrida. Saque silencioso, sin "hut": Z pasa en movimiento por detrás del centro y el centro se la da. Z se la lanza de lado a Y, que viene en sentido contrario, y sigue corriendo hacia la derecha para el engaño. Y corre con el balón por la izquierda, pegado a la línea, y sube por la banda. X se mete en diagonal hacia el centro para llevarse a su marcador.', snap: 'Z', qb: 'Y',
-    pos: {Q:[-6,0], C:[-1.3,0], X:[0,-7.4], Z:[0,-3.5], Y:[0,4.1]},
-    routes: {Z:{motion:[-2,4.1], pts:[[2,3.5],[5,5.8],[11,6.5]]}, Y:{hot:1, pts:[[-3,-4.1],[-3,-12],[2,-12.6],[7,-12.7]]}, X:{pts:[[1,0],[5.2,6.9]]}}},
+  // dibujada por Mau en la app (14-oct, "aaa"); sus letras pasadas a las de la jugada: su Y = Z (el del movimiento), su Q = Y (el que corre), su Z = QB
+  'Z silencioso': {short: 'Saque sin hut a Z; Y la recibe y corre por la izquierda', desc: 'Engaño con corrida. Saque silencioso, sin "hut": Z sale hacia atrás y cruza por detrás del centro, y ahí el centro se la da. Z se la pasa a Y, que viene de la derecha en sentido contrario, y Z sigue hacia la derecha para el engaño. Y corre con el balón por la izquierda y sube. El centro abre por la izquierda pegado a la línea, X se mete en diagonal al centro y el QB se queda atrás.', snap: 'Z', qb: 'Y',
+    pos: {Q:[-6.5,0], C:[-1.3,0], X:[-1,-7], Z:[-1,-4], Y:[-4,7.5]},
+    routes: {Z:{motion:[[-2.5,0],[-2.5,4]], pts:[[0,2.5],[0.5,8.5],[3.5,10.5],[7,10],[9.5,9.5]]}, Y:{hot:1, pts:[[0,-7],[1.5,-9.5],[7,-10],[10.5,-10]]}, C:{pts:[[0.3,-8],[3.3,-8.5],[5.8,-8.5]]}, X:{pts:[[4.5,0],[6,7.5]]}}},
   // diseñadas para completar las secciones (mínimo 4 por sección)
   'Cruce corto': {short: 'Y y el centro se cruzan corto', desc: 'Pase rápido. Y y el centro se cruzan corto por el centro (Y a 2 yardas, el centro a 3), casi rozándose, para que sus marcadores se estorben. X y Z se van largo para abrir espacio. Lanza al que salga libre del cruce.',
     pos: {Q:[-6,0], C:[-1.3,0], X:[0,-8.5], Y:[-1,-3.5], Z:[0,8.5]},
@@ -333,6 +334,8 @@ const PLAYBOOK = {
 const NUEVAS = {'Poste de Z': 'De avance', 'Falso QB': 'Engaños', 'Z silencioso': 'Engaños', 'Cruce corto': 'Rápidas', 'Diagonales rápidas': 'Rápidas', 'Corre y lanza': 'Engaños', 'Regresos cortos': 'Rápidas'};
 // jugadas que cambiaron de sección: se aplica una sola vez (si después ustedes la mueven, se respeta)
 const CAMBIOS = {'Pantalla izquierda': 'De avance'};
+// jugadas de prueba que se borran de todo (una sola vez)
+const BORRAR = ['aaa', 'aaaa'];
 // descripción corta: la de la jugada, o la primera frase de su descripción
 const corta = n => { const pb = PLAYBOOK[n]; return pb ? pb.short || (pb.desc || '').split('. ')[0] : '' };
 const pbPos = name => PLAYBOOK[name] && ROLES.map(r => PLAYBOOK[name].pos[r]);
@@ -389,6 +392,8 @@ const mergePb = () => {
   Object.assign(PLAYBOOK, S.pb);
   Object.entries(NUEVAS).forEach(([n, s]) => { if (S.seen.includes(n)) return; S.seen.push(n); if (!S.off.includes(n) && !S.arch.includes(n)) S.off.push(n); if (!S.secOf[n]) S.secOf[n] = s });
   Object.entries(CAMBIOS).forEach(([n, s]) => { const k = 'sec:' + n; if (S.seen.includes(k)) return; S.seen.push(k); S.secOf[n] = s });
+  BORRAR.forEach(n => { const k = 'borrar:' + n; if (S.seen.includes(k)) return; S.seen.push(k);
+    ['off', 'def', 'arch'].forEach(l => S[l] = S[l].filter(x => x !== n)); [S.archSide, S.pb, S.secOf, PLAYBOOK].forEach(o => delete o[n]); delete S.forms['O:' + n]; delete S.forms['D:' + n] });
 };
 mergePb();
 
@@ -605,7 +610,8 @@ function jugadaAnim(pb, L, pos, at, f) {
   let tiene = sn, t0 = T_SAQUE;
   const entrega = pb.qb && pb.qb !== sn;
   if (entrega) { va(tramo(ruta(sn), 0, en(T_ENT)).slice(1), T_ENT); va([punto(ruta(qb), en(T_RECIBE))], T_RECIBE); tiene = qb; t0 = T_RECIBE }
-  if (hot === tiene) va(tramo(ruta(tiene), en(t0), 1).slice(1), T_FIN);
+  // sin receptor principal (o si el principal es él), el que la trae corre con ella hasta el final; si no, la suelta lanzando
+  if (!hot || hot === tiene) va(tramo(ruta(tiene), en(t0), 1).slice(1), T_FIN);
   else { const tl = Math.max(T_LANZA, t0); va(tramo(ruta(tiene), en(t0), en(tl)).slice(1), tl); if (hot) va([ruta(hot).slice(-1)[0]], T_FIN) }
   stops.push([1, B.length]);
   // letrero de lo que va pasando
@@ -614,7 +620,7 @@ function jugadaAnim(pb, L, pos, at, f) {
   if (movs.length) fases.push([0, T_MOV[1], `${movs.map(Nom).join(' y ')} se mueve${movs.length > 1 ? 'n' : ''} antes del saque`]);
   fases.push([movs.length ? T_MOV[1] : 0, T_SAQUE + .06, `Saque ${aNom(sn)}`]);
   if (entrega) fases.push([T_SAQUE + .06, T_RECIBE + .06, `${Nom(sn)} se la da ${aNom(qb)}`]);
-  fases.push([entrega ? T_RECIBE + .06 : T_SAQUE + .06, 1, pb.fin || (hot === tiene ? `${Nom(tiene)} corre con el balón` : hot ? `${Nom(tiene)} lanza ${aNom(hot)}` : `${Nom(tiene)} lanza`)]);
+  fases.push([entrega ? T_RECIBE + .06 : T_SAQUE + .06, 1, pb.fin || (!hot || hot === tiene ? `${Nom(tiene)} corre con el balón` : `${Nom(tiene)} lanza ${aNom(hot)}`)]);
   const cap = fases.map(([a, b, t]) => { const kt = [0, a, b].filter((v, i, x) => i === 0 || v > x[i - 1]), vals = kt.map(v => v === a ? 1 : 0); if (b >= 1) { kt.splice(kt.indexOf(1), 1); vals.splice(-1, 1) }
     return `<g opacity="0"><animate attributeName="opacity" dur="${ANIM}s" repeatCount="indefinite" calcMode="discrete" keyTimes="${kt.join(';')}" values="${vals.join(';')}"/><rect x="${-t.length * .29 - .7}" y="-14.6" width="${t.length * .58 + 1.4}" height="1.9" rx=".95" fill="#000" fill-opacity=".55"/><text y="-13.2" font-size="1.1" font-weight="700" text-anchor="middle" fill="#fff">${esc(t)}</text></g>` }).join('');
   return {p, ball: motion(B, stops), cap};
@@ -1497,7 +1503,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014011633';
+const VERSION = '20261014012330';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
