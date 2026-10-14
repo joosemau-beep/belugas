@@ -112,6 +112,8 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .insp{width:400px;flex:none;display:flex;flex-direction:column;background:var(--bg);border-left:.5px solid var(--line);padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 14px)}
 .insp .scroll{flex:1;overflow:auto;min-height:0;margin:0 -4px;padding:0 4px}
 .ghead{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:4px 6px 7px;font-weight:500}
+.ghead.sech{font-size:15px;font-weight:700;color:var(--tx);margin:22px 4px 10px}
+.sect{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:26px 4px 12px}.sect h2{font-size:22px;margin:0}.sect .mut{font-size:15px}.sect .plain{margin-left:auto;min-height:32px;padding:2px 8px;font-size:15px}
 .group{background:var(--card);box-shadow:inset 0 0 0 1px var(--line);border-radius:14px;padding:12px;margin-bottom:18px}
 .group p{margin:0 2px 8px;color:var(--mut);font-size:15px}
 .yrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -310,7 +312,10 @@ const colorOf = name => {
 };
 
 const dflt = () => ({
-  players: [], pb: {}, off: Object.keys(PLAYBOOK), def: ['Carriles','Persona','Zona'], arch: [], archSide: {},
+  players: [], pb: {}, off: Object.keys(PLAYBOOK),
+  // secciones de ataque, por lo que se necesita en ese momento; secOf = en cuál va cada jugada
+  secs: ['Rápidas', 'De avance', 'Engaños'],
+  secOf: {'Pantalla rápida': 'Rápidas', 'Pantalla izquierda': 'Rápidas', 'Pase normal 1': 'De avance', 'Pase normal 2': 'De avance', 'Corto y largo': 'De avance', 'Z cierra': 'Engaños'}, def: ['Carriles','Persona','Zona'], arch: [], archSide: {},
   forms: {
     'D:Carriles': [[-4,-10],[-4,-5],[-4,0],[-4,5],[-4,10]],
     'D:Persona': [[-2,-9],[-2,-4.5],[-2,0],[-2,4.5],[-2,9]],
@@ -694,7 +699,7 @@ function drawFields() {
 // como en la tarjeta: adelante = arriba. En el dibujo x = lateral y y = -adelante (yardas desde el balón)
 function openEd(name) {
   const pb = PLAYBOOK[name];
-  ed = {name, desc: pb ? pb.desc || '' : '', snap: pb && pb.snap || 'Q', qb: pb && pb.qb || '', sel: null,
+  ed = {name, desc: pb ? pb.desc || '' : '', snap: pb && pb.snap || 'Q', qb: pb && pb.qb || '', sel: null, sec: S.secOf[name] || '',
     pos: Object.fromEntries(dflt().lines.O.map(p => [p.r, pb && pb.pos[p.r] ? pb.pos[p.r].slice() : [p.dx, p.dy]])),
     routes: JSON.parse(JSON.stringify(pb ? pb.routes : {}))};
 }
@@ -783,8 +788,8 @@ function vPick() {
   const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end);
   return `<div class="scrim" data-a="cancelpick"></div><div class="sheet">
   <div class="shead"><div><h1>${O ? '¿Qué jugada hicimos?' : '¿Qué defensa usamos?'}</h1><p>${d.end ? `${verb(y)} ${sg(y)} yd` : 'Sin avance'} · ${S.down}ª</p></div><button class="xbtn" data-a="cancelpick">${icon('x')}</button></div>
-  <div class="tiles">${(O ? S.off : S.def).map(n => { const dg = diagram(n, S.side), ds = O && PLAYBOOK[n] ? PLAYBOOK[n].desc : '';
-    return `<button class="tile" data-a="pick" data-v="${esc(n)}">${dg || '<div class="noimg">Sin dibujo</div>'}<b>${esc(n)}</b>${ds ? `<small>${esc(ds)}</small>` : ''}</button>` }).join('')}</div></div>`;
+  ${(O ? secGroups(S.off) : [['', S.def]]).map(([s, l], i) => `${s ? `<div class="ghead sech"${i ? '' : ' style="margin-top:0"'}>${esc(s)}</div>` : ''}<div class="tiles">${l.map(n => { const dg = diagram(n, S.side), ds = O && PLAYBOOK[n] ? PLAYBOOK[n].desc : '';
+    return `<button class="tile" data-a="pick" data-v="${esc(n)}">${dg || '<div class="noimg">Sin dibujo</div>'}<b>${esc(n)}</b>${ds ? `<small>${esc(ds)}</small>` : ''}</button>` }).join('')}</div>`).join('')}</div>`;
 }
 
 function vHow() {
@@ -854,7 +859,7 @@ function vPlays() {
     return `<div class="card"><div class="item" style="border:0;padding:0"><b style="font-size:19px">${esc(n)}</b><span class="badge ${v.k}">${v.t}</span></div>
     <div style="max-width:360px;margin:10px 0">${diagram(n, sf.side)}</div><div style="margin:6px 0">${esc(v.why)}</div>
     <div class="stack"><i style="width:${a.ok / w * 100}%;background:var(--ok)"></i><i style="width:${a.nos / w * 100}%;background:var(--nos)"></i><i style="width:${a.rv / w * 100}%;background:var(--bad)"></i></div>
-    <div class="mut" style="font-size:15px">${a.n} veces · ${f1(a.avg)} yd por jugada · <span class="g">${a.ok} bien</span> · <span class="a">${a.nos} falla nuestra</span> · <span class="r">${a.rv} frenada</span>${tc ? ' · más repetido: ' + esc(tc) : ''}</div>
+    <div class="mut" style="font-size:15px">${a.n} ${a.n === 1 ? 'vez' : 'veces'} · ${f1(a.avg)} yd por jugada · <span class="g">${a.ok} bien</span> · <span class="a">${a.nos} falla nuestra</span> · <span class="r">${a.rv} frenada</span>${tc ? ' · más repetido: ' + esc(tc) : ''}</div>
     <div class="row tight" style="margin-top:12px">${O ? `<button data-a="edopen" data-v="${esc(n)}">Dibujar</button>` : ''}<button data-a="renplay" data-v="${esc(n)}">Renombrar</button><button class="x" data-a="archplay" data-v="${esc(n)}">Quitar del libro</button></div></div>`;
   };
   const archived = S.arch.filter(n => S.archSide[n] === sf.side);
@@ -862,14 +867,17 @@ function vPlays() {
   <div class="card"><h2>Qué hacemos con cada una</h2>${sum || '<span class="mut">Registra jugadas en Campo y aquí aparece qué mantener y qué quitar.</span>'}</div>
   <div class="card"><h2>Agregar ${O ? 'jugada nueva' : 'tipo de defensa'}</h2><div class="row tight"><input id="newplay" placeholder="Nombre" style="flex:1"><button class="tint" data-a="addplay">Agregar</button></div>
   <p class="mut" style="margin:10px 0 0;font-size:15px">Las nuevas quedan "A prueba" hasta tener 4 intentos.</p></div>
-  <div class="cols2">${vs.map(card).join('')}</div>
+  ${O ? secGroups(list).map(([s, l]) => { const a = agg(l.flatMap(n => g[n] || [])), vn = Object.fromEntries(vs);
+    return `<div class="sect"><h2>${esc(s)}</h2><span class="mut">${a.n ? `${a.n} ${a.n === 1 ? 'vez' : 'veces'} · funcionó ${Math.round(a.pct)}% · ${f1(a.avg)} yd por jugada` : 'Sin jugadas registradas'}</span>${s !== 'Sin sección' ? `<button class="plain" data-a="rensec" data-v="${esc(s)}">Renombrar</button>` : ''}</div>
+    <div class="cols2">${l.map(n => card([n, vn[n]])).join('')}</div>` }).join('') : `<div class="cols2">${vs.map(card).join('')}</div>`}
   ${archived.length ? `<div class="card"><h2>Fuera del libro</h2>${archived.map(n => `<div class="item"><span>${esc(n)}</span><button class="plain" data-a="unarch" data-v="${esc(n)}">Regresar</button></div>`).join('')}</div>` : ''}`;
 }
 
 function vEd() {
   const L = S.lines.O, nm = r => (L.find(q => q.r === r) || {}).name, rt = ed.sel && ed.routes[ed.sel], who = r => esc(nm(r) || r);
   const chip = (r, on, a) => `<button class="pchip${on ? ' on' : ''}" data-a="${a}" data-v="${r}"><i style="background:${colorOf(nm(r))}">${r}</i>${who(r)}</button>`;
-  let q = `<div class="ghead">Descripción</div><div class="group"><input data-c="eddesc" value="${esc(ed.desc)}" placeholder="Qué hace cada quien" style="width:100%"></div>
+  let q = `<div class="ghead">Sección</div><div class="group"><div class="pchips">${S.secs.map(s => `<button class="pchip${ed.sec === s ? ' on' : ''}" style="padding-left:14px" data-a="edsec" data-v="${esc(s)}">${esc(s)}</button>`).join('')}<button class="pchip" style="padding-left:12px" data-a="ednewsec">${icon('plus')}Nueva</button></div></div>
+    <div class="ghead">Descripción</div><div class="group"><input data-c="eddesc" value="${esc(ed.desc)}" placeholder="Qué hace cada quien" style="width:100%"></div>
     <div class="ghead">¿Quién recibe el saque?</div><div class="group"><div class="pchips">${ROLES.map(r => chip(r, ed.snap === r, 'edsnap')).join('')}</div></div>
     <div class="ghead">¿Se la da a alguien?</div><div class="group"><p>El que tenga el balón al final es el que lanza o corre.</p><div class="pchips"><button class="pchip${ed.qb ? '' : ' on'}" style="padding-left:14px" data-a="edqb" data-v="">Nadie</button>${ROLES.filter(r => r !== ed.snap).map(r => chip(r, ed.qb === r, 'edqb')).join('')}</div></div>`;
   q += ed.sel ? `<div class="ghead">Ruta de ${who(ed.sel)}</div><div class="group"><p>Toca el campo para agregar puntos. Arrastra los puntos morados para moverlos.</p>
@@ -915,6 +923,7 @@ function vStats() {
   <div class="cols2"><div class="card"><h2>Por qué no funcionó</h2>${causes.length ? causes.slice(0, 8).map(([k, [n, gr]]) => `<div class="item"><span>${esc(k)}</span><b class="${gr === 'nos' ? 'a' : 'r'}">${n}</b></div>`).join('') : '<span class="mut">Nada falló todavía.</span>'}
     <p class="mut" style="margin:10px 0 0;font-size:15px"><span class="a">Naranja</span>: falla nuestra. <span class="r">Rojo</span>: nos la frenaron.</p></div>
   <div class="card"><h2>Por down</h2><table>${head('Down')}${Object.keys(downs).sort().map(n => row(n + 'ª', downs[n])).join('')}</table></div></div>
+  ${O ? `<div class="card"><h2>Por sección</h2><table>${head('Sección')}${secGroups(S.off).map(([s, l]) => [s, L.filter(e => l.includes(e.play))]).filter(([, x]) => x.length).map(([s, x]) => row(s, x)).join('')}</table></div>` : ''}
   ${pl ? `<div class="card"><h2>Por jugador</h2><table>${pl}</table></div>` : ''}
   <div class="card"><h2>Dónde terminó cada jugada</h2><div class="row"><button class="${sf.play ? '' : 'on'}" data-a="sp" data-v="">Todas</button>${chips(plays, sf.play, 'sp')}</div>
   ${fieldSvg({side: sf.side, dots, yu: 14, k: .8, style: 'width:100%;height:auto;border-radius:12px;display:block'})}
@@ -1058,6 +1067,11 @@ function render() {
 // ---------- acciones ----------
 const tog = (k, v) => { d[k] = d[k] === v ? null : v };
 const uniq = (arr, v) => v && !arr.includes(v);
+// jugadas agrupadas por sección, en el orden de las secciones; las que no tienen van al final
+const secGroups = list => {
+  const g = S.secs.map(s => [s, list.filter(n => S.secOf[n] === s)]), rest = list.filter(n => !S.secs.includes(S.secOf[n]));
+  return [...g, ['Sin sección', rest]].filter(([, l]) => l.length);
+};
 function renameAll(old, nv, fields) { S.games.forEach(g => g.events.forEach(e => fields.forEach(f => { if (e[f] === old) e[f] = nv }))) }
 // serie = downs desde la última Primera; cada uno queda verde (avanzó) o rojo (no)
 function newSeries() { S.series = []; S.sstart = {...S.ball} }
@@ -1160,6 +1174,10 @@ const A = {
   ss: v => { sf.side = v; sf.play = '' },
   fscope: v => { ff.scope = v }, sp: v => sf.play = v,
   addplay() { const v = $('#newplay').value.trim(), l = sf.side === 'O' ? S.off : S.def; if (!uniq(l, v)) return; l.push(v); if (sf.side === 'O') openEd(v) },
+  rensec(v) {
+    const nv = (prompt('Nuevo nombre de la sección', v) || '').trim(); if (!uniq(S.secs, nv)) return;
+    S.secs[S.secs.indexOf(v)] = nv; Object.keys(S.secOf).forEach(k => { if (S.secOf[k] === v) S.secOf[k] = nv });
+  },
   conectar() {
     const k = ($('#linknube').value.match(/k=([\w-]{24,})/) || [])[1];
     if (!k) return alert('Ese link no trae la clave del equipo. Cópialo completo.');
@@ -1170,6 +1188,8 @@ const A = {
   edcancel: () => { ed = null },
   edsnap: v => { ed.snap = v; if (ed.qb === v) ed.qb = '' },
   edqb: v => { ed.qb = v },
+  edsec: v => { ed.sec = ed.sec === v ? '' : v },
+  ednewsec() { const v = (prompt('Nombre de la sección nueva') || '').trim(); if (!v) return; if (uniq(S.secs, v)) S.secs.push(v); ed.sec = v },
   edpop() { const rt = ed.routes[ed.sel]; rt.pts.pop(); if (!rt.pts.length && !rt.motion) delete ed.routes[ed.sel] },
   edclr() { delete ed.routes[ed.sel] },
   edhot() { const r = ed.sel, rt = ed.routes[r] = ed.routes[r] || {pts: []}, on = !rt.hot; Object.values(ed.routes).forEach(x => delete x.hot); if (on) rt.hot = 1 },
@@ -1182,7 +1202,9 @@ const A = {
   edsave() {
     Object.keys(ed.routes).forEach(r => { const rt = ed.routes[r]; if (!rt.motion && !(rt.pts && rt.pts.length)) delete ed.routes[r] });
     const def = {desc: ed.desc.trim(), pos: ed.pos, routes: ed.routes, ...(ed.snap !== 'Q' ? {snap: ed.snap} : {}), ...(ed.qb ? {qb: ed.qb} : {})};
-    S.pb[ed.name] = PLAYBOOK[ed.name] = def; if (!S.off.includes(ed.name)) S.off.push(ed.name); ed = null;
+    S.pb[ed.name] = PLAYBOOK[ed.name] = def; if (!S.off.includes(ed.name)) S.off.push(ed.name);
+    if (ed.sec) S.secOf[ed.name] = ed.sec; else delete S.secOf[ed.name];
+    ed = null;
   },
   renplay(v) {
     const nv = (prompt('Nuevo nombre', v) || '').trim(), l = sf.side === 'O' ? S.off : S.def;
@@ -1191,6 +1213,7 @@ const A = {
     const k = sf.side + ':'; if (S.forms[k + v]) { S.forms[k + nv] = S.forms[k + v]; delete S.forms[k + v] }
     if (sf.side === 'O' && PLAYBOOK[v]) { const al = S.pbAlias = S.pbAlias || {}, orig = al[v] || v; delete al[v]; al[nv] = orig; PLAYBOOK[nv] = PLAYBOOK[orig] }
     if (S.pb[v]) { S.pb[nv] = PLAYBOOK[nv] = S.pb[v]; delete S.pb[v] }
+    if (S.secOf[v]) { S.secOf[nv] = S.secOf[v]; delete S.secOf[v] }
   },
   archplay(v) {
     if (!confirm('¿Quitar "' + v + '" del libro? Su historial se guarda y puede regresar.')) return;
