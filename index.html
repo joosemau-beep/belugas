@@ -1406,7 +1406,7 @@ async function subir() {
 document.addEventListener('visibilitychange', () => document.hidden ? subir() : (bajar(), revisarVersion()));
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014001051';
+const VERSION = '20261014001156';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
