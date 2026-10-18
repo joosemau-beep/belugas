@@ -256,10 +256,13 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .wbsin{flex:1;display:grid;place-items:center;color:#999;font-size:7pt}
 /* imprimir o guardar en PDF (el reporte): sin barras ni botones, con los colores del equipo */
 @media print{
-  /* las tarjetas juntas en una sola hoja: 3 × 7.5 cm + poco espacio caben en carta o A4 aunque la impresora deje orilla */
+  /* las tarjetas juntas en una sola hoja si caben (3 × 7.5 cm); si la impresora o Safari dejan mucha orilla, la que no cabe
+     se pasa completa a la segunda hoja: en bloque (no flex) para que Safari respete el no partir una tarjeta */
   html:has(.wbhoja),html:has(.wbhoja) body{background:#fff!important}
-  html:has(.wbhoja) .page{padding:.8cm 0 0!important}
-  .wbhoja{gap:.25cm;padding:0}
+  html:has(.wbhoja){color-scheme:light} /* si no, la orilla de la hoja sale azul marino (tema oscuro) y gasta tinta */
+  html:has(.wbhoja) .page{padding:0!important}
+  .wbhoja{display:block;padding:0}
+  .wb{margin:0 auto .2cm;break-inside:avoid;page-break-inside:avoid}
   @page{size:A4;margin:0}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;animation:none!important}
   html,body{height:auto!important;overflow:visible!important;background:var(--bg)}
@@ -1958,7 +1961,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261014171307';
+const VERSION = '20261018121846';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
