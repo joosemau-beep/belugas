@@ -468,7 +468,7 @@ const dflt = () => ({
     'D:Persona': [[-2,-9],[-2,-3],[-2,3],[-2,9],[-7,0]],
     'D:Zona': [[-3,-7],[-3,7],[-10,-5],[-10,5],[-7,0]]
   },
-  bloques: [], // bloques de jugadores: [{id, n, O: [5 nombres por posición], D: [...]}], se escoge uno al cambiar de posesión
+  bloques: [], // bloques de jugadores: [{id, n, sd: 'O'|'D', O: [5 nombres por posición], D: [...]}]; cada bloque es de un lado (el otro va vacío). Se escoge al cambiar de posesión
   games: [], cur: null, side: 'O', ball: START('O'), down: 1, msg: '', series: [], sstart: START('O'), fd: false, colors: {},
   lines: {
     O: [['Q',-6,0],['C',-1.3,0],['X',0,-6],['Y',-1,5],['Z',0,9]].map(([r,dx,dy]) => ({r,dx,dy,name:''})),
@@ -514,7 +514,18 @@ const mergePb = () => {
   }
   BORRAR.forEach(n => { const k = 'borrar:' + n; if (S.seen.includes(k)) return; S.seen.push(k);
     ['off', 'def', 'arch'].forEach(l => S[l] = S[l].filter(x => x !== n)); [S.archSide, S.pb, S.secOf, PLAYBOOK].forEach(o => delete o[n]); delete S.forms['O:' + n]; delete S.forms['D:' + n] });
+  S.bloques = porLado(S.bloques || []);
 };
+// los bloques de antes traían ataque y defensa juntos; ahora cada uno es de un lado. Se decide por el nombre (ofensa/ataque o defensa);
+// si no dice, se parte en uno de cada lado (el de defensa con id + 1, así otro aparato no lo duplica). Los que ya tienen lado mandan
+function porLado(bs) {
+  const out = new Map(bs.filter(b => b.sd).map(b => [b.id, b])), pon = x => { if (!out.has(x.id)) out.set(x.id, x) };
+  bs.filter(b => !b.sd).forEach(b => { const n = b.n || '', l = /ofens|ataq/i.test(n) ? 'O' : /defen/i.test(n) ? 'D' : '';
+    if (l !== 'D') pon({...b, sd: 'O', O: b.O || [], D: []});
+    if (l === 'D') pon({...b, sd: 'D', O: [], D: b.D || []});
+    if (!l) pon({...b, id: b.id + 1, sd: 'D', O: [], D: b.D || []}) });
+  return [...out.values()];
+}
 mergePb();
 
 // borrador de la jugada. stage: null = campo, 'pick' = elegir jugada, 'how' = recrear cómo estuvo
@@ -534,8 +545,8 @@ const aviso = t => { dlg = {t, si: 'Entendido', fn: () => {}, solo: true} };
 let repG = null, repFrom = 'team'; // reporte del partido que se está viendo
 let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
 let bloqueAsk = false; // hoja "¿Qué bloque entra?": sale sola al cambiar de posesión si hay bloques guardados
-const pideBloque = () => { if (enJuego && S.bloques.length) bloqueAsk = true };
-let blq = null; // editor de un bloque: {id, n, O, D, sd, sel}; se arma sin tocar a los de la cancha
+const pideBloque = () => { if (enJuego && S.bloques.some(b => b.sd === S.side)) bloqueAsk = true }; // solo si hay bloques del lado que entra
+let blq = null; // editor de un bloque: {id, n, sd, arr, sel}; se arma sin tocar a los de la cancha
 // modo partido: lo decide cada aparato (no viaja a la nube), así un compañero que ve la app no queda capturando sin querer
 let enJuego = (() => { try { return localStorage['tochito.juego'] === '1' } catch { return false } })();
 const ponJuego = v => { enJuego = v; try { localStorage['tochito.juego'] = v ? '1' : '0' } catch {} };
@@ -1496,7 +1507,8 @@ function vTeam() {
   return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
     <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>
   <div class="card"><h2>Partidos</h2><button class="tint" style="width:100%;margin-bottom:10px;min-height:50px" data-a="newgame">Nuevo partido</button>${g}</div></div>
-  <div class="card"><h2>Bloques de jugadores</h2><p class="mut" style="margin:0 0 12px">Acomodos de quién va en cada posición. Al cambiar de posesión en el partido escoges cuál entra</p>${listaBloques()}</div>
+  <div class="card"><h2>Bloques de jugadores</h2><p class="mut" style="margin:0 0 12px">Acomodos de quién va en cada posición. Los de ataque salen cuando les toca atacar y los de defensa cuando les toca defender</p>
+    <div class="ghead">Ataque</div>${listaBloques('O')}<div class="ghead" style="margin-top:22px">Defensa</div>${listaBloques('D')}</div>
   <div class="card"><h2>Respaldo</h2><p class="nube${clave && !nubeEst && !nube.dirty ? ' ok' : ''}">${esc(nubeTxt())}</p>
   ${clave ? '' : '<div class="row tight" style="margin-bottom:12px"><input id="linknube" placeholder="Pega aquí el link del equipo" style="flex:1"><button class="tint" data-a="conectar">Conectar</button></div>'}<div class="row tight"><button data-a="export">Exportar datos</button><button onclick="document.getElementById('imp').click()">Importar datos</button><input type="file" id="imp" accept=".json" hidden></div>
   <p class="mut" style="margin:10px 0 0;font-size:15px">Los datos viven solo donde abres la app: Safari y el ícono de la pantalla de inicio guardan cada uno lo suyo. Usa siempre el ícono (Compartir, Añadir a pantalla de inicio) para que Safari no los borre. Si ya tienes partidos en Safari: exporta aquí, abre la app desde el ícono e importa.</p></div>`;
@@ -1512,10 +1524,10 @@ function llenaCancha() {
   llenaLado('O', h);
   if (juntos) iguala('O', 'D'); else llenaLado('D', h);
 }
-// bloques: quién juega en cada posición. Igual = ya son los que están en la cancha (entonces no hace falta ver los nombres)
+// bloques: quién juega en cada posición de un lado (ataque o defensa). Igual = ya son los que están en la cancha (entonces no hace falta ver los nombres)
 const enCancha = sd => S.lines[sd].map(p => p.name || '');
-const igualBloque = b => ['O', 'D'].every(sd => (b[sd] || []).join('|') === enCancha(sd).join('|'));
-const nomsBloque = (b, sd) => { const h = hoy();
+const igualBloque = b => (b[b.sd] || []).join('|') === enCancha(b.sd).join('|');
+const nomsBloque = b => { const h = hoy(), sd = b.sd;
   return `<div class="pchips">${S.lines[sd].map((p, i) => { const n = (b[sd] || [])[i], fue = !n || h.includes(n);
     return `<span class="pchip" style="padding-left:6px${fue ? '' : ';opacity:.5'}"><i style="background:${n ? colorOf(n) : 'var(--fill)'}">${esc(p.r)}</i>${n ? esc(n) : 'Sin nombre'}${fue ? '' : ' · no vino'}</span>` }).join('')}</div>` };
 // ¿ataque y defensa llevan a los mismos 5? Entonces se mueven juntos; si la defensa es otro grupo, cada lado va por su cuenta
@@ -1523,34 +1535,31 @@ const mismos = (a, b) => { const x = a.filter(Boolean).sort().join('|'); return 
 const nombresDe = sd => S.lines[sd].map(p => p.name || '');
 // llena los lugares vacíos de un lado con los que vinieron y no están ya en ese lado
 const llenaLado = (sd, h) => { const libres = h.filter(n => !S.lines[sd].some(p => p.name === n)); S.lines[sd].forEach(p => { if (!p.name) p.name = libres.shift() || '' }) };
-// pone el bloque en la cancha; quien no vino deja su lugar a alguien de la banca (como al empezar el partido)
+// pone el bloque en su lado de la cancha (el otro lado no se toca); quien no vino deja su lugar a alguien de la banca
 function usaBloque(b) {
-  const h = hoy(), juntos = mismos(b.O || [], b.D || []);
-  ['O', 'D'].forEach(sd => S.lines[sd].forEach((p, i) => { const n = (b[sd] || [])[i] || ''; p.name = h.includes(n) ? n : '' }));
-  llenaLado('O', h);
-  if (juntos) iguala('O', 'D'); else llenaLado('D', h);
+  const h = hoy(), sd = b.sd;
+  S.lines[sd].forEach((p, i) => { const n = (b[sd] || [])[i] || ''; p.name = h.includes(n) ? n : '' });
+  llenaLado(sd, h);
 }
-// en defensa juegan los mismos 5 del ataque: los que ya estaban se quedan en su lugar, los nuevos ocupan los huecos
-const igualaArr = (O, D) => { const A = O.filter(Boolean), falta = A.filter(n => !D.includes(n)); return D.map(n => n && A.includes(n) ? n : falta.shift() || '') };
+const ladoTxt = sd => sd === 'O' ? 'ataque' : 'defensa';
 function vBloque() {
-  const b = blq, L = S.lines[b.sd], arr = b[b.sd], i = b.sel;
+  const b = blq, L = S.lines[b.sd], arr = b.arr, i = b.sel;
   const slots = L.map((p, j) => `<button class="pname${i === j ? ' on' : ''}" data-a="blqsel" data-v="${j}"><i class="dot" style="background:${arr[j] ? colorOf(arr[j]) : 'var(--fill)'};display:grid;place-items:center;width:30px;height:30px;color:#111;font-style:normal;font-weight:700;font-size:13px">${esc(p.r)}</i><span>${arr[j] ? esc(arr[j]) : 'Sin nombre'}</span></button>`).join('');
-  // en ataque y en defensa se escoge entre todos (la defensa puede ser otro grupo)
+  // se escoge entre todo el equipo
   const nombres = S.players, dondeEsta = n => { const j = arr.indexOf(n); return j >= 0 && j !== i ? L[j].r : '' };
   return `<div class="scrim top"></div><div class="sheet top">
-    <div class="shead"><div><h1>${b.id ? 'Editar bloque' : 'Nuevo bloque'}</h1><p>Escoge quién va en cada posición. No cambia a los que están en la cancha hasta que uses el bloque</p></div><button class="xbtn" data-a="blqno">${icon('x')}</button></div>
+    <div class="shead"><div><h1>${b.id ? 'Editar' : 'Nuevo'} bloque de ${ladoTxt(b.sd)}</h1><p>Escoge quién va en cada posición de ${ladoTxt(b.sd)}. No cambia a los que están en la cancha hasta que uses el bloque</p></div><button class="xbtn" data-a="blqno">${icon('x')}</button></div>
     <input data-c="blqn" value="${esc(b.n)}" placeholder="Nombre del bloque" style="width:100%;margin-bottom:14px">
-    <div class="seg" style="margin-bottom:12px"><button class="${b.sd === 'O' ? 'on' : ''}" data-a="blqsd" data-v="O">Ataque</button><button class="${b.sd === 'D' ? 'on' : ''}" data-a="blqsd" data-v="D">Defensa</button></div>
-    <div class="ghead">${b.sd === 'O' ? 'Toca una posición y luego el nombre' : 'Toca una posición y luego el nombre. Pueden ser otros que en ataque'}</div>
+    <div class="ghead">Toca una posición y luego el nombre</div>
     <div class="group" style="padding:0"><div class="pgrid">${slots}</div></div>
     ${i == null ? '' : `<div class="ghead">¿Quién va de ${esc(L[i].r)}?</div><div class="group" style="padding:0"><div class="pgrid">${nombres.map(n => { const w = dondeEsta(n); return `<button class="pname${arr[i] === n ? ' on' : ''}" data-a="blqpon" data-v="${esc(n)}"><i class="dot" style="background:${colorOf(n)}"></i><span>${esc(n)}</span>${w ? `<small>${esc(w)}</small>` : ''}</button>` }).join('')}</div>
       ${arr[i] ? '<div class="mfoot"><button class="plain danger" data-a="blqpon" data-v="">Dejar sin nombre</button></div>' : ''}</div>`}
     <div class="row tight" style="margin-top:6px">${b.id ? '<button class="x" data-a="blqborra">Borrar bloque</button>' : ''}<button class="tint" style="flex:1;min-height:52px" data-a="blqok">Guardar bloque</button></div></div>`;
 }
-// al cambiar de posesión: una tarjeta por bloque (toda la tarjeta se toca), con quién entra y quién sale respecto a la cancha
-const listaBloques = () => `${S.bloques.map(b => `<div style="margin:6px 0 16px"><div class="item" style="border:0;padding:0 2px 8px"><b>${esc(b.n)}</b>${igualBloque(b) ? '<span class="mut">en la cancha</span>' : ''}</div>${nomsBloque(b, S.side)}
+// bloques de un lado, con Usar / Editar / Guardar la cancha aquí, y para hacer uno nuevo de ese lado
+const listaBloques = sd => `${S.bloques.filter(b => b.sd === sd).map(b => `<div style="margin:6px 0 16px"><div class="item" style="border:0;padding:0 2px 8px"><b>${esc(b.n)}</b>${igualBloque(b) ? '<span class="mut">en la cancha</span>' : ''}</div>${nomsBloque(b)}
         <div class="row tight" style="margin-top:10px"><button class="tint" data-a="bloqueusa" data-v="${b.id}">Usar</button><button data-a="bloqueedit" data-v="${b.id}">Editar</button><button data-a="bloqueguarda" data-v="${b.id}">Guardar la cancha aquí</button></div></div>`).join('')}
-      <button class="tint" data-a="bloquenuevo">${icon('plus')} Nuevo bloque</button>`;
+      <button class="tint" data-a="bloquenuevo" data-v="${sd}">${icon('plus')} Nuevo bloque de ${ladoTxt(sd)}</button>`;
 function vElegirBloque() {
   const sd = S.side, L = S.lines[sd], h = hoy(), ahora = enCancha(sd).filter(Boolean);
   const card = b => { const ya = igualBloque(b), arr = b[sd] || [], salen = ahora.filter(n => !arr.includes(n)), cambios = salen.length;
@@ -1562,7 +1571,7 @@ function vElegirBloque() {
       <span class="bgo">${ya ? 'Siguen estos' : 'Entra este bloque'}</span></button>` };
   return `<div class="scrim top"></div><div class="sheet top">
     <div class="shead"><div><h1>¿Quién entra ${sd === 'O' ? 'al ataque' : 'a la defensa'}?</h1><p>${S.msg && !/^Ahora/.test(S.msg) ? esc(S.msg) + ' · ' : ''}posiciones de ${sd === 'O' ? 'ataque: Q, C, X, Y, Z' : 'defensa: 1, 2, 3, 4 y R'}</p></div></div>
-    <div class="bgrid">${S.bloques.map(card).join('')}</div>
+    <div class="bgrid">${S.bloques.filter(b => b.sd === sd).map(card).join('')}</div>
     <div class="row tight" style="justify-content:space-between"><button class="plain" data-a="bloquesedit">Editar bloques</button><button data-a="bloqueno">Seguir igual</button></div></div>`;
 }
 function menuRows(i) {
@@ -1590,8 +1599,8 @@ function vPop() {
     <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
     <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
       : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div>
-    <div class="ghead" style="margin-top:18px">Bloques · ${S.bloques.length}</div><div class="group"><p>Haz todos los acomodos que quieras: quién va en cada posición en ataque y en defensa. Al cambiar de posesión escoges cuál entra</p>
-      ${listaBloques()}</div>
+    <div class="ghead" style="margin-top:18px">Bloques de ${ladoTxt(S.side)} · ${S.bloques.filter(b => b.sd === S.side).length}</div><div class="group"><p>Haz todos los acomodos que quieras de quién va en cada posición de ${ladoTxt(S.side)}. Cuando les toque ${S.side === 'O' ? 'atacar' : 'defender'} escoges cuál entra</p>
+      ${listaBloques(S.side)}</div>
     <div class="ghead" style="margin-top:18px">Vinieron hoy · ${h.length} de ${S.players.length}</div><div class="group">${chipsAsist()}
       <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Nombre del jugador nuevo"><button class="tint" data-a="addasist">${icon('plus')} Agregar jugador</button></div></div>
 </div>`;
@@ -1759,19 +1768,17 @@ const A = {
   bloqueusa(v) { const b = S.bloques.find(x => x.id === +v); if (b) usaBloque(b); bloqueAsk = false },
   bloqueno: () => { bloqueAsk = false },
   bloquesedit: () => { bloqueAsk = false; popSheet = true; pop = null; popAt = null },
-  // el bloque nuevo empieza con los de la cancha para solo cambiar a quien haga falta
-  bloquenuevo: () => { blq = {id: null, n: 'Bloque ' + (S.bloques.length + 1), O: enCancha('O'), D: enCancha('D'), sd: 'O', sel: null} },
-  bloqueedit(v) { const b = S.bloques.find(x => x.id === +v); if (b) blq = {id: b.id, n: b.n, O: b.O.slice(), D: b.D.slice(), sd: 'O', sel: null} },
-  blqsd: v => { blq.sd = v; blq.sel = null },
+  // el bloque nuevo es del lado que se escogió y empieza con los de la cancha de ese lado para solo cambiar a quien haga falta
+  bloquenuevo(v) { const sd = v === 'D' || v === 'O' ? v : S.side; blq = {id: null, n: `${sd === 'O' ? 'Ataque' : 'Defensa'} ${S.bloques.filter(b => b.sd === sd).length + 1}`, sd, arr: enCancha(sd), sel: null} },
+  bloqueedit(v) { const b = S.bloques.find(x => x.id === +v); if (b) blq = {id: b.id, n: b.n, sd: b.sd, arr: (b[b.sd] || []).slice(), sel: null} },
   blqsel: v => { blq.sel = blq.sel === +v ? null : +v },
-  // si el nombre ya está en otra posición, se intercambian; en ataque, la defensa se ajusta solo mientras lleve a los mismos 5
-  blqpon(v) { const arr = blq[blq.sd], i = blq.sel, j = v ? arr.indexOf(v) : -1, juntos = mismos(blq.O, blq.D); if (j >= 0 && j !== i) arr[j] = arr[i]; arr[i] = v;
-    if (blq.sd === 'O' && juntos) blq.D = igualaArr(blq.O, blq.D); blq.sel = i < arr.length - 1 ? i + 1 : null },
-  blqok() { const b = blq, x = b.id && S.bloques.find(y => y.id === b.id), n = b.n.trim() || 'Bloque ' + (S.bloques.length + 1);
-    if (x) Object.assign(x, {n, O: b.O, D: b.D}); else S.bloques.push({id: Date.now(), n, O: b.O, D: b.D}); blq = null },
+  // si el nombre ya está en otra posición, se intercambian
+  blqpon(v) { const arr = blq.arr, i = blq.sel, j = v ? arr.indexOf(v) : -1; if (j >= 0 && j !== i) arr[j] = arr[i]; arr[i] = v; blq.sel = i < arr.length - 1 ? i + 1 : null },
+  blqok() { const b = blq, x = b.id && S.bloques.find(y => y.id === b.id), n = b.n.trim() || `${b.sd === 'O' ? 'Ataque' : 'Defensa'} ${S.bloques.filter(y => y.sd === b.sd).length + 1}`;
+    if (x) Object.assign(x, {n, [b.sd]: b.arr}); else S.bloques.push({id: Date.now(), n, sd: b.sd, O: b.sd === 'O' ? b.arr : [], D: b.sd === 'D' ? b.arr : []}); blq = null },
   blqno: () => { blq = null },
   blqborra() { const b = blq; pregunta(`¿Borrar el bloque "${b.n}"?`, 'Borrar', () => { S.bloques = S.bloques.filter(x => x.id !== b.id); blq = null }) },
-  bloqueguarda(v) { const b = S.bloques.find(x => x.id === +v); if (b) pregunta(`¿Guardar los que están en la cancha en "${b.n}"?`, 'Guardar', () => { b.O = enCancha('O'); b.D = enCancha('D') }) },
+  bloqueguarda(v) { const b = S.bloques.find(x => x.id === +v); if (b) pregunta(`¿Guardar los que están en la cancha (${ladoTxt(b.sd)}) en "${b.n}"?`, 'Guardar', () => { b[b.sd] = enCancha(b.sd) }) },
   popi: v => { pop = pop === +v ? null : +v },
   setname(v) {
     const L = S.lines[S.side], p = L[pop], o = L.find((q, i) => i !== pop && v && q.name === v);
@@ -1858,7 +1865,7 @@ const A = {
   },
   unarch(v) { S.arch = S.arch.filter(n => n !== v); (sf.side === 'O' ? S.off : S.def).push(v) },
   addp() { const v = $('#newp').value.trim(); if (uniq(S.players, v)) S.players.push(v) },
-  delp(v) { const n = S.players[+v]; delete S.colors[n]; ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === n) p.name = '' })); S.bloques.forEach(b => ['O','D'].forEach(s => b[s] = b[s].map(x => x === n ? '' : x))); S.players.splice(+v, 1) },
+  delp(v) { const n = S.players[+v]; delete S.colors[n]; ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === n) p.name = '' })); S.bloques.forEach(b => ['O','D'].forEach(s => b[s] = (b[s] || []).map(x => x === n ? '' : x))); S.players.splice(+v, 1) },
   newgame() { pregunta('¿Contra quién juegan?', 'Siguiente', r => { keepState(); const ant = cur(); newGame(r.trim()); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); tab = 'field'; asistOpen = true }, '') },
   setgame: v => { keepState(); S.cur = +v; loadState(); tab = 'field' },
   rengame(v) { const g = S.games.find(x => x.id === +v); pregunta('Rival', 'Guardar', r => { g.rival = r.trim() }, g.rival || '') },
@@ -1878,7 +1885,7 @@ const C = {
     v = v.trim(); const old = S.players[i]; if (!uniq(S.players, v)) return;
     S.players[i] = v; S.colors[v] = S.colors[old]; delete S.colors[old]; renameAll(old, v, ['qb','tgt','who','miss','foul','last']); S.games.forEach(g => g.events.forEach(e => (e.chain || []).forEach(c => { if (c.to === old) c.to = v })));
     ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === old) p.name = v }));
-    S.bloques.forEach(b => ['O','D'].forEach(s => b[s] = b[s].map(n => n === old ? v : n)));
+    S.bloques.forEach(b => ['O','D'].forEach(s => b[s] = (b[s] || []).map(n => n === old ? v : n)));
   }
 };
 function doImport(e) {
@@ -2059,7 +2066,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261019142431';
+const VERSION = '20261019143216';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2070,6 +2077,8 @@ async function revisarVersion() {
   } catch {}
 }
 addEventListener('online', bajar);
+// sin señal lo capturado se queda en el aparato; cada 30 s se vuelve a intentar subir lo pendiente (en el iPad el aviso de "ya hay internet" no siempre llega)
+setInterval(() => { if (nube.dirty && !subiendo && !document.hidden) subir() }, 30000);
 const nubeTxt = () => !clave ? 'Sin nube: lo que captures solo vive en este aparato. Pega el link del equipo para respaldarlo.'
   : nubeEst === 'Sin señal' ? `Sin señal${nube.dirty ? ': lo nuevo se sube solo en cuanto haya internet' : ''}.`
   : nubeEst ? nubeEst + '.' : nube.dirty ? 'Subiendo a la nube…' : `Todo respaldado en la nube${nubeAt ? ' · ' + new Date(nubeAt).toLocaleTimeString('es-MX', {hour: 'numeric', minute: '2-digit'}) : ''}`;
