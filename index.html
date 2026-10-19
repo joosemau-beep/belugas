@@ -454,6 +454,7 @@ const dflt = () => ({
     'D:Persona': [[-2,-9],[-2,-3],[-2,3],[-2,9],[-7,0]],
     'D:Zona': [[-3,-7],[-3,7],[-10,-5],[-10,5],[-7,0]]
   },
+  bloques: [], // bloques de jugadores: [{id, n, O: [5 nombres por posición], D: [...]}], se escoge uno al cambiar de posesión
   games: [], cur: null, side: 'O', ball: START('O'), down: 1, msg: '', series: [], sstart: START('O'), fd: false, colors: {},
   lines: {
     O: [['Q',-6,0],['C',-1.3,0],['X',0,-6],['Y',-1,5],['Z',0,9]].map(([r,dx,dy]) => ({r,dx,dy,name:''})),
@@ -483,10 +484,10 @@ const initColors = () => { if (!S.colors || !Object.keys(S.colors).length) S.col
 initColors();
 S.ball.y = 12.5; // el balón siempre al centro
 if (!cur()) newGame('');
-// jugadas renombradas conservan su dibujo
-Object.entries(S.pbAlias || {}).forEach(([nv, old]) => { if (PLAYBOOK[old]) PLAYBOOK[nv] = PLAYBOOK[old] });
 // las que dibujaron ustedes (o editaron) mandan sobre las de la tarjeta
 const mergePb = () => {
+  // jugadas renombradas conservan su dibujo (también al bajar los datos de otro aparato)
+  Object.entries(S.pbAlias || {}).forEach(([nv, old]) => { if (PLAYBOOK[old]) PLAYBOOK[nv] = PLAYBOOK[old] });
   AL_LIBRO.forEach(n => { const k = 'libro:' + n; if (S.seen.includes(k)) return; S.seen.push(k); delete S.pb[n] });
   Object.assign(PLAYBOOK, S.pb);
   Object.entries(NUEVAS).forEach(([n, s]) => { if (S.seen.includes(n)) return; S.seen.push(n); if (!S.off.includes(n) && !S.arch.includes(n)) S.off.push(n); if (!S.secOf[n]) S.secOf[n] = s });
@@ -518,6 +519,8 @@ const pregunta = (t, si, fn, input = null) => { dlg = {t, si, fn, input} };
 const aviso = t => { dlg = {t, si: 'Entendido', fn: () => {}, solo: true} };
 let repG = null, repFrom = 'team'; // reporte del partido que se está viendo
 let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
+let bloqueAsk = false; // hoja "¿Qué bloque entra?": sale sola al cambiar de posesión si hay bloques guardados
+const pideBloque = () => { if (enJuego && S.bloques.length) bloqueAsk = true };
 // modo partido: lo decide cada aparato (no viaja a la nube), así un compañero que ve la app no queda capturando sin querer
 let enJuego = (() => { try { return localStorage['tochito.juego'] === '1' } catch { return false } })();
 const ponJuego = v => { enJuego = v; try { localStorage['tochito.juego'] = v ? '1' : '0' } catch {} };
@@ -1494,6 +1497,20 @@ function llenaCancha() {
   S.lines.O.forEach(p => { if (!p.name) p.name = libres.shift() || '' });
   iguala('O', 'D');
 }
+// bloques: quién juega en cada posición. Igual = ya son los que están en la cancha (entonces no hace falta ver los nombres)
+const enCancha = sd => S.lines[sd].map(p => p.name || '');
+const igualBloque = b => ['O', 'D'].every(sd => (b[sd] || []).join('|') === enCancha(sd).join('|'));
+const nomsBloque = (b, sd) => { const h = hoy();
+  return `<div class="pchips">${S.lines[sd].map((p, i) => { const n = (b[sd] || [])[i], fue = !n || h.includes(n);
+    return `<span class="pchip" style="padding-left:6px${fue ? '' : ';opacity:.5'}"><i style="background:${n ? colorOf(n) : 'var(--fill)'}">${esc(p.r)}</i>${n ? esc(n) : 'Sin nombre'}${fue ? '' : ' · no vino'}</span>` }).join('')}</div>` };
+// pone el bloque en la cancha; quien no vino deja su lugar a alguien de la banca (como al empezar el partido)
+function usaBloque(b) {
+  const h = hoy();
+  ['O', 'D'].forEach(sd => S.lines[sd].forEach((p, i) => { const n = (b[sd] || [])[i] || ''; p.name = h.includes(n) ? n : '' }));
+  const libres = h.filter(n => !S.lines.O.some(p => p.name === n));
+  S.lines.O.forEach(p => { if (!p.name) p.name = libres.shift() || '' });
+  iguala('O', 'D');
+}
 function menuRows(i) {
   const L = S.lines[S.side], p = L[i];
   const where = n => { const j = L.findIndex(q => q.name === n); return j >= 0 && j !== i ? L[j].r : '' };
@@ -1513,12 +1530,22 @@ function vPop() {
     ${chipsAsist()}
     <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Jugador nuevo"><button data-a="addasist">Agregar</button></div>
     <div class="row tight" style="margin-top:18px"><button class="plain" data-a="ahorano">Ahora no</button><button class="tint" style="flex:1;min-height:54px;font-size:18px;border-radius:14px" data-a="empezar">Empezar partido · ${h.length} jugador${h.length === 1 ? '' : 'es'}</button></div></div>`;
+  if (bloqueAsk && tab === 'field' && !d.stage && !S.convPend) return `<div class="scrim top"></div><div class="sheet top">
+    <div class="shead"><div><h1>¿Qué bloque entra?</h1><p>${S.side === 'O' ? 'Ahora atacamos' : 'Ahora defendemos'}. Si hay que cambiar a alguien, toca Jugadores arriba</p></div></div>
+    ${S.bloques.map(b => { const ya = igualBloque(b);
+      return `<div class="ghead">${esc(b.n)}${ya ? ' · ya están en la cancha' : ''}</div><div class="group">${ya ? '' : nomsBloque(b, S.side)}
+      <div class="row tight" style="margin-top:${ya ? 0 : 10}px"><button class="tint" data-a="bloqueusa" data-v="${b.id}">${ya ? 'Siguen estos' : 'Entra este bloque'}</button></div></div>` }).join('')}
+    <div class="row tight" style="margin-top:6px"><button class="plain" data-a="bloquesedit">Editar bloques</button><button style="flex:1;min-height:50px" data-a="bloqueno">Siguen los mismos de ahorita</button></div></div>`;
   if (popSheet) return `<div class="scrim top" data-a="closepop"></div><div class="sheet top">
     <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
     <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
       : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div>
     <div class="ghead" style="margin-top:18px">Vinieron hoy · ${h.length} de ${S.players.length}</div><div class="group">${chipsAsist()}
-      <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Nombre del jugador nuevo"><button class="tint" data-a="addasist">${icon('plus')} Agregar jugador</button></div></div></div>`;
+      <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Nombre del jugador nuevo"><button class="tint" data-a="addasist">${icon('plus')} Agregar jugador</button></div></div>
+    <div class="ghead" style="margin-top:18px">Bloques · ${S.bloques.length}</div><div class="group"><p>Arma la cancha, guárdala como bloque y al cambiar de posesión escoges cuál entra. Para editar uno: Usar, cambia a quien quieras y Guardar la cancha aquí</p>
+      ${S.bloques.map(b => `<div style="margin:6px 0 16px"><div class="item" style="border:0;padding:0 2px 8px"><b>${esc(b.n)}</b>${igualBloque(b) ? '<span class="mut">en la cancha</span>' : ''}</div>${nomsBloque(b, S.side)}
+        <div class="row tight" style="margin-top:10px"><button data-a="bloqueusa" data-v="${b.id}">Usar</button><button data-a="bloqueguarda" data-v="${b.id}">Guardar la cancha aquí</button><button data-a="bloqueren" data-v="${b.id}">Renombrar</button><button class="x" data-a="bloqueborra" data-v="${b.id}">Borrar</button></div></div>`).join('')}
+      <button class="tint" data-a="bloquenuevo">${icon('plus')} Guardar la cancha como bloque</button></div></div>`;
   if (pop == null || !popAt) return '';
   const p = L[pop], W = 470;
   let x = popAt.x + 34; if (x + W > innerWidth - 12) x = popAt.x - 34 - W;
@@ -1540,8 +1567,8 @@ function render() {
   if (fl === lastFl) document.querySelectorAll('.float').forEach(still);
   lastOv = ok; lastFl = fl;
   $('#pop').innerHTML = vPop();
-  if (lastPop && (pop != null || popSheet || asistOpen || dlg)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
-  lastPop = pop != null || popSheet || asistOpen || !!dlg;
+  if (lastPop && (pop != null || popSheet || asistOpen || bloqueAsk || dlg)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
+  lastPop = pop != null || popSheet || asistOpen || bloqueAsk || !!dlg;
   const di = $('#dlgin'); if (di && document.activeElement !== di) { di.focus(); di.select() }
   drawFields();
   const mn = $('.menu'); if (mn) { const r = mn.getBoundingClientRect(); mn.style.top = clamp(r.top, 12, Math.max(12, innerHeight - r.height - 12)) + 'px'; mn.style.left = clamp(r.left, 12, Math.max(12, innerWidth - r.width - 12)) + 'px' }
@@ -1573,7 +1600,7 @@ function newSeries() { S.series = []; S.sstart = {...S.ball} }
 const seriesOk = e => e.side === 'O' ? e.td || (RUN.includes(e.res) && e.yds > 0) || (e.res === 'Castigo' && e.pen.fav) : e.worked;
 function afterSave(e, end) {
   const O = e.side === 'O', next = O ? 'D' : 'O', crossed = crosses(e.start, end);
-  const kick = (side, msg) => { S.side = side; S.ball = START(side); S.down = 1; S.fd = false; newSeries(); S.msg = msg };
+  const kick = (side, msg) => { S.side = side; S.ball = START(side); S.down = 1; S.fd = false; newSeries(); S.msg = msg; pideBloque() };
   S.msg = '';
   // conversión: entre o no, el balón pasa al otro equipo
   if (e.conv) { S.conv = null; return kick(next, e.td ? (O ? `Entró la conversión: +${e.conv}. Ahora defendemos.` : `Entró su conversión: +${e.conv}. Ahora atacamos.`) : (O ? 'No entró la conversión. Ahora defendemos.' : 'No entró su conversión. Ahora atacamos.')) }
@@ -1581,7 +1608,7 @@ function afterSave(e, end) {
   if (e.td || e.ret) { S.convPend = ourTD(e) ? 'O' : 'D'; S.msg = ''; return }
   // el balón siempre se pone al centro del campo (a lo ancho)
   S.ball = {x: end.x, y: 12.5};
-  const lose = msg => { S.side = next; S.down = 1; S.fd = false; newSeries(); S.msg = msg };
+  const lose = msg => { S.side = next; S.down = 1; S.fd = false; newSeries(); S.msg = msg; pideBloque() };
   if (crossed) S.fd = true;
   if (e.res === 'Castigo') {
     if (!e.pen.off && (e.pen.extra || crossed)) { S.down = 1; newSeries(); S.msg = 'Primera por castigo'; return }
@@ -1598,7 +1625,7 @@ const A = {
   tab: v => { tab = v; pop = null; verPulsera = false },
   pulsera: () => { verPulsera = true },
   pulback: () => { verPulsera = false },
-  side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; S.prox = null; newSeries() } d = fresh() },
+  side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; S.prox = null; newSeries(); pideBloque() } d = fresh() },
   down: v => { S.down = +v; S.series = S.series.filter(x => x.down < S.down); if (S.down === 1) newSeries() },
   castigo: () => { d = fresh(); d.res = 'Castigo'; d.stage = 'how' },
   setball: () => { const b = !d.setBall; d = fresh(); d.setBall = b },
@@ -1612,7 +1639,7 @@ const A = {
   // conversión después de un TD: el que anotó ataca desde la 5 (1 punto) o la 10 (2 puntos); 0 = no la intentaron
   conv(v) {
     const by = S.convPend, pts = +v; S.convPend = null; S.fd = false; S.down = 1;
-    if (!pts) { S.side = by === 'O' ? 'D' : 'O'; S.ball = START(S.side); newSeries(); S.msg = by === 'O' ? 'Ahora defendemos.' : 'Ahora atacamos.'; return }
+    if (!pts) { S.side = by === 'O' ? 'D' : 'O'; S.ball = START(S.side); newSeries(); S.msg = by === 'O' ? 'Ahora defendemos.' : 'Ahora atacamos.'; pideBloque(); return }
     const yd = pts === 1 ? 5 : 10; S.conv = {pts}; S.side = by; S.ball = {x: by === 'O' ? GOAL_R - yd : GOAL_L + yd, y: 12.5}; newSeries(); S.msg = `Conversión de ${pts}: desde la ${yd}`;
   },
   convback: () => { S.convPend = S.side; S.conv = null; S.msg = ''; d = fresh() },
@@ -1680,6 +1707,13 @@ const A = {
   dlgno: () => { dlg = null },
   closepop: () => { pop = null; popAt = null; popSheet = false },
   lineup: () => { popSheet = true; pop = null; popAt = null },
+  bloqueusa(v) { const b = S.bloques.find(x => x.id === +v); if (b) usaBloque(b); bloqueAsk = false },
+  bloqueno: () => { bloqueAsk = false },
+  bloquesedit: () => { bloqueAsk = false; popSheet = true; pop = null; popAt = null },
+  bloquenuevo() { pregunta('Nombre del bloque', 'Guardar', n => { S.bloques.push({id: Date.now(), n: n.trim() || 'Bloque ' + (S.bloques.length + 1), O: enCancha('O'), D: enCancha('D')}) }, 'Bloque ' + (S.bloques.length + 1)) },
+  bloqueguarda(v) { const b = S.bloques.find(x => x.id === +v); if (b) pregunta(`¿Guardar los que están en la cancha en "${b.n}"?`, 'Guardar', () => { b.O = enCancha('O'); b.D = enCancha('D') }) },
+  bloqueren(v) { const b = S.bloques.find(x => x.id === +v); if (b) pregunta('Nombre del bloque', 'Guardar', n => { if (n.trim()) b.n = n.trim() }, b.n) },
+  bloqueborra(v) { const b = S.bloques.find(x => x.id === +v); if (b) pregunta(`¿Borrar el bloque "${b.n}"?`, 'Borrar', () => { S.bloques = S.bloques.filter(x => x !== b) }) },
   popi: v => { pop = pop === +v ? null : +v },
   setname(v) {
     const L = S.lines[S.side], p = L[pop], o = L.find((q, i) => i !== pop && v && q.name === v);
@@ -1755,6 +1789,7 @@ const A = {
     if (sf.side === 'O' && PLAYBOOK[v]) { const al = S.pbAlias = S.pbAlias || {}, orig = al[v] || v; delete al[v]; al[nv] = orig; PLAYBOOK[nv] = PLAYBOOK[orig] }
     if (S.pb[v]) { S.pb[nv] = PLAYBOOK[nv] = S.pb[v]; delete S.pb[v] }
     if (S.secOf[v]) { S.secOf[nv] = S.secOf[v]; delete S.secOf[v] }
+    if (S.prox === v) S.prox = nv; if (sf.play === v) sf.play = nv; // la escogida para la siguiente jugada del partido
     }, v);
   },
   archplay(v) {
@@ -1764,7 +1799,7 @@ const A = {
   },
   unarch(v) { S.arch = S.arch.filter(n => n !== v); (sf.side === 'O' ? S.off : S.def).push(v) },
   addp() { const v = $('#newp').value.trim(); if (uniq(S.players, v)) S.players.push(v) },
-  delp(v) { const n = S.players[+v]; delete S.colors[n]; ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === n) p.name = '' })); S.players.splice(+v, 1) },
+  delp(v) { const n = S.players[+v]; delete S.colors[n]; ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === n) p.name = '' })); S.bloques.forEach(b => ['O','D'].forEach(s => b[s] = b[s].map(x => x === n ? '' : x))); S.players.splice(+v, 1) },
   newgame() { pregunta('¿Contra quién juegan?', 'Siguiente', r => { keepState(); const ant = cur(); newGame(r.trim()); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); tab = 'field'; asistOpen = true }, '') },
   setgame: v => { keepState(); S.cur = +v; loadState(); tab = 'field' },
   rengame(v) { const g = S.games.find(x => x.id === +v); pregunta('Rival', 'Guardar', r => { g.rival = r.trim() }, g.rival || '') },
@@ -1783,6 +1818,7 @@ const C = {
     v = v.trim(); const old = S.players[i]; if (!uniq(S.players, v)) return;
     S.players[i] = v; S.colors[v] = S.colors[old]; delete S.colors[old]; renameAll(old, v, ['qb','tgt','who','miss','foul','last']); S.games.forEach(g => g.events.forEach(e => (e.chain || []).forEach(c => { if (c.to === old) c.to = v })));
     ['O','D'].forEach(s => S.lines[s].forEach(p => { if (p.name === old) p.name = v }));
+    S.bloques.forEach(b => ['O','D'].forEach(s => b[s] = b[s].map(n => n === old ? v : n)));
   }
 };
 function doImport(e) {
@@ -1918,7 +1954,9 @@ function juntar(a, b) {
   a.games.forEach(x => { const y = g.get(x.id); if (!y || x.events.length >= y.events.length) g.set(x.id, x) });
   borr.forEach(id => g.delete(id)); // lo borrado en cualquier aparato no regresa
   const off = a.off || b.off || [], pruebas = [...new Set([...(a.pruebas || []), ...(b.pruebas || [])])].filter(n => !off.includes(n));
-  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pruebas, borrados: borr});
+  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pbAlias: {...b.pbAlias, ...a.pbAlias}, pruebas, borrados: borr,
+    // ponytail: un bloque borrado en un aparato regresa si el otro tenía cambios sin subir; si molesta, guardar los borrados como los partidos
+    bloques: [...new Map([...(b.bloques || []), ...(a.bloques || [])].map(x => [x.id, x])).values()]});
 }
 async function bajar() {
   if (!clave || d.stage || drag) return;
@@ -1961,7 +1999,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261018121846';
+const VERSION = '20261019121734';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
