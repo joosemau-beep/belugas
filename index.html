@@ -255,6 +255,20 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .wbc svg{flex:1;min-height:0;width:100%;display:block}
 .wbsin{flex:1;display:grid;place-items:center;color:#999;font-size:7pt}
 /* imprimir o guardar en PDF (el reporte): sin barras ni botones, con los colores del equipo */
+.bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:18px}
+.bcard{display:flex;flex-direction:column;align-items:stretch;gap:10px;text-align:left;padding:14px;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-weight:400}
+.bcard.ya{box-shadow:inset 0 0 0 2px var(--ice)}
+.bch{display:flex;justify-content:space-between;align-items:center;gap:8px}.bch b{font-size:19px;font-weight:700}
+.btag{flex:none;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;background:var(--fill);color:var(--mut)}
+.bcard.ya .btag{background:var(--ice);color:var(--navy)}
+.brow{display:flex;align-items:center;gap:10px;min-height:32px;font-size:16px}
+.brow i{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px;color:#111}
+.brow span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow.nuevo span{font-weight:700}.brow.nuevo::after{content:'entra';font-size:12px;font-weight:700;color:var(--ok)}
+.brow.falta span{opacity:.5;text-decoration:line-through}.brow.falta::after{content:'no vino';font-size:12px;font-weight:700;color:var(--badTx)}
+.bsal{font-size:14px;color:var(--mut);border-top:.5px solid var(--line);padding-top:8px}
+.bgo{margin-top:auto;text-align:center;font-weight:600;border-radius:12px;padding:11px;background:var(--fill)}
+.bcard:not(.ya) .bgo{background:var(--tint);color:var(--onTint)}
 @media print{
   /* las tarjetas juntas en una sola hoja si caben (3 × 7.5 cm); si la impresora o Safari dejan mucha orilla, la que no cabe
      se pasa completa a la segunda hoja: en bloque (no flex) para que Safari respete el no partir una tarjeta */
@@ -1529,6 +1543,21 @@ function vBloque() {
       ${b.sd === 'O' && arr[i] ? '<div class="mfoot"><button class="plain danger" data-a="blqpon" data-v="">Dejar sin nombre</button></div>' : ''}</div>`}
     <div class="row tight" style="margin-top:6px">${b.id ? '<button class="x" data-a="blqborra">Borrar bloque</button>' : ''}<button class="tint" style="flex:1;min-height:52px" data-a="blqok">Guardar bloque</button></div></div>`;
 }
+// al cambiar de posesión: una tarjeta por bloque (toda la tarjeta se toca), con quién entra y quién sale respecto a la cancha
+function vElegirBloque() {
+  const sd = S.side, L = S.lines[sd], h = hoy(), ahora = enCancha(sd).filter(Boolean);
+  const card = b => { const ya = igualBloque(b), arr = b[sd] || [], salen = ahora.filter(n => !arr.includes(n)), cambios = salen.length;
+    const filas = L.map((p, j) => { const n = arr[j], falta = n && !h.includes(n), nuevo = n && !falta && !ahora.includes(n);
+      return `<div class="brow${nuevo ? ' nuevo' : ''}${falta ? ' falta' : ''}"><i style="background:${n ? colorOf(n) : 'var(--fill)'}">${esc(p.r)}</i><span>${n ? esc(n) : 'Sin nombre'}</span></div>` }).join('');
+    return `<button class="bcard${ya ? ' ya' : ''}" data-a="bloqueusa" data-v="${b.id}">
+      <div class="bch"><b>${esc(b.n)}</b><span class="btag">${ya ? 'En la cancha' : cambios === 1 ? '1 cambio' : cambios + ' cambios'}</span></div>
+      <div>${filas}</div>${salen.length ? `<div class="bsal">Salen: ${salen.map(esc).join(', ')}</div>` : ''}
+      <span class="bgo">${ya ? 'Siguen estos' : 'Entra este bloque'}</span></button>` };
+  return `<div class="scrim top"></div><div class="sheet top">
+    <div class="shead"><div><h1>¿Quién entra?</h1><p>${S.msg ? esc(S.msg) + ' · ' : ''}${sd === 'O' ? 'ahora atacamos' : 'ahora defendemos'}</p></div></div>
+    <div class="bgrid">${S.bloques.map(card).join('')}</div>
+    <div class="row tight" style="justify-content:space-between"><button class="plain" data-a="bloquesedit">Editar bloques</button><button data-a="bloqueno">Seguir igual</button></div></div>`;
+}
 function menuRows(i) {
   const L = S.lines[S.side], p = L[i];
   const where = n => { const j = L.findIndex(q => q.name === n); return j >= 0 && j !== i ? L[j].r : '' };
@@ -1549,12 +1578,7 @@ function vPop() {
     ${chipsAsist()}
     <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Jugador nuevo"><button data-a="addasist">Agregar</button></div>
     <div class="row tight" style="margin-top:18px"><button class="plain" data-a="ahorano">Ahora no</button><button class="tint" style="flex:1;min-height:54px;font-size:18px;border-radius:14px" data-a="empezar">Empezar partido · ${h.length} jugador${h.length === 1 ? '' : 'es'}</button></div></div>`;
-  if (bloqueAsk && tab === 'field' && !d.stage && !S.convPend) return `<div class="scrim top"></div><div class="sheet top">
-    <div class="shead"><div><h1>¿Qué bloque entra?</h1><p>${S.side === 'O' ? 'Ahora atacamos' : 'Ahora defendemos'}. Si hay que cambiar a alguien, toca Jugadores arriba</p></div></div>
-    ${S.bloques.map(b => { const ya = igualBloque(b);
-      return `<div class="ghead">${esc(b.n)}${ya ? ' · ya están en la cancha' : ''}</div><div class="group">${ya ? '' : nomsBloque(b, S.side)}
-      <div class="row tight" style="margin-top:${ya ? 0 : 10}px"><button class="tint" data-a="bloqueusa" data-v="${b.id}">${ya ? 'Siguen estos' : 'Entra este bloque'}</button></div></div>` }).join('')}
-    <div class="row tight" style="margin-top:6px"><button class="plain" data-a="bloquesedit">Editar bloques</button><button style="flex:1;min-height:50px" data-a="bloqueno">Siguen los mismos de ahorita</button></div></div>`;
+  if (bloqueAsk && tab === 'field' && !d.stage && !S.convPend) return vElegirBloque();
   if (popSheet) return `<div class="scrim top" data-a="closepop"></div><div class="sheet top">
     <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
     <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
@@ -2028,7 +2052,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261019122310';
+const VERSION = '20261019122648';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
