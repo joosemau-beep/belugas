@@ -1496,6 +1496,7 @@ function vTeam() {
   return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
     <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>
   <div class="card"><h2>Partidos</h2><button class="tint" style="width:100%;margin-bottom:10px;min-height:50px" data-a="newgame">Nuevo partido</button>${g}</div></div>
+  <div class="card"><h2>Bloques de jugadores</h2><p class="mut" style="margin:0 0 12px">Acomodos de quién va en cada posición. Al cambiar de posesión en el partido escoges cuál entra</p>${listaBloques()}</div>
   <div class="card"><h2>Respaldo</h2><p class="nube${clave && !nubeEst && !nube.dirty ? ' ok' : ''}">${esc(nubeTxt())}</p>
   ${clave ? '' : '<div class="row tight" style="margin-bottom:12px"><input id="linknube" placeholder="Pega aquí el link del equipo" style="flex:1"><button class="tint" data-a="conectar">Conectar</button></div>'}<div class="row tight"><button data-a="export">Exportar datos</button><button onclick="document.getElementById('imp').click()">Importar datos</button><input type="file" id="imp" accept=".json" hidden></div>
   <p class="mut" style="margin:10px 0 0;font-size:15px">Los datos viven solo donde abres la app: Safari y el ícono de la pantalla de inicio guardan cada uno lo suyo. Usa siempre el ícono (Compartir, Añadir a pantalla de inicio) para que Safari no los borre. Si ya tienes partidos en Safari: exporta aquí, abre la app desde el ícono e importa.</p></div>`;
@@ -1544,6 +1545,9 @@ function vBloque() {
     <div class="row tight" style="margin-top:6px">${b.id ? '<button class="x" data-a="blqborra">Borrar bloque</button>' : ''}<button class="tint" style="flex:1;min-height:52px" data-a="blqok">Guardar bloque</button></div></div>`;
 }
 // al cambiar de posesión: una tarjeta por bloque (toda la tarjeta se toca), con quién entra y quién sale respecto a la cancha
+const listaBloques = () => `${S.bloques.map(b => `<div style="margin:6px 0 16px"><div class="item" style="border:0;padding:0 2px 8px"><b>${esc(b.n)}</b>${igualBloque(b) ? '<span class="mut">en la cancha</span>' : ''}</div>${nomsBloque(b, S.side)}
+        <div class="row tight" style="margin-top:10px"><button class="tint" data-a="bloqueusa" data-v="${b.id}">Usar</button><button data-a="bloqueedit" data-v="${b.id}">Editar</button><button data-a="bloqueguarda" data-v="${b.id}">Guardar la cancha aquí</button></div></div>`).join('')}
+      <button class="tint" data-a="bloquenuevo">${icon('plus')} Nuevo bloque</button>`;
 function vElegirBloque() {
   const sd = S.side, L = S.lines[sd], h = hoy(), ahora = enCancha(sd).filter(Boolean);
   const card = b => { const ya = igualBloque(b), arr = b[sd] || [], salen = ahora.filter(n => !arr.includes(n)), cambios = salen.length;
@@ -1583,12 +1587,11 @@ function vPop() {
     <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
     <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
       : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div>
+    <div class="ghead" style="margin-top:18px">Bloques · ${S.bloques.length}</div><div class="group"><p>Haz todos los acomodos que quieras: quién va en cada posición en ataque y en defensa. Al cambiar de posesión escoges cuál entra</p>
+      ${listaBloques()}</div>
     <div class="ghead" style="margin-top:18px">Vinieron hoy · ${h.length} de ${S.players.length}</div><div class="group">${chipsAsist()}
       <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Nombre del jugador nuevo"><button class="tint" data-a="addasist">${icon('plus')} Agregar jugador</button></div></div>
-    <div class="ghead" style="margin-top:18px">Bloques · ${S.bloques.length}</div><div class="group"><p>Haz todos los acomodos que quieras: quién va en cada posición en ataque y en defensa. Al cambiar de posesión escoges cuál entra</p>
-      ${S.bloques.map(b => `<div style="margin:6px 0 16px"><div class="item" style="border:0;padding:0 2px 8px"><b>${esc(b.n)}</b>${igualBloque(b) ? '<span class="mut">en la cancha</span>' : ''}</div>${nomsBloque(b, S.side)}
-        <div class="row tight" style="margin-top:10px"><button class="tint" data-a="bloqueusa" data-v="${b.id}">Usar</button><button data-a="bloqueedit" data-v="${b.id}">Editar</button><button data-a="bloqueguarda" data-v="${b.id}">Guardar la cancha aquí</button></div></div>`).join('')}
-      <button class="tint" data-a="bloquenuevo">${icon('plus')} Nuevo bloque</button></div></div>`;
+</div>`;
   if (pop == null || !popAt) return '';
   const p = L[pop], W = 470;
   let x = popAt.x + 34; if (x + W > innerWidth - 12) x = popAt.x - 34 - W;
@@ -2052,7 +2055,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261019122648';
+const VERSION = '20261019123545';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
