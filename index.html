@@ -1558,7 +1558,7 @@ function vElegirBloque() {
       <div>${filas}</div>${salen.length ? `<div class="bsal">Salen: ${salen.map(esc).join(', ')}</div>` : ''}
       <span class="bgo">${ya ? 'Siguen estos' : 'Entra este bloque'}</span></button>` };
   return `<div class="scrim top"></div><div class="sheet top">
-    <div class="shead"><div><h1>¿Quién entra?</h1><p>${S.msg ? esc(S.msg) + ' · ' : ''}${sd === 'O' ? 'ahora atacamos' : 'ahora defendemos'}</p></div></div>
+    <div class="shead"><div><h1>¿Quién entra ${sd === 'O' ? 'al ataque' : 'a la defensa'}?</h1><p>${S.msg && !/^Ahora/.test(S.msg) ? esc(S.msg) + ' · ' : ''}posiciones de ${sd === 'O' ? 'ataque: Q, C, X, Y, Z' : 'defensa: 1, 2, 3, 4 y R'}</p></div></div>
     <div class="bgrid">${S.bloques.map(card).join('')}</div>
     <div class="row tight" style="justify-content:space-between"><button class="plain" data-a="bloquesedit">Editar bloques</button><button data-a="bloqueno">Seguir igual</button></div></div>`;
 }
@@ -1671,7 +1671,7 @@ const A = {
   tab: v => { tab = v; pop = null; verPulsera = false },
   pulsera: () => { verPulsera = true },
   pulback: () => { verPulsera = false },
-  side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; S.prox = null; newSeries(); pideBloque() } d = fresh() },
+  side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; S.prox = null; S.msg = ''; newSeries(); pideBloque() } d = fresh() },
   down: v => { S.down = +v; S.series = S.series.filter(x => x.down < S.down); if (S.down === 1) newSeries() },
   castigo: () => { d = fresh(); d.res = 'Castigo'; d.stage = 'how' },
   setball: () => { const b = !d.setBall; d = fresh(); d.setBall = b },
@@ -2055,7 +2055,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261019123545';
+const VERSION = '20261019123953';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
