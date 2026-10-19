@@ -1550,6 +1550,7 @@ function vBloque() {
   return `<div class="scrim top"></div><div class="sheet top">
     <div class="shead"><div><h1>${b.id ? 'Editar' : 'Nuevo'} bloque de ${ladoTxt(b.sd)}</h1><p>Escoge quién va en cada posición de ${ladoTxt(b.sd)}. No cambia a los que están en la cancha hasta que uses el bloque</p></div><button class="xbtn" data-a="blqno">${icon('x')}</button></div>
     <input data-c="blqn" value="${esc(b.n)}" placeholder="Nombre del bloque" style="width:100%;margin-bottom:14px">
+    <div class="ghead">¿Es de ataque o de defensa?</div><div class="group"><div class="seg"><button class="${b.sd === 'O' ? 'on' : ''}" data-a="blqsd" data-v="O">Ataque</button><button class="${b.sd === 'D' ? 'on' : ''}" data-a="blqsd" data-v="D">Defensa</button></div></div>
     <div class="ghead">Toca una posición y luego el nombre</div>
     <div class="group" style="padding:0"><div class="pgrid">${slots}</div></div>
     ${i == null ? '' : `<div class="ghead">¿Quién va de ${esc(L[i].r)}?</div><div class="group" style="padding:0"><div class="pgrid">${nombres.map(n => { const w = dondeEsta(n); return `<button class="pname${arr[i] === n ? ' on' : ''}" data-a="blqpon" data-v="${esc(n)}"><i class="dot" style="background:${colorOf(n)}"></i><span>${esc(n)}</span>${w ? `<small>${esc(w)}</small>` : ''}</button>` }).join('')}</div>
@@ -1773,9 +1774,15 @@ const A = {
   bloqueedit(v) { const b = S.bloques.find(x => x.id === +v); if (b) blq = {id: b.id, n: b.n, sd: b.sd, arr: (b[b.sd] || []).slice(), sel: null} },
   blqsel: v => { blq.sel = blq.sel === +v ? null : +v },
   // si el nombre ya está en otra posición, se intercambian
+  // cambiar el bloque de lado: los mismos nombres pasan a las posiciones del otro lado (Q→1, C→2…); uno nuevo sin tocar empieza con la cancha de ese lado
+  // y si su nombre es el de cajón ("Ataque 2"), se renombra al del otro lado
+  blqsd(v) { const b = blq; if (b.sd === v || (v !== 'O' && v !== 'D')) return;
+    if (!b.id && b.arr.join('|') === enCancha(b.sd).join('|')) b.arr = enCancha(v);
+    if (/^(Ataque|Defensa) \d+$/.test(b.n.trim())) b.n = `${v === 'O' ? 'Ataque' : 'Defensa'} ${S.bloques.filter(y => y.sd === v && y.id !== b.id).length + 1}`;
+    b.sd = v; b.sel = null },
   blqpon(v) { const arr = blq.arr, i = blq.sel, j = v ? arr.indexOf(v) : -1; if (j >= 0 && j !== i) arr[j] = arr[i]; arr[i] = v; blq.sel = i < arr.length - 1 ? i + 1 : null },
   blqok() { const b = blq, x = b.id && S.bloques.find(y => y.id === b.id), n = b.n.trim() || `${b.sd === 'O' ? 'Ataque' : 'Defensa'} ${S.bloques.filter(y => y.sd === b.sd).length + 1}`;
-    if (x) Object.assign(x, {n, [b.sd]: b.arr}); else S.bloques.push({id: Date.now(), n, sd: b.sd, O: b.sd === 'O' ? b.arr : [], D: b.sd === 'D' ? b.arr : []}); blq = null },
+    if (x) Object.assign(x, {n, sd: b.sd, O: b.sd === 'O' ? b.arr : [], D: b.sd === 'D' ? b.arr : []}); else S.bloques.push({id: Date.now(), n, sd: b.sd, O: b.sd === 'O' ? b.arr : [], D: b.sd === 'D' ? b.arr : []}); blq = null },
   blqno: () => { blq = null },
   blqborra() { const b = blq; pregunta(`¿Borrar el bloque "${b.n}"?`, 'Borrar', () => { S.bloques = S.bloques.filter(x => x.id !== b.id); blq = null }) },
   bloqueguarda(v) { const b = S.bloques.find(x => x.id === +v); if (b) pregunta(`¿Guardar los que están en la cancha (${ladoTxt(b.sd)}) en "${b.n}"?`, 'Guardar', () => { b[b.sd] = enCancha(b.sd) }) },
@@ -2066,7 +2073,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261019143216';
+const VERSION = '20261019143743';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
