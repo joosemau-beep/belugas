@@ -1762,6 +1762,8 @@ function afterSave(e, end) {
   S.series.push({down: e.down, ok: seriesOk(e), yds: e.yds, s: {...e.start}, e: {...end}});
   S.down++;
 }
+// al acabar una jugada todos regresan a la posición estándar (la misma con que empieza una jugada nueva en el editor); cada quien conserva su letra
+const posEstandar = () => { const L0 = dflt().lines; ['O', 'D'].forEach(sd => S.lines[sd].forEach((p, i) => { const q = L0[sd][i]; if (q) Object.assign(p, {dx: q.dx, dy: q.dy}) })) };
 // guarda la jugada que se está capturando. rapida = desde "¿Qué pasó?": basta la jugada y el resultado
 function guardaJugada(rapida) {
   const g = cur(), r = draft(); if (!g || !(r.ready || (rapida && (d.play || d.sinJug) && d.res))) return;
@@ -1778,6 +1780,7 @@ function guardaJugada(rapida) {
   e.worked = works(e);
   g.events.push(e);
   if (d.orden && S.orden) delete S.orden[e.side]; // el orden de la banca era para esta jugada; la siguiente se acomoda otra vez
+  posEstandar();
   afterSave(e, end || S.ball); S.prox = null; // la siguiente jugada se escoge otra vez
   d = fresh();
 }
@@ -2221,7 +2224,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026143034';
+const VERSION = '20261026143559';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
