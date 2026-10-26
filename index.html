@@ -221,6 +221,27 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .lrow .bar i{display:block;height:100%;background:linear-gradient(90deg,#5aaeff,#9fd0ff)}
 .lrow .p{font-size:24px;font-weight:800;letter-spacing:-.02em;text-align:right;min-width:70px}
 .lrow .p small{display:block;font-size:12px;color:var(--mut);font-weight:600}
+.thero{display:grid;grid-template-columns:1.2fr auto;gap:18px 28px;align-items:center;padding:26px 28px;border-radius:22px;background:linear-gradient(135deg,#1d3f78,#13336a 55%,#0d2347);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:16px}
+.tid{display:flex;align-items:center;gap:18px;min-width:0}.tid img{width:110px;height:auto;flex:none}
+.tid small,.trec span,.tstat span{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.tid h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:2px 0 10px}
+.tlugar{min-height:38px;padding:6px 14px;border-radius:99px;background:rgba(90,174,255,.16);box-shadow:inset 0 0 0 1px rgba(90,174,255,.45);color:var(--link);font-size:16px}.tlugar b{font-size:20px;color:#fff;font-weight:800}.tlugar.vacio{background:var(--fill);box-shadow:inset 0 0 0 1px var(--edge);color:var(--mut)}
+.trec{text-align:right}.trec .big{font-size:84px;font-weight:800;letter-spacing:-.04em;line-height:.95;font-variant-numeric:tabular-nums}.trec .big i{font-style:normal;color:var(--mut);font-weight:600;margin:0 4px}
+.forma{display:flex;gap:6px;justify-content:flex-end;margin-top:10px}.forma i,.tres{display:grid;place-items:center;font-style:normal;font-weight:800;border-radius:50%;color:#fff}.forma i{width:26px;height:26px;font-size:12px}
+.forma .w,.tres.w{background:var(--ok)}.forma .l,.tres.l{background:var(--bad)}.forma .t,.tres.t{background:var(--fill)}.tres.v{background:rgba(90,174,255,.18);color:var(--link);box-shadow:inset 0 0 0 1px rgba(90,174,255,.45);font-size:12px}
+.tstats{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tstat{background:rgba(13,35,71,.5);box-shadow:inset 0 0 0 1px var(--line);border-radius:14px;padding:12px 14px}.tstat b{display:block;font-size:28px;font-weight:800;letter-spacing:-.02em;margin-top:2px;white-space:nowrap}.tstat small{color:var(--mut);font-size:13px}
+.tult{grid-column:1/-1;margin:0;color:var(--mut);font-size:15px}
+.tph{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.tph h2{margin:0}.tph button{display:flex;align-items:center;gap:6px}.tph .ico{width:18px;height:18px}
+.tgame{display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;padding:12px 4px;border-bottom:.5px solid var(--line);cursor:pointer}.tgame:last-child{border-bottom:0}.tgame:active{background:rgba(255,255,255,.04)}
+.tres{width:44px;height:44px;font-size:17px}
+.tg{min-width:0}.tg b{display:block;font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tg small{display:block;color:var(--mut);font-size:14px;margin-top:2px}.tact{color:var(--link);font-weight:600}
+.tacc{display:flex;gap:2px;margin:4px 0 0 -10px}.tacc button{min-height:34px;padding:4px 10px;font-size:15px}
+.tsc{font-size:30px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tjugh{display:flex;align-items:center;gap:12px;width:100%;background:none;box-shadow:none;padding:0;min-height:44px;text-align:left}.tjugh h2{margin:0}.tjugh:active{transform:none;opacity:.7}
+.tjav{display:flex;margin-left:auto}.tjav .av{width:30px;height:30px;font-size:12px;margin-left:-8px;box-shadow:0 0 0 2px var(--card)}
+.tchev{display:flex;transform:rotate(-90deg);transition:transform .2s ease-out;color:var(--mut)}.tchev.open{transform:rotate(90deg)}
+@media(max-width:700px){.thero{grid-template-columns:1fr}.trec{text-align:left}.forma{justify-content:flex-start}.tstats{grid-template-columns:1fr 1fr}.tid img{width:80px}}
 .rhero{position:relative;overflow:hidden;display:flex;align-items:center;gap:20px;padding:24px;border-radius:22px;background:linear-gradient(135deg,#1d3f78,#13336a 55%,#0d2347);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:16px}
 .rhero img{width:96px;height:96px;object-fit:contain;flex:none}.rhero .sc{font-size:56px;font-weight:800;letter-spacing:-.03em;line-height:1.05}
 .res{display:inline-block;padding:4px 12px;border-radius:99px;font-weight:700;font-size:13px;letter-spacing:.04em;text-transform:uppercase}.res.w{background:var(--ok);color:#fff}.res.l{background:var(--bad);color:#fff}.res.t{background:var(--fill)}
@@ -517,6 +538,7 @@ const mergePb = () => {
   }
   BORRAR.forEach(n => { const k = 'borrar:' + n; if (S.seen.includes(k)) return; S.seen.push(k);
     ['off', 'def', 'arch'].forEach(l => S[l] = S[l].filter(x => x !== n)); [S.archSide, S.pb, S.secOf, PLAYBOOK].forEach(o => delete o[n]); delete S.forms['O:' + n]; delete S.forms['D:' + n] });
+  if (!S.seen.includes('lugar:26oct')) { S.seen.push('lugar:26oct'); if (S.lugar == null) S.lugar = 2 }
   PASADOS.forEach(g => { const k = 'partido:' + g.id; if (S.seen.includes(k)) return; S.seen.push(k);
     if (!S.games.some(x => x.id === g.id) && !(S.borrados || []).includes(g.id)) { S.games.push({...g, events: []}); S.games.sort((x, y) => x.id - y.id) } });
   S.bloques = porLado(S.bloques || []).map(b => b.g ? b : {...b, g: S.cur});
@@ -542,6 +564,7 @@ let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
 let verPruebas = false; // en Jugadas: la pastilla está en Pruebas
+let verJug = false; // en Equipo: la lista de jugadores abierta
 let verPulsera = false; // en Jugadas: las tarjetas de la pulsera para imprimir
 // preguntas y avisos dentro de la app: las ventanas del navegador (confirm, prompt) a veces no salen en el ícono del iPad
 let dlg = null;
@@ -1610,18 +1633,40 @@ function vReport() {
   <div class="card"><h2>Castigos</h2>${pens.length ? Object.entries(ct).sort((x, y) => y[1] - x[1]).map(([k, n]) => { const [t, f] = k.split('|'); return `<div class="item"><span>${esc(t)} <span class="mut">· ${+f ? 'a favor' : 'en contra'}</span></span><b class="${+f ? 'g' : 'r'}">${n}</b></div>` }).join('') : '<span class="mut">Ninguno</span>'}</div></div>`;
 }
 
-// ganados y perdidos de los partidos que ya tienen marcador (el de hoy sin jugadas no cuenta)
-const recordTxt = () => { const r = S.games.filter(g => g.final || g.events.length).map(marcador), w = r.filter(([a, b]) => a > b).length, l = r.filter(([a, b]) => a < b).length, t = r.length - w - l;
-  return r.length ? ` · ${w} ganado${w === 1 ? '' : 's'}, ${l} perdido${l === 1 ? '' : 's'}${t ? `, ${t} empate${t === 1 ? '' : 's'}` : ''}` : '' };
+// temporada: solo cuentan los partidos con marcador (con jugadas o con el resultado guardado a mano)
+const temporada = () => {
+  const r = S.games.filter(g => g.final || g.events.length).map(g => { const [a, b] = marcador(g); return {g, a, b, k: a > b ? 'w' : a < b ? 'l' : 't'} });
+  const n = k => r.filter(x => x.k === k).length, pf = r.reduce((s, x) => s + x.a, 0), pc = r.reduce((s, x) => s + x.b, 0);
+  const ult = r[r.length - 1]; let racha = 0; if (ult) for (let i = r.length - 1; i >= 0 && r[i].k === ult.k; i--) racha++;
+  return {r, w: n('w'), l: n('l'), t: n('t'), pf, pc, ult, racha};
+};
+const LETRA = {w: 'G', l: 'P', t: 'E'};
 function vTeam() {
-  const g = S.games.slice().reverse().map(x => {
-    const [a, b] = marcador(x);
-    return `<div class="item"><div><b>${esc(x.date)} vs ${esc(x.rival || 'rival')}</b><div class="mut" style="font-size:15px">${x.final && !x.events.length ? (a > b ? 'Ganamos' : a < b ? 'Perdimos' : 'Empate') : `${x.events.length} jugada${x.events.length === 1 ? '' : 's'}`} · ${a} – ${b}</div></div>
-    <div class="row tight"><button class="${x.id === S.cur ? 'on' : ''}" data-a="setgame" data-v="${x.id}">${x.id === S.cur ? 'Actual' : 'Usar'}</button><button data-a="report" data-v="${x.id}">Reporte</button><button data-a="rengame" data-v="${x.id}">Rival</button><button class="x" data-a="delgame" data-v="${x.id}">Borrar</button></div></div>`;
+  const T = temporada(), pj = T.r.length, prom = v => pj ? (Math.round(v / pj * 10) / 10) : 0, dif = T.pf - T.pc;
+  const rachaTxt = !T.ult ? '–' : T.ult.k === 't' ? `${T.racha} empate${T.racha > 1 ? 's' : ''}` : `${T.racha} ${T.ult.k === 'w' ? 'ganado' : 'perdido'}${T.racha > 1 ? 's' : ''}`;
+  const ultTxt = T.ult ? `${T.ult.k === 'w' ? 'Ganamos' : T.ult.k === 'l' ? 'Perdimos' : 'Empatamos'} ${T.ult.a}–${T.ult.b} vs ${esc(T.ult.g.rival || 'rival')}` : 'Todavía no hay partidos con marcador';
+  const stat = (t, v, sub, cls = '') => `<div class="tstat"><span>${t}</span><b class="${cls}">${v}</b>${sub ? `<small>${sub}</small>` : ''}</div>`;
+  const hero = `<div class="thero">
+    <div class="tid"><img src="logo.webp" alt="Belugas"><div><small>Temporada</small><h1>Belugas HDP</h1>
+      <button class="tlugar${S.lugar ? '' : ' vacio'}" data-a="lugar">${S.lugar ? `<b>${S.lugar}º</b> lugar general` : 'Poner lugar en la tabla'}</button></div></div>
+    <div class="trec"><div class="big">${T.w}<i>–</i>${T.l}${T.t ? `<i>–</i>${T.t}` : ''}</div><span>${T.t ? 'Ganados · perdidos · empates' : 'Ganados · perdidos'}</span>
+      <div class="forma">${T.r.map(x => `<i class="${x.k}" title="${esc(x.g.rival || '')}">${LETRA[x.k]}</i>`).join('')}</div></div>
+    <div class="tstats">${stat('Puntos a favor', T.pf, pj ? `${prom(T.pf)} por partido` : '')}${stat('Puntos en contra', T.pc, pj ? `${prom(T.pc)} por partido` : '')}${stat('Diferencia', dif > 0 ? '+' + dif : dif, '', dif > 0 ? 'g' : dif < 0 ? 'r' : '')}${stat('Racha', rachaTxt, '', T.ult ? (T.ult.k === 'w' ? 'g' : T.ult.k === 'l' ? 'r' : '') : '')}</div>
+    <p class="tult">Último: ${ultTxt}</p></div>`;
+  const partidos = S.games.slice().reverse().map(x => {
+    const [a, b] = marcador(x), con = x.final || x.events.length, k = !con ? 'v' : a > b ? 'w' : a < b ? 'l' : 't', act = x.id === S.cur;
+    const det = x.final && !x.events.length ? 'Solo marcador' : `${x.events.length} jugada${x.events.length === 1 ? '' : 's'}`;
+    return `<div class="tgame" data-a="report" data-v="${x.id}"><i class="tres ${k}">${con ? LETRA[k] : x.date === dateStr() ? 'Hoy' : '–'}</i>
+      <div class="tg"><b>${esc(x.rival || 'Rival sin nombre')}</b><small>${esc(x.date)} · ${det}${act ? ' · <span class="tact">Partido actual</span>' : ''}</small>
+        <div class="tacc">${act ? '' : `<button class="plain" data-a="setgame" data-v="${x.id}">Usar</button>`}<button class="plain" data-a="rengame" data-v="${x.id}">Rival</button><button class="plain x" data-a="delgame" data-v="${x.id}">Borrar</button></div></div>
+      <div class="tsc${con ? '' : ' mut'}">${a}–${b}</div></div>`;
   }).join('');
-  return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}${recordTxt()}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
-    <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>
-  <div class="card"><h2>Partidos</h2><button class="tint" style="width:100%;margin-bottom:10px;min-height:50px" data-a="newgame">Nuevo partido</button>${g}</div></div>
+  const jug = `<div class="card"><button class="tjugh" data-a="verjug"><h2>Jugadores</h2><span class="tjav">${S.players.slice(0, 9).map(p => avatar(p)).join('')}</span><span class="mut">${S.players.length}</span><span class="tchev${verJug ? ' open' : ''}">${icon('back')}</span></button>
+    ${verJug ? `<div style="margin-top:10px">${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
+    <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>` : ''}</div>`;
+  return `${hero}
+  <div class="card"><div class="tph"><h2>Partidos</h2><button class="tint" data-a="newgame">${icon('plus')} Nuevo partido</button></div>${partidos}</div>
+  ${jug}
   <div class="card"><h2>Bloques de jugadores</h2><p class="mut" style="margin:0 0 12px">Acomodos de quién va en cada posición en este partido (al empezar otro partido se borran). Los de ataque salen cuando les toca atacar y los de defensa cuando les toca defender</p>
     <div class="ghead">Ataque</div>${listaBloques('O')}<div class="ghead" style="margin-top:22px">Defensa</div>${listaBloques('D')}</div>
   <div class="card"><h2>Respaldo</h2><p class="nube${clave && !nubeEst && !nube.dirty ? ' ok' : ''}">${esc(nubeTxt())}</p>
@@ -1982,6 +2027,8 @@ const A = {
   entrar: () => { ponJuego(true); tab = 'field' },
   salir: () => { ponJuego(false); d = fresh(); repG = S.cur; repFrom = 'field'; tab = 'report' }, // al salir, el reporte del partido
   report: v => { repG = +v || S.cur; repFrom = tab; tab = 'report' },
+  verjug: () => { verJug = !verJug },
+  lugar() { pregunta('¿En qué lugar van en la tabla general?', 'Guardar', r => { const n = parseInt(r, 10); S.lugar = n > 0 ? n : null }, S.lugar ? String(S.lugar) : '') },
   // el reporte en PDF: abre la hoja de imprimir del iPad (de ahí se guarda en Archivos o se comparte)
   pdf: () => setTimeout(() => window.print(), 60),
   repback: () => { tab = repFrom === 'report' ? 'team' : repFrom },
@@ -2265,7 +2312,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026163137';
+const VERSION = '20261026163800';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
