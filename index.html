@@ -222,6 +222,7 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .lrow .p{font-size:24px;font-weight:800;letter-spacing:-.02em;text-align:right;min-width:70px}
 .lrow .p small{display:block;font-size:12px;color:var(--mut);font-weight:600}
 .thero{display:grid;grid-template-columns:1.2fr auto;gap:18px 28px;align-items:center;padding:26px 28px;border-radius:22px;background:linear-gradient(135deg,#1d3f78,#13336a 55%,#0d2347);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:16px}
+.ntiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:16px}.ntile{min-height:92px;font-size:40px;font-weight:800;letter-spacing:-.02em;border-radius:16px;font-variant-numeric:tabular-nums}
 .tid{display:flex;align-items:center;gap:18px;min-width:0}.tid img{width:110px;height:auto;flex:none}
 .tid small,.trec span,.tstat span{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
 .tid h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:2px 0 10px}
@@ -1155,6 +1156,8 @@ function barraJuego() {
   <div class="gc">${tab === 'field' && !d.stage ? accionesCampo() : ''}</div>
   <div class="gr"><button class="salir" data-a="salir">Salir del partido</button></div>`;
 }
+// número de la pulsera: sección + lugar (el mismo orden que la tarjeta impresa)
+const numJ = n => { const gs = secGroups(S.off); for (let i = 0; i < gs.length; i++) { const j = gs[i][1].indexOf(n); if (j >= 0) return `${i + 1}${j + 1}` } return '' };
 function vPick() {
   const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), pre = d.plan;
   // secciones arriba para brincar directo; se queda la última que usaron
@@ -1165,8 +1168,8 @@ function vPick() {
   <div class="shead"><div><h1>${pre ? (O ? '¿Qué jugada vamos a hacer?' : '¿Qué defensa vamos a usar?') : O ? '¿Qué jugada hicimos?' : '¿Qué defensa usamos?'}</h1><p>${pre ? `${dlbl()} · al terminar solo marcas dónde quedó el balón` : `${d.end ? `${verb(y)} ${sg(y)} yd` : 'Sin avance'} · ${dlbl()}`}</p></div>
     <div class="row tight">${pre ? '' : `<button class="plain" data-a="sinjugada">No sé la jugada</button>`}${O ? `<button class="pill${d.inv ? ' on' : ''}" data-a="inv">${icon('flip')}Invertida</button>` : ''}${pre && S.prox ? '<button class="plain" data-a="noplan">Quitar</button>' : ''}<button class="xbtn" data-a="cancelpick">${icon('x')}</button></div></div>
 
-  ${gs.length > 1 ? `<div class="seg pksegs">${gs.map(([s, l]) => `<button class="${s === g[0] ? 'on' : ''}" data-a="pksec" data-v="${esc(s)}">${esc(s)}<span class="n">${l.length}</span></button>`).join('')}</div>` : ''}
-  <div class="tiles pk">${g[1].map(tile).join('')}</div></div>`;
+  ${O ? gs.map(([s, l], i) => `<div class="ghead">${i + 1} · ${esc(s)}</div><div class="ntiles">${l.map((n, j) => `<button class="ntile" data-a="pick" data-v="${esc(n)}">${i + 1}${j + 1}</button>`).join('')}</div>`).join('') : `${gs.length > 1 ? `<div class="seg pksegs">${gs.map(([s, l]) => `<button class="${s === g[0] ? 'on' : ''}" data-a="pksec" data-v="${esc(s)}">${esc(s)}<span class="n">${l.length}</span></button>`).join('')}</div>` : ''}
+  <div class="tiles pk">${g[1].map(tile).join('')}</div>`}</div>`;
 }
 
 // captura rápida: con la jugada escogida, un toque al resultado y queda guardada; quién la hizo y por qué se completan después
@@ -1174,7 +1177,7 @@ function vQuick() {
   const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), td = d.end && (O ? d.end.x >= GOAL_R : d.end.x <= GOAL_L), sf = !S.conv && d.end && (O ? d.end.x <= GOAL_L : d.end.x >= GOAL_R);
   if (d.res) return vQuien();
   return `<div class="scrim" data-a="quickno"></div><div class="sheet">
-  <div class="shead"><div><h1>¿Qué pasó?</h1><p>${d.play ? esc(d.play) + (d.inv ? ' invertida' : '') : 'Sin saber la jugada'} · ${d.end ? `${verb(y)} ${sg(y)} yd${td ? ' · TD' : ''}${sf ? ` · Safety si lo frenaron ahí (2 para ${O ? 'el rival' : 'nosotros'})` : ''}` : 'Sin avance'} · ${dlbl()}</p></div>
+  <div class="shead"><div><h1>¿Qué pasó?</h1><p>${d.play ? (O && numJ(d.play) ? numJ(d.play) + ' · ' : '') + esc(d.play) + (d.inv ? ' invertida' : '') : 'Sin saber la jugada'} · ${d.end ? `${verb(y)} ${sg(y)} yd${td ? ' · TD' : ''}${sf ? ` · Safety si lo frenaron ahí (2 para ${O ? 'el rival' : 'nosotros'})` : ''}` : 'Sin avance'} · ${dlbl()}</p></div>
     <div class="row tight"><button class="plain" data-a="repick">Cambiar jugada</button><button class="xbtn" data-a="quickno">${icon('x')}</button></div></div>
   <div class="qtiles">${resOptions().map(r => `<button class="rtile" data-a="rapido" data-v="${esc(r)}"><b>${esc(rl(r))}</b><small>${esc(RES_TXT[S.side][r])}</small></button>`).join('')}</div>
   <div class="row" style="margin-top:18px;justify-content:space-between;align-items:center;gap:12px"><span class="mut">Luego tocas quién la hizo. Por qué falló, lo completas al final.</span><button class="plain" data-a="detalles">Capturar con detalles</button></div></div>`;
@@ -2312,7 +2315,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026163800';
+const VERSION = '20261026171347';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
