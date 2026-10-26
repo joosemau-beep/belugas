@@ -355,7 +355,8 @@ const GL_TXT = {O: {nos: 'La jugada estaba bien, fallamos al hacerla', rv: 'La d
 const ROLES = ['Q','C','X','Y','Z'];
 const ourTD = e => !e.conv && (e.side === 'O' ? e.td : e.ret), theirTD = e => !e.conv && (e.side === 'O' ? e.ret : e.td);
 // puntos: 6 por TD y lo que entre de conversión (1 desde la 5, 2 desde la 10)
-const puntos = (evs, nuestro) => evs.reduce((a, e) => a + (e.conv ? (e.td && (e.side === 'O') === nuestro ? e.conv : 0) : (nuestro ? ourTD : theirTD)(e) ? 6 : 0), 0);
+// safety (reglamento IFAF 8-4): 2 puntos para el que defiende; si nos lo hacen en ataque, son del rival
+const puntos = (evs, nuestro) => evs.reduce((a, e) => a + (e.conv ? (e.td && (e.side === 'O') === nuestro ? e.conv : 0) : (nuestro ? ourTD : theirTD)(e) ? 6 : e.safety && (e.side === 'D') === nuestro ? 2 : 0), 0);
 // cómo se llama el down en curso: en conversión no hay downs
 const dlbl = () => S.conv ? `Conversión de ${S.conv.pts}` : `${S.down}ª`;
 // Libro de jugadas leído de la tarjeta. pos = [adelante, lateral] en yardas desde el balón (lateral: + hacia la derecha de la tarjeta).
@@ -636,9 +637,11 @@ function draft() {
   const end = d.res === 'Incompleto' ? null : d.end;
   const auto = end && RUN.includes(d.res) && (O ? end.x >= GOAL_R : end.x <= GOAL_L);
   const td = RUN.includes(d.res) && (d.td == null ? !!auto : d.td);
+  // safety: al que trae el balón lo frenan dentro de su propia zona de anotación (en ataque la nuestra, a la izquierda; en defensa la del rival)
+  const safety = !S.conv && !!end && ['Pase completo', 'Corrida', 'Sack'].includes(d.res) && (O ? end.x <= GOAL_L : end.x >= GOAL_R);
   // un TD vale hasta la línea de gol, no hasta donde se tocó dentro de la zona
   const yds = td ? Math.round(O ? GOAL_R - S.ball.x : S.ball.x - GOAL_L) : yardsOf(side, d.res, S.ball, end);
-  const e = {side, res: d.res, td, ret: RET.includes(d.res) && d.ret, yds, end, fd: RUN.includes(d.res) && crosses(S.ball, end), raw: yardsOf(side, null, S.ball, end), auto: d.res && AUTO[side][d.res]};
+  const e = {side, res: d.res, td, safety, ret: RET.includes(d.res) && d.ret, yds, end, fd: RUN.includes(d.res) && crosses(S.ball, end), raw: yardsOf(side, null, S.ball, end), auto: d.res && AUTO[side][d.res]};
   e.worked = d.res ? works(e) : null;
   e.needWhy = !!d.res && !e.worked && !e.auto;
   e.ready = !!((d.play || d.sinJug) && d.res && (!e.needWhy || d.cause));
@@ -1165,10 +1168,10 @@ function vPick() {
 
 // captura rápida: con la jugada escogida, un toque al resultado y queda guardada; quién la hizo y por qué se completan después
 function vQuick() {
-  const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), td = d.end && (O ? d.end.x >= GOAL_R : d.end.x <= GOAL_L);
+  const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), td = d.end && (O ? d.end.x >= GOAL_R : d.end.x <= GOAL_L), sf = !S.conv && d.end && (O ? d.end.x <= GOAL_L : d.end.x >= GOAL_R);
   if (d.res) return vQuien();
   return `<div class="scrim" data-a="quickno"></div><div class="sheet">
-  <div class="shead"><div><h1>¿Qué pasó?</h1><p>${d.play ? esc(d.play) + (d.inv ? ' invertida' : '') : 'Sin saber la jugada'} · ${d.end ? `${verb(y)} ${sg(y)} yd${td ? ' · TD' : ''}` : 'Sin avance'} · ${dlbl()}</p></div>
+  <div class="shead"><div><h1>¿Qué pasó?</h1><p>${d.play ? esc(d.play) + (d.inv ? ' invertida' : '') : 'Sin saber la jugada'} · ${d.end ? `${verb(y)} ${sg(y)} yd${td ? ' · TD' : ''}${sf ? ` · Safety si lo frenaron ahí (2 para ${O ? 'el rival' : 'nosotros'})` : ''}` : 'Sin avance'} · ${dlbl()}</p></div>
     <div class="row tight"><button class="plain" data-a="repick">Cambiar jugada</button><button class="xbtn" data-a="quickno">${icon('x')}</button></div></div>
   <div class="qtiles">${resOptions().map(r => `<button class="rtile" data-a="rapido" data-v="${esc(r)}"><b>${esc(rl(r))}</b><small>${esc(RES_TXT[S.side][r])}</small></button>`).join('')}</div>
   <div class="row" style="margin-top:18px;justify-content:space-between;align-items:center;gap:12px"><span class="mut">Luego tocas quién la hizo. Por qué falló, lo completas al final.</span><button class="plain" data-a="detalles">Capturar con detalles</button></div></div>`;
@@ -1453,11 +1456,11 @@ function vStats() {
 }
 
 // ---------- fantasy: puntos por jugador con lo que se registró en cada jugada ----------
-const PTS = {pYd: .1, pTD: 4, int: -2, rec: 1, rYd: .1, ruYd: .1, td: 6, cv: 1, cvp: 1, drop: -1, fum: -2, sack: 2, dInt: 4, ff: 2, pbu: 1, dTD: 6, miss: -1, foul: -1};
+const PTS = {pYd: .1, pTD: 4, int: -2, rec: 1, rYd: .1, ruYd: .1, td: 6, cv: 1, cvp: 1, drop: -1, fum: -2, sack: 2, dInt: 4, ff: 2, pbu: 1, dTD: 6, sf: 2, miss: -1, foul: -1};
 const PTS_TXT = [['Yarda de pase, recepción o corrida', '0.1'], ['Recepción', '1'], ['TD anotado', '6'], ['TD de pase (QB)', '4'], ['Conversión anotada', '1 por punto'], ['Pase de conversión (QB)', '1 por punto'], ['Intercepción lanzada', '−2'], ['Se le cayó o no atrapó', '−1'], ['Fumble', '−2'],
-  ['Sack', '2'], ['Intercepción en defensa', '4'], ['Fumble forzado', '2'], ['Pase tapado', '1'], ['TD en defensa', '6'], ['Se le fue', '−1'], ['Falta', '−1']];
+  ['Sack', '2'], ['Intercepción en defensa', '4'], ['Fumble forzado', '2'], ['Pase tapado', '1'], ['TD en defensa', '6'], ['Safety (quien lo hizo)', '2'], ['Se le fue', '−1'], ['Falta', '−1']];
 function fantasy(evs) {
-  const P = {}, g = n => P[n] = P[n] || {n, att: 0, comp: 0, pYd: 0, pTD: 0, int: 0, rec: 0, tgt: 0, rYd: 0, drop: 0, car: 0, ruYd: 0, td: 0, cv: 0, cvp: 0, fum: 0, sack: 0, dInt: 0, ff: 0, pbu: 0, dTD: 0, miss: 0, foul: 0};
+  const P = {}, g = n => P[n] = P[n] || {n, att: 0, comp: 0, pYd: 0, pTD: 0, int: 0, rec: 0, tgt: 0, rYd: 0, drop: 0, car: 0, ruYd: 0, td: 0, cv: 0, cvp: 0, fum: 0, sack: 0, dInt: 0, ff: 0, pbu: 0, dTD: 0, sf: 0, miss: 0, foul: 0};
   const PASS = ['Pase completo','Incompleto','Intercepción'];
   for (const e of evs) {
     if (e.foul) g(e.foul).foul++;
@@ -1475,11 +1478,11 @@ function fantasy(evs) {
       if (e.td && sc) g(sc).td++;
       if (e.res === 'Fumble' && sc) g(sc).fum++;
     } else {
-      if (e.who) { const w = g(e.who); if (e.res === 'Sack') w.sack++; else if (e.res === 'Intercepción') w.dInt++; else if (e.res === 'Fumble forzado') w.ff++; else if (e.res === 'Incompleto') w.pbu++; if (e.ret) w.dTD++ }
+      if (e.who) { const w = g(e.who); if (e.res === 'Sack') w.sack++; else if (e.res === 'Intercepción') w.dInt++; else if (e.res === 'Fumble forzado') w.ff++; else if (e.res === 'Incompleto') w.pbu++; if (e.ret) w.dTD++; if (e.safety) w.sf++ }
       if (e.miss) g(e.miss).miss++;
     }
   }
-  return Object.values(P).map(p => ({...p, pts: Math.round(Object.keys(PTS).reduce((a, k) => a + PTS[k] * p[k], 0) * 10) / 10, def: p.sack * 2 + p.dInt * 4 + p.ff * 2 + p.pbu + p.dTD * 6}))
+  return Object.values(P).map(p => ({...p, pts: Math.round(Object.keys(PTS).reduce((a, k) => a + PTS[k] * p[k], 0) * 10) / 10, def: p.sack * 2 + p.dInt * 4 + p.ff * 2 + p.pbu + p.dTD * 6 + p.sf * 2}))
     .sort((a, b) => b.pts - a.pts);
 }
 function fLine(p) {
@@ -1489,7 +1492,7 @@ function fLine(p) {
   if (p.car) o.push(`${p.car} corrida${p.car > 1 ? 's' : ''}, ${p.ruYd} yd`);
   if (p.td) o.push(`${p.td} TD`);
   if (p.cv || p.cvp) o.push([p.cv && `conversión +${p.cv}`, p.cvp && `pase de conversión +${p.cvp}`].filter(Boolean).join(', '));
-  const df = [p.sack && `${p.sack} sack`, p.dInt && `${p.dInt} INT en defensa`, p.ff && `${p.ff} fumble forzado`, p.pbu && `${p.pbu} tapado${p.pbu > 1 ? 's' : ''}`, p.dTD && `${p.dTD} TD defensa`].filter(Boolean);
+  const df = [p.sack && `${p.sack} sack`, p.dInt && `${p.dInt} INT en defensa`, p.ff && `${p.ff} fumble forzado`, p.pbu && `${p.pbu} tapado${p.pbu > 1 ? 's' : ''}`, p.dTD && `${p.dTD} TD defensa`, p.sf && `${p.sf} safety`].filter(Boolean);
   if (df.length) o.push(df.join(', '));
   const bad = [p.drop && `${p.drop} se le cayó`, p.fum && `${p.fum} fumble`, p.miss && `${p.miss} se le fue`, p.foul && `${p.foul} falta${p.foul > 1 ? 's' : ''}`].filter(Boolean);
   if (bad.length) o.push(bad.join(', '));
@@ -1544,6 +1547,8 @@ function vReport() {
     if (e.conv) { if (!e.td) return `<div class="tl"><i class="mk ${e.side === 'O' ? 'us' : 'th'}" style="opacity:.45">${e.conv}</i><div><b>Conversión de ${e.conv} que no entró</b><div class="mut">${e.side === 'O' ? 'Nuestra' : 'Del rival'}${e.play ? ' · ' + esc(e.play) : ''}</div></div><span class="sc2">${a} – ${b}</span></div>`;
       if (e.side === 'O') a += e.conv; else b += e.conv;
       return `<div class="tl"><i class="mk ${e.side === 'O' ? 'us' : 'th'}">+${e.conv}</i><div><b>${e.side === 'O' ? 'Entró la conversión' : 'Entró su conversión'} de ${e.conv}</b><div class="mut">${e.side === 'O' ? esc(quien(e)) + (e.play ? ' · ' + esc(e.play) : '') : 'Del rival'}</div></div><span class="sc2">${a} – ${b}</span></div>` }
+    if (e.safety) { const us = e.side === 'D'; if (us) a += 2; else b += 2;
+      return `<div class="tl"><i class="mk ${us ? 'us' : 'th'}">+2</i><div><b>${us ? `Safety a favor${e.who ? ': ' + esc(e.who) : ''}` : 'Safety en contra'}</b><div class="mut">${e.play ? (us ? 'Defendimos con ' : '') + esc(e.play) : ''}${e.down ? ` · ${e.down}ª` : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
     if (ourTD(e)) { a += 6; return `<div class="tl"><i class="mk us">TD</i><div><b>${e.side === 'O' ? `${esc(quien(e))}, ${e.yds} yd` : `TD de la defensa: ${esc(e.who || 'la defensa')} (${esc(e.res)})`}</b><div class="mut">${e.play ? esc(e.play) : ''}${e.down ? ` · ${e.down}ª` : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
     if (theirTD(e)) { b += 6; return `<div class="tl"><i class="mk th">TD</i><div><b>TD de ${esc(riv)}${e.side === 'D' ? `, ${e.yds} yd` : ` tras ${esc(e.res)}`}</b><div class="mut">${e.side === 'D' && e.play ? 'Defendimos con ' + esc(e.play) : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
     return '' }).join('');
@@ -1778,6 +1783,7 @@ function afterSave(e, end) {
   // conversión: entre o no, el balón pasa al otro equipo
   if (e.conv) { S.conv = null; return kick(next, e.td ? (O ? `Entró la conversión: +${e.conv}. Ahora defendemos.` : `Entró su conversión: +${e.conv}. Ahora atacamos.`) : (O ? 'No entró la conversión. Ahora defendemos.' : 'No entró su conversión. Ahora atacamos.')) }
   // TD: antes de cambiar la posesión, el que anotó escoge su conversión en el campo
+  if (e.safety) return kick(O ? 'D' : 'O', O ? 'Safety: 2 puntos para el rival. Ahora defendemos.' : 'Safety a favor: 2 puntos. Ahora atacamos.');
   if (e.td || e.ret) { S.convPend = ourTD(e) ? 'O' : 'D'; S.msg = ''; return }
   // el balón siempre se pone al centro del campo (a lo ancho)
   S.ball = {x: end.x, y: 12.5};
@@ -1804,7 +1810,7 @@ function guardaJugada(rapida) {
   // lo que no se contestó (quién la hizo, por qué falló) queda en "Completar jugadas"
   const w = askWho(), falta = [...(d.sinJug && !d.play ? ['play'] : []), ...(w && d[w[0]] == null && !d.nadie ? [w[0]] : []), ...(r.needWhy && !d.cause ? ['cause'] : [])];
   const end = r.penEnd || r.end, last = d.lat.length ? d.lat[d.lat.length - 1].to : d.tgt;
-  const e = {id: Date.now(), ...(S.conv ? {conv: S.conv.pts} : {}), ...(d.inv && d.play ? {inv: true} : {}), side: S.side, play: d.play || null, res: d.res, td: r.td, ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
+  const e = {id: Date.now(), ...(S.conv ? {conv: S.conv.pts} : {}), ...(d.inv && d.play ? {inv: true} : {}), side: S.side, play: d.play || null, res: d.res, td: r.td, ...(r.safety ? {safety: true} : {}), ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
     cause, grp: r.auto ? r.auto[1] : (cause ? grpOf(S.side, cause) : 'ok'), catch: r.catch || null, aim: r.aim || null, path: r.path || null,
     chain: d.lat.map(l => ({t: l.t, c: l.c, to: nm(l.to)})), last: nm(last), pen: r.pen || null, foul: nm(d.foul),
     qb: S.side === 'O' ? nm(d.qb) : null, tgt: nm(d.tgt), who: nm(d.who), miss: nm(d.miss), cancha: L.map(p => p.name || ''), ...((o => o ? {orden: {fila: o.fila.slice(), esp: o.esp}} : {})(d.orden && (ordenVale(S.side) || d.orden))), ...(falta.length ? {falta} : {}),
@@ -2273,7 +2279,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026144637';
+const VERSION = '20261026145428';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
