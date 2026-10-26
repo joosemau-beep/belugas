@@ -147,7 +147,7 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .oslot.on{box-shadow:inset 0 0 0 3px var(--tint);background:rgba(0,0,0,.4);color:#fff}
 .oslot small{font-size:12px;font-weight:700;letter-spacing:.06em;opacity:.8}
 .oslot b{font-size:19px;font-weight:700;text-align:center;line-height:1.15}.oslot.vacio b{font-weight:500;opacity:.6;font-size:16px}
-.oslot i{width:14px;height:14px;border-radius:50%;box-shadow:0 0 0 2px #fff}
+.oslot i{width:26px;height:26px;border-radius:50%;box-shadow:0 0 0 2px #fff;display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:700;color:#111}
 
 .rtile{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;min-height:62px;padding:10px 12px}
 .rtile b{font-size:16px;font-weight:600}
@@ -178,13 +178,6 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .minput button{min-height:38px;padding:4px 14px}
 .badge2{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-weight:700;font-size:13px;color:#111;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
 .nube{margin:0 0 12px;font-weight:600;color:var(--nos)}.nube.ok{color:var(--ok)}
-.lineup{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start}
-#lbox{border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
-#lbox g{cursor:pointer}
-.lside{background:var(--card);box-shadow:inset 0 0 0 1px var(--line);border-radius:14px}
-.lside .pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.lhint{padding:28px 18px;color:var(--mut);text-align:center}
-@media (max-width:900px){.lineup{grid-template-columns:1fr}}
 .addlat{position:absolute;right:16px;bottom:78px;box-shadow:var(--shadow);min-height:46px;padding:8px 18px}
 .why b{display:block;margin:4px 2px 2px}.why p{margin:0 2px 10px}
 .ifoot{display:flex;gap:10px;padding-top:12px}
@@ -585,8 +578,7 @@ function porNombre(fn) {
 }
 // si cambian a mano quién juega dónde, el orden guardado se ajusta a lo que quedó (lo de mano manda)
 const ordenSigue = sd => { if (S.orden && S.orden[sd]) S.orden[sd] = ordenActual(sd) };
-let ordEd = null;
-const ordLleno = () => [...ordEd.fila, ordEd.esp].filter(Boolean).length >= Math.min(5, hoy().length); // hoja "¿Cómo se pararon?": {sd, fila: [4 nombres], esp, sel: 'f0'..'f3' | 'e'}
+let ordSel = null; // hoja Jugadores: el lugar que se tocó para ponerle nombre ('f0'..'f3' de izquierda a derecha, 'e' = QB o rush)
 let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
 let bloqueAsk = false; // hoja "¿Qué bloque entra?": sale sola al cambiar de posesión si hay bloques guardados
 const pideBloque = () => { if (enJuego && S.bloques.some(b => b.sd === S.side)) bloqueAsk = true }; // solo si hay bloques del lado que entra
@@ -1033,7 +1025,6 @@ function readoutText(e) {
 function drawFields() {
   const fb = $('#fbox'); if (fb && fb.clientWidth) fb.innerHTML = mainSvg(fb.clientWidth, fb.clientHeight);
   const hb = $('#howbox'); if (hb && hb.clientWidth) hb.innerHTML = howSvg(hb.clientWidth, hb.clientHeight);
-  const lb = $('#lbox'); if (lb && lb.clientWidth) lb.innerHTML = lineupSvg(lb.clientWidth);
   const eb = $('#edbox'); if (eb && eb.clientWidth) eb.innerHTML = edSvg(eb.clientWidth, eb.clientHeight);
 }
 // ---------- editor de jugadas: ustedes dibujan formación, rutas y quién recibe el saque ----------
@@ -1108,28 +1099,6 @@ const edMov = (r, a, b) => { const p0 = ed.pos[r], c = v => Math.round(v * 100) 
 const edLimpia = r => { const rt = ed.routes[r]; if (!rt) return; if (rt.motion && !rt.motion.length) delete rt.motion;
   const n = (rt.pts || []).length; if (!n) { delete rt.hot; delete rt.atrapa } else if (rt.atrapa >= n) rt.atrapa = n - 1;
   if (!rt.motion && !n) delete ed.routes[r] };
-// hoja Jugadores: la formación como está parada (la de la última jugada elegida); tamaños en px para que nada se encime
-function lineupSvg(w) {
-  const L = S.lines[S.side], P = L.map(q => S.side === 'O' ? [q.dy, -q.dx] : [q.dy, q.dx]);
-  const xs = P.map(q => q[0]), ys = [0, ...P.map(q => q[1])];
-  // acercado a la formación, sin pasar de media pantalla de alto; lo que sobre de ancho se reparte a los lados
-  let x0 = Math.min(...xs) - 3.5, x1 = Math.max(...xs) + 3.5;
-  const y0 = Math.min(...ys) - 2.5, y1 = Math.max(...ys) + 3, k = Math.max((x1 - x0) / w, (y1 - y0) / (innerHeight * .5)), c = (x0 + x1) / 2, p = v => +(v * k).toFixed(3);
-  x0 = c - w * k / 2; x1 = c + w * k / 2;
-  let gap = Infinity;
-  P.forEach((a, i) => P.forEach((b, j) => { if (j > i) gap = Math.min(gap, Math.hypot(a[0] - b[0], a[1] - b[1]) / k) }));
-  const R = clamp(gap * .42, 14, 24), fs = clamp(gap * .24, 12, 15);
-  let s = `<svg viewBox="${x0} ${y0} ${x1 - x0} ${y1 - y0}" style="width:100%;display:block"><rect x="${x0}" y="${y0}" width="${x1 - x0}" height="${y1 - y0}" fill="#2b7a47"/>
-    <line x1="${x0}" x2="${x1}" y1="0" y2="0" stroke="#fff" stroke-opacity=".6" stroke-width="${p(2)}" stroke-dasharray="${p(9)} ${p(7)}"/><ellipse rx="${p(12)}" ry="${p(7.5)}" fill="#a0522d" stroke="#fff" stroke-width="${p(2)}"/>`;
-  L.forEach((q, i) => {
-    s += `<g data-a="popi" data-v="${i}" transform="translate(${P[i][0]} ${P[i][1]})"><circle r="${p(R + 10)}" fill="transparent"/>
-      ${pop === i ? `<circle r="${p(R + 6)}" fill="none" stroke="#fff" stroke-width="${p(3.5)}"/>` : ''}
-      <circle cy="${p(2.5)}" r="${p(R)}" fill="#000" fill-opacity=".25"/><circle r="${p(R)}" fill="${colorOf(q.name)}" stroke="#fff" stroke-width="${p(2.5)}"/>
-      <text y="${p(R * .26)}" font-size="${p(R * .7)}" font-weight="700" text-anchor="middle" fill="#111">${esc(q.r)}</text>
-      <text y="${p(R + fs + 5)}" font-size="${p(fs)}" font-weight="700" text-anchor="middle" fill="#fff" stroke="#000" stroke-opacity=".55" stroke-width="${p(3)}" paint-order="stroke">${q.name ? esc(q.name) : 'Sin nombre'}</text></g>`;
-  });
-  return s + '</svg>';
-}
 
 // ---------- vistas ----------
 function vField() {
@@ -1148,7 +1117,6 @@ function vField() {
   <div class="frow">
     <div class="downs"><span class="cap">${S.conv ? 'Conv.' : 'Down'}</span>${S.conv ? `<div class="convbox"><b>+${S.conv.pts}</b><span>${S.conv.pts === 1 ? 'desde la 5' : 'desde la 10'}</span><button class="plain" data-a="convback">Cambiar</button></div>` : [1,2,3,4].map(n => { const it = S.series.find(x => x.down === n);
       return `<div class="dwrap"><button class="${S.down === n ? 'on' : it ? (it.ok ? 'dok' : 'dbad') : ''}" data-a="down" data-v="${n}">${n}ª</button>${it ? `<small class="${it.ok ? 'g' : 'r'}">${sg(it.yds)}</small>` : ''}</div>` }).join('')}
-      <button class="jplan${ordenVale(S.side) ? ' on' : ''}" data-a="ordenabre">${icon('team')}<span>Alineación</span></button>
       <button class="jplan${S.prox ? ' on' : ''}" data-a="plan">${S.prox ? `<span>${S.proxInv && O ? 'Invertida' : 'Jugada'}</span><b>${esc(S.prox)}</b>` : `${icon('plays')}<span>Jugada</span>`}</button>
       <div class="need"><b>${need}</b><span>yd para ${toMid ? 'Primera' : 'Goal'}${O ? '' : ' del rival'}</span></div></div>
     <div class="fbox" id="fboxwrap"><div id="fbox" style="position:absolute;inset:0"></div>
@@ -1635,22 +1603,20 @@ function usaBloque(b) {
   llenaLado(sd, h); ordenSigue(sd);
 }
 const ladoTxt = sd => sd === 'O' ? 'ataque' : 'defensa';
-// "¿Cómo se pararon?": 4 lugares grandes de izquierda a derecha y el de atrás del centro, como en las tarjetas
-// (ataque: la línea arriba y el QB abajo; defensa: la línea abajo y el rush arriba, más lejos)
-function vOrden() {
-  const o = ordEd, O = o.sd === 'O', espN = O ? 'QB' : 'Rush', h = hoy();
+// hoja Jugadores: cómo se pararon. 4 lugares grandes de izquierda a derecha y el de atrás del centro, como en las tarjetas
+// (ataque: la línea arriba y el QB abajo; defensa: la línea abajo y el rush arriba). Cada cambio queda de una vez; al escoger la jugada, cada quien queda en su lugar
+function tablero(sd) {
+  const O = sd === 'O', espN = O ? 'QB' : 'Rush', h = hoy(), o = ordenVale(sd) || ordenActual(sd), L = S.lines[sd];
+  // la letra que trae cada quien ahora (en la formación de la última jugada)
+  const letra = n => { const p = L.find(q => q.name === n); return p ? p.r : '' };
   const nom = id => id === 'e' ? o.esp : o.fila[+id.slice(1)];
-  const slot = id => { const n = nom(id); return `<button class="oslot${o.sel === id ? ' on' : ''}${n ? '' : ' vacio'}" data-a="ordenslot" data-v="${id}"><small>${id === 'e' ? espN : (+id.slice(1) + 1) + (O ? '' : 'º')}</small>${n ? `<i style="background:${colorOf(n)}"></i>` : ''}<b>${n ? esc(n) : 'Toca aquí'}</b></button>` };
-  // primero los que están en la cancha, luego los demás que vinieron; cada uno dice en qué lugar va
-  const enC = enCancha(o.sd).filter(Boolean), lista = [...enC, ...h.filter(n => !enC.includes(n))];
+  const slot = id => { const n = nom(id); return `<button class="oslot${ordSel === id ? ' on' : ''}${n ? '' : ' vacio'}" data-a="ordenslot" data-v="${id}"><small>${id === 'e' ? espN : (+id.slice(1) + 1) + (O ? '' : 'º')}</small>${n ? `<i style="background:${colorOf(n)}">${esc(letra(n))}</i>` : ''}<b>${n ? esc(n) : 'Toca aquí'}</b></button>` };
+  const enC = enCancha(sd).filter(Boolean), lista = [...enC, ...h.filter(n => !enC.includes(n))];
   const donde = n => o.esp === n ? (O ? 'QB' : 'R') : (k => k >= 0 ? (k + 1) + (O ? '' : 'º') : '')(o.fila.indexOf(n));
   const fila = `<div class="ofila">${['f0', 'f1', 'f2', 'f3'].map(slot).join('')}</div>`, esp = `<div class="oesp">${slot('e')}</div>`, linea = `<div class="olinea"><span>Línea</span></div>`;
-  return `<div class="scrim top" data-a="ordenno"></div><div class="sheet top">
-  <div class="shead"><div><h1>¿Cómo se pararon?</h1><p>${O ? 'Ataque' : 'Defensa'} · de izquierda a derecha, como en las tarjetas de Jugadas. Al escoger la jugada, cada quien queda en su lugar</p></div><button class="xbtn" data-a="ordenno">${icon('x')}</button></div>
-  <div class="oboard">${O ? linea + fila + esp : esp + fila + linea}</div>
-  <div class="ghead">${o.sel ? (o.sel === 'e' ? (O ? '¿Quién es el QB?' : '¿Quién es el rush?') : `¿Quién va en el ${+o.sel.slice(1) + 1}º lugar de izquierda a derecha?`) : 'Toca un lugar y luego el nombre'}</div>
-  <div class="pchips">${lista.map(n => { const w = donde(n); return `<button class="pchip${w ? ' on' : ''}" data-a="ordennom" data-v="${esc(n)}"><i style="background:${colorOf(n)}">${w}</i>${esc(n)}</button>` }).join('')}</div>
-  <div class="row tight" style="margin-top:18px;justify-content:space-between"><button class="plain" data-a="ordenvacia">Empezar de cero</button><button class="tint" style="min-width:200px;min-height:54px;font-size:18px;border-radius:14px" data-a="ordenok"${ordLleno() ? '' : ' disabled'}>Listo</button></div></div>`;
+  return `<div class="oboard">${O ? linea + fila + esp : esp + fila + linea}</div>
+  <div class="ghead">${ordSel ? (ordSel === 'e' ? (O ? '¿Quién es el QB?' : '¿Quién es el rush?') : `¿Quién va en el ${+ordSel.slice(1) + 1}º lugar de izquierda a derecha?`) : 'Toca un lugar y luego el nombre'}</div>
+  <div class="pchips">${lista.map(n => { const w = donde(n); return `<button class="pchip${w ? ' on' : ''}" data-a="ordennom" data-v="${esc(n)}"><i style="background:${colorOf(n)}">${w}</i>${esc(n)}</button>` }).join('')}</div>`;
 }
 function vBloque() {
   const b = blq, L = S.lines[b.sd], arr = b.arr, i = b.sel;
@@ -1697,7 +1663,6 @@ function vPop() {
   if (dlg) return `<div class="scrim top" data-a="dlgno"></div><div class="sheet top dlg"><p class="dlgt">${esc(dlg.t)}</p>${dlg.input != null ? `<input id="dlgin" value="${esc(dlg.input)}" style="width:100%;margin-top:14px">` : ''}
     <div class="row tight" style="margin-top:18px;justify-content:flex-end">${dlg.solo ? '' : '<button data-a="dlgno">Cancelar</button>'}<button class="tint" data-a="dlgok">${esc(dlg.si)}</button></div></div>`;
   if (blq) return vBloque();
-  if (ordEd) return vOrden();
   const L = S.lines[S.side], h = hoy(), g = cur();
   const chipsAsist = () => `<div class="pchips">${S.players.map(n => `<button class="pchip${h.includes(n) ? ' on' : ''}" style="padding-left:6px" data-a="asist" data-v="${esc(n)}"><i style="background:${colorOf(n)}"></i>${esc(n)}</button>`).join('')}</div>`;
   if (asistOpen) return `<div class="scrim top"></div><div class="sheet top">
@@ -1708,9 +1673,8 @@ function vPop() {
     <div class="row tight" style="margin-top:18px"><button class="plain" data-a="ahorano">Ahora no</button><button class="tint" style="flex:1;min-height:54px;font-size:18px;border-radius:14px" data-a="empezar">Empezar partido · ${h.length} jugador${h.length === 1 ? '' : 'es'}</button></div></div>`;
   if (bloqueAsk && tab === 'field' && !d.stage && !S.convPend) return vElegirBloque();
   if (popSheet) return `<div class="scrim top" data-a="closepop"></div><div class="sheet top">
-    <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · toca a un jugador en la formación para cambiar quién juega. Si el nombre ya juega en otra posición, se intercambian</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
-    <div class="lineup"><div id="lbox"></div><div class="lside">${pop == null ? '<div class="lhint">Toca a un jugador para ver los nombres</div>'
-      : `<div class="mtitle"><i class="badge2" style="background:${colorOf(L[pop].name)}">${esc(L[pop].r)}</i>${L[pop].name ? esc(L[pop].name) : 'Sin nombre'}</div>${menuRows(pop)}`}</div></div>
+    <div class="shead"><div><h1>Jugadores</h1><p>${S.side === 'O' ? 'Ataque' : 'Defensa'} · cómo se pararon de izquierda a derecha, como en las tarjetas. Toca un lugar y luego el nombre; si ya estaba en otro lugar, se intercambian. Al escoger la jugada, cada quien queda en su lugar</p></div><button class="xbtn" data-a="closepop">${icon('x')}</button></div>
+    ${tablero(S.side)}
     <div class="ghead" style="margin-top:18px">Bloques de ${ladoTxt(S.side)} · ${S.bloques.filter(b => b.sd === S.side).length}</div><div class="group"><p>Haz todos los acomodos que quieras de quién va en cada posición de ${ladoTxt(S.side)}. Cuando les toque ${S.side === 'O' ? 'atacar' : 'defender'} escoges cuál entra</p>
       ${listaBloques(S.side)}</div>
     <div class="ghead" style="margin-top:18px">Vinieron hoy · ${h.length} de ${S.players.length}</div><div class="group">${chipsAsist()}
@@ -1737,8 +1701,8 @@ function render() {
   if (fl === lastFl) document.querySelectorAll('.float').forEach(still);
   lastOv = ok; lastFl = fl;
   $('#pop').innerHTML = vPop();
-  if (lastPop && (pop != null || popSheet || asistOpen || bloqueAsk || blq || dlg || ordEd)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
-  lastPop = pop != null || popSheet || asistOpen || bloqueAsk || !!blq || !!dlg || !!ordEd;
+  if (lastPop && (pop != null || popSheet || asistOpen || bloqueAsk || blq || dlg)) $('#pop').querySelectorAll('.scrim,.sheet,.menu').forEach(still);
+  lastPop = pop != null || popSheet || asistOpen || bloqueAsk || !!blq || !!dlg;
   const di = $('#dlgin'); if (di && document.activeElement !== di) { di.focus(); di.select() }
   drawFields();
   const mn = $('.menu'); if (mn) { const r = mn.getBoundingClientRect(); mn.style.top = clamp(r.top, 12, Math.max(12, innerHeight - r.height - 12)) + 'px'; mn.style.left = clamp(r.left, 12, Math.max(12, innerWidth - r.width - 12)) + 'px' }
@@ -1823,24 +1787,18 @@ const A = {
   confirm: () => { d.stage = 'pick'; d.orden = ordenVale(S.side); usaPlan() },
   noadv: () => { d = fresh(); d.stage = 'pick'; d.orden = ordenVale(S.side); usaPlan() },
   sinjugada: () => { d.play = null; d.sinJug = true; d.qb = 0; d.stage = d.det ? 'how' : 'quick' },
-  // hoja "¿Cómo se pararon?": empieza con como están ahora; tocar un lugar y luego un nombre (si ya estaba en otro lugar, se intercambian)
-  ordenabre: () => { const sd = S.side, o = ordenVale(sd) || ordenActual(sd); ordEd = {sd, fila: o.fila.slice(), esp: o.esp, sel: null} },
-  ordenno: () => { ordEd = null },
-  ordenslot: v => { ordEd.sel = ordEd.sel === v ? null : v },
-  ordenvacia: () => { Object.assign(ordEd, {fila: ['', '', '', ''], esp: '', sel: 'f0'}) },
+  // hoja Jugadores: tocar un lugar y luego un nombre (si ya estaba en otro lugar, se intercambian; si venía de la banca, entra).
+  // Queda de una vez en la cancha y se guarda el orden para acomodarlos al escoger la jugada; si ataque y defensa eran los mismos 5, se siguen moviendo juntos
+  ordenslot: v => { ordSel = ordSel === v ? null : v },
   ordennom(v) {
-    const o = ordEd, ids = ['f0', 'f1', 'f2', 'f3', 'e'], get = id => id === 'e' ? o.esp : o.fila[+id.slice(1)], set = (id, n) => { if (id === 'e') o.esp = n; else o.fila[+id.slice(1)] = n };
-    const to = o.sel || ids.find(id => !get(id)); if (!to) return;
+    const sd = S.side, o0 = ordenVale(sd) || ordenActual(sd), o = {fila: o0.fila.slice(), esp: o0.esp}, ids = ['f0', 'f1', 'f2', 'f3', 'e'];
+    const get = id => id === 'e' ? o.esp : o.fila[+id.slice(1)], set = (id, n) => { if (id === 'e') o.esp = n; else o.fila[+id.slice(1)] = n };
+    const to = ordSel || ids.find(id => !get(id)); if (!to) return;
     const de = ids.find(id => get(id) === v); if (de && de !== to) set(de, get(to));
-    set(to, v); o.sel = ids.find(id => !get(id)) || null;
-  },
-  // Listo: se guarda el orden y la cancha queda así desde ya (en la formación de la última jugada); si ataque y defensa eran los mismos 5, se siguen moviendo juntos
-  ordenok() {
-    if (!ordLleno()) return;
-    const o = ordEd, sd = o.sd, juntos = mismos(nombresDe('O'), nombresDe('D'));
-    S.orden = S.orden || {}; S.orden[sd] = {fila: o.fila.slice(), esp: o.esp};
-    ponOrden(sd, posDe(sd), S.orden[sd]); if (juntos) iguala(sd, sd === 'O' ? 'D' : 'O');
-    ordEd = null;
+    set(to, v); ordSel = null;
+    const juntos = mismos(nombresDe('O'), nombresDe('D'));
+    S.orden = S.orden || {}; S.orden[sd] = o;
+    porNombre(() => ponOrden(sd, posDe(sd), o)); if (juntos) iguala(sd, sd === 'O' ? 'D' : 'O');
   },
   plan: () => { d = fresh(); d.stage = 'pick'; d.plan = true; d.inv = !!(S.prox && S.proxInv); if (S.secOf[S.prox]) pickSec = S.secOf[S.prox] },
   // la misma jugada en espejo; lo que ya arrastraron de la ruta se regresa al dibujo volteado
@@ -1940,7 +1898,7 @@ const A = {
   undo() { const g = cur(), e = g && g.events.pop(); if (e && e.orden) (S.orden = S.orden || {})[e.side] = e.orden; if (e) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, conv: e.pre.conv || null, convPend: null, msg: ''}) } d = fresh() },
   dlgok() { const f = dlg.fn, v = dlg.input != null ? ($('#dlgin') || {value: ''}).value : true; dlg = null; f(v) },
   dlgno: () => { dlg = null },
-  closepop: () => { pop = null; popAt = null; popSheet = false },
+  closepop: () => { pop = null; popAt = null; popSheet = false; ordSel = null },
   lineup: () => { popSheet = true; pop = null; popAt = null },
   bloqueusa(v) { const b = S.bloques.find(x => x.id === +v); if (b) usaBloque(b); bloqueAsk = false },
   bloqueno: () => { bloqueAsk = false },
@@ -2255,7 +2213,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026141521';
+const VERSION = '20261026141958';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
