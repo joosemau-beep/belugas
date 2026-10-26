@@ -135,6 +135,9 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 .stepper button{width:46px;padding:0;font-size:22px;font-weight:600}
 .stepper b{min-width:92px;text-align:center;font-size:22px;letter-spacing:-.01em}
 .tiles2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* captura rápida: resultados grandes, un toque y se guarda */
+.qtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.qtiles .rtile{min-height:92px;padding:14px 16px;gap:4px}.qtiles .rtile b{font-size:20px}.qtiles .rtile small{font-size:14px}
+.pchip.sug{box-shadow:inset 0 0 0 2px var(--tint)}
 .rtile{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;min-height:62px;padding:10px 12px}
 .rtile b{font-size:16px;font-weight:600}
 .rtile small{font-size:12.5px;opacity:.72;line-height:1.2}
@@ -543,6 +546,9 @@ let dlg = null;
 const pregunta = (t, si, fn, input = null) => { dlg = {t, si, fn, input} };
 const aviso = t => { dlg = {t, si: 'Entendido', fn: () => {}, solo: true} };
 let repG = null, repFrom = 'team'; // reporte del partido que se está viendo
+let compG = null, compFrom = 'field'; // "Completar jugadas": partido y de dónde se llegó
+// jugadas capturadas rápido a las que les falta quién la hizo o por qué falló (e.falta = ['tgt'|'who'|'miss'|'cause'])
+const pendientes = g => g ? g.events.filter(e => e.falta && e.falta.length) : [];
 let asistOpen = false; // hoja "¿Quiénes vinieron?" al empezar un partido
 let bloqueAsk = false; // hoja "¿Qué bloque entra?": sale sola al cambiar de posesión si hay bloques guardados
 const pideBloque = () => { if (enJuego && S.bloques.some(b => b.sd === S.side)) bloqueAsk = true }; // solo si hay bloques del lado que entra
@@ -1097,7 +1103,7 @@ function vField() {
   const fl = enJuego ? '' : `<span class="t">vs ${esc(g.rival || 'Rival')}</span><button class="tint" data-a="entrar">Seguir partido</button><button data-a="newgame">Nuevo partido</button>`;
   return `<div class="fscreen">
   <div class="topbar">
-    <div class="l"><img src="logo.webp" alt="Belugas"><div>vs ${esc(g.rival || 'Rival')}<small>${fav} – ${con}${ev.length ? ` · ${ev.length} jugada${ev.length === 1 ? '' : 's'}` : ''}</small></div></div>
+    <div class="l"><img src="logo.webp" alt="Belugas"><div>vs ${esc(g.rival || 'Rival')}<small>${fav} – ${con}${ev.length ? ` · ${ev.length} jugada${ev.length === 1 ? '' : 's'}` : ''}</small></div>${pendientes(g).length ? `<button class="pill tint" data-a="completar">Completar · ${pendientes(g).length}</button>` : ''}</div>
     <div class="seg"><button class="${O ? 'on' : ''}" data-a="side" data-v="O">Ataque</button><button class="${O ? '' : 'on'}" data-a="side" data-v="D">Defensa</button></div>
     <div class="rt"><button class="pill" data-a="lineup">${icon('team')}Jugadores</button><button class="pill${d.setBall ? ' on' : ''}" data-a="setball">${icon('move')}Mover balón</button><button class="pill" data-a="undo"${ev.length ? '' : ' disabled'}>${icon('undo')}Deshacer</button></div>
   </div>
@@ -1138,6 +1144,50 @@ function vPick() {
   <div class="tiles pk">${g[1].map(tile).join('')}</div></div>`;
 }
 
+// captura rápida: con la jugada escogida, un toque al resultado y queda guardada; quién la hizo y por qué se completan después
+function vQuick() {
+  const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), td = d.end && (O ? d.end.x >= GOAL_R : d.end.x <= GOAL_L);
+  return `<div class="scrim" data-a="quickno"></div><div class="sheet">
+  <div class="shead"><div><h1>¿Qué pasó?</h1><p>${esc(d.play)}${d.inv ? ' invertida' : ''} · ${d.end ? `${verb(y)} ${sg(y)} yd${td ? ' · TD' : ''}` : 'Sin avance'} · ${dlbl()}</p></div>
+    <div class="row tight"><button class="plain" data-a="repick">Cambiar jugada</button><button class="xbtn" data-a="quickno">${icon('x')}</button></div></div>
+  <div class="qtiles">${resOptions().map(r => `<button class="rtile" data-a="rapido" data-v="${esc(r)}"><b>${esc(rl(r))}</b><small>${esc(RES_TXT[S.side][r])}</small></button>`).join('')}</div>
+  <div class="row" style="margin-top:18px;justify-content:space-between;align-items:center;gap:12px"><span class="mut">Se guarda al tocar. Quién la hizo y por qué, lo completas al final.</span><button class="plain" data-a="detalles">Capturar con detalles</button></div></div>`;
+}
+// dónde iba a atrapar según la jugada: el punto de su ruta donde la atrapa (o el último), contado desde donde estaba el balón
+function puntoRuta(e, i) {
+  const pb = jug(e.play, e.inv), r = S.lines.O[i] && S.lines.O[i].r, rt = pb && r && pb.routes[r], f = S.forms['O:' + e.play];
+  if (!rt || !rt.pts || !rt.pts.length || !e.start) return null;
+  const p0 = f ? [f[i][0], e.inv ? -f[i][1] : f[i][1]] : pb.pos[r], st = startOf(p0, rt);
+  const q = rt.pts[rt.hot && rt.atrapa != null ? Math.min(rt.atrapa, rt.pts.length - 1) : rt.pts.length - 1];
+  return {x: clamp(e.start.x + st[0] + q[0], 0.5, 69.5), y: clamp(e.start.y + st[1] + q[1], 1, 24)};
+}
+// "Completar jugadas": a cada jugada capturada rápido se le pregunta una cosa a la vez (quién y luego por qué)
+function vCompletar() {
+  const g = S.games.find(x => x.id === compG) || cur(), pend = pendientes(g), all = g ? g.events : [];
+  const PREG = e => ({tgt: e.res === 'Pase completo' ? '¿Quién la atrapó?' : e.res === 'Corrida' ? '¿Quién corrió con el balón?' : '¿A quién iba el pase?',
+    who: e.res === 'Incompleto' ? '¿Quién la tapó?' : '¿Quién hizo la jugada?', miss: '¿A quién se le fue?', cause: e.res === 'Incompleto' ? '¿Por qué no se completó?' : '¿Por qué no funcionó?'});
+  const nada = e => `<button class="pchip" style="padding-left:14px" data-a="completa" data-v="${e.id}|${e.falta[0]}|">No me acuerdo</button>`;
+  const card = e => {
+    const O = e.side === 'O', pb = O && e.play && jug(e.play, e.inv), campo = e.falta[0], P = PREG(e), Lr = S.lines[e.side];
+    // el más probable va marcado: el receptor principal de la jugada (o el que lleva el balón si fue corrida)
+    const sug = campo === 'tgt' && pb ? (e.res === 'Corrida' ? passer(pb) : Object.keys(pb.routes).find(r => pb.routes[r].hot)) : null;
+    // primero los 5 que estaban en la cancha (con su posición); abajo los demás que vinieron, por si la cancha no estaba al día
+    const enC = (e.cancha || []).filter(Boolean), otros = (g.asist || S.players).filter(n => !enC.includes(n));
+    const gente = () => `${enC.length ? `<div class="pchips">${e.cancha.map((n, i) => n ? `<button class="pchip${Lr[i].r === sug ? ' sug' : ''}" data-a="completa" data-v="${e.id}|${campo}|${esc(n)}"><i style="background:${colorOf(n)}">${esc(Lr[i].r)}</i>${esc(n)}</button>` : '').join('')}</div>` : ''}
+      ${otros.length ? `${enC.length ? '<p class="mut" style="margin:12px 2px 6px">Otros que vinieron</p>' : ''}<div class="pchips">${otros.map(n => `<button class="pchip" style="padding-left:6px" data-a="completa" data-v="${e.id}|${campo}|${esc(n)}"><i style="background:${colorOf(n)}"></i>${esc(n)}</button>`).join('')}</div>` : ''}
+      <div class="pchips" style="margin-top:12px">${nada(e)}</div>`;
+    const causas = () => { const CS = O && e.res === 'Incompleto' ? INC : CAUSES[e.side];
+      return ['nos', 'rv'].map(k => `<p class="mut" style="margin:10px 2px 6px">${GL[e.side][k]}</p><div class="pchips">${CS[k].map(c => `<button class="pchip" style="padding-left:14px" data-a="completa" data-v="${e.id}|cause|${esc(c)}">${esc(c)}</button>`).join('')}</div>`).join('') + `<div class="pchips" style="margin-top:12px">${nada(e)}</div>` };
+    return `<div class="card"><div class="item" style="border:0;padding:0"><b style="font-size:18px">${all.indexOf(e) + 1}. ${esc(e.play || 'Sin jugada')}${e.inv ? ' invertida' : ''}</b><span class="mut">${O ? 'Ataque' : 'Defensa'} · ${e.conv ? 'Conversión' : e.down + 'ª'}</span></div>
+      <div style="margin:2px 0 12px">${esc(LBL[e.side][e.res] || e.res)} · ${sg(e.yds)} yd${e.td ? ' · TD' : ''}</div>
+      ${pb ? `<div style="max-width:240px;margin:0 0 14px">${diagram(e.play, 'O', false, e.inv)}</div>` : ''}
+      <div class="ghead" style="margin:0 2px 8px">${P[campo]}</div>${campo === 'cause' ? causas() : gente()}
+      ${e.falta.length > 1 ? `<p class="mut" style="margin:12px 2px 0">Luego: ${e.falta.slice(1).map(c => P[c].replace(/[¿?]/g, '').toLowerCase()).join(' y ')}</p>` : ''}</div>`;
+  };
+  return `<div class="row" style="margin-bottom:6px"><button class="plain" data-a="compback">${icon('back')} Volver</button></div>
+  <h1 class="lt">Completar jugadas</h1><p class="mut" style="margin:0 0 14px">vs ${esc(g.rival || 'Rival')} · ${pend.length ? `${pend.length} por completar. Una pregunta a la vez; con esto el fantasy y el análisis saben quién hizo cada jugada.` : 'nada pendiente'}</p>
+  ${pend.length ? `<div class="cols2">${pend.map(card).join('')}</div>` : '<div class="card"><h2>Todo completo</h2><p class="mut" style="margin:0">Todas las jugadas de este partido ya tienen quién la hizo y por qué.</p></div>'}`;
+}
 function vHow() {
   const O = S.side === 'O', e = draft(), w = askWho(), L = S.lines[S.side], rr = recvRoute();
   let q = d.res === 'Castigo' || d.res === 'Incompleto' ? '' : `<div class="group yrow"><span>${verb(e.raw)}</span><div class="stepper"><button data-a="yd" data-v="-1">−</button><b>${sg(e.raw)} yd</b><button data-a="yd" data-v="1">+</button></div></div>`;
@@ -1485,6 +1535,7 @@ function vReport() {
   const kpi = (t, v) => `<div class="kpi"><span>${t}</span><b>${v}</b></div>`;
   return `<div class="row noprint" style="margin-bottom:6px;justify-content:space-between"><button class="plain" data-a="repback">${icon('back')} Volver</button><button data-a="pdf">Guardar PDF</button></div>
   <div class="rhero"><img src="logo.webp" alt="Belugas"><div class="rh"><span class="res ${res[1]}">${res[0]}</span><div class="sc">${pf} – ${pc}</div><div class="mut">Belugas HDP vs ${esc(riv)} · ${esc(g.date || '')}</div></div></div>
+  ${pendientes(g).length ? `<div class="card noprint"><h2>Faltan detalles</h2><p style="margin:0 0 12px">${pendientes(g).length === 1 ? 'A 1 jugada le falta' : `A ${pendientes(g).length} jugadas les falta`} quién la hizo o por qué no funcionó. Complétalas para que el fantasy y el análisis queden bien.</p><button class="tint" data-a="completar" data-v="${g.id}">Completar ahora</button></div>` : ''}
   <div class="card"><h2>Resumen</h2><p style="margin:0;font-size:18px;line-height:1.45">${resumen}</p></div>
   ${tl ? `<div class="card"><h2>Cómo se anotó</h2>${tl}</div>` : ''}
   <div class="cols2"><div class="card"><h2>Ataque</h2><div class="kpis" style="margin:0">${kpi('Jugadas', aO.n)}${kpi('Yd por jugada', f1(aO.avg))}${kpi('Funcionó', Math.round(aO.pct) + '%')}${kpi('Primeras', O.filter(e => e.fd).length)}${kpi('Pérdidas', aO.to)}</div></div>
@@ -1619,8 +1670,8 @@ function render() {
   const juego = enJuego && (tab === 'field' || tab === 'plays');
   $('#tabs').classList.toggle('gbar', !!juego);
   $('#tabs').innerHTML = juego ? barraJuego() : TABS.map(([k, n]) => `<button class="${tab === k ? 'on' : ''}" data-a="tab" data-v="${k}">${icon(k)}${n}</button>`).join('');
-  $('#app').innerHTML = tab === 'field' ? vField() : `<div class="page">${{plays: vPlays, stats: vStats, fantasy: vFantasy, team: vTeam, report: vReport}[tab]()}</div>`;
-  $('#ov').innerHTML = ed ? vEd() : tab !== 'field' ? '' : d.stage === 'pick' ? vPick() : d.stage === 'how' ? vHow() : '';
+  $('#app').innerHTML = tab === 'field' ? vField() : `<div class="page">${{plays: vPlays, stats: vStats, fantasy: vFantasy, team: vTeam, report: vReport, completar: vCompletar}[tab]()}</div>`;
+  $('#ov').innerHTML = ed ? vEd() : tab !== 'field' ? '' : d.stage === 'pick' ? vPick() : d.stage === 'quick' ? vQuick() : d.stage === 'how' ? vHow() : '';
   const still = n => n.style.animation = 'none', ok = (ed ? 'ed' : tab) + d.stage, fl = d.setBall ? 's' : d.end ? 'e' : 'n';
   if (ok === lastOv) $('#ov').querySelectorAll('.how,.scrim,.sheet').forEach(still);
   if (fl === lastFl) document.querySelectorAll('.float').forEach(still);
@@ -1680,13 +1731,31 @@ function afterSave(e, end) {
   S.series.push({down: e.down, ok: seriesOk(e), yds: e.yds, s: {...e.start}, e: {...end}});
   S.down++;
 }
+// guarda la jugada que se está capturando. rapida = desde "¿Qué pasó?": basta la jugada y el resultado
+function guardaJugada(rapida) {
+  const g = cur(), r = draft(); if (!g || !(r.ready || (rapida && d.play && d.res))) return;
+  const L = S.lines[S.side], nm = i => i == null ? null : (L[i].name || null);
+  const cause = r.auto ? r.auto[0] : (r.needWhy ? d.cause : null);
+  // lo que no se contestó (quién la hizo, por qué falló) queda en "Completar jugadas"
+  const w = askWho(), falta = [...(w && d[w[0]] == null ? [w[0]] : []), ...(r.needWhy && !d.cause ? ['cause'] : [])];
+  const end = r.penEnd || r.end, last = d.lat.length ? d.lat[d.lat.length - 1].to : d.tgt;
+  const e = {id: Date.now(), ...(S.conv ? {conv: S.conv.pts} : {}), ...(d.inv && d.play ? {inv: true} : {}), side: S.side, play: d.play, res: d.res, td: r.td, ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
+    cause, grp: r.auto ? r.auto[1] : (cause ? grpOf(S.side, cause) : 'ok'), catch: r.catch || null, aim: r.aim || null, path: r.path || null,
+    chain: d.lat.map(l => ({t: l.t, c: l.c, to: nm(l.to)})), last: nm(last), pen: r.pen || null, foul: nm(d.foul),
+    qb: S.side === 'O' ? nm(d.qb) : null, tgt: nm(d.tgt), who: nm(d.who), miss: nm(d.miss), cancha: L.map(p => p.name || ''), ...(falta.length ? {falta} : {}),
+    pre: {side: S.side, ball: {...S.ball}, down: S.down, series: S.series.slice(), sstart: {...S.sstart}, fd: S.fd, conv: S.conv || null}};
+  e.worked = works(e);
+  g.events.push(e);
+  afterSave(e, end || S.ball); S.prox = null; // la siguiente jugada se escoge otra vez
+  d = fresh();
+}
 const A = {
   tab: v => { tab = v; pop = null; verPulsera = false },
   pulsera: () => { verPulsera = true },
   pulback: () => { verPulsera = false },
   side: v => { if (S.side !== v) { S.side = v; S.down = 1; S.fd = false; S.prox = null; S.msg = ''; newSeries(); pideBloque() } d = fresh() },
   down: v => { S.down = +v; S.series = S.series.filter(x => x.down < S.down); if (S.down === 1) newSeries() },
-  castigo: () => { d = fresh(); d.res = 'Castigo'; d.stage = 'how' },
+  castigo: () => { d = fresh(); d.res = 'Castigo'; d.det = true; d.stage = 'how' },
   setball: () => { const b = !d.setBall; d = fresh(); d.setBall = b },
   // si ya escogieron la jugada antes del saque, se salta la hoja y va directo a cómo estuvo
   confirm: () => { d.stage = 'pick'; usaPlan() },
@@ -1704,14 +1773,42 @@ const A = {
   convback: () => { S.convPend = S.side; S.conv = null; S.msg = ''; d = fresh() },
   cancel: () => { d = fresh() },
   // si venías de recrear la jugada, regresa ahí sin perder nada
-  cancelpick: () => { d.stage = d.play || d.res ? 'how' : null },
+  cancelpick: () => { d.stage = d.play || d.res ? (d.det ? 'how' : 'quick') : null },
+  // captura rápida: cerrar deja el balón marcado (Confirmar otra vez); con detalles va a la pantalla completa de siempre
+  quickno: () => { d.stage = null },
+  detalles: () => { d.det = true; d.stage = 'how' },
+  // un toque al resultado y queda guardada; el castigo necesita sus datos y va a la pantalla completa
+  rapido(v) {
+    Object.assign(d, {res: v, cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: [], foul: null});
+    if (v === 'Castigo') { d.det = true; d.stage = 'how'; return }
+    guardaJugada(true);
+  },
+  completar(v) { compG = +v || S.cur; compFrom = tab; tab = 'completar' },
+  compback: () => { tab = compFrom === 'completar' ? 'field' : compFrom },
+  // contestar lo que le falta a una jugada: v = "id|campo|valor" (valor vacío = no me acuerdo)
+  completa(v) {
+    const [id, campo, ...resto] = v.split('|'), val = resto.join('|'), g = S.games.find(x => x.events.some(e => e.id === +id)), e = g && g.events.find(x => x.id === +id);
+    if (!e || !e.falta) return;
+    if (val && campo === 'cause') Object.assign(e, {cause: val, grp: grpOf(e.side, val)});
+    else if (val) {
+      e[campo] = val;
+      if (campo === 'tgt') {
+        if (!(e.chain || []).length) e.last = val;
+        // dónde atrapó (o a dónde iba): el punto de su ruta en la jugada
+        const i = (e.cancha || []).indexOf(val), pt = i >= 0 && e.side === 'O' && puntoRuta(e, i);
+        if (pt && e.res === 'Pase completo') e.catch = {x: e.end ? Math.min(pt.x, e.end.x) : pt.x, y: pt.y};
+        else if (pt && ZERO.includes(e.res)) e.aim = pt;
+      }
+    }
+    e.falta = e.falta.filter(x => x !== campo); if (!e.falta.length) delete e.falta;
+  },
   repick: () => { d.stage = 'pick'; if (S.secOf[d.play]) pickSec = S.secOf[d.play] },
   pksec: v => { pickSec = v },
   pick(v) {
     ponForma(v, d.inv);
     if (d.plan) { S.prox = v; S.proxInv = !!d.inv; d = fresh(); return } // escogida antes del saque: el campo ya la enseña
     if (d.play !== v && d.res !== 'Castigo') Object.assign(d, {res: null, cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: []});
-    d.play = v; d.stage = 'how'; d.vb = null;
+    d.play = v; d.stage = d.det || d.res === 'Castigo' ? 'how' : 'quick'; d.vb = null; // rápida: el resultado de un toque; con detalles, la pantalla completa
     if (S.side === 'O') d.qb = Math.max(0, S.lines.O.findIndex(p => p.r === passer(PLAYBOOK[v])));
   },
   res(v) { tog('res', v); Object.assign(d, {cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: [], foul: null}) },
@@ -1746,21 +1843,8 @@ const A = {
   ret: () => { d.ret = !d.ret },
   yd(v) { const dir = S.side === 'O' ? 1 : -1; if (!d.end) d.end = {...S.ball}; d.end = {x: clamp(d.end.x + dir * v, 0, 70), y: d.end.y}; d.td = null; d.vb = null },
   resetroute: () => { d.route = null },
-  save() {
-    const g = cur(), r = draft(); if (!g || !r.ready) return;
-    const L = S.lines[S.side], nm = i => i == null ? null : (L[i].name || null);
-    const cause = r.auto ? r.auto[0] : (r.needWhy ? d.cause : null);
-    const end = r.penEnd || r.end, last = d.lat.length ? d.lat[d.lat.length - 1].to : d.tgt;
-    const e = {id: Date.now(), ...(S.conv ? {conv: S.conv.pts} : {}), ...(d.inv && d.play ? {inv: true} : {}), side: S.side, play: d.play, res: d.res, td: r.td, ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
-      cause, grp: r.auto ? r.auto[1] : (cause ? grpOf(S.side, cause) : 'ok'), catch: r.catch || null, aim: r.aim || null, path: r.path || null,
-      chain: d.lat.map(l => ({t: l.t, c: l.c, to: nm(l.to)})), last: nm(last), pen: r.pen || null, foul: nm(d.foul),
-      qb: S.side === 'O' ? nm(d.qb) : null, tgt: nm(d.tgt), who: nm(d.who), miss: nm(d.miss),
-      pre: {side: S.side, ball: {...S.ball}, down: S.down, series: S.series.slice(), sstart: {...S.sstart}, fd: S.fd, conv: S.conv || null}};
-    e.worked = works(e);
-    g.events.push(e);
-    afterSave(e, end || S.ball); S.prox = null; // la siguiente jugada se escoge otra vez
-    d = fresh();
-  },
+  save: () => guardaJugada(false),
+
   undo() { const g = cur(), e = g && g.events.pop(); if (e) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, conv: e.pre.conv || null, convPend: null, msg: ''}) } d = fresh() },
   dlgok() { const f = dlg.fn, v = dlg.input != null ? ($('#dlgin') || {value: ''}).value : true; dlg = null; f(v) },
   dlgno: () => { dlg = null },
@@ -2073,7 +2157,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261019143743';
+const VERSION = '20261026133708';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
