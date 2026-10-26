@@ -952,10 +952,10 @@ function mainSvg(w, h) { return fieldSvg(mainOpts(w, h)) }
 function mainOpts(w, h) {
   MY = 700 * h / w / 25;
   const O = S.side === 'O', toMid = O ? S.ball.x < MID : S.ball.x > MID, need = Math.max(0, Math.round(Math.abs((O ? (toMid ? MID : GOAL_R) : (toMid ? MID : GOAL_L)) - S.ball.x)));
-  // con la jugada escogida antes del saque, el campo ya enseña a los jugadores en su formación y sus rutas
-  const pl = !!S.prox && (O ? S.off : S.def).includes(S.prox);
-  // nombres donde no se enciman y jugadores que se arrastran encima de otro para intercambiarlos
-  return {id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, smartNames: true, mover: pl, routes: pl ? routesField(S.prox, null, S.proxInv) : null, faint: pl && !!d.end};
+  // en el partido el campo siempre enseña a los 5 como están parados (la formación de la última jugada, o la escogida antes del saque con sus rutas)
+  const plan = !!S.prox && (O ? S.off : S.def).includes(S.prox), pl = plan || enJuego;
+  // nombres donde no se enciman y jugadores que se arrastran encima de otro para intercambiarlos; ya marcado el avance se ven tenues
+  return {id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, smartNames: true, mover: pl, routes: plan ? routesField(S.prox, null, S.proxInv) : null, faint: pl && !!d.end};
 }
 // vista de recrear: misma escala en ambos ejes (10 unidades = 1 yarda), acercada a la jugada
 function howFrame(w, h) {
@@ -2213,7 +2213,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026141958';
+const VERSION = '20261026142332';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
