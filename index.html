@@ -347,6 +347,8 @@ const ourTD = e => !e.conv && (e.side === 'O' ? e.td : e.ret), theirTD = e => !e
 // puntos: 6 por TD y lo que entre de conversión (1 desde la 5, 2 desde la 10)
 // safety (reglamento IFAF 8-4): 2 puntos para el que defiende; si nos lo hacen en ataque, son del rival. TD de la defensa en una conversión: 2 (IFAF 8-1)
 const puntos = (evs, nuestro) => evs.reduce((a, e) => a + (e.conv ? (e.td && (e.side === 'O') === nuestro ? e.conv : e.ret && (e.side === 'D') === nuestro ? 2 : 0) : (nuestro ? ourTD : theirTD)(e) ? 6 : e.safety && (e.side === 'D') === nuestro ? 2 : 0), 0);
+// partidos de antes de la app: solo se guardó el marcador final (g.final = [nosotros, rival])
+const marcador = g => g.final && !g.events.length ? g.final : [puntos(g.events, true), puntos(g.events, false)];
 // cómo se llama el down en curso: en conversión no hay downs
 const dlbl = () => S.conv ? `Conversión de ${S.conv.pts}` : `${S.down}ª`;
 // Libro de jugadas leído de la tarjeta. pos = [adelante, lateral] en yardas desde el balón (lateral: + hacia la derecha de la tarjeta).
@@ -440,6 +442,8 @@ const FALTAS = {
 const quienFalta = () => d.pen.fav ? (S.side === 'O' ? 'D' : 'O') : S.side;
 // jugadas de prueba que se borran de todo (una sola vez)
 const BORRAR = ['aaa', 'aaaa'];
+// partidos jugados antes de capturar en la app (Mau pasó los marcadores el 26-oct); entran una vez por aparato
+const PASADOS = [{id: 1791223200000, date: '5 oct', rival: 'Kaffies', final: [13, 20]}, {id: 1791828000000, date: '12 oct', rival: 'Only Fins', final: [14, 8]}, {id: 1792432800000, date: '19 oct', rival: 'Últimos Aztecas', final: [21, 20]}];
 // jugadas que ustedes editaron y ya pasé al libro: su copia se quita una sola vez para que se use la del libro
 const AL_LIBRO = ['Falso QB'];
 // descripción corta: la de la jugada, o la primera frase de su descripción
@@ -513,6 +517,8 @@ const mergePb = () => {
   }
   BORRAR.forEach(n => { const k = 'borrar:' + n; if (S.seen.includes(k)) return; S.seen.push(k);
     ['off', 'def', 'arch'].forEach(l => S[l] = S[l].filter(x => x !== n)); [S.archSide, S.pb, S.secOf, PLAYBOOK].forEach(o => delete o[n]); delete S.forms['O:' + n]; delete S.forms['D:' + n] });
+  PASADOS.forEach(g => { const k = 'partido:' + g.id; if (S.seen.includes(k)) return; S.seen.push(k);
+    if (!S.games.some(x => x.id === g.id) && !(S.borrados || []).includes(g.id)) { S.games.push({...g, events: []}); S.games.sort((x, y) => x.id - y.id) } });
   S.bloques = porLado(S.bloques || []).map(b => b.g ? b : {...b, g: S.cur});
 };
 // los bloques de antes traían ataque y defensa juntos; ahora cada uno es de un lado. Se decide por el nombre (ofensa/ataque o defensa);
@@ -1091,7 +1097,7 @@ const edLimpia = r => { const rt = ed.routes[r]; if (!rt) return; if (rt.motion 
 // ---------- vistas ----------
 function vField() {
   const g = cur(), O = S.side === 'O', ev = g.events;
-  const fav = puntos(ev, true), con = puntos(ev, false);
+  const [fav, con] = marcador(g);
   const toMid = O ? S.ball.x < MID : S.ball.x > MID, tgt = O ? (toMid ? MID : GOAL_R) : (toMid ? MID : GOAL_L);
   const need = Math.max(0, Math.round(Math.abs(tgt - S.ball.x)));
   // fuera del partido, el campo solo invita a seguirlo o empezar otro
@@ -1536,7 +1542,7 @@ function vFantasy() {
 // reporte del partido, como el reporte semanal del fantasy: marcador, resumen, cómo se anotó, números, MVP, premios, jugadas y qué practicar
 function vReport() {
   const g = S.games.find(x => x.id === repG) || cur(), ev = g.events, riv = g.rival || 'el rival';
-  const pf = puntos(ev, true), pc = puntos(ev, false), res = pf > pc ? ['Victoria', 'w'] : pf < pc ? ['Derrota', 'l'] : ['Empate', 't'];
+  const [pf, pc] = marcador(g), res = pf > pc ? ['Victoria', 'w'] : pf < pc ? ['Derrota', 'l'] : ['Empate', 't'];
   const O = ev.filter(e => e.side === 'O' && !e.conv && e.res !== 'Castigo'), D = ev.filter(e => e.side === 'D' && !e.conv && e.res !== 'Castigo');
   const aO = agg(O), aD = agg(D), pens = ev.filter(e => e.res === 'Castigo');
   const quien = e => e.res === 'Pase completo' ? `${e.qb || 'el QB'} a ${e.last || e.tgt || 'un receptor'}` : e.res === 'Corrida' ? `${e.last || e.tgt || 'el corredor'} corrió` : e.res;
@@ -1586,8 +1592,10 @@ function vReport() {
   const lista = l => l.length ? l.map(([k, n]) => `<div class="item"><span>${esc(k)}</span><b>${n}</b></div>`).join('') : '<span class="mut">Nada</span>';
   const ct = {}; pens.forEach(e => { const k = (e.pen.tipo || 'Castigo') + '|' + (e.pen.fav ? 1 : 0); ct[k] = (ct[k] || 0) + 1 });
   const kpi = (t, v) => `<div class="kpi"><span>${t}</span><b>${v}</b></div>`;
-  return `<div class="row noprint" style="margin-bottom:6px;justify-content:space-between"><button class="plain" data-a="repback">${icon('back')} Volver</button><button data-a="pdf">Guardar PDF</button></div>
-  <div class="rhero"><img src="logo.webp" alt="Belugas"><div class="rh"><span class="res ${res[1]}">${res[0]}</span><div class="sc">${pf} – ${pc}</div><div class="mut">Belugas HDP vs ${esc(riv)} · ${esc(g.date || '')}</div></div></div>
+  const cab = `<div class="row noprint" style="margin-bottom:6px;justify-content:space-between"><button class="plain" data-a="repback">${icon('back')} Volver</button><button data-a="pdf">Guardar PDF</button></div>
+  <div class="rhero"><img src="logo.webp" alt="Belugas"><div class="rh"><span class="res ${res[1]}">${res[0]}</span><div class="sc">${pf} – ${pc}</div><div class="mut">Belugas HDP vs ${esc(riv)} · ${esc(g.date || '')}</div></div></div>`;
+  if (g.final && !ev.length) return cab + `<div class="card"><h2>Resumen</h2><p style="margin:0;font-size:18px;line-height:1.45">${res[0] === 'Victoria' ? `Ganamos por ${pf - pc}` : res[0] === 'Derrota' ? `Perdimos por ${pc - pf}` : 'Empatamos'} contra ${esc(riv)}. De este partido solo está el marcador: se jugó antes de capturar las jugadas en la app.</p></div>`;
+  return cab + `
   ${pendientes(g).length ? `<div class="card noprint"><h2>Faltan detalles</h2><p style="margin:0 0 12px">${pendientes(g).length === 1 ? 'A 1 jugada le falta' : `A ${pendientes(g).length} jugadas les falta`} qué jugada fue, quién la hizo o por qué no funcionó. Complétalas para que el fantasy y el análisis queden bien.</p><button class="tint" data-a="completar" data-v="${g.id}">Completar ahora</button></div>` : ''}
   <div class="card"><h2>Resumen</h2><p style="margin:0;font-size:18px;line-height:1.45">${resumen}</p></div>
   ${tl ? `<div class="card"><h2>Cómo se anotó</h2>${tl}</div>` : ''}
@@ -1602,13 +1610,16 @@ function vReport() {
   <div class="card"><h2>Castigos</h2>${pens.length ? Object.entries(ct).sort((x, y) => y[1] - x[1]).map(([k, n]) => { const [t, f] = k.split('|'); return `<div class="item"><span>${esc(t)} <span class="mut">· ${+f ? 'a favor' : 'en contra'}</span></span><b class="${+f ? 'g' : 'r'}">${n}</b></div>` }).join('') : '<span class="mut">Ninguno</span>'}</div></div>`;
 }
 
+// ganados y perdidos de los partidos que ya tienen marcador (el de hoy sin jugadas no cuenta)
+const recordTxt = () => { const r = S.games.filter(g => g.final || g.events.length).map(marcador), w = r.filter(([a, b]) => a > b).length, l = r.filter(([a, b]) => a < b).length, t = r.length - w - l;
+  return r.length ? ` · ${w} ganado${w === 1 ? '' : 's'}, ${l} perdido${l === 1 ? '' : 's'}${t ? `, ${t} empate${t === 1 ? '' : 's'}` : ''}` : '' };
 function vTeam() {
   const g = S.games.slice().reverse().map(x => {
-    const a = puntos(x.events, true), b = puntos(x.events, false);
-    return `<div class="item"><div><b>${esc(x.date)} vs ${esc(x.rival || 'rival')}</b><div class="mut" style="font-size:15px">${x.events.length} jugada${x.events.length === 1 ? '' : 's'} · ${a} – ${b}</div></div>
+    const [a, b] = marcador(x);
+    return `<div class="item"><div><b>${esc(x.date)} vs ${esc(x.rival || 'rival')}</b><div class="mut" style="font-size:15px">${x.final && !x.events.length ? (a > b ? 'Ganamos' : a < b ? 'Perdimos' : 'Empate') : `${x.events.length} jugada${x.events.length === 1 ? '' : 's'}`} · ${a} – ${b}</div></div>
     <div class="row tight"><button class="${x.id === S.cur ? 'on' : ''}" data-a="setgame" data-v="${x.id}">${x.id === S.cur ? 'Actual' : 'Usar'}</button><button data-a="report" data-v="${x.id}">Reporte</button><button data-a="rengame" data-v="${x.id}">Rival</button><button class="x" data-a="delgame" data-v="${x.id}">Borrar</button></div></div>`;
   }).join('');
-  return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
+  return `<div class="card hero"><img src="logo.webp" alt="Belugas"><div><h2>Belugas HDP</h2><p class="mut" style="margin:4px 0 0">${S.players.length} jugador${S.players.length === 1 ? '' : 'es'} · ${S.games.length} partido${S.games.length === 1 ? '' : 's'}${recordTxt()}</p></div></div><div class="cols2"><div class="card"><h2>Jugadores</h2>${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
     <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>
   <div class="card"><h2>Partidos</h2><button class="tint" style="width:100%;margin-bottom:10px;min-height:50px" data-a="newgame">Nuevo partido</button>${g}</div></div>
   <div class="card"><h2>Bloques de jugadores</h2><p class="mut" style="margin:0 0 12px">Acomodos de quién va en cada posición en este partido (al empezar otro partido se borran). Los de ataque salen cuando les toca atacar y los de defensa cuando les toca defender</p>
@@ -2254,7 +2265,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026152623';
+const VERSION = '20261026163137';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
