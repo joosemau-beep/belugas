@@ -1147,7 +1147,7 @@ function vQuick() {
   <div class="qtiles">${resOptions().map(r => `<button class="rtile" data-a="rapido" data-v="${esc(r)}"><b>${esc(rl(r))}</b><small>${esc(RES_TXT[S.side][r])}</small></button>`).join('')}</div>
   <div class="row" style="margin-top:18px;justify-content:space-between;align-items:center;gap:12px"><span class="mut">Luego tocas quién la hizo. Por qué falló, lo completas al final.</span><button class="plain" data-a="detalles">Capturar con detalles</button></div></div>`;
 }
-// castigo de pocos toques: a favor o en contra, qué fue (las yardas y si pierde el down o es Primera vienen del reglamento) y, si fue nuestro, quién.
+// castigo de pocos toques: a favor o en contra y qué fue (las yardas y si pierde el down o es Primera vienen del reglamento). No se pregunta quién: no cuenta en el fantasy.
 // "Con detalles" abre la pantalla completa para cambiar las yardas o lo demás
 function vCastigo() {
   const O = S.side === 'O', p = d.pen, paso = d.penPaso || 'lado', L = S.lines[S.side];
@@ -1156,11 +1156,9 @@ function vCastigo() {
   let body;
   if (paso === 'lado') body = head('Castigo', `${dlbl()} · ${O ? 'Ataque' : 'Defensa'}`)
     + `<div class="qtiles"><button class="rtile" data-a="penlado" data-v="1"><b>A favor</b><small>La falta fue del rival</small></button><button class="rtile" data-a="penlado" data-v="0"><b>En contra</b><small>La falta fue nuestra</small></button></div>` + pie(false);
-  else if (paso === 'tipo') { const qf = quienFalta(), fx = qf === 'O' ? ' y pierde el down' : ' y Primera automática';
-    body = head(`Castigo ${p.fav ? 'a favor' : 'en contra'}`, `¿Qué fue? ${qf === 'O' ? '(de quien trae el balón)' : '(de la defensa)'}${p.fav ? ' · al tocarla se guarda' : ''}`)
+  else { const qf = quienFalta(), fx = qf === 'O' ? ' y pierde el down' : ' y Primera automática';
+    body = head(`Castigo ${p.fav ? 'a favor' : 'en contra'}`, `¿Qué fue? ${qf === 'O' ? '(de quien trae el balón)' : '(de la defensa)'} · al tocarla se guarda`)
       + `<div class="qtiles">${FALTAS[qf].map(([n, yd, x]) => `<button class="rtile" data-a="penrapido" data-v="${esc(n)}"><b>${esc(n)}</b><small>${yd ? yd + ' yd' : 'Sin yardas'}${x ? fx : ''}</small></button>`).join('')}</div>` + pie(true) }
-  else body = head(`${esc(p.tipo)} · en contra`, '¿Quién la cometió? Al tocarlo se guarda')
-    + `<div class="pchips">${L.map((q, i) => `<button class="pchip big" data-a="penquien" data-v="${i}"><i style="background:${colorOf(q.name)}">${esc(q.r)}</i>${q.name ? esc(q.name) : 'Sin nombre'}</button>`).join('')}<button class="pchip big" style="padding-left:20px" data-a="penquien" data-v="">No sé</button></div>` + pie(true);
   return `<div class="scrim" data-a="cancel"></div><div class="sheet">${body}</div>`;
 }
 // captura rápida, segundo toque: quién la hizo (los 5 de la cancha). En pase, quién la lanzó viene marcado (el QB de la jugada) y solo se cambia si fue otro;
@@ -1447,9 +1445,9 @@ function vStats() {
 }
 
 // ---------- fantasy: puntos por jugador con lo que se registró en cada jugada ----------
-const PTS = {pYd: .1, pTD: 4, int: -2, rec: 1, rYd: .1, ruYd: .1, td: 6, cv: 1, cvp: 1, drop: -1, fum: -2, sack: 2, dInt: 4, ff: 2, pbu: 1, dTD: 6, sf: 2, flag: .5, pres: .5, miss: -1, foul: -1};
-const PTS_TXT = [['Yarda de pase, recepción o corrida', '0.1'], ['Recepción', '1'], ['TD anotado', '6'], ['TD de pase (QB)', '4'], ['Conversión anotada', '1 por punto'], ['Pase de conversión (QB)', '1 por punto'], ['Intercepción lanzada', '−2'], ['Se le cayó o no atrapó', '−1'], ['Fumble', '−2'],
-  ['Sack', '2'], ['Intercepción en defensa', '4'], ['Fumble forzado', '2'], ['Pase tapado', '1'], ['TD en defensa', '6'], ['Safety (quien lo hizo)', '2'], ['Bandera quitada', '0.5'], ['Presión al QB', '0.5'], ['Se le fue', '−1'], ['Falta', '−1']];
+const PTS = {pYd: .1, pTD: 4, int: -2, rec: 1, rYd: .1, ruYd: .1, td: 6, cv: 1, cvp: 1, drop: -.5, fum: -2, sack: 2, dInt: 4, ff: 2, pbu: 1, dTD: 6, sf: 2, flag: .5, pres: .5}; // faltas y "se le fue" no cuentan: los árbitros fallan mucho y en defensa ya se premia quitar la bandera
+const PTS_TXT = [['Yarda de pase, recepción o corrida', '0.1'], ['Recepción', '1'], ['TD anotado', '6'], ['TD de pase (QB)', '4'], ['Conversión anotada', '1 por punto'], ['Pase de conversión (QB)', '1 por punto'], ['Intercepción lanzada', '−2'], ['Se le cayó o no atrapó', '−0.5'], ['Fumble', '−2'],
+  ['Sack', '2'], ['Intercepción en defensa', '4'], ['Fumble forzado', '2'], ['Pase tapado', '1'], ['TD en defensa', '6'], ['Safety (quien lo hizo)', '2'], ['Bandera quitada', '0.5'], ['Presión al QB', '0.5']];
 function fantasy(evs) {
   const P = {}, g = n => P[n] = P[n] || {n, att: 0, comp: 0, pYd: 0, pTD: 0, int: 0, rec: 0, tgt: 0, rYd: 0, drop: 0, car: 0, ruYd: 0, td: 0, cv: 0, cvp: 0, fum: 0, sack: 0, dInt: 0, ff: 0, pbu: 0, dTD: 0, sf: 0, flag: 0, pres: 0, miss: 0, foul: 0};
   const PASS = ['Pase completo','Incompleto','Intercepción'];
@@ -1485,7 +1483,7 @@ function fLine(p) {
   if (p.cv || p.cvp) o.push([p.cv && `conversión +${p.cv}`, p.cvp && `pase de conversión +${p.cvp}`].filter(Boolean).join(', '));
   const df = [p.sack && `${p.sack} sack`, p.dInt && `${p.dInt} INT en defensa`, p.ff && `${p.ff} fumble forzado`, p.pbu && `${p.pbu} tapado${p.pbu > 1 ? 's' : ''}`, p.dTD && `${p.dTD} TD defensa`, p.sf && `${p.sf} safety`, p.flag && `${p.flag} bandera${p.flag > 1 ? 's' : ''}`, p.pres && `${p.pres} presión${p.pres > 1 ? 'es' : ''}`].filter(Boolean);
   if (df.length) o.push(df.join(', '));
-  const bad = [p.drop && `${p.drop} se le cayó`, p.fum && `${p.fum} fumble`, p.miss && `${p.miss} se le fue`, p.foul && `${p.foul} falta${p.foul > 1 ? 's' : ''}`].filter(Boolean);
+  const bad = [p.drop && `${p.drop} se le cayó`, p.fum && `${p.fum} fumble`].filter(Boolean);
   if (bad.length) o.push(bad.join(', '));
   return o.join(' · ') || 'Sin jugadas registradas';
 }
@@ -1562,9 +1560,7 @@ function vReport() {
     peor ? `<div class="aw bad"><i class="av" style="background:var(--bad);color:#fff">${peor.yds < 0 ? peor.yds : '−'}</i><div><small>Peor jugada nuestra</small><b>${esc(peor.play || 'Jugada')}</b><span>${esc(peor.res)}${peor.tgt ? ' · iba a ' + esc(peor.tgt) : ''}${peor.cause ? ' · ' + esc(peor.cause) : ''}</span></div></div>` : '',
     duele ? `<div class="aw bad"><i class="av" style="background:var(--bad);color:#fff">${sg(duele.yds)}</i><div><small>Lo que más nos dolió</small><b>${duele.td ? 'TD de ' + esc(riv) : 'Avance de ' + esc(riv)}</b><span>${duele.play ? 'Defendíamos con ' + esc(duele.play) : ''}${duele.miss ? ' · se le fue a ' + esc(duele.miss) : ''}</span></div></div>` : '',
     ult ? `<div class="aw bad">${avatar(ult.n)}<div><small>Último del fantasy</small><b>${esc(ult.n)}</b><span>${ult.pts} pts</span></div></div>` : '',
-    worst('Se le cayó', p => p.drop, p => `${p.drop} pase${p.drop > 1 ? 's' : ''} que se le cayó`),
-    worst('Se le fueron', p => p.miss, p => `${p.miss} ${p.miss > 1 ? 'veces' : 'vez'} en defensa`),
-    worst('Más castigos', p => p.foul, p => `${p.foul} castigo${p.foul > 1 ? 's' : ''}`)
+    worst('Se le cayó', p => p.drop, p => `${p.drop} pase${p.drop > 1 ? 's' : ''} que se le cayó`)
   ].join('');
   // jugadas de este partido: qué funcionó y qué no
   const porJ = Object.entries(by(O.filter(e => e.play), 'play')).map(([n, l]) => [n, agg(l), l]).sort((x, y) => y[1].pct - x[1].pct || y[1].avg - x[1].avg);
@@ -1808,9 +1804,8 @@ const A = {
   castigo: () => { d = fresh(); d.res = 'Castigo'; d.stage = 'castigo'; d.penPaso = 'lado' },
   penlado(v) { Object.assign(d.pen, {fav: v === '1', tipo: null, extra: false}); d.foul = null; d.penPaso = 'tipo' },
   // la falta trae sus yardas y si pierde el down o es Primera; a favor se guarda de una vez, en contra falta saber quién
-  penrapido(v) { const f = FALTAS[quienFalta()].find(x => x[0] === v); if (!f) return; Object.assign(d.pen, {tipo: v, yd: f[1], extra: f[2]}); if (d.pen.fav) return guardaJugada(true); d.penPaso = 'quien' },
-  penquien(v) { d.foul = v === '' ? null : +v; guardaJugada(true) },
-  penatras: () => { d.penPaso = d.penPaso === 'quien' ? 'tipo' : 'lado' },
+  penrapido(v) { const f = FALTAS[quienFalta()].find(x => x[0] === v); if (!f) return; Object.assign(d.pen, {tipo: v, yd: f[1], extra: f[2]}); guardaJugada(true) },
+  penatras: () => { d.penPaso = 'lado' },
   pendet: () => { d.det = true; d.stage = 'how' },
   setball: () => { const b = !d.setBall; d = fresh(); d.setBall = b },
   // si ya escogieron la jugada antes del saque, se salta la hoja y va directo a cómo estuvo
@@ -2246,7 +2241,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026151016';
+const VERSION = '20261026151621';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
