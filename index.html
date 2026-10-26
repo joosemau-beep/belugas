@@ -550,6 +550,7 @@ let verPulsera = false; // en Jugadas: las tarjetas de la pulsera para imprimir
 let dlg = null;
 const pregunta = (t, si, fn, input = null) => { dlg = {t, si, fn, input} };
 const aviso = t => { dlg = {t, si: 'Entendido', fn: () => {}, solo: true} };
+let deshacerHasta = 0;
 let repG = null, repFrom = 'team'; // reporte del partido que se está viendo
 let compG = null, compFrom = 'field'; // "Completar jugadas": partido y de dónde se llegó
 // jugadas capturadas rápido a las que les falta quién la hizo o por qué falló (e.falta = ['tgt'|'who'|'miss'|'cause'])
@@ -920,6 +921,7 @@ function artInner(o) {
   // swap = arrastrando a un jugador encima de otro para intercambiar roles: el arrastrado va bajo el dedo y hasta arriba, el de destino con aro amarillo
   const sw = o.swap, order = [0,1,2,3,4].filter(i => !sw || i !== sw.from).concat(sw ? [sw.from] : []);
   if (o.players) for (const i of order) {
+    if (o.solo && !o.solo.includes(i)) continue;
     const lift = sw && i === sw.from, pl = S.lines[o.side][i], q = lift ? sw.at : PP[i], mk = sw && i === sw.to ? '#ffd60a' : o.sel && o.sel[0] === i ? o.sel[1] : '';
     const dim = !lift && o.focus && !o.focus.includes(i), attr = (dim ? 'opacity=".3" ' : '') + (o.pick ? `data-a="who" data-v="${i}"` : o.mover ? `data-p="${i}"` : ''), sp = spots && spots[i];
     s += `<g ${attr} transform="translate(${X(q.x)} ${Y(q.y)})${dim ? ' scale(.65)' : lift ? ' scale(1.15)' : ''}"><circle r="${p(Math.max(R + 8, 22))}" fill="transparent"/>
@@ -1010,15 +1012,16 @@ function howHandles(e) {
   if (e.catch) s += H1('catch', '#0a84ff', 13, 'Atrapó');
   else if (e.aim) s += H1('catch', '#ff453a', 13, 'Iba aquí');
   d.lat.forEach((_, k) => s += H1('lt' + k, '#ff9f0a', 11, 'Lanzó') + H1('lc' + k, '#0a84ff', 12, 'Recibió'));
-  if (rr) (rr.run ? rr.pts : rr.pts.slice(0, -1)).forEach((_, j) => s += H1('r' + j, '#bf5af2', rr.run ? 11 : 9, '', rr.run ? 22 : 16));
+  if (rr && !d.mapa) (rr.run ? rr.pts : rr.pts.slice(0, -1)).forEach((_, j) => s += H1('r' + j, '#bf5af2', rr.run ? 11 : 9, '', rr.run ? 22 : 16));
   return s;
 }
 function howOpts(e) {
   const w = askWho(), rr = recvRoute(), col = {tgt: '#ffd60a', who: '#30d158', miss: '#ff453a'};
   // ya elegido el que trae el balón, los demás se hacen chicos y no estorban (salvo que falte elegir a alguien)
   const focus = (RUN.includes(d.res) || (S.side === 'O' && ZERO.includes(d.res))) && d.tgt != null && !pending() ? [...(S.side === 'O' ? [d.qb] : []), d.tgt, ...d.lat.map(l => l.to)] : null;
-  return {id: 'sub', side: S.side, yu: 10, k: d.vk, vb: d.vb, ball: S.ball, end: d.end, players: true, pick: true, how: true, focus,
-    sel: w && d[w[0]] != null ? [d[w[0]], col[w[0]]] : null, routes: routesField(d.play, focus && [d.tgt], d.inv), faint: !!rr || !!focus, extra: howExtra(e)};
+  const solo = d.mapa ? [d.qb, d.tgt] : null;
+  return {id: 'sub', side: S.side, yu: 10, k: d.vk, vb: d.vb, ball: S.ball, end: d.end, players: true, pick: !d.mapa, how: true, focus, solo,
+    sel: w && d[w[0]] != null ? [d[w[0]], col[w[0]]] : null, routes: routesField(d.play, solo || (focus && [d.tgt]), d.inv), faint: !!rr || !!focus, extra: howExtra(e)};
 }
 function howSvg(w, h) {
   howFrame(w, h); const e = draft();
@@ -1223,6 +1226,18 @@ function vCompletar() {
 }
 function vHow() {
   const O = S.side === 'O', e = draft(), w = askWho(), L = S.lines[S.side], rr = recvRoute();
+  // captura rápida de un pase: el mapa solo con el que lanzó y el que la atrapó (o a quien iba); se arrastra dónde la atrapó y dónde terminó
+  if (d.mapa) {
+    const nm = i => i == null ? '' : esc(L[i].name || L[i].r), atrapa = d.res === 'Pase completo';
+    return `<div class="how"><div class="hmain"><div id="howbox"></div>
+    <div class="htop"><button class="pill glass" data-a="mapatras">${icon('back')}Atrás</button><div class="htitle glass">${esc(rl(d.res))}<small>${d.play ? esc(d.play) : 'Sin saber la jugada'} · ${dlbl()}</small></div><div class="row tight"><button class="pill glass" data-a="cancel">Cancelar</button></div></div>
+    ${fieldHint(e)}
+    <div class="readout glass" id="readout">${esc(readoutText(e))}</div></div>
+  <aside class="insp"><div class="scroll"><div class="ghead">${atrapa ? '¿Dónde la atrapó?' : '¿A dónde iba el pase?'}</div><div class="group">
+    <p style="color:var(--tx);font-size:17px"><b>${nm(d.qb)}</b> lanzó ${atrapa ? `y <b>${nm(d.tgt)}</b> la atrapó` : `a <b>${nm(d.tgt)}</b>`}.</p>
+    <p>${atrapa ? 'Arrastra el punto azul a donde la atrapó. El amarillo es donde terminó: entre los dos es lo que corrió con el balón.' : d.res === 'Intercepción' ? 'Arrastra el punto rojo a donde iba el pase y el amarillo a donde terminó el que la interceptó.' : 'Arrastra el punto rojo a donde iba el pase.'}</p></div></div>
+    <div class="ifoot"><button class="tint" data-a="mapaok">Guardar jugada</button></div></aside></div>`;
+  }
   let q = d.res === 'Castigo' || d.res === 'Incompleto' ? '' : `<div class="group yrow"><span>${verb(e.raw)}</span><div class="stepper"><button data-a="yd" data-v="-1">−</button><b>${sg(e.raw)} yd</b><button data-a="yd" data-v="1">+</button></div></div>`;
   const y0 = d.end ? yardsOf(S.side, null, S.ball, d.end) : 0;
   if (O && d.play) q += `<div class="ghead">¿Cómo la hicimos?</div><div class="group"><div class="seg"><button class="${d.inv ? '' : 'on'}" data-a="inv" data-v="0">Normal</button><button class="${d.inv ? 'on' : ''}" data-a="inv" data-v="1">Invertida</button></div></div>`;
@@ -1270,7 +1285,8 @@ function fieldHint(e) {
   const ask = {tgt: d.res === 'Corrida' ? 'Toca a quien corrió' : d.res === 'Pase completo' ? 'Toca a quien la atrapó' : 'Toca a quien iba el pase (opcional)',
     who: d.res === 'Incompleto' ? 'Toca a quien la tapó (opcional)' : 'Toca a quien hizo la jugada', miss: 'Toca a quien se le fue (opcional)'};
   let t = '';
-  if (w && d[w[0]] == null) t = ask[w[0]];
+  if (d.mapa) t = d.res === 'Pase completo' ? `Arrastra ${dot('#0a84ff')}atrapó ${dot('#ffd60a')}terminó` : `Arrastra ${dot('#ff453a')}a dónde iba${d.res === 'Intercepción' ? ' ' + dot('#ffd60a') + 'terminó' : ''}`;
+  else if (w && d[w[0]] == null) t = ask[w[0]];
   else if (d.lat.some(l => l.to == null)) t = 'Toca a quien recibió el pase';
   else if (d.res === 'Pase completo') t = `Arrastra ${recvRoute() ? dot('#bf5af2') + 'ruta ' : ''}${dot('#0a84ff')}atrapó ${dot('#ffd60a')}terminó`;
   else if (d.res === 'Corrida' && recvRoute()) t = `Arrastra ${dot('#bf5af2')}por dónde corrió ${dot('#ffd60a')}terminó`;
@@ -1278,7 +1294,7 @@ function fieldHint(e) {
   else if (d.res && !['Castigo','Incompleto'].includes(d.res)) t = `Arrastra ${dot('#ffd60a')} a donde terminó`;
   if (!t && !w) t = 'Toca a un jugador para cambiar quién jugó ahí, o arrástralo encima de otro para intercambiarlos';
   if (!t) return '';
-  const s = w && d[w[0]] != null && !d.lat.some(l => l.to == null) && S.lines[S.side][d[w[0]]], again = s ? `<span class="mut"> · Toca otra vez a ${esc(s.name || s.r)} para cambiarlo</span>` : '';
+  const s = !d.mapa && w && d[w[0]] != null && !d.lat.some(l => l.to == null) && S.lines[S.side][d[w[0]]], again = s ? `<span class="mut"> · Toca otra vez a ${esc(s.name || s.r)} para cambiarlo</span>` : '';
   return `<div class="hhint glass">${t}${again}${recvRoute() && d.route ? '<button class="plain" data-a="resetroute">Ruta original</button>' : ''}</div>`;
 }
 
@@ -1850,7 +1866,16 @@ const A = {
     if (!askWho()) guardaJugada(true); // si no hay a quién preguntar (sack, fumble), se guarda de una vez; si no, sale ¿quién?
   },
   rapqb: v => { d.qb = +v },
-  rapquien(v) { const w = askWho(); if (w) d[w[0]] = +v; guardaJugada(true) },
+  // en pase (ataque) sigue el mapa con el que lanzó y el que la atrapó; lo demás se guarda de una vez
+  rapquien(v) {
+    const w = askWho(); if (w) d[w[0]] = +v;
+    if (S.side !== 'O' || !(d.res === 'Pase completo' || ZERO.includes(d.res))) return guardaJugada(true);
+    // sin ruta de la jugada, el punto donde la atrapó empieza a dos tercios del camino al balón final
+    if (!recvRoute() && d.end) { const h = q => Math.round(q * 2) / 2; d.catch = {x: h(S.ball.x + (d.end.x - S.ball.x) * .65), y: h(S.ball.y + (d.end.y - S.ball.y) * .65)} }
+    Object.assign(d, {mapa: true, stage: 'how', vb: null});
+  },
+  mapatras: () => { Object.assign(d, {mapa: false, stage: 'quick', route: null, catch: null, vb: null}) },
+  mapaok: () => guardaJugada(true),
   rapdespues: () => guardaJugada(true),
   rapnadie: () => { d.nadie = true; guardaJugada(true) },
   rapatras: () => { d.res = null },
@@ -1926,7 +1951,8 @@ const A = {
   resetroute: () => { d.route = null },
   save: () => guardaJugada(false),
 
-  undo() { const g = cur(), e = g && g.events.pop(); if (e && e.orden) (S.orden = S.orden || {})[e.side] = e.orden; if (e) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, conv: e.pre.conv || null, convPend: null, msg: ''}) } d = fresh() },
+  undo() { if (Date.now() < deshacerHasta) return; deshacerHasta = Date.now() + 800; // un doble toque en el iPad no borra dos jugadas
+    const g = cur(), e = g && g.events.pop(); if (e) (g.borradas = g.borradas || []).push(e.id); if (e && e.orden) (S.orden = S.orden || {})[e.side] = e.orden; if (e) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, conv: e.pre.conv || null, convPend: null, msg: ''}) } if (e) S.msg = `Se quitó: ${LBL[e.side][e.res] || e.res}${e.res === 'Castigo' ? '' : ' ' + sg(e.yds) + ' yd'}. El balón regresó a donde estaba`; d = fresh() },
   dlgok() { const f = dlg.fn, v = dlg.input != null ? ($('#dlgin') || {value: ''}).value : true; dlg = null; f(v) },
   dlgno: () => { dlg = null },
   closepop: () => { pop = null; popAt = null; popSheet = false; ordSel = null },
@@ -2168,7 +2194,7 @@ document.addEventListener('click', e => {
   }
   const b = e.target.closest('[data-a]'); if (!b || b.disabled) return;
   tapAt = {x: e.clientX, y: e.clientY};
-  if (b.dataset.a !== 'save') S.msg = '';
+  if (b.dataset.a !== 'save' && b.dataset.a !== 'undo') S.msg = '';
   if (ed && b.dataset.a !== 'edundo') edPush();
   A[b.dataset.a](b.dataset.v); save(); render();
 });
@@ -2197,7 +2223,9 @@ function juntar(a, b) {
   // el partido con más jugadas gana, pero cada jugada que estén en los dos se queda con la más completa (lo que se completó en otro aparato no se pierde)
   a.games.forEach(x => { const y = g.get(x.id); if (!y) return g.set(x.id, x);
     const [k, o] = x.events.length >= y.events.length ? [x, y] : [y, x], om = new Map(o.events.map(e => [e.id, e]));
-    g.set(x.id, {...k, events: k.events.map(e => { const z = om.get(e.id); return z && (z.falta || []).length < (e.falta || []).length ? z : e })}) });
+    // y lo que se deshizo en cualquiera de los dos no regresa
+    const quit = new Set([...(x.borradas || []), ...(y.borradas || [])]);
+    g.set(x.id, {...k, borradas: [...quit], events: k.events.filter(e => !quit.has(e.id)).map(e => { const z = om.get(e.id); return z && (z.falta || []).length < (e.falta || []).length ? z : e })}) });
   borr.forEach(id => g.delete(id)); // lo borrado en cualquier aparato no regresa
   const off = a.off || b.off || [], pruebas = [...new Set([...(a.pruebas || []), ...(b.pruebas || [])])].filter(n => !off.includes(n));
   return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pbAlias: {...b.pbAlias, ...a.pbAlias}, pruebas, borrados: borr,
@@ -2245,7 +2273,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026143929';
+const VERSION = '20261026144637';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
