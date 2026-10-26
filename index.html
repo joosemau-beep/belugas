@@ -752,6 +752,12 @@ function segSvg(segs, f, sw, size, op = 1, pal = SEGCOL) {
   }).join('');
 }
 // rutas de la jugada sobre el campo, desde donde está parado cada jugador
+// campo principal: los 5 se dibujan más separados entre sí que en la realidad (más fácil tocar a uno sin marcar el balón por error); el avance se mide igual.
+// ponytail: 1.6 hacia atrás y hasta 1.5 a lo ancho (sin salirse de la cancha); si se ven muy abiertos o juntos, mover ABRE
+const ABRE = [1.6, 1.5];
+const abreY = sd => Math.min(ABRE[1], 10 / Math.max(1, ...S.lines[sd].map(p => Math.abs(p.dy))));
+const abre = (sd, x, y) => ({x: clamp(S.ball.x + (x - S.ball.x) * ABRE[0], 0.5, 69.5), y: clamp(S.ball.y + (y - S.ball.y) * abreY(sd), 1, 24)});
+const xyCampo = (sd, i) => { const q = lineXY(sd, i); return abre(sd, q.x, q.y) };
 function routesField(play, only, inv) {
   const pb = S.side === 'O' && jug(play, inv); if (!pb) return [];
   const at = r => { const i = S.lines.O.findIndex(p => p.r === r), q = lineXY('O', i); return startOf([q.x, q.y], pb.routes[r]) };
@@ -905,10 +911,10 @@ function artInner(o) {
       <g transform="translate(${X(e.x)} ${Y(e.y) - p(34)})"><rect x="${-p(38)}" y="${-p(16)}" width="${p(76)}" height="${p(30)}" rx="${p(15)}" fill="#fff"/>${T(0, p(6), sg(yd) + ' yd', 16, '#111')}</g>`;
     }
   }
-  const PP = o.players ? [0,1,2,3,4].map(i => lineXY(o.side, i)) : [];
+  const PP = o.players ? [0,1,2,3,4].map(i => o.abre ? xyCampo(o.side, i) : lineXY(o.side, i)) : [];
   let gap = Infinity;
   PP.forEach((a, i) => PP.forEach((b, j) => { if (j > i) gap = Math.min(gap, Math.hypot(X(a.x) - X(b.x), Y(a.y) - Y(b.y)) / o.k) }));
-  const R = clamp(gap * .42, 12, 20), side = O ? -1 : 1; // radio en px; el nombre va del lado de atrás
+  const R = clamp(gap * .42, 12, o.rmax || 20), side = O ? -1 : 1; // radio en px; el nombre va del lado de atrás
   const spots = o.players && o.smartNames ? nameSpots(o, PP, R) : null;
   // swap = arrastrando a un jugador encima de otro para intercambiar roles: el arrastrado va bajo el dedo y hasta arriba, el de destino con aro amarillo
   const sw = o.swap, order = [0,1,2,3,4].filter(i => !sw || i !== sw.from).concat(sw ? [sw.from] : []);
@@ -955,7 +961,8 @@ function mainOpts(w, h) {
   // en el partido el campo siempre enseña a los 5 como están parados (la formación de la última jugada, o la escogida antes del saque con sus rutas)
   const plan = !!S.prox && (O ? S.off : S.def).includes(S.prox), pl = plan || enJuego;
   // nombres donde no se enciman y jugadores que se arrastran encima de otro para intercambiarlos; ya marcado el avance se ven tenues
-  return {id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, smartNames: true, mover: pl, routes: plan ? routesField(S.prox, null, S.proxInv) : null, faint: pl && !!d.end};
+  return {id: 'field', side: S.side, yu: MY, k: 700 / w, ball: S.ball, end: d.end, series: true, los: d.end ? '' : `${dlbl()} · ${need} yd`, players: pl, smartNames: true, mover: pl, abre: true, rmax: 26,
+    routes: plan ? routesField(S.prox, null, S.proxInv).map(sg => ({...sg, pts: sg.pts.map(([x, y]) => { const q = abre(S.side, x, y); return [q.x, q.y] })})) : null, faint: pl && !!d.end};
 }
 // vista de recrear: misma escala en ambos ejes (10 unidades = 1 yarda), acercada a la jugada
 function howFrame(w, h) {
@@ -2052,7 +2059,7 @@ function moveHandle(id, pt) {
 }
 let drag = null;
 document.addEventListener('pointerdown', e => {
-  // campo principal con la jugada escogida: arrastrar a un jugador encima de otro los intercambia (un toque sigue marcando el balón)
+  // campo principal: arrastrar a un jugador encima de otro los intercambia; tocarlo abre los nombres
   const pm = tab === 'field' && !d.stage && !ed && e.target.closest('#field [data-p]');
   if (pm) { drag = {id: 'P' + pm.dataset.p, sx: e.clientX, sy: e.clientY, moved: false, pl: true, main: true}; return }
   if (tab !== 'field' || d.stage !== 'how' || ed) return;
@@ -2076,7 +2083,7 @@ document.addEventListener('pointermove', e => {
 function swapMove(pt) {
   const i = +drag.id.slice(1);
   let to = null, best = 2.5; // yardas: el más cercano al dedo, si está a menos de esto
-  S.lines[S.side].forEach((_, j) => { const q = lineXY(S.side, j), dd = Math.hypot(q.x - pt.x, q.y - pt.y); if (j !== i && dd < best) { best = dd; to = j } });
+  S.lines[S.side].forEach((_, j) => { const q = drag.main ? xyCampo(S.side, j) : lineXY(S.side, j), dd = Math.hypot(q.x - pt.x, q.y - pt.y); if (j !== i && dd < best) { best = dd; to = j } });
   drag.to = to;
   const sw = {swap: {from: i, at: pt, to}}, fb = $('#fbox');
   if (drag.main) $('#field-art').innerHTML = artInner({...mainOpts(fb.clientWidth, fb.clientHeight), ...sw});
@@ -2085,7 +2092,8 @@ function swapMove(pt) {
 const endDrag = () => {
   if (!drag) return;
   const t = drag; drag = null;
-  if (!t.moved) return;
+  // tocar (sin arrastrar) a un jugador del campo principal abre los nombres para cambiar quién juega ahí; no marca el balón
+  if (!t.moved) { if (t.main && t.pl) { pop = +t.id.slice(1); popAt = {x: t.sx, y: t.sy}; popSheet = false; noClick = Date.now() + 350; render() } return }
   if (t.pl && t.to != null) { const L = S.lines[S.side], i = +t.id.slice(1); [L[i].name, L[t.to].name] = [L[t.to].name, L[i].name]; ordenSigue(S.side) }
   noClick = Date.now() + 350; save(); render();
 };
@@ -2213,7 +2221,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026142332';
+const VERSION = '20261026143034';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
