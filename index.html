@@ -138,6 +138,7 @@ input,select{background:var(--fill);border:0;border-radius:10px;padding:10px 12p
 /* captura rápida: resultados grandes, un toque y se guarda */
 .qtiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.qtiles .rtile{min-height:92px;padding:14px 16px;gap:4px}.qtiles .rtile b{font-size:20px}.qtiles .rtile small{font-size:14px}
 .pchip.sug{box-shadow:inset 0 0 0 2px var(--tint)}
+.pchip.big{min-height:58px;font-size:18px;padding-right:20px}.pchip.big i{width:44px;height:44px;font-size:15px}
 /* ¿Cómo se pararon?: tablero verde como las tarjetas, lugares grandes */
 .oboard{background:#2b7a47;border-radius:18px;padding:18px;display:grid;gap:14px;margin-bottom:18px}
 .ofila{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -1162,11 +1163,26 @@ function vPick() {
 // captura rápida: con la jugada escogida, un toque al resultado y queda guardada; quién la hizo y por qué se completan después
 function vQuick() {
   const O = S.side === 'O', y = yardsOf(S.side, null, S.ball, d.end), td = d.end && (O ? d.end.x >= GOAL_R : d.end.x <= GOAL_L);
+  if (d.res) return vQuien();
   return `<div class="scrim" data-a="quickno"></div><div class="sheet">
   <div class="shead"><div><h1>¿Qué pasó?</h1><p>${d.play ? esc(d.play) + (d.inv ? ' invertida' : '') : 'Sin saber la jugada'} · ${d.end ? `${verb(y)} ${sg(y)} yd${td ? ' · TD' : ''}` : 'Sin avance'} · ${dlbl()}</p></div>
     <div class="row tight"><button class="plain" data-a="repick">Cambiar jugada</button><button class="xbtn" data-a="quickno">${icon('x')}</button></div></div>
   <div class="qtiles">${resOptions().map(r => `<button class="rtile" data-a="rapido" data-v="${esc(r)}"><b>${esc(rl(r))}</b><small>${esc(RES_TXT[S.side][r])}</small></button>`).join('')}</div>
-  <div class="row" style="margin-top:18px;justify-content:space-between;align-items:center;gap:12px"><span class="mut">Se guarda al tocar. Quién la hizo y por qué, lo completas al final.</span><button class="plain" data-a="detalles">Capturar con detalles</button></div></div>`;
+  <div class="row" style="margin-top:18px;justify-content:space-between;align-items:center;gap:12px"><span class="mut">Luego tocas quién la hizo. Por qué falló, lo completas al final.</span><button class="plain" data-a="detalles">Capturar con detalles</button></div></div>`;
+}
+// captura rápida, segundo toque: quién la hizo (los 5 de la cancha). En pase, quién la lanzó viene marcado (el QB de la jugada) y solo se cambia si fue otro;
+// tocar al que la atrapó (o corrió, o tapó...) guarda la jugada. "Después" la guarda y queda en Completar
+function vQuien() {
+  const O = S.side === 'O', w = askWho(), L = S.lines[S.side], pase = O && (d.res === 'Pase completo' || ZERO.includes(d.res)), pb = O && d.play && jug(d.play, d.inv);
+  const hot = pb && Object.keys(pb.routes).find(r => pb.routes[r].hot), sug = !pb ? null : d.res === 'Corrida' ? passer(pb) : hot;
+  const chip = (i, a, on, s) => { const p = L[i]; return `<button class="pchip big${on ? ' on' : ''}${s ? ' sug' : ''}" data-a="${a}" data-v="${i}"><i style="background:${colorOf(p.name)}">${esc(p.r)}</i>${p.name ? esc(p.name) : 'Sin nombre'}</button>` };
+  const y = yardsOf(S.side, null, S.ball, d.end);
+  return `<div class="scrim" data-a="quickno"></div><div class="sheet">
+  <div class="shead"><div><h1>${esc(rl(d.res))}</h1><p>${d.play ? esc(d.play) + (d.inv ? ' invertida' : '') : 'Sin saber la jugada'} · ${d.end ? `${verb(y)} ${sg(y)} yd` : 'Sin avance'} · ${dlbl()}</p></div>
+    <div class="row tight"><button class="plain" data-a="rapatras">Cambiar resultado</button><button class="xbtn" data-a="quickno">${icon('x')}</button></div></div>
+  ${pase ? `<div class="ghead">¿Quién la lanzó?</div><div class="pchips" style="margin-bottom:8px">${L.map((_, i) => chip(i, 'rapqb', d.qb === i)).join('')}</div>` : ''}
+  <div class="ghead">${w[1]}</div><div class="pchips">${L.map((_, i) => pase && i === d.qb ? '' : chip(i, 'rapquien', false, L[i].r === sug)).join('')}${w[0] === 'miss' ? '<button class="pchip big" style="padding-left:20px" data-a="rapnadie">Nadie</button>' : ''}</div>
+  <div class="row" style="margin-top:18px;justify-content:space-between;align-items:center;gap:12px"><span class="mut">Al tocarlo se guarda la jugada.</span><button class="plain" data-a="rapdespues">Después</button></div></div>`;
 }
 // dónde iba a atrapar según la jugada: el punto de su ruta donde la atrapa (o el último), contado desde donde estaba el balón
 function puntoRuta(e, i) {
@@ -1770,7 +1786,7 @@ function guardaJugada(rapida) {
   const L = S.lines[S.side], nm = i => i == null ? null : (L[i].name || null);
   const cause = r.auto ? r.auto[0] : (r.needWhy ? d.cause : null);
   // lo que no se contestó (quién la hizo, por qué falló) queda en "Completar jugadas"
-  const w = askWho(), falta = [...(d.sinJug && !d.play ? ['play'] : []), ...(w && d[w[0]] == null ? [w[0]] : []), ...(r.needWhy && !d.cause ? ['cause'] : [])];
+  const w = askWho(), falta = [...(d.sinJug && !d.play ? ['play'] : []), ...(w && d[w[0]] == null && !d.nadie ? [w[0]] : []), ...(r.needWhy && !d.cause ? ['cause'] : [])];
   const end = r.penEnd || r.end, last = d.lat.length ? d.lat[d.lat.length - 1].to : d.tgt;
   const e = {id: Date.now(), ...(S.conv ? {conv: S.conv.pts} : {}), ...(d.inv && d.play ? {inv: true} : {}), side: S.side, play: d.play || null, res: d.res, td: r.td, ret: !!r.ret, fd: !!r.fd, down: S.down, start: {...S.ball}, end, yds: r.yds,
     cause, grp: r.auto ? r.auto[1] : (cause ? grpOf(S.side, cause) : 'ok'), catch: r.catch || null, aim: r.aim || null, path: r.path || null,
@@ -1825,14 +1841,19 @@ const A = {
   // si venías de recrear la jugada, regresa ahí sin perder nada
   cancelpick: () => { d.stage = d.play || d.res ? (d.det ? 'how' : 'quick') : null },
   // captura rápida: cerrar deja el balón marcado (Confirmar otra vez); con detalles va a la pantalla completa de siempre
-  quickno: () => { d.stage = null },
+  quickno: () => { d.stage = null; d.res = null },
   detalles: () => { d.det = true; d.stage = 'how' },
   // un toque al resultado y queda guardada; el castigo necesita sus datos y va a la pantalla completa
   rapido(v) {
     Object.assign(d, {res: v, cause: null, td: null, tgt: null, who: null, miss: null, route: null, catch: null, lat: [], foul: null});
     if (v === 'Castigo') { d.det = true; d.stage = 'how'; return }
-    guardaJugada(true);
+    if (!askWho()) guardaJugada(true); // si no hay a quién preguntar (sack, fumble), se guarda de una vez; si no, sale ¿quién?
   },
+  rapqb: v => { d.qb = +v },
+  rapquien(v) { const w = askWho(); if (w) d[w[0]] = +v; guardaJugada(true) },
+  rapdespues: () => guardaJugada(true),
+  rapnadie: () => { d.nadie = true; guardaJugada(true) },
+  rapatras: () => { d.res = null },
   completar(v) { compG = +v || S.cur; compFrom = tab; tab = 'completar' },
   compback: () => { tab = compFrom === 'completar' ? 'field' : compFrom },
   // contestar lo que le falta a una jugada: v = "id|campo|valor" (valor vacío = no me acuerdo)
@@ -2224,7 +2245,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026143559';
+const VERSION = '20261026143929';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
