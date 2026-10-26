@@ -345,8 +345,8 @@ const GL_TXT = {O: {nos: 'La jugada estaba bien, fallamos al hacerla', rv: 'La d
 const ROLES = ['Q','C','X','Y','Z'];
 const ourTD = e => !e.conv && (e.side === 'O' ? e.td : e.ret), theirTD = e => !e.conv && (e.side === 'O' ? e.ret : e.td);
 // puntos: 6 por TD y lo que entre de conversión (1 desde la 5, 2 desde la 10)
-// safety (reglamento IFAF 8-4): 2 puntos para el que defiende; si nos lo hacen en ataque, son del rival
-const puntos = (evs, nuestro) => evs.reduce((a, e) => a + (e.conv ? (e.td && (e.side === 'O') === nuestro ? e.conv : 0) : (nuestro ? ourTD : theirTD)(e) ? 6 : e.safety && (e.side === 'D') === nuestro ? 2 : 0), 0);
+// safety (reglamento IFAF 8-4): 2 puntos para el que defiende; si nos lo hacen en ataque, son del rival. TD de la defensa en una conversión: 2 (IFAF 8-1)
+const puntos = (evs, nuestro) => evs.reduce((a, e) => a + (e.conv ? (e.td && (e.side === 'O') === nuestro ? e.conv : e.ret && (e.side === 'D') === nuestro ? 2 : 0) : (nuestro ? ourTD : theirTD)(e) ? 6 : e.safety && (e.side === 'D') === nuestro ? 2 : 0), 0);
 // cómo se llama el down en curso: en conversión no hay downs
 const dlbl = () => S.conv ? `Conversión de ${S.conv.pts}` : `${S.down}ª`;
 // Libro de jugadas leído de la tarjeta. pos = [adelante, lateral] en yardas desde el balón (lateral: + hacia la derecha de la tarjeta).
@@ -531,7 +531,7 @@ mergePb();
 // route = ruta del receptor ya estirada (su último punto es donde atrapó); vb = encuadre de la vista de recrear
 // lat = pases después de atrapar o correr: t = dónde lanzó, c = dónde la recibió, to = quién. pen = castigo
 const fresh = () => ({stage: null, play: null, res: null, cause: null, td: null, end: null, setBall: false, tgt: null, who: null, miss: null, route: null, catch: null, vb: null,
-  lat: [], pen: {fav: false, yd: 5, extra: false, tipo: null}, foul: null, ret: false, qb: 0}); // qb = posición de quien lanzó (0 = Q)
+  lat: [], pen: {fav: false, yd: 5, extra: false, tipo: null}, foul: null, ret: null, qb: 0}); // qb = posición de quien lanzó (0 = Q)
 let lastOv = '', lastPop = false, lastFl = '', tapAt = {x: 0, y: 0};
 let ed = null, edDrag = null; // editor de jugadas abierto (ver openEd)
 let pickSec = null; // sección que se ve al elegir jugada
@@ -607,7 +607,9 @@ function draft() {
   const safety = !S.conv && !!end && ['Pase completo', 'Corrida', 'Sack'].includes(d.res) && (O ? end.x <= GOAL_L : end.x >= GOAL_R);
   // un TD vale hasta la línea de gol, no hasta donde se tocó dentro de la zona
   const yds = td ? Math.round(O ? GOAL_R - S.ball.x : S.ball.x - GOAL_L) : yardsOf(side, d.res, S.ball, end);
-  const e = {side, res: d.res, td, safety, ret: RET.includes(d.res) && d.ret, yds, end, fd: RUN.includes(d.res) && crosses(S.ball, end), raw: yardsOf(side, null, S.ball, end), auto: d.res && AUTO[side][d.res]};
+  // intercepción o fumble regresado hasta la zona: se marca solo si el balón quedó en la zona de quien lo perdió
+  const autoRet = !!end && RET.includes(d.res) && (O ? end.x <= GOAL_L : end.x >= GOAL_R), ret = RET.includes(d.res) && (d.ret == null ? autoRet : d.ret);
+  const e = {side, res: d.res, td, safety, ret, yds, end, fd: RUN.includes(d.res) && crosses(S.ball, end), raw: yardsOf(side, null, S.ball, end), auto: d.res && AUTO[side][d.res]};
   e.worked = d.res ? works(e) : null;
   // por qué falló solo en ataque: en defensa, que el rival complete no siempre es error de nadie (se anota quién quitó la bandera)
   e.needWhy = O && !!d.res && !e.worked && !e.auto;
@@ -689,7 +691,8 @@ function resOptions() {
   const y = d.end ? yardsOf(S.side, null, S.ball, d.end) : 0, F = S.side === 'O' ? 'Fumble' : 'Fumble forzado';
   // sin avance solo puede ser pase incompleto o corrida frenada en la línea: intercepción y fumble mueven el balón (se marcan tocando dónde quedó)
   // y el castigo tiene su propio botón en el campo
-  const list = y > 0 ? ['Pase completo','Corrida','Intercepción',F,'Castigo'] : y < 0 ? ['Sack','Corrida','Pase completo',F,'Castigo'] : ['Incompleto','Corrida'];
+  // la intercepción también cuando el balón acabó atrás de la línea (la regresaron)
+  const list = y > 0 ? ['Pase completo','Corrida','Intercepción',F,'Castigo'] : y < 0 ? ['Sack','Corrida','Pase completo','Intercepción',F,'Castigo'] : ['Incompleto','Corrida'];
   if (d.res && !list.includes(d.res)) list.unshift(d.res);
   return list;
 }
@@ -1445,15 +1448,21 @@ function vStats() {
 }
 
 // ---------- fantasy: puntos por jugador con lo que se registró en cada jugada ----------
-const PTS = {pYd: .1, pTD: 4, int: -2, rec: 1, rYd: .1, ruYd: .1, td: 6, cv: 1, cvp: 1, drop: -.5, skYd: .05, fum: -2, sack: 2, dInt: 4, ff: 2, pbu: 1, dTD: 6, sf: 2, flag: .5, pres: .5}; // faltas y "se le fue" no cuentan: los árbitros fallan mucho y en defensa ya se premia quitar la bandera
+const PTS = {pYd: .1, pTD: 4, int: -2, rec: 1, rYd: .1, ruYd: .1, td: 6, cv: 1, cvp: 1, drop: -.5, skYd: .05, fum: -2, sack: 2, dInt: 4, ff: 2, pbu: 1, dTD: 6, dCv: 1, sf: 2, flag: .5, pres: .5}; // faltas y "se le fue" no cuentan: los árbitros fallan mucho y en defensa ya se premia quitar la bandera
 const PTS_TXT = [['Yarda de pase, recepción o corrida', '0.1'], ['Recepción', '1'], ['TD anotado', '6'], ['TD de pase (QB)', '4'], ['Conversión anotada', '1 por punto'], ['Pase de conversión (QB)', '1 por punto'], ['Intercepción lanzada', '−2'], ['Se le cayó o no atrapó', '−0.5'], ['Yarda perdida en sack (QB)', '−0.05'], ['Fumble', '−2'],
-  ['Sack', '2'], ['Intercepción en defensa', '4'], ['Fumble forzado', '2'], ['Pase tapado', '1'], ['TD en defensa', '6'], ['Safety (quien lo hizo)', '2'], ['Bandera quitada', '0.5'], ['Presión al QB', '0.5']];
+  ['Sack', '2'], ['Intercepción en defensa', '4'], ['Fumble forzado', '2'], ['Pase tapado', '1'], ['TD en defensa', '6'], ['Regreso en conversión (2 puntos)', '2'], ['Safety (quien lo hizo)', '2'], ['Bandera quitada', '0.5'], ['Presión al QB', '0.5']];
 function fantasy(evs) {
-  const P = {}, g = n => P[n] = P[n] || {n, att: 0, comp: 0, pYd: 0, pTD: 0, int: 0, rec: 0, tgt: 0, rYd: 0, drop: 0, car: 0, ruYd: 0, td: 0, cv: 0, cvp: 0, fum: 0, sack: 0, dInt: 0, ff: 0, pbu: 0, dTD: 0, sf: 0, flag: 0, pres: 0, skYd: 0, miss: 0, foul: 0};
+  const P = {}, g = n => P[n] = P[n] || {n, att: 0, comp: 0, pYd: 0, pTD: 0, int: 0, rec: 0, tgt: 0, rYd: 0, drop: 0, car: 0, ruYd: 0, td: 0, cv: 0, cvp: 0, fum: 0, sack: 0, dInt: 0, ff: 0, pbu: 0, dTD: 0, dCv: 0, sf: 0, flag: 0, pres: 0, skYd: 0, miss: 0, foul: 0};
   const PASS = ['Pase completo','Incompleto','Intercepción'];
   for (const e of evs) {
     if (e.foul) g(e.foul).foul++;
-    if (e.conv) { if (e.side === 'O' && e.td) { const sc = e.last || e.tgt; if (sc) g(sc).cv += e.conv; if (e.res === 'Pase completo' && e.qb) g(e.qb).cvp += e.conv } continue }
+    if (e.conv) {
+      if (e.side === 'O' && e.td) { const sc = e.last || e.tgt; if (sc) g(sc).cv += e.conv; if (e.res === 'Pase completo' && e.qb) g(e.qb).cvp += e.conv }
+      // intercepción en la conversión: cuenta como cualquier intercepción; si la regresamos hasta la zona, 2 más al que la regresó
+      if (e.res === 'Intercepción') { if (e.side === 'O' && e.qb) g(e.qb).int++; if (e.side === 'D' && e.who) g(e.who).dInt++ }
+      if (e.ret && e.side === 'D' && e.who) g(e.who).dCv += 2;
+      continue
+    }
     if (e.side === 'O') {
       if (e.res === 'Sack' && e.qb) g(e.qb).skYd += e.yds; // el sack le quita poquito al QB: 0.05 por yarda perdida
       if (PASS.includes(e.res) && e.qb) { const q = g(e.qb); q.att++; if (e.res === 'Pase completo') { q.comp++; q.pYd += e.yds; if (e.td) q.pTD++ } if (e.res === 'Intercepción') q.int++ }
@@ -1472,7 +1481,7 @@ function fantasy(evs) {
       if (e.miss) g(e.miss).miss++;
     }
   }
-  return Object.values(P).map(p => ({...p, pts: Math.round(Object.keys(PTS).reduce((a, k) => a + PTS[k] * p[k], 0) * 10) / 10, def: p.sack * 2 + p.dInt * 4 + p.ff * 2 + p.pbu + p.dTD * 6 + p.sf * 2 + p.flag * .5 + p.pres * .5}))
+  return Object.values(P).map(p => ({...p, pts: Math.round(Object.keys(PTS).reduce((a, k) => a + PTS[k] * p[k], 0) * 10) / 10, def: p.sack * 2 + p.dInt * 4 + p.ff * 2 + p.pbu + p.dTD * 6 + p.dCv + p.sf * 2 + p.flag * .5 + p.pres * .5}))
     .sort((a, b) => b.pts - a.pts);
 }
 function fLine(p) {
@@ -1482,7 +1491,7 @@ function fLine(p) {
   if (p.car) o.push(`${p.car} corrida${p.car > 1 ? 's' : ''}, ${p.ruYd} yd`);
   if (p.td) o.push(`${p.td} TD`);
   if (p.cv || p.cvp) o.push([p.cv && `conversión +${p.cv}`, p.cvp && `pase de conversión +${p.cvp}`].filter(Boolean).join(', '));
-  const df = [p.sack && `${p.sack} sack`, p.dInt && `${p.dInt} INT en defensa`, p.ff && `${p.ff} fumble forzado`, p.pbu && `${p.pbu} tapado${p.pbu > 1 ? 's' : ''}`, p.dTD && `${p.dTD} TD defensa`, p.sf && `${p.sf} safety`, p.flag && `${p.flag} bandera${p.flag > 1 ? 's' : ''}`, p.pres && `${p.pres} presión${p.pres > 1 ? 'es' : ''}`].filter(Boolean);
+  const df = [p.sack && `${p.sack} sack`, p.dInt && `${p.dInt} INT en defensa`, p.ff && `${p.ff} fumble forzado`, p.pbu && `${p.pbu} tapado${p.pbu > 1 ? 's' : ''}`, p.dTD && `${p.dTD} TD defensa`, p.dCv && `regresó una conversión`, p.sf && `${p.sf} safety`, p.flag && `${p.flag} bandera${p.flag > 1 ? 's' : ''}`, p.pres && `${p.pres} presión${p.pres > 1 ? 'es' : ''}`].filter(Boolean);
   if (df.length) o.push(df.join(', '));
   const bad = [p.drop && `${p.drop} se le cayó`, p.fum && `${p.fum} fumble`, p.skYd && `${-p.skYd} yd en sacks`].filter(Boolean);
   if (bad.length) o.push(bad.join(', '));
@@ -1534,6 +1543,8 @@ function vReport() {
   // cómo se anotó: TD y conversiones en orden, con el marcador en ese momento
   let a = 0, b = 0;
   const tl = ev.map(e => {
+    if (e.conv && e.ret) { const us = e.side === 'D'; if (us) a += 2; else b += 2;
+      return `<div class="tl"><i class="mk ${us ? 'us' : 'th'}">+2</i><div><b>${us ? `Regresamos su conversión${e.who ? ': ' + esc(e.who) : ''}` : 'Nos regresaron la conversión'}</b><div class="mut">${esc(e.res)} hasta la zona · vale 2</div></div><span class="sc2">${a} – ${b}</span></div>` }
     if (e.conv) { if (!e.td) return `<div class="tl"><i class="mk ${e.side === 'O' ? 'us' : 'th'}" style="opacity:.45">${e.conv}</i><div><b>Conversión de ${e.conv} que no entró</b><div class="mut">${e.side === 'O' ? 'Nuestra' : 'Del rival'}${e.play ? ' · ' + esc(e.play) : ''}</div></div><span class="sc2">${a} – ${b}</span></div>`;
       if (e.side === 'O') a += e.conv; else b += e.conv;
       return `<div class="tl"><i class="mk ${e.side === 'O' ? 'us' : 'th'}">+${e.conv}</i><div><b>${e.side === 'O' ? 'Entró la conversión' : 'Entró su conversión'} de ${e.conv}</b><div class="mut">${e.side === 'O' ? esc(quien(e)) + (e.play ? ' · ' + esc(e.play) : '') : 'Del rival'}</div></div><span class="sc2">${a} – ${b}</span></div>` }
@@ -1753,6 +1764,7 @@ function afterSave(e, end) {
   const kick = (side, msg) => { S.side = side; S.ball = START(side); S.down = 1; S.fd = false; newSeries(); S.msg = msg; pideBloque() };
   S.msg = '';
   // conversión: entre o no, el balón pasa al otro equipo
+  if (e.conv && e.ret) { S.conv = null; return kick(next, O ? `Nos la regresaron en la conversión: 2 puntos para el rival. Ahora defendemos.` : `La regresamos en su conversión: 2 puntos. Ahora atacamos.`) }
   if (e.conv) { S.conv = null; return kick(next, e.td ? (O ? `Entró la conversión: +${e.conv}. Ahora defendemos.` : `Entró su conversión: +${e.conv}. Ahora atacamos.`) : (O ? 'No entró la conversión. Ahora defendemos.' : 'No entró su conversión. Ahora atacamos.')) }
   // TD: antes de cambiar la posesión, el que anotó escoge su conversión en el campo
   if (e.safety) return kick(O ? 'D' : 'O', O ? 'Safety: 2 puntos para el rival. Ahora defendemos.' : 'Safety a favor: 2 puntos. Ahora atacamos.');
@@ -1916,7 +1928,7 @@ const A = {
   penx: () => { d.pen.extra = !d.pen.extra },
   foul: v => tog('foul', +v),
   td: () => { d.td = !draft().td },
-  ret: () => { d.ret = !d.ret },
+  ret: () => { d.ret = !draft().ret },
   yd(v) { const dir = S.side === 'O' ? 1 : -1; if (!d.end) d.end = {...S.ball}; d.end = {x: clamp(d.end.x + dir * v, 0, 70), y: d.end.y}; d.td = null; d.vb = null },
   resetroute: () => { d.route = null },
   save: () => guardaJugada(false),
@@ -2242,7 +2254,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026152210';
+const VERSION = '20261026152623';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
