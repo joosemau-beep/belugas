@@ -223,6 +223,22 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .lrow .p small{display:block;font-size:12px;color:var(--mut);font-weight:600}
 .thero{display:grid;grid-template-columns:1.2fr auto;gap:18px 28px;align-items:center;padding:26px 28px;border-radius:22px;background:linear-gradient(135deg,#1d3f78,#13336a 55%,#0d2347);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:16px}
 .ntiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:16px}.ntile{min-height:92px;font-size:40px;font-weight:800;letter-spacing:-.02em;border-radius:16px;font-variant-numeric:tabular-nums}
+.page.cel{bottom:0;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 28px);max-width:560px;margin:0 auto}
+.ctop{display:flex;align-items:center;gap:12px;margin-bottom:10px}.ctop img{width:46px;height:46px;object-fit:contain}.ctop b{display:block;font-size:18px}.ctop small{color:var(--mut);font-size:14px}.ctop .plain{margin-left:auto;font-size:15px}
+.csc{display:flex;align-items:center;justify-content:center;gap:14px;padding:16px 12px;border-radius:20px;background:linear-gradient(135deg,#1d3f78,#13336a 55%,#0d2347);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:14px}
+.csc div{flex:1;text-align:center;min-width:0}.csc span{display:block;color:var(--mut);font-size:13px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.csc b{font-size:58px;font-weight:800;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}.csc i{font-style:normal;font-size:32px;color:var(--mut)}
+.cbig{display:grid;gap:10px;margin-bottom:16px}.cbig button{min-height:76px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.cbig b{font-size:21px}.cbig small{font-size:14px;opacity:.75;font-weight:400}
+.cbig.main button:first-child{min-height:104px}.cbig.main button:first-child b{font-size:26px}
+.cbig button.ok{background:var(--ok);color:#fff;box-shadow:none}.cbig button.no{background:var(--bad);color:#fff;box-shadow:none}
+.ch{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:6px 0 12px;text-align:center}.cback{margin:-4px 0 0 -6px;display:flex;align-items:center;gap:4px}
+.cseg{display:flex;margin-bottom:12px}.cseg button{flex:1;padding:6px 8px}
+.cq{color:var(--mut);font-size:14px;margin:6px 2px 8px;text-transform:uppercase;letter-spacing:.04em}
+.cqb{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:6px}.cqb button{flex:none;min-height:40px;border-radius:99px;padding:6px 14px}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.cn{display:flex;align-items:center;gap:10px;min-height:62px;border-radius:16px;font-size:18px;font-weight:600;text-align:left;padding:8px 12px}.cn i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:13px;font-weight:800;color:#111;flex:none}
+.cnadie{width:100%;margin-top:10px;min-height:52px}
+.cnum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}.cnum button{min-height:76px;font-size:34px;font-weight:800;border-radius:16px;font-variant-numeric:tabular-nums}
+.cok{background:rgba(48,209,88,.14);box-shadow:inset 0 0 0 1px rgba(48,209,88,.45);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:16px}.cok .row{margin-top:10px}.cok .row button{flex:1;min-height:42px}
+.cpie{display:block;text-align:center;margin:10px auto 0;font-size:14px}
 .tid{display:flex;align-items:center;gap:18px;min-width:0}.tid img{width:110px;height:auto;flex:none}
 .tid small,.trec span,.tstat span{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
 .tid h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:2px 0 10px}
@@ -1440,7 +1456,7 @@ function vStats() {
   const ev = S.games.filter(g => sf.game === 'all' || sf.game === String(g.id)).flatMap(g => g.events);
   const O = sf.side === 'O', L = ev.filter(e => e.side === sf.side && e.res !== 'Castigo' && !e.conv), A = agg(L), pens = ev.filter(e => e.side === sf.side && e.res === 'Castigo');
   const fouls = p => pens.filter(e => e.foul === p).length;
-  const plays = O ? S.off : S.def, downs = by(L, 'down');
+  const plays = O ? S.off : S.def, downs = by(L.filter(e => e.down), 'down');
   const row = (name, l) => { const a = agg(l); return `<tr><td>${esc(name)}</td><td>${a.n}</td><td>${sg(a.y)}</td><td>${f1(a.avg)}</td>${pctCell(a.pct)}<td>${a.td}</td><td>${a.to}</td></tr>` };
   const head = first => `<tr><th>${first}</th><th>Veces</th><th>${O ? 'Yds' : 'Yds permitidas'}</th><th>Prom</th><th>Funcionó</th><th>${O ? 'TD' : 'TD en contra'}</th><th>${O ? 'Pérdidas' : 'Sacks e INT'}</th></tr>`;
   const cc = {}; L.forEach(e => { if (!e.worked && e.cause) cc[e.cause] = [(cc[e.cause] || [0])[0] + 1, e.grp] });
@@ -1636,6 +1652,53 @@ function vReport() {
   <div class="card"><h2>Castigos</h2>${pens.length ? Object.entries(ct).sort((x, y) => y[1] - x[1]).map(([k, n]) => { const [t, f] = k.split('|'); return `<div class="item"><span>${esc(t)} <span class="mut">· ${+f ? 'a favor' : 'en contra'}</span></span><b class="${+f ? 'g' : 'r'}">${n}</b></div>` }).join('') : '<span class="mut">Ninguno</span>'}</div></div>`;
 }
 
+// ---------- celular: captura sencilla (TD, quién lo metió, conversión y si una jugada funcionó). El iPad sigue con la versión completa ----------
+// mismo app y mismos datos (nube incluida); en un teléfono (pantalla de menos de 600 px por lado) se abre esta. "Versión completa" la cambia en ese aparato
+const esCel = () => Math.min(screen.width, screen.height) < 600 && lsGet('tochito.completa') !== '1';
+let cel = {paso: null, tipo: 'Pase', lado: 'O', play: null, conv: null, convPts: 0, ult: null, qb: lsGet('tochito.celqb') || ''};
+const celGuarda = x => { const g = cur(); if (!g) return null;
+  const e = {id: Math.max(Date.now(), ...g.events.map(v => v.id + 1)), cel: true, play: null, td: false, ret: false, fd: false, start: null, end: null, yds: 0, falta: [], ...x};
+  if (e.worked == null) e.worked = works(e); g.events.push(e); cel.ult = e.id; return e };
+const celTxt = e => { const n = numJ(e.play), jp = e.play ? `${e.side === 'O' && n ? n + ' · ' : ''}${esc(e.play)}` : '';
+  if (e.conv) return `Conversión ${e.side === 'O' ? 'nuestra' : 'del rival'} de ${e.conv}: ${e.td ? 'entró' + (e.side === 'O' && (e.last || e.tgt) ? ' (' + esc(e.last || e.tgt) + ')' : '') : 'no entró'}`;
+  if (ourTD(e)) return `TD de ${esc(e.last || e.tgt || e.who || 'nosotros')}${e.side === 'D' ? ' (intercepción)' : e.qb && e.res === 'Pase completo' ? ', pase de ' + esc(e.qb) : e.res === 'Corrida' ? ' (corriendo)' : ''}`;
+  if (theirTD(e)) return 'TD del rival' + (e.side === 'O' ? ' (nos la quitaron)' : '');
+  if (e.res === 'Funcionó' || e.res === 'No funcionó') return `${jp} ${e.side === 'O' ? '' : '(defensa) '}· ${e.worked ? 'funcionó' : 'no funcionó'}${e.grp ? ' · ' + (e.grp === 'nos' ? 'falla nuestra' : 'nos la frenaron') : ''}`;
+  return `${jp || 'Jugada'} · ${esc(rl(e.res) || e.res || '')}` };
+function vCel() {
+  const g = cur(), [a, b] = g ? marcador(g) : [0, 0], gente = hoy().length ? hoy() : S.players;
+  const nom = (n, act, x = '') => `<button class="cn${x}" data-a="${act}" data-v="${esc(n)}"><i style="background:${colorOf(n)}">${esc(ini(n))}</i>${esc(n)}</button>`;
+  const cab = `<div class="ctop"><img src="logo.webp" alt=""><div><b>vs ${esc(g && g.rival || 'Rival')}</b><small>${esc(g ? g.date : '')}</small></div><button class="plain" data-a="celnuevo">Nuevo partido</button></div>
+    <div class="csc"><div><span>Belugas</span><b>${a}</b></div><i>–</i><div><span>${esc(g && g.rival || 'Rival')}</span><b>${b}</b></div></div>`;
+  const atras = `<button class="plain cback" data-a="celatras">${icon('back')} Cancelar</button>`;
+  if (!clave) return cab + `<div class="card"><h2>Conectar</h2><p style="margin:0 0 12px">Pega el link del equipo para que lo que marques llegue al iPad.</p><input id="linknube" placeholder="Link del equipo" style="width:100%;margin-bottom:10px"><button class="tint" style="width:100%" data-a="conectar">Conectar</button></div>`;
+  if (cel.paso === 'td') return cab + `${atras}<h1 class="ch">¿Quién lo metió?</h1>
+    <div class="seg cseg">${['Pase', 'Corrida', 'Intercepción'].map(t => `<button class="${cel.tipo === t ? 'on' : ''}" data-a="celtipo" data-v="${t}">${t}</button>`).join('')}</div>
+    ${cel.tipo === 'Pase' ? `<p class="cq">Lanzó</p><div class="cqb">${[cel.qb, ...gente.filter(n => n !== cel.qb)].filter(Boolean).map(n => `<button class="${cel.qb === n ? 'on' : ''}" data-a="celqb" data-v="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="cq">${cel.qb ? 'Atrapó' : 'Atrapó (toca primero quién lanzó, si sabes)'}</p>` : `<p class="cq">${cel.tipo === 'Corrida' ? 'Corrió' : 'La interceptó y la regresó'}</p>`}
+    <div class="cgrid">${gente.map(n => nom(n, 'celtd')).join('')}</div>`;
+  if (cel.paso === 'tdriv') return cab + `${atras}<h1 class="ch">TD del rival. ¿Cómo?</h1><div class="cbig">
+    <button data-a="celriv" data-v="Pase completo"><b>Pase</b></button><button data-a="celriv" data-v="Corrida"><b>Corrida</b></button><button data-a="celriv" data-v="Intercepción"><b>Nos la interceptaron</b><small>y la regresaron a la zona</small></button></div>`;
+  if (cel.paso === 'conv') { const O = cel.conv === 'O';
+    return cab + `<h1 class="ch">${O ? 'Nuestra conversión' : 'Conversión del rival'}</h1><div class="cbig">
+    <button class="ok" data-a="celconv" data-v="1"><b>Entró de 1</b><small>desde la 5</small></button><button class="ok" data-a="celconv" data-v="2"><b>Entró de 2</b><small>desde la 10</small></button>
+    <button class="no" data-a="celconv" data-v="0"><b>No entró</b></button><button data-a="celconv" data-v="-1"><b>No la intentaron</b></button></div>` }
+  if (cel.paso === 'convwho') return cab + `<h1 class="ch">¿Quién metió la conversión?</h1><div class="cgrid">${gente.map(n => nom(n, 'celconvq')).join('')}</div><button class="cnadie" data-a="celconvq" data-v="">No sé</button>`;
+  if (cel.paso === 'jug') { const O = cel.lado === 'O';
+    return cab + `${atras}<h1 class="ch">¿Qué jugada?</h1><div class="seg cseg">${[['O', 'Ataque'], ['D', 'Defensa']].map(([k, t]) => `<button class="${cel.lado === k ? 'on' : ''}" data-a="cellado" data-v="${k}">${t}</button>`).join('')}</div>
+    ${O ? secGroups(S.off).map(([sc, l], i) => `<p class="cq">${i + 1} · ${esc(sc)}</p><div class="cnum">${l.map((n, j) => `<button data-a="celjug" data-v="${esc(n)}">${i + 1}${j + 1}</button>`).join('')}</div>`).join('')
+      : `<div class="cbig">${S.def.map(n => `<button data-a="celjug" data-v="${esc(n)}"><b>${esc(n)}</b></button>`).join('')}</div>`}` }
+  if (cel.paso === 'res') { const n = cel.lado === 'O' && numJ(cel.play);
+    return cab + `${atras}<h1 class="ch">${n ? n + ' · ' : ''}${esc(cel.play)}</h1><p class="cq" style="text-align:center">${cel.lado === 'O' ? '¿Avanzamos?' : '¿Los paramos?'}</p><div class="cbig">
+    <button class="ok" data-a="celres" data-v="1"><b>Funcionó</b></button><button class="no" data-a="celres" data-v="0"><b>No funcionó</b></button></div>` }
+  // inicio: lo último que se marcó (con Quitar si salió de un celular) y los tres botones
+  const ult = g && g.events.find(e => e.id === cel.ult), por = ult && ult.res === 'No funcionó' && !ult.grp;
+  const lista = g ? g.events.slice(-6).reverse().map(e => `<div class="item"><span>${celTxt(e)}</span>${e.cel ? `<button class="x" data-a="celquita" data-v="${e.id}">Quitar</button>` : ''}</div>`).join('') : '';
+  return cab + `${ult ? `<div class="cok"><span>Guardado: ${celTxt(ult)}</span>${por ? `<div class="row tight"><button data-a="celpor" data-v="nos">Falla nuestra</button><button data-a="celpor" data-v="rv">Nos la frenaron</button></div>` : ''}</div>` : ''}
+    <div class="cbig main"><button class="ok" data-a="celir" data-v="td"><b>TD nuestro</b><small>Luego tocas quién lo metió</small></button><button class="no" data-a="celir" data-v="tdriv"><b>TD del rival</b></button>
+    <button data-a="celir" data-v="jug"><b>¿Funcionó la jugada?</b><small>Escoges el número y marcas sí o no</small></button></div>
+    ${lista ? `<div class="card"><h2>Últimas</h2>${lista}</div>` : ''}
+    <p class="mut cpie">${esc(nubeTxt())}</p><button class="plain cpie" data-a="celcompleta">Abrir la versión completa</button>`;
+}
 // temporada: solo cuentan los partidos con marcador (con jugadas o con el resultado guardado a mano)
 const temporada = () => {
   const r = S.games.filter(g => g.final || g.events.length).map(g => { const [a, b] = marcador(g); return {g, a, b, k: a > b ? 'w' : a < b ? 'l' : 't'} });
@@ -1668,6 +1731,7 @@ function vTeam() {
     ${verJug ? `<div style="margin-top:10px">${S.players.map((p, i) => `<div class="item"><i class="dot" style="width:22px;height:22px;background:${colorOf(p)}"></i><input data-c="renp" data-i="${i}" value="${esc(p)}"><button class="x" data-a="delp" data-v="${i}">Quitar</button></div>`).join('')}
     <div class="row tight" style="margin-top:10px"><input id="newp" placeholder="Agregar jugador" style="flex:1"><button class="tint" data-a="addp">Agregar</button></div></div>` : ''}</div>`;
   return `${hero}
+  ${Math.min(screen.width, screen.height) < 600 ? '<button class="plain" style="margin:0 0 12px" data-a="celsencilla">Usar la versión sencilla del celular</button>' : ''}
   <div class="card"><div class="tph"><h2>Partidos</h2><button class="tint" data-a="newgame">${icon('plus')} Nuevo partido</button></div>${partidos}</div>
   ${jug}
   <div class="card"><h2>Bloques de jugadores</h2><p class="mut" style="margin:0 0 12px">Acomodos de quién va en cada posición en este partido (al empezar otro partido se borran). Los de ataque salen cuando les toca atacar y los de defensa cuando les toca defender</p>
@@ -1776,6 +1840,7 @@ function vPop() {
 }
 
 function render() {
+  if (esCel()) return renderCel();
   const pg = $('.page') ? $('.page').scrollTop : 0, is = $('.insp .scroll') ? $('.insp .scroll').scrollTop : 0;
   const juego = enJuego && (tab === 'field' || tab === 'plays');
   $('#tabs').classList.toggle('gbar', !!juego);
@@ -1795,6 +1860,14 @@ function render() {
   if ($('.page')) $('.page').scrollTop = pg;
   if ($('.insp .scroll')) $('.insp .scroll').scrollTop = is;
   const im = $('#imp'); if (im) im.onchange = doImport;
+}
+function renderCel() {
+  const pg = $('.page') ? $('.page').scrollTop : 0;
+  $('#tabs').style.display = 'none'; $('#ov').innerHTML = '';
+  $('#app').innerHTML = `<div class="page cel">${vCel()}</div>`;
+  $('#pop').innerHTML = vPop();
+  const di = $('#dlgin'); if (di && document.activeElement !== di) { di.focus(); di.select() }
+  if ($('.page')) $('.page').scrollTop = cel.paso ? 0 : pg;
 }
 
 // ---------- acciones ----------
@@ -2031,6 +2104,27 @@ const A = {
   salir: () => { ponJuego(false); d = fresh(); repG = S.cur; repFrom = 'field'; tab = 'report' }, // al salir, el reporte del partido
   report: v => { repG = +v || S.cur; repFrom = tab; tab = 'report' },
   verjug: () => { verJug = !verJug },
+  // celular
+  celir: v => { cel.paso = v; cel.ult = null; if (v === 'td') cel.tipo = 'Pase' },
+  celatras: () => { cel.paso = null },
+  celtipo: v => { cel.tipo = v },
+  celqb: v => { cel.qb = cel.qb === v ? '' : v; lsSet('tochito.celqb', cel.qb) },
+  celtd: v => { const t = cel.tipo;
+    celGuarda(t === 'Intercepción' ? {side: 'D', res: 'Intercepción', ret: true, who: v} : {side: 'O', res: t === 'Pase' ? 'Pase completo' : 'Corrida', td: true, tgt: v, last: v, ...(t === 'Pase' && cel.qb && cel.qb !== v ? {qb: cel.qb} : {})});
+    cel.paso = 'conv'; cel.conv = 'O' },
+  celriv: v => { celGuarda(v === 'Intercepción' ? {side: 'O', res: 'Intercepción', ret: true} : {side: 'D', res: v, td: true}); cel.paso = 'conv'; cel.conv = 'D' },
+  celconv: v => { const n = +v; if (n < 0) { cel.paso = null; return }
+    if (n && cel.conv === 'O') { cel.convPts = n; cel.paso = 'convwho'; return }
+    celGuarda({conv: n || 1, side: cel.conv, res: n ? 'Pase completo' : 'Incompleto', td: !!n}); cel.paso = null },
+  celconvq: v => { celGuarda({conv: cel.convPts, side: 'O', res: 'Pase completo', td: true, ...(v ? {tgt: v, last: v} : {})}); cel.paso = null },
+  cellado: v => { cel.lado = v },
+  celjug: v => { cel.play = v; cel.paso = 'res' },
+  celres: v => { celGuarda({side: cel.lado, play: cel.play, res: +v ? 'Funcionó' : 'No funcionó', worked: !!+v, grp: null}); cel.paso = null },
+  celpor: v => { const e = (cur() || {events: []}).events.find(x => x.id === cel.ult); if (e) e.grp = v },
+  celquita: v => { const g = cur(), id = +v; if (!g) return; g.events = g.events.filter(e => e.id !== id); g.borradas = [...(g.borradas || []), id]; if (cel.ult === id) cel.ult = null },
+  celnuevo() { pregunta('¿Contra quién juegan?', 'Empezar', r => { keepState(); const ant = cur(); newGame(r.trim()); S.bloques = S.bloques.filter(b => b.g === S.cur); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); cel = {...cel, paso: null, ult: null} }, '') },
+  celsencilla: () => { lsSet('tochito.completa', '0'); cel.paso = null },
+  celcompleta: () => { lsSet('tochito.completa', '1'); $('#tabs').style.display = '' },
   lugar() { pregunta('¿En qué lugar van en la tabla general?', 'Guardar', r => { const n = parseInt(r, 10); S.lugar = n > 0 ? n : null }, S.lugar ? String(S.lugar) : '') },
   // el reporte en PDF: abre la hoja de imprimir del iPad (de ahí se guarda en Archivos o se comparte)
   pdf: () => setTimeout(() => window.print(), 60),
@@ -2267,7 +2361,9 @@ function juntar(a, b) {
     const [k, o] = x.events.length >= y.events.length ? [x, y] : [y, x], om = new Map(o.events.map(e => [e.id, e]));
     // y lo que se deshizo en cualquiera de los dos no regresa
     const quit = new Set([...(x.borradas || []), ...(y.borradas || [])]);
-    g.set(x.id, {...k, borradas: [...quit], events: k.events.filter(e => !quit.has(e.id)).map(e => { const z = om.get(e.id); return z && (z.falta || []).length < (e.falta || []).length ? z : e })}) });
+    // jugadas de los dos: si un aparato capturó mientras el otro también (iPad y celular), no se pierde ninguna
+    const ev = k.events.map(e => { const z = om.get(e.id); return z && (z.falta || []).length < (e.falta || []).length ? z : e }), km = new Set(ev.map(e => e.id));
+    g.set(x.id, {...k, borradas: [...quit], events: [...ev, ...o.events.filter(e => !km.has(e.id))].filter(e => !quit.has(e.id)).sort((p, q) => p.id - q.id)}) });
   borr.forEach(id => g.delete(id)); // lo borrado en cualquier aparato no regresa
   const off = a.off || b.off || [], pruebas = [...new Set([...(a.pruebas || []), ...(b.pruebas || [])])].filter(n => !off.includes(n));
   return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pbAlias: {...b.pbAlias, ...a.pbAlias}, pruebas, borrados: borr,
@@ -2315,7 +2411,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261026171347';
+const VERSION = '20261102115955';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
