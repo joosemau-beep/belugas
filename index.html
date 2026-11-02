@@ -238,6 +238,7 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .cnadie{width:100%;margin-top:10px;min-height:52px}
 .cnum{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}.cnum button{min-height:76px;font-size:34px;font-weight:800;border-radius:16px;font-variant-numeric:tabular-nums}
 .cok{background:rgba(48,209,88,.14);box-shadow:inset 0 0 0 1px rgba(48,209,88,.45);border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:16px}.cok .row{margin-top:10px}.cok .row button{flex:1;min-height:42px}
+.cviejo p{margin:0 0 12px;font-size:16px}.cviejo button{width:100%;min-height:50px}
 .cpie{display:block;text-align:center;margin:10px auto 0;font-size:14px}
 .tid{display:flex;align-items:center;gap:18px;min-width:0}.tid img{width:110px;height:auto;flex:none}
 .tid small,.trec span,.tstat span{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em;font-weight:500}
@@ -1598,8 +1599,8 @@ function vReport() {
       return `<div class="tl"><i class="mk ${e.side === 'O' ? 'us' : 'th'}">+${e.conv}</i><div><b>${e.side === 'O' ? 'Entró la conversión' : 'Entró su conversión'} de ${e.conv}</b><div class="mut">${e.side === 'O' ? esc(quien(e)) + (e.play ? ' · ' + esc(e.play) : '') : 'Del rival'}</div></div><span class="sc2">${a} – ${b}</span></div>` }
     if (e.safety) { const us = e.side === 'D'; if (us) a += 2; else b += 2;
       return `<div class="tl"><i class="mk ${us ? 'us' : 'th'}">+2</i><div><b>${us ? `Safety a favor${e.who ? ': ' + esc(e.who) : ''}` : 'Safety en contra'}</b><div class="mut">${e.play ? (us ? 'Defendimos con ' : '') + esc(e.play) : ''}${e.down ? ` · ${e.down}ª` : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
-    if (ourTD(e)) { a += 6; return `<div class="tl"><i class="mk us">TD</i><div><b>${e.side === 'O' ? `${esc(quien(e))}, ${e.yds} yd` : `TD de la defensa: ${esc(e.who || 'la defensa')} (${esc(e.res)})`}</b><div class="mut">${e.play ? esc(e.play) : ''}${e.down ? ` · ${e.down}ª` : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
-    if (theirTD(e)) { b += 6; return `<div class="tl"><i class="mk th">TD</i><div><b>TD de ${esc(riv)}${e.side === 'D' ? `, ${e.yds} yd` : ` tras ${esc(e.res)}`}</b><div class="mut">${e.side === 'D' && e.play ? 'Defendimos con ' + esc(e.play) : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
+    if (ourTD(e)) { a += 6; return `<div class="tl"><i class="mk us">TD</i><div><b>${e.side === 'O' ? `${esc(quien(e))}${e.cel ? '' : `, ${e.yds} yd`}` : `TD de la defensa: ${esc(e.who || 'la defensa')} (${esc(e.res)})`}</b><div class="mut">${e.play ? esc(e.play) : ''}${e.down ? ` · ${e.down}ª` : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
+    if (theirTD(e)) { b += 6; return `<div class="tl"><i class="mk th">TD</i><div><b>TD de ${esc(riv)}${e.side === 'D' ? (e.cel ? '' : `, ${e.yds} yd`) : ` tras ${esc(e.res)}`}</b><div class="mut">${e.side === 'D' && e.play ? 'Defendimos con ' + esc(e.play) : ''}</div></div><span class="sc2">${a} – ${b}</span></div>` }
     return '' }).join('');
   // resumen en una frase
   const big = O.filter(e => e.worked).sort((x, y) => y.yds - x.yds)[0], take = D.filter(takeaway).length;
@@ -1655,7 +1656,7 @@ function vReport() {
 // ---------- celular: captura sencilla (TD, quién lo metió, conversión y si una jugada funcionó). El iPad sigue con la versión completa ----------
 // mismo app y mismos datos (nube incluida); en un teléfono (pantalla de menos de 600 px por lado) se abre esta. "Versión completa" la cambia en ese aparato
 const esCel = () => Math.min(screen.width, screen.height) < 600 && lsGet('tochito.completa') !== '1';
-let cel = {paso: null, tipo: 'Pase', lado: 'O', play: null, conv: null, convPts: 0, ult: null, qb: lsGet('tochito.celqb') || ''};
+let cel = {paso: null, tipo: 'Pase', lado: 'O', play: null, conv: null, convPts: 0, ult: null, riv: null, van: false, qb: lsGet('tochito.celqb') || ''};
 const celGuarda = x => { const g = cur(); if (!g) return null;
   const e = {id: Math.max(Date.now(), ...g.events.map(v => v.id + 1)), cel: true, play: null, td: false, ret: false, fd: false, start: null, end: null, yds: 0, falta: [], ...x};
   if (e.worked == null) e.worked = works(e); g.events.push(e); cel.ult = e.id; return e };
@@ -1676,10 +1677,9 @@ function vCel() {
     <div class="seg cseg">${['Pase', 'Corrida', 'Intercepción'].map(t => `<button class="${cel.tipo === t ? 'on' : ''}" data-a="celtipo" data-v="${t}">${t}</button>`).join('')}</div>
     ${cel.tipo === 'Pase' ? `<p class="cq">Lanzó</p><div class="cqb">${[cel.qb, ...gente.filter(n => n !== cel.qb)].filter(Boolean).map(n => `<button class="${cel.qb === n ? 'on' : ''}" data-a="celqb" data-v="${esc(n)}">${esc(n)}</button>`).join('')}</div><p class="cq">${cel.qb ? 'Atrapó' : 'Atrapó (toca primero quién lanzó, si sabes)'}</p>` : `<p class="cq">${cel.tipo === 'Corrida' ? 'Corrió' : 'La interceptó y la regresó'}</p>`}
     <div class="cgrid">${gente.map(n => nom(n, 'celtd')).join('')}</div>`;
-  if (cel.paso === 'tdriv') return cab + `${atras}<h1 class="ch">TD del rival. ¿Cómo?</h1><div class="cbig">
-    <button data-a="celriv" data-v="Pase completo"><b>Pase</b></button><button data-a="celriv" data-v="Corrida"><b>Corrida</b></button><button data-a="celriv" data-v="Intercepción"><b>Nos la interceptaron</b><small>y la regresaron a la zona</small></button></div>`;
-  if (cel.paso === 'conv') { const O = cel.conv === 'O';
-    return cab + `<h1 class="ch">${O ? 'Nuestra conversión' : 'Conversión del rival'}</h1><div class="cbig">
+  if (cel.paso === 'conv') { const O = cel.conv === 'O', tr = !O && g.events.find(e => e.id === cel.riv), como = tr ? (tr.side === 'O' ? 'Intercepción' : tr.res) : '';
+    return cab + `${tr ? `<p class="cq">Cómo fue su TD (si sabes)</p><div class="seg cseg">${[['Pase completo', 'Pase'], ['Corrida', 'Corrida'], ['Intercepción', 'Intercepción']].map(([k, t]) => `<button class="${como === k ? 'on' : ''}" data-a="celcomo" data-v="${k}">${t}</button>`).join('')}</div>` : ''}
+    <h1 class="ch">${O ? 'Nuestra conversión' : 'Conversión del rival'}</h1><div class="cbig">
     <button class="ok" data-a="celconv" data-v="1"><b>Entró de 1</b><small>desde la 5</small></button><button class="ok" data-a="celconv" data-v="2"><b>Entró de 2</b><small>desde la 10</small></button>
     <button class="no" data-a="celconv" data-v="0"><b>No entró</b></button><button data-a="celconv" data-v="-1"><b>No la intentaron</b></button></div>` }
   if (cel.paso === 'convwho') return cab + `<h1 class="ch">¿Quién metió la conversión?</h1><div class="cgrid">${gente.map(n => nom(n, 'celconvq')).join('')}</div><button class="cnadie" data-a="celconvq" data-v="">No sé</button>`;
@@ -1693,10 +1693,15 @@ function vCel() {
   // inicio: lo último que se marcó (con Quitar si salió de un celular) y los tres botones
   const ult = g && g.events.find(e => e.id === cel.ult), por = ult && ult.res === 'No funcionó' && !ult.grp;
   const lista = g ? g.events.slice(-6).reverse().map(e => `<div class="item"><span>${celTxt(e)}</span>${e.cel ? `<button class="x" data-a="celquita" data-v="${e.id}">Quitar</button>` : ''}</div>`).join('') : '';
-  return cab + `${ult ? `<div class="cok"><span>Guardado: ${celTxt(ult)}</span>${por ? `<div class="row tight"><button data-a="celpor" data-v="nos">Falla nuestra</button><button data-a="celpor" data-v="rv">Nos la frenaron</button></div>` : ''}</div>` : ''}
-    <div class="cbig main"><button class="ok" data-a="celir" data-v="td"><b>TD nuestro</b><small>Luego tocas quién lo metió</small></button><button class="no" data-a="celir" data-v="tdriv"><b>TD del rival</b></button>
+  const viejo = g && new Date(g.id).toDateString() !== new Date().toDateString(), h = hoy();
+  const van = `<div class="card"><button class="tjugh" data-a="celvan"><h2>Van hoy</h2><span class="mut" style="flex:1;text-align:right;white-space:nowrap">${h.length} de ${S.players.length}</span><span class="tchev${cel.van ? ' open' : ''}">${icon('back')}</span></button>
+    ${cel.van ? `<p class="mut" style="margin:8px 0 12px">Toca para quitar o poner. Solo ellos salen al marcar quién lo metió.</p><div class="row tight" style="margin-bottom:12px"><button data-a="asistall" data-v="1">Todos</button><button data-a="asistall" data-v="0">Nadie</button></div>
+    <div class="pchips">${S.players.map(n => `<button class="pchip${h.includes(n) ? ' on' : ''}" style="padding-left:6px" data-a="asist" data-v="${esc(n)}"><i style="background:${colorOf(n)}"></i>${esc(n)}</button>`).join('')}</div>
+    <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Jugador nuevo"><button data-a="addasist">Agregar</button></div>` : ''}</div>`;
+  return cab + `${viejo && !ult ? `<div class="card cviejo"><p>Lo que marques se guarda en el partido del ${esc(g.date)} vs ${esc(g.rival || 'Rival')}.</p><button class="tint" data-a="celnuevo">Empezar el partido de hoy</button></div>` : ''}${ult ? `<div class="cok"><span>Guardado: ${celTxt(ult)}</span>${por ? `<div class="row tight"><button data-a="celpor" data-v="nos">Falla nuestra</button><button data-a="celpor" data-v="rv">Nos la frenaron</button></div>` : ''}</div>` : ''}
+    <div class="cbig main"><button class="ok" data-a="celir" data-v="td"><b>TD nuestro</b><small>Luego tocas quién lo metió</small></button><button class="no" data-a="celriv"><b>TD del rival</b><small>Suma 6 al tocarlo</small></button>
     <button data-a="celir" data-v="jug"><b>¿Funcionó la jugada?</b><small>Escoges el número y marcas sí o no</small></button></div>
-    ${lista ? `<div class="card"><h2>Últimas</h2>${lista}</div>` : ''}
+    ${van}${lista ? `<div class="card"><h2>Últimas</h2>${lista}</div>` : ''}
     <p class="mut cpie">${esc(nubeTxt())}</p><button class="plain cpie" data-a="celcompleta">Abrir la versión completa</button>`;
 }
 // temporada: solo cuentan los partidos con marcador (con jugadas o con el resultado guardado a mano)
@@ -2066,7 +2071,7 @@ const A = {
   save: () => guardaJugada(false),
 
   undo() { if (Date.now() < deshacerHasta) return; deshacerHasta = Date.now() + 800; // un doble toque en el iPad no borra dos jugadas
-    const g = cur(), e = g && g.events.pop(); if (e) (g.borradas = g.borradas || []).push(e.id); if (e) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, conv: e.pre.conv || null, convPend: null, msg: ''}) } if (e) S.msg = `Se quitó: ${LBL[e.side][e.res] || e.res}${e.res === 'Castigo' ? '' : ' ' + sg(e.yds) + ' yd'}. El balón regresó a donde estaba`; d = fresh() },
+    const g = cur(), e = g && g.events.pop(); if (e) (g.borradas = g.borradas || []).push(e.id); if (e && e.pre) { Object.assign(S, {side: e.pre.side, ball: e.pre.ball, down: e.pre.down, series: e.pre.series || [], sstart: e.pre.sstart || {...e.pre.ball}, fd: !!e.pre.fd, conv: e.pre.conv || null, convPend: null, msg: ''}) } if (e) S.msg = e.pre ? `Se quitó: ${LBL[e.side][e.res] || e.res}${e.res === 'Castigo' ? '' : ' ' + sg(e.yds) + ' yd'}. El balón regresó a donde estaba` : 'Se quitó lo último que se marcó desde el celular'; d = fresh() },
   dlgok() { const f = dlg.fn, v = dlg.input != null ? ($('#dlgin') || {value: ''}).value : true; dlg = null; f(v) },
   dlgno: () => { dlg = null },
   closepop: () => { pop = null; popAt = null; popSheet = false },
@@ -2112,7 +2117,11 @@ const A = {
   celtd: v => { const t = cel.tipo;
     celGuarda(t === 'Intercepción' ? {side: 'D', res: 'Intercepción', ret: true, who: v} : {side: 'O', res: t === 'Pase' ? 'Pase completo' : 'Corrida', td: true, tgt: v, last: v, ...(t === 'Pase' && cel.qb && cel.qb !== v ? {qb: cel.qb} : {})});
     cel.paso = 'conv'; cel.conv = 'O' },
-  celriv: v => { celGuarda(v === 'Intercepción' ? {side: 'O', res: 'Intercepción', ret: true} : {side: 'D', res: v, td: true}); cel.paso = 'conv'; cel.conv = 'D' },
+  celriv: () => { const e = celGuarda({side: 'D', res: 'Pase completo', td: true}); cel.riv = e && e.id; cel.paso = 'conv'; cel.conv = 'D' },
+  // cómo fue el TD del rival: cambia el que ya se guardó (en intercepción la jugada fue nuestra en ataque)
+  celcomo: v => { const e = (cur() || {events: []}).events.find(x => x.id === cel.riv); if (!e) return;
+    Object.assign(e, v === 'Intercepción' ? {side: 'O', res: v, td: false, ret: true} : {side: 'D', res: v, td: true, ret: false}); e.worked = works(e) },
+  celvan: () => { cel.van = !cel.van },
   celconv: v => { const n = +v; if (n < 0) { cel.paso = null; return }
     if (n && cel.conv === 'O') { cel.convPts = n; cel.paso = 'convwho'; return }
     celGuarda({conv: n || 1, side: cel.conv, res: n ? 'Pase completo' : 'Incompleto', td: !!n}); cel.paso = null },
@@ -2122,7 +2131,7 @@ const A = {
   celres: v => { celGuarda({side: cel.lado, play: cel.play, res: +v ? 'Funcionó' : 'No funcionó', worked: !!+v, grp: null}); cel.paso = null },
   celpor: v => { const e = (cur() || {events: []}).events.find(x => x.id === cel.ult); if (e) e.grp = v },
   celquita: v => { const g = cur(), id = +v; if (!g) return; g.events = g.events.filter(e => e.id !== id); g.borradas = [...(g.borradas || []), id]; if (cel.ult === id) cel.ult = null },
-  celnuevo() { pregunta('¿Contra quién juegan?', 'Empezar', r => { keepState(); const ant = cur(); newGame(r.trim()); S.bloques = S.bloques.filter(b => b.g === S.cur); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); cel = {...cel, paso: null, ult: null} }, '') },
+  celnuevo() { pregunta('¿Contra quién juegan?', 'Empezar', r => { keepState(); const ant = cur(); newGame(r.trim()); S.bloques = S.bloques.filter(b => b.g === S.cur); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); cel = {...cel, paso: null, ult: null, van: true} }, '') },
   celsencilla: () => { lsSet('tochito.completa', '0'); cel.paso = null },
   celcompleta: () => { lsSet('tochito.completa', '1'); $('#tabs').style.display = '' },
   lugar() { pregunta('¿En qué lugar van en la tabla general?', 'Guardar', r => { const n = parseInt(r, 10); S.lugar = n > 0 ? n : null }, S.lugar ? String(S.lugar) : '') },
@@ -2411,7 +2420,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261102115955';
+const VERSION = '20261102132830';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2424,6 +2433,9 @@ async function revisarVersion() {
 addEventListener('online', bajar);
 // sin señal lo capturado se queda en el aparato; cada 30 s se vuelve a intentar subir lo pendiente (en el iPad el aviso de "ya hay internet" no siempre llega)
 setInterval(() => { if (nube.dirty && !subiendo && !document.hidden) subir() }, 30000);
+// con la app abierta se baja lo que marcan otros aparatos (lo del celular sale en el iPad en segundos). No a media captura ni con algo abierto
+// ponytail: baja todo cada 15 s aunque no haya cambios; si pesa en datos, que tochito_leer reciba la fecha y regrese vacío si no cambió
+setInterval(() => { if (!document.hidden && !nube.dirty && !subiendo && !ed && !dlg && pop == null && !popSheet && !d.end && !d.setBall && !cel.paso) bajar() }, 15000);
 const nubeTxt = () => !clave ? 'Sin nube: lo que captures solo vive en este aparato. Pega el link del equipo para respaldarlo.'
   : nubeEst === 'Sin señal' ? `Sin señal${nube.dirty ? ': lo nuevo se sube solo en cuanto haya internet' : ''}.`
   : nubeEst ? nubeEst + '.' : nube.dirty ? 'Subiendo a la nube…' : `Todo respaldado en la nube${nubeAt ? ' · ' + new Date(nubeAt).toLocaleTimeString('es-MX', {hour: 'numeric', minute: '2-digit'}) : ''}`;
