@@ -229,6 +229,7 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .csc div{flex:1;text-align:center;min-width:0}.csc span{display:block;color:var(--mut);font-size:13px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.csc b{font-size:58px;font-weight:800;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}.csc i{font-style:normal;font-size:32px;color:var(--mut)}
 .cbig{display:grid;gap:10px;margin-bottom:16px}.cbig button{min-height:76px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.cbig b{font-size:21px}.cbig small{font-size:14px;opacity:.75;font-weight:400}
 .cbig.main button:first-child{min-height:104px}.cbig.main button:first-child b{font-size:26px}
+.cbig button.gold{background:#ffd60a;color:#2a2000;box-shadow:none}.cbt{flex-wrap:wrap;overflow:visible}
 .cbig button.ok{background:var(--ok);color:#fff;box-shadow:none}.cbig button.no{background:var(--bad);color:#fff;box-shadow:none}
 .ch{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:6px 0 12px;text-align:center}.cback{margin:-4px 0 0 -6px;display:flex;align-items:center;gap:4px}
 .cseg{display:flex;margin-bottom:12px}.cseg button{flex:1;padding:6px 8px}
@@ -1614,6 +1615,9 @@ function vReport() {
     best('Manos seguras', p => p.rec, p => `${p.rec} rec sin que se le cayera`, p => p.rec > 0 && !p.drop),
     best('El muro', p => p.def, p => `${p.def} pts en defensa`)
   ].join('');
+  // buenas jugadas (marcadas en el celular): quién y cuántas, con lo que hizo si lo pusieron
+  const bjP = Object.entries(by(g.buenas || [], 'n')).sort((x, y) => y[1].length - x[1].length);
+  const buenas = bjP.length ? `<div class="card"><h2>Buenas jugadas</h2><div class="lb">${bjP.map(([n, l], i) => `<div class="lrow"><span class="rk">${i + 1}</span>${avatar(n)}<div class="nm"><b>${esc(n)}</b><small>${esc(Object.entries(by(l.filter(z => z.t), 't')).map(([t, z]) => t.toLowerCase() + (z.length > 1 ? ` (${z.length})` : '')).join(', '))}</small></div><div class="p">${l.length}</div></div>`).join('')}</div></div>` : '';
   // lo que no salió: los peores del partido (en rojo)
   const worst = (label, f, fmt) => { const c = F.filter(p => f(p) > 0).sort((x, y) => f(y) - f(x))[0]; return c ? `<div class="aw bad">${avatar(c.n)}<div><small>${label}</small><b>${esc(c.n)}</b><span>${fmt(c)}</span></div></div>` : '' };
   const peor = O.filter(isTO)[0] || O.filter(e => !e.worked).sort((x, y) => x.yds - y.yds)[0], duele = D.filter(e => !e.worked).sort((x, y) => y.yds - x.yds)[0], ult = F.length > 2 ? F[F.length - 1] : null;
@@ -1646,6 +1650,7 @@ function vReport() {
   <div class="card"><h2>Defensa</h2><div class="kpis" style="margin:0">${kpi('Jugadas', aD.n)}${kpi('Yd permitidas', f1(aD.avg))}${kpi('Los paramos', Math.round(aD.pct) + '%')}${kpi('Sacks', D.filter(e => e.res === 'Sack').length)}${kpi('INT', D.filter(e => e.res === 'Intercepción').length)}</div></div></div>
   ${top ? `<div class="mvp"><img src="logo.webp" alt="">${avatar(top.n)}<div class="who"><span class="tag">MVP DEL PARTIDO</span><h2>${esc(top.n)}</h2><div class="mut">${esc(fLine(top))}</div></div><div class="pts"><b>${top.pts}</b><span>puntos</span></div></div>` : ''}
   ${awards ? `<div class="awards">${awards}</div>` : ''}
+  ${buenas}
   ${malos ? `<div class="ghead" style="margin:4px 6px 8px">Lo que no salió</div><div class="awards">${malos}</div>` : ''}
   ${F.length > 1 ? `<div class="card"><h2>Fantasy del partido</h2><div class="lb">${F.map((p, i) => `<div class="lrow"><span class="rk">${i + 1}</span>${avatar(p.n)}<div class="nm"><b>${esc(p.n)}</b><small>${esc(fLine(p))}</small><div class="bar"><i style="width:${Math.max(0, p.pts) / Math.max(1, top.pts) * 100}%"></i></div></div><div class="p">${p.pts}<small>pts</small></div></div>`).join('')}</div></div>` : ''}
   ${rows ? `<div class="card"><h2>Nuestras jugadas</h2><table><tr><th>Jugada</th><th>Veces</th><th>Funcionó</th><th>Yd prom</th><th>TD</th></tr>${rows}</table>${ideas.length ? `<div style="margin-top:12px">${ideas.join('')}</div>` : ''}</div>` : ''}
@@ -1656,11 +1661,16 @@ function vReport() {
 // ---------- celular: captura sencilla (TD, quién lo metió, conversión y si una jugada funcionó). El iPad sigue con la versión completa ----------
 // mismo app y mismos datos (nube incluida); en un teléfono (pantalla de menos de 600 px por lado) se abre esta. "Versión completa" la cambia en ese aparato
 const esCel = () => Math.min(screen.width, screen.height) < 600 && lsGet('tochito.completa') !== '1';
+// buena jugada: reconocimiento a un jugador. No es jugada (no cuenta en estadísticas ni fantasy): vive aparte en g.buenas [{id, n, t}]
+const BUENA = ['Atrapada', 'Pase', 'Corrida', 'Quitó la bandera', 'Tapó el pase', 'Intercepción'];
+// lo que se marcó en el partido, en orden: jugadas y buenas jugadas (las buenas llevan buena: true)
+const celItems = g => [...g.events, ...(g.buenas || []).map(z => ({...z, buena: true, cel: true}))].sort((x, y) => x.id - y.id);
+const nuevoId = g => Math.max(Date.now(), ...g.events.map(v => v.id + 1), ...(g.buenas || []).map(v => v.id + 1));
 let cel = {paso: null, tipo: 'Pase', lado: 'O', play: null, conv: null, convPts: 0, ult: null, riv: null, van: false, qb: lsGet('tochito.celqb') || ''};
 const celGuarda = x => { const g = cur(); if (!g) return null;
-  const e = {id: Math.max(Date.now(), ...g.events.map(v => v.id + 1)), cel: true, play: null, td: false, ret: false, fd: false, start: null, end: null, yds: 0, falta: [], ...x};
+  const e = {id: nuevoId(g), cel: true, play: null, td: false, ret: false, fd: false, start: null, end: null, yds: 0, falta: [], ...x};
   if (e.worked == null) e.worked = works(e); g.events.push(e); cel.ult = e.id; return e };
-const celTxt = e => { const n = numJ(e.play), jp = e.play ? `${e.side === 'O' && n ? n + ' · ' : ''}${esc(e.play)}` : '';
+const celTxt = e => { if (e.buena) return `Buena jugada de ${esc(e.n)}${e.t ? ' · ' + esc(e.t.toLowerCase()) : ''}`; const n = numJ(e.play), jp = e.play ? `${e.side === 'O' && n ? n + ' · ' : ''}${esc(e.play)}` : '';
   if (e.conv) return `Conversión ${e.side === 'O' ? 'nuestra' : 'del rival'} de ${e.conv}: ${e.td ? 'entró' + (e.side === 'O' && (e.last || e.tgt) ? ' (' + esc(e.last || e.tgt) + ')' : '') : 'no entró'}`;
   if (ourTD(e)) return `TD de ${esc(e.last || e.tgt || e.who || 'nosotros')}${e.side === 'D' ? ' (intercepción)' : e.qb && e.res === 'Pase completo' ? ', pase de ' + esc(e.qb) : e.res === 'Corrida' ? ' (corriendo)' : ''}`;
   if (theirTD(e)) return 'TD del rival' + (e.side === 'O' ? ' (nos la quitaron)' : '');
@@ -1683,6 +1693,7 @@ function vCel() {
     <button class="ok" data-a="celconv" data-v="1"><b>Entró de 1</b><small>desde la 5</small></button><button class="ok" data-a="celconv" data-v="2"><b>Entró de 2</b><small>desde la 10</small></button>
     <button class="no" data-a="celconv" data-v="0"><b>No entró</b></button><button data-a="celconv" data-v="-1"><b>No la intentaron</b></button></div>` }
   if (cel.paso === 'convwho') return cab + `<h1 class="ch">¿Quién metió la conversión?</h1><div class="cgrid">${gente.map(n => nom(n, 'celconvq')).join('')}</div><button class="cnadie" data-a="celconvq" data-v="">No sé</button>`;
+  if (cel.paso === 'buena') return cab + `${atras}<h1 class="ch">¿Quién hizo la buena jugada?</h1><div class="cgrid">${gente.map(n => nom(n, 'celbuena')).join('')}</div>`;
   if (cel.paso === 'jug') { const O = cel.lado === 'O';
     return cab + `${atras}<h1 class="ch">¿Qué jugada?</h1><div class="seg cseg">${[['O', 'Ataque'], ['D', 'Defensa']].map(([k, t]) => `<button class="${cel.lado === k ? 'on' : ''}" data-a="cellado" data-v="${k}">${t}</button>`).join('')}</div>
     ${O ? secGroups(S.off).map(([sc, l], i) => `<p class="cq">${i + 1} · ${esc(sc)}</p><div class="cnum">${l.map((n, j) => `<button data-a="celjug" data-v="${esc(n)}">${i + 1}${j + 1}</button>`).join('')}</div>`).join('')
@@ -1691,15 +1702,16 @@ function vCel() {
     return cab + `${atras}<h1 class="ch">${n ? n + ' · ' : ''}${esc(cel.play)}</h1><p class="cq" style="text-align:center">${cel.lado === 'O' ? '¿Avanzamos?' : '¿Los paramos?'}</p><div class="cbig">
     <button class="ok" data-a="celres" data-v="1"><b>Funcionó</b></button><button class="no" data-a="celres" data-v="0"><b>No funcionó</b></button></div>` }
   // inicio: lo último que se marcó (con Quitar si salió de un celular) y los tres botones
-  const ult = g && g.events.find(e => e.id === cel.ult), por = ult && ult.res === 'No funcionó' && !ult.grp;
-  const lista = g ? g.events.slice(-6).reverse().map(e => `<div class="item"><span>${celTxt(e)}</span>${e.cel ? `<button class="x" data-a="celquita" data-v="${e.id}">Quitar</button>` : ''}</div>`).join('') : '';
+  const ult = g && celItems(g).find(e => e.id === cel.ult), por = ult && ult.res === 'No funcionó' && !ult.grp;
+  const lista = g ? celItems(g).slice(-6).reverse().map(e => `<div class="item"><span>${celTxt(e)}</span>${e.cel ? `<button class="x" data-a="celquita" data-v="${e.id}">Quitar</button>` : ''}</div>`).join('') : '';
   const viejo = g && new Date(g.id).toDateString() !== new Date().toDateString(), h = hoy();
   const van = `<div class="card"><button class="tjugh" data-a="celvan"><h2>Van hoy</h2><span class="mut" style="flex:1;text-align:right;white-space:nowrap">${h.length} de ${S.players.length}</span><span class="tchev${cel.van ? ' open' : ''}">${icon('back')}</span></button>
     ${cel.van ? `<p class="mut" style="margin:8px 0 12px">Toca para quitar o poner. Solo ellos salen al marcar quién lo metió.</p><div class="row tight" style="margin-bottom:12px"><button data-a="asistall" data-v="1">Todos</button><button data-a="asistall" data-v="0">Nadie</button></div>
     <div class="pchips">${S.players.map(n => `<button class="pchip${h.includes(n) ? ' on' : ''}" style="padding-left:6px" data-a="asist" data-v="${esc(n)}"><i style="background:${colorOf(n)}"></i>${esc(n)}</button>`).join('')}</div>
     <div class="mfoot" style="padding:14px 0 0"><input id="newasist" placeholder="Jugador nuevo"><button data-a="addasist">Agregar</button></div>` : ''}</div>`;
-  return cab + `${viejo && !ult ? `<div class="card cviejo"><p>Lo que marques se guarda en el partido del ${esc(g.date)} vs ${esc(g.rival || 'Rival')}.</p><button class="tint" data-a="celnuevo">Empezar el partido de hoy</button></div>` : ''}${ult ? `<div class="cok"><span>Guardado: ${celTxt(ult)}</span>${por ? `<div class="row tight"><button data-a="celpor" data-v="nos">Falla nuestra</button><button data-a="celpor" data-v="rv">Nos la frenaron</button></div>` : ''}</div>` : ''}
+  return cab + `${viejo && !ult ? `<div class="card cviejo"><p>Lo que marques se guarda en el partido del ${esc(g.date)} vs ${esc(g.rival || 'Rival')}.</p><button class="tint" data-a="celnuevo">Empezar el partido de hoy</button></div>` : ''}${ult ? `<div class="cok"><span>Guardado: ${celTxt(ult)}</span>${por ? `<div class="row tight"><button data-a="celpor" data-v="nos">Falla nuestra</button><button data-a="celpor" data-v="rv">Nos la frenaron</button></div>` : ''}${ult.buena ? `<p class="cq" style="margin:10px 0 6px">¿Qué hizo? (si quieres)</p><div class="cqb cbt">${BUENA.map(t => `<button class="${ult.t === t ? 'on' : ''}" data-a="celbtipo" data-v="${t}">${t}</button>`).join('')}</div>` : ''}</div>` : ''}
     <div class="cbig main"><button class="ok" data-a="celir" data-v="td"><b>TD nuestro</b><small>Luego tocas quién lo metió</small></button><button class="no" data-a="celriv"><b>TD del rival</b><small>Suma 6 al tocarlo</small></button>
+    <button class="gold" data-a="celir" data-v="buena"><b>Buena jugada</b><small>Tocas quién la hizo</small></button>
     <button data-a="celir" data-v="jug"><b>¿Funcionó la jugada?</b><small>Escoges el número y marcas sí o no</small></button></div>
     ${van}${lista ? `<div class="card"><h2>Últimas</h2>${lista}</div>` : ''}
     <p class="mut cpie">${esc(nubeTxt())}</p><button class="plain cpie" data-a="celcompleta">Abrir la versión completa</button>`;
@@ -2122,6 +2134,8 @@ const A = {
   celcomo: v => { const e = (cur() || {events: []}).events.find(x => x.id === cel.riv); if (!e) return;
     Object.assign(e, v === 'Intercepción' ? {side: 'O', res: v, td: false, ret: true} : {side: 'D', res: v, td: true, ret: false}); e.worked = works(e) },
   celvan: () => { cel.van = !cel.van },
+  celbuena: v => { const g = cur(); if (!g) return; const z = {id: nuevoId(g), n: v}; (g.buenas = g.buenas || []).push(z); cel.ult = z.id; cel.paso = null },
+  celbtipo: v => { const z = ((cur() || {}).buenas || []).find(x => x.id === cel.ult); if (!z) return; if (z.t === v) delete z.t; else z.t = v },
   celconv: v => { const n = +v; if (n < 0) { cel.paso = null; return }
     if (n && cel.conv === 'O') { cel.convPts = n; cel.paso = 'convwho'; return }
     celGuarda({conv: n || 1, side: cel.conv, res: n ? 'Pase completo' : 'Incompleto', td: !!n}); cel.paso = null },
@@ -2130,7 +2144,7 @@ const A = {
   celjug: v => { cel.play = v; cel.paso = 'res' },
   celres: v => { celGuarda({side: cel.lado, play: cel.play, res: +v ? 'Funcionó' : 'No funcionó', worked: !!+v, grp: null}); cel.paso = null },
   celpor: v => { const e = (cur() || {events: []}).events.find(x => x.id === cel.ult); if (e) e.grp = v },
-  celquita: v => { const g = cur(), id = +v; if (!g) return; g.events = g.events.filter(e => e.id !== id); g.borradas = [...(g.borradas || []), id]; if (cel.ult === id) cel.ult = null },
+  celquita: v => { const g = cur(), id = +v; if (!g) return; g.events = g.events.filter(e => e.id !== id); if (g.buenas) g.buenas = g.buenas.filter(z => z.id !== id); g.borradas = [...(g.borradas || []), id]; if (cel.ult === id) cel.ult = null },
   celnuevo() { pregunta('¿Contra quién juegan?', 'Empezar', r => { keepState(); const ant = cur(); newGame(r.trim()); S.bloques = S.bloques.filter(b => b.g === S.cur); cur().asist = ant && ant.asist ? ant.asist.filter(n => S.players.includes(n)) : S.players.slice(); loadState(); cel = {...cel, paso: null, ult: null, van: true} }, '') },
   celsencilla: () => { lsSet('tochito.completa', '0'); cel.paso = null },
   celcompleta: () => { lsSet('tochito.completa', '1'); $('#tabs').style.display = '' },
@@ -2372,10 +2386,15 @@ function juntar(a, b) {
     const quit = new Set([...(x.borradas || []), ...(y.borradas || [])]);
     // jugadas de los dos: si un aparato capturó mientras el otro también (iPad y celular), no se pierde ninguna
     const ev = k.events.map(e => { const z = om.get(e.id); return z && (z.falta || []).length < (e.falta || []).length ? z : e }), km = new Set(ev.map(e => e.id));
-    g.set(x.id, {...k, borradas: [...quit], events: [...ev, ...o.events.filter(e => !km.has(e.id))].filter(e => !quit.has(e.id)).sort((p, q) => p.id - q.id)}) });
+    const bm = new Map(); [...(o.buenas || []), ...(k.buenas || [])].forEach(z => { if (!bm.has(z.id) || z.t) bm.set(z.id, z) });
+    g.set(x.id, {...k, borradas: [...quit], events: [...ev, ...o.events.filter(e => !km.has(e.id))].filter(e => !quit.has(e.id)).sort((p, q) => p.id - q.id),
+      buenas: [...bm.values()].filter(z => !quit.has(z.id)).sort((p, q) => p.id - q.id)}) });
   borr.forEach(id => g.delete(id)); // lo borrado en cualquier aparato no regresa
   const off = a.off || b.off || [], pruebas = [...new Set([...(a.pruebas || []), ...(b.pruebas || [])])].filter(n => !off.includes(n));
-  return Object.assign(dflt(), b, a, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pbAlias: {...b.pbAlias, ...a.pbAlias}, pruebas, borrados: borr,
+  // el celular no mueve el balón: la cancha (balón, down, posesión, jugada siguiente, los 5) y el partido abierto se quedan como en el otro aparato.
+  // Si no, una copia vieja del celular regresaba el balón del iPad a donde estaba. Solo si el celular empezó un partido más nuevo, manda él
+  const campo = esCel() && !(a.cur > b.cur) ? Object.fromEntries([...GST, 'prox', 'proxInv', 'lines', 'cur', 'msg'].filter(k => k in b).map(k => [k, b[k]])) : {};
+  return Object.assign(dflt(), b, a, campo, {games: [...g.values()].sort((x, y) => x.id - y.id), players: [...new Set([...a.players, ...b.players])], colors: {...b.colors, ...a.colors}, pb: {...b.pb, ...a.pb}, pbAlias: {...b.pbAlias, ...a.pbAlias}, pruebas, borrados: borr,
     // ponytail: un bloque borrado en un aparato regresa si el otro tenía cambios sin subir; si molesta, guardar los borrados como los partidos
     bloques: [...new Map([...(b.bloques || []), ...(a.bloques || [])].map(x => [x.id, x])).values()]});
 }
@@ -2420,7 +2439,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261102132830';
+const VERSION = '20261102185639';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
