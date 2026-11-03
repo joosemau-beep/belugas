@@ -229,6 +229,7 @@ th{color:var(--mut);font-weight:500;font-size:13px}
 .csc div{flex:1;text-align:center;min-width:0}.csc span{display:block;color:var(--mut);font-size:13px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.csc b{font-size:58px;font-weight:800;letter-spacing:-.03em;line-height:1.05;font-variant-numeric:tabular-nums}.csc i{font-style:normal;font-size:32px;color:var(--mut)}
 .cbig{display:grid;gap:10px;margin-bottom:16px}.cbig button{min-height:76px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.cbig b{font-size:21px}.cbig small{font-size:14px;opacity:.75;font-weight:400}
 .cbig.main button:first-child{min-height:104px}.cbig.main button:first-child b{font-size:26px}
+.cconv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}.cconv button{min-height:72px;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;box-shadow:none;color:#fff}.cconv b{font-size:21px}.cconv small{font-size:14px;opacity:.8}.cconv .ok{background:var(--ok)}.cconv .no{background:var(--bad)}
 .cbig button.gold{background:#ffd60a;color:#2a2000;box-shadow:none}.cbt{flex-wrap:wrap;overflow:visible}
 .cbig button.ok{background:var(--ok);color:#fff;box-shadow:none}.cbig button.no{background:var(--bad);color:#fff;box-shadow:none}
 .ch{font-size:24px;font-weight:800;letter-spacing:-.01em;margin:6px 0 12px;text-align:center}.cback{margin:-4px 0 0 -6px;display:flex;align-items:center;gap:4px}
@@ -1689,9 +1690,9 @@ function vCel() {
     <div class="cgrid">${gente.map(n => nom(n, 'celtd')).join('')}</div>`;
   if (cel.paso === 'conv') { const O = cel.conv === 'O', tr = !O && g.events.find(e => e.id === cel.riv), como = tr ? (tr.side === 'O' ? 'Intercepción' : tr.res) : '';
     return cab + `${tr ? `<p class="cq">Cómo fue su TD (si sabes)</p><div class="seg cseg">${[['Pase completo', 'Pase'], ['Corrida', 'Corrida'], ['Intercepción', 'Intercepción']].map(([k, t]) => `<button class="${como === k ? 'on' : ''}" data-a="celcomo" data-v="${k}">${t}</button>`).join('')}</div>` : ''}
-    <h1 class="ch">${O ? 'Nuestra conversión' : 'Conversión del rival'}</h1><div class="cbig">
-    <button class="ok" data-a="celconv" data-v="1"><b>Entró de 1</b><small>desde la 5</small></button><button class="ok" data-a="celconv" data-v="2"><b>Entró de 2</b><small>desde la 10</small></button>
-    <button class="no" data-a="celconv" data-v="0"><b>No entró</b></button><button data-a="celconv" data-v="-1"><b>No la intentaron</b></button></div>` }
+    <h1 class="ch">${O ? 'Nuestra conversión' : 'Conversión del rival'}</h1>
+    ${[[1, 'la 5'], [2, 'la 10']].map(([n, de]) => `<p class="cq">De ${n} punto${n > 1 ? 's' : ''} · desde ${de}</p><div class="cconv"><button class="ok" data-a="celconv" data-v="${n}|1"><b>Entró</b><small>+${n}</small></button><button class="no" data-a="celconv" data-v="${n}|0"><b>No entró</b></button></div>`).join('')}
+    <div class="cbig" style="margin-top:14px"><button data-a="celconv" data-v="-1"><b>No la intentaron</b></button></div>` }
   if (cel.paso === 'convwho') return cab + `<h1 class="ch">¿Quién metió la conversión?</h1><div class="cgrid">${gente.map(n => nom(n, 'celconvq')).join('')}</div><button class="cnadie" data-a="celconvq" data-v="">No sé</button>`;
   if (cel.paso === 'buena') return cab + `${atras}<h1 class="ch">¿Quién hizo la buena jugada?</h1><div class="cgrid">${gente.map(n => nom(n, 'celbuena')).join('')}</div>`;
   if (cel.paso === 'jug') { const O = cel.lado === 'O';
@@ -2136,9 +2137,9 @@ const A = {
   celvan: () => { cel.van = !cel.van },
   celbuena: v => { const g = cur(); if (!g) return; const z = {id: nuevoId(g), n: v}; (g.buenas = g.buenas || []).push(z); cel.ult = z.id; cel.paso = null },
   celbtipo: v => { const z = ((cur() || {}).buenas || []).find(x => x.id === cel.ult); if (!z) return; if (z.t === v) delete z.t; else z.t = v },
-  celconv: v => { const n = +v; if (n < 0) { cel.paso = null; return }
-    if (n && cel.conv === 'O') { cel.convPts = n; cel.paso = 'convwho'; return }
-    celGuarda({conv: n || 1, side: cel.conv, res: n ? 'Pase completo' : 'Incompleto', td: !!n}); cel.paso = null },
+  celconv: v => { const [n, ok] = v.split('|').map(Number); if (n < 0) { cel.paso = null; return }
+    if (ok && cel.conv === 'O') { cel.convPts = n; cel.paso = 'convwho'; return }
+    celGuarda({conv: n, side: cel.conv, res: ok ? 'Pase completo' : 'Incompleto', td: !!ok}); cel.paso = null },
   celconvq: v => { celGuarda({conv: cel.convPts, side: 'O', res: 'Pase completo', td: true, ...(v ? {tgt: v, last: v} : {})}); cel.paso = null },
   cellado: v => { cel.lado = v },
   celjug: v => { cel.play = v; cel.paso = 'res' },
@@ -2439,7 +2440,7 @@ function quitaZoom() {
 }
 // la app se actualiza sola: el iPad no la recarga al abrirla desde el ícono (solo la despierta), así que al volver se revisa
 // si hay versión nueva. publicar.sh sella VERSION y version.txt; nunca se recarga con algo a medias o sin subir
-const VERSION = '20261102185639';
+const VERSION = '20261102185923';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
