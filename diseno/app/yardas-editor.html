@@ -164,7 +164,7 @@ const DEF = {
   num: 100, peso: 900, cursiva: true, fuente: 'barlow', yd: 15,
   pm: 70, sim: 40, trazo: 3,
   sep: 15, marcaAlto: 34, marcaAncho: 4, barra: 84, numeros: true, etiquetas: 12,
-  arriba: 6, oport: 'corto', oportTam: 26, redaccion: 'nfl',
+  arriba: 6, oport: 'corto', oportTam: 26,
   avance: 'marino', jugada: 'hielo', perdida: 'coral', numColor: true,
   relleno: 'liso', raya: 7,
   zona: 'bloque', zonaLogo: 'centro', zonaColor: 'equipo', borde: 1,
@@ -196,14 +196,14 @@ let tG;
 
 // ---------- arriba: la oportunidad en texto, las barritas o las dos ----------
 // Tochito como NFL Flag: la primera es al cruzar medio campo, así que «y 6» son las yardas a medio campo y,
-// ya pasado, «y gol». Con la redacción de la liga se dice tal cual: «2ª · a medio campo 6».
+// ya pasado, «y gol» (Iker escogió esta redacción sobre «a medio campo»).
 const ORD = ['', 'Primera', 'Segunda', 'Tercera', 'Cuarta'];
 function oportunidad(y) {
-  const f = st.spot + y, largo = cfg.oport === 'largo', liga = cfg.redaccion === 'liga';
+  const f = st.spot + y, largo = cfg.oport === 'largo';
   if (f >= CAMPO) return { txt: '¡Touchdown!', logro: true };
-  if (!st.primera && st.spot < PRIMERA && f >= PRIMERA) return { txt: liga ? '¡Primera! A la zona' : largo ? '¡Primera y gol!' : '¡1ª y gol!', logro: true };
+  if (!st.primera && st.spot < PRIMERA && f >= PRIMERA) return { txt: largo ? '¡Primera y gol!' : '¡1ª y gol!', logro: true };
   const dn = largo ? ORD[st.down] : `${st.down}ª`, falta = st.primera ? CAMPO - st.spot : PRIMERA - st.spot;
-  return { txt: liga ? `${dn} · ${st.primera ? 'a la zona' : 'a medio campo'} ${falta}` : `${dn} y ${st.primera ? 'gol' : falta}`, logro: false };
+  return { txt: `${dn} y ${st.primera ? 'gol' : falta}`, logro: false };
 }
 function arriba(y) {
   if (cfg.oport !== 'barras') {
@@ -486,7 +486,7 @@ function panel() {
     <details class="grupo" open><summary>Número de yardas</summary>${R('num', 'Tamaño', 40, 160, 2)}${S('peso', 'Peso', [[500, 'Normal'], [700, 'Negrita'], [800, 'Extra'], [900, 'Negra']])}${S('cursiva', 'Inclinación', [[true, 'Cursiva'], [false, 'Recta']])}${S('fuente', 'Letra', [['barlow', 'Condensada'], ['inter', 'Inter']])}${R('yd', 'Tamaño de «yd»', 0, 30, 1)}</details>
     <details class="grupo" open><summary>Más y menos</summary>${R('pm', 'Tamaño de los botones', 44, 112, 2)}${R('sim', 'Tamaño de los signos', 18, 64, 1)}${R('trazo', 'Grosor de los signos', 1, 8, 1)}</details>
     <details class="grupo" open><summary>La barra</summary>${R('barra', 'Alto de la barra', 50, 140, 2)}${R('marcaAlto', 'Alto de las marcas', 12, 80, 1)}${R('marcaAncho', 'Grosor de las marcas', 1, 10, 1)}${R('sep', 'Separación (px por yarda)', 8, 28, 1)}${T('numeros', 'Números de yarda debajo')}${cfg.numeros ? R('etiquetas', 'Tamaño de los números', 8, 24, 1) : ''}</details>
-    <details class="grupo" open><summary>Oportunidad (arriba)</summary>${S('oport', 'Cómo se ve', [['corto', '«2ª y 6»'], ['largo', '«Segunda y 6»'], ['texto-barras', 'Texto y barritas'], ['barras', 'Solo barritas']])}${cfg.oport !== 'barras' ? R('oportTam', 'Tamaño del texto', 14, 44, 1) + S('redaccion', 'Cómo se dice', [['nfl', '«2ª y 6» · «1ª y gol»'], ['liga', '«2ª · a medio campo 6»']]) : ''}${cfg.oport === 'corto' || cfg.oport === 'largo' ? '' : R('arriba', 'Grosor de las barritas', 4, 24, 1)}
+    <details class="grupo" open><summary>Oportunidad (arriba)</summary>${S('oport', 'Cómo se ve', [['corto', '«2ª y 6»'], ['largo', '«Segunda y 6»'], ['texto-barras', 'Texto y barritas'], ['barras', 'Solo barritas']])}${cfg.oport !== 'barras' ? R('oportTam', 'Tamaño del texto', 14, 44, 1) : ''}${cfg.oport === 'corto' || cfg.oport === 'largo' ? '' : R('arriba', 'Grosor de las barritas', 4, 24, 1)}
       <p class="nota">En tochito la primera es al cruzar medio campo: «y 6» son las yardas que faltan para medio campo y, ya pasado, «y gol». Se actualiza sola con el avance; al lograrla dice «¡1ª y gol!».</p></details>
     <details class="grupo"><summary>Color</summary>${C('avance', 'Lo ya avanzado', AVANCE)}${C('jugada', 'Esta jugada (gana)', JUGADA)}${C('perdida', 'Si pierde', PERDIDA)}${T('numColor', 'El número cambia de color', 'Del color de «gana» o de «pierde»')}</details>
     <details class="grupo"><summary>Dónde quedó</summary>${S('relleno', 'Lo ya avanzado', [['liso', 'Color liso'], ['rayado', 'Rayado'], ['marca', 'Solo la marca rayada']])}${cfg.relleno !== 'liso' ? R('raya', 'Densidad de las rayas (px)', 3, 16, 1) : ''}</details>
@@ -500,7 +500,7 @@ function panel() {
 function guardarCfg() { poner('cfg', cfg); }
 function texto() {
   const sn = (b) => (b ? 'sí' : 'no');
-  return [`número ${cfg.num} ${cfg.peso} ${cfg.cursiva ? 'cursiva' : 'recta'} ${cfg.fuente}`, `yd ${cfg.yd}`, `± ${cfg.pm}/${cfg.sim} trazo ${cfg.trazo}`, `barra ${cfg.barra}`, `marcas ${cfg.marcaAlto}×${cfg.marcaAncho} cada ${cfg.sep}`, `números ${cfg.numeros ? cfg.etiquetas : 'no'}`, `arriba ${cfg.arriba}`, `oportunidad ${cfg.oport} ${cfg.oportTam}${cfg.redaccion === 'liga' ? ' liga' : ''}`,
+  return [`número ${cfg.num} ${cfg.peso} ${cfg.cursiva ? 'cursiva' : 'recta'} ${cfg.fuente}`, `yd ${cfg.yd}`, `± ${cfg.pm}/${cfg.sim} trazo ${cfg.trazo}`, `barra ${cfg.barra}`, `marcas ${cfg.marcaAlto}×${cfg.marcaAncho} cada ${cfg.sep}`, `números ${cfg.numeros ? cfg.etiquetas : 'no'}`, `arriba ${cfg.arriba}`, `oportunidad ${cfg.oport} ${cfg.oportTam}`,
     `colores ${cfg.avance}/${cfg.jugada}/${cfg.perdida}`, `número de color ${sn(cfg.numColor)}`, `quedó ${cfg.relleno}${cfg.relleno !== 'liso' ? ' ' + cfg.raya : ''}`,
     `zona ${cfg.zona}${cfg.zona === 'bloque' ? ' ' + cfg.borde : ''}, logo ${cfg.zonaLogo}, color ${cfg.zonaColor}`, `TD izq ${cfg.tdIzq ? cfg.tdIzqQue + (cfg.tdIzqQue !== 'nada' ? ' ' + cfg.tdIzqEq : '') : 'no'}`, `TD der ${cfg.tdDer ? cfg.tdDerQue + (cfg.tdDerQue !== 'nada' ? ' ' + cfg.tdDerEq : '') : 'no'}`,
     `primera ${cfg.primera}, anuncio ${cfg.anuncio}`, `pasos ${cfg.pasos}`, `inercia ${sn(cfg.inercia)}`, `rebote ${sn(cfg.rebote)}`, `vibración ${sn(cfg.vibra)}`, `animación ${sn(cfg.anim)}`].join(' · ');
