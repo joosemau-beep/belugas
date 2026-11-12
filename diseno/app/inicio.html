@@ -1072,8 +1072,8 @@ function inicio2() {
   </div>${nav()}</div>`;
 }
 const RES = {
-  O: [['pase', 'Pase completo', 'Luego quién la atrapó', '¿Quién la atrapó?'], ['corrida', 'Corrida', 'Luego quién corrió', '¿Quién corrió?'], ['incompleto', 'Incompleto', 'Se guarda al tocarlo', '¿A quién iba?'], ['parada', 'Nos pararon', 'Se guarda al tocarlo', '¿A quién pararon?'], ['int', 'Intercepción', 'Nos la quitaron', '¿Quién la lanzó?'], ['pick6c', 'Pick 6 en contra', 'Nos la quitaron y anotaron', '¿Quién la lanzó?'], ['castigo', 'Castigo', 'A favor o en contra', null], ['sackr', 'Sack a nuestro QB', 'Se guarda al tocarlo', '¿A quién le hicieron el sack?'], ['safetyc', 'Safety en contra', '+2 de ellos', '¿A quién agarraron?']],
-  D: [['bandera', 'Quitamos la bandera', 'Luego quién', '¿Quién quitó la bandera?'], ['tapado', 'Pase incompleto', 'Lo tapamos o falló', '¿Quién lo tapó?'], ['intn', 'Intercepción', 'La agarramos', '¿Quién la agarró?'], ['sack', 'Sack', 'Al QB detrás de la línea', '¿Quién hizo el sack?'], ['pick6', 'Pick 6', 'La regresamos a TD', '¿Quién la regresó?'], ['safety', 'Safety a favor', '+2 nuestros', '¿Quién lo hizo?'], ['castigo', 'Castigo', 'A favor o en contra', null]],
+  O: [['pase', 'Pase completo', 'Luego quién la atrapó', '¿Quién la atrapó?'], ['corrida', 'Corrida', 'Luego quién corrió', '¿Quién corrió?'], ['incompleto', 'Incompleto', 'Se le cayó o mal pase', '¿A quién iba?'], ['parada', 'Nos pararon', 'Se guarda al tocarlo', '¿A quién pararon?'], ['int', 'Intercepción', 'Nos la quitaron', '¿Quién la lanzó?'], ['pick6c', 'Pick 6 en contra', 'Nos la quitaron y anotaron', '¿Quién la lanzó?'], ['castigo', 'Castigo', 'A favor o en contra', null], ['sackr', 'Sack a nuestro QB', 'Se guarda al tocarlo', '¿A quién le hicieron el sack?'], ['safetyc', 'Safety en contra', '+2 de ellos', '¿A quién agarraron?']],
+  D: [['bandera', 'Quitamos la bandera', 'Luego quién', '¿Quién quitó la bandera?'], ['tapado', 'Pase incompleto', 'La bloqueamos o no la atraparon', '¿Quién lo tapó?'], ['intn', 'Intercepción', 'La agarramos', '¿Quién la agarró?'], ['sack', 'Sack', 'Al QB detrás de la línea', '¿Quién hizo el sack?'], ['pick6', 'Pick 6', 'La regresamos a TD', '¿Quién la regresó?'], ['safety', 'Safety a favor', '+2 nuestros', '¿Quién lo hizo?'], ['castigo', 'Castigo', 'A favor o en contra', null]],
 };
 // ícono de cada resultado (intercepción nuestra usa el mismo glifo que la de ellos)
 const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', presion: 'tapado', fallo: 'tapado'};
@@ -1227,10 +1227,14 @@ function hoja() {
     const tpo = tp ? `<div class="conm" style="margin:0 0 12px"><button data-a="tapo" data-v="tapado" class="${st.tapo !== 'presion' ? 'on' : ''}">Lo tapamos</button><button data-a="tapo" data-v="presion" class="${st.tapo === 'presion' ? 'on' : ''}">Presión</button></div>` : '';
     // 1ª y 10 a mano (las jugadas se anotan sueltas, sin orden, sin downs): pase completo y corrida nuestra; en la bandera, si ellos la lograron
     const pd = PD_EN.includes(st.sel) ? `<button class="pdt${st.pd ? ' on' : ''}" data-a="pdt" aria-pressed="${!!st.pd}">${st.sel === 'bandera' ? 'Lograron 1ª y 10' : '1ª y 10'}</button>` : '';
-    const tit = td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : tp && st.tapo === 'presion' ? '¿Quién hizo la presión?' : x[3];
+    const tit = st.sel === 'incompleto' ? '¿A quién se le cayó?' : td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : tp && st.tapo === 'presion' ? '¿Quién hizo la presión?' : x[3];
     h = `<h3${pd ? ' class="conpd"' : ''}><span>${tit}</span>${pd}</h3><p>Un toque y se guarda. En azul, los que están en la cancha.</p>${tpo}${lz}<div class="pjs">${quienes().filter(([id]) => !pasa || id !== q).map(([id, cancha]) => { const p = P(id); return `<button class="pj${cancha ? ' cancha' : ''}" data-a="quien" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}<button class="pj" data-a="quien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>
-      ${tp ? '<div class="ops" style="margin-top:12px"><button class="op sec" data-a="fallo">Falló solo, nadie lo tocó</button></div>' : ''}`;
+`;
   }
+  // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
+  if (st.hoja === 'inc') h = st.partido.lado === 'O'
+    ? '<h3>¿Qué pasó con el pase?</h3><p>Solo «se le cayó» resta, al que la soltó.</p><div class="ops"><button class="op prim" data-a="inc" data-v="cayo">Se le cayó, no la atrapó</button><button class="op" data-a="inc" data-v="mal">Mal pase o no se podía agarrar</button></div>'
+    : '<h3>¿Qué pasó con el pase?</h3><p>«No la atraparon» no suma a nadie.</p><div class="ops"><button class="op prim" data-a="inc" data-v="tapo">La bloqueamos</button><button class="op" data-a="inc" data-v="fallo">No la atraparon</button></div>';
   if (st.hoja === 'como') h = '<h3>¿Cómo fue el TD?</h3><p>El de pase le da puntos también al QB.</p><div class="ops dos"><button class="op prim" data-a="como" data-v="pase">Pase</button><button class="op prim" data-a="como" data-v="corrida">Corrida</button></div>';
   if (st.hoja === 'qb') { const deJugada = st.qbDe !== 'partido', cur = st.qbDe === 'corrige' ? (st.partido.jugadas[st.edita] || {}).qb : deJugada ? lanzo() : st.partido.qb;
     h = `<h3>${deJugada ? '¿Quién lanzó?' : '¿Quién es el QB?'}</h3><p>${deJugada ? 'Solo para esta jugada.' : 'Vale para todo el partido. En cada pase lo puedes cambiar.'}</p><div class="pjs">${st.van.map((id) => { const p = P(id); return `<button class="pj${id === cur ? ' cancha' : ''}" data-a="qb" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}</div>
@@ -1253,7 +1257,7 @@ function hoja() {
   }
   if (st.hoja === 'cqp') {
     const j = st.partido.jugadas[st.edita], O = j.lado === 'O';
-    const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n]) => [k, n]), ...(O ? [] : [['presion', 'Presión, incompleto'], ['fallo', 'Incompleto, falló solo']]), ['castigo:favor', 'Castigo a favor'], ['castigo:contra', 'Castigo en contra'], O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
+    const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n]) => [k, n]), ...(O ? [] : [['presion', 'Presión, incompleto'], ['fallo', 'Incompleto, no la atraparon']]), ['castigo:favor', 'Castigo a favor'], ['castigo:contra', 'Castigo en contra'], O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
     h = `<h3>¿Qué pasó?</h3><p>Antes: ${j.txt}.</p><div class="ops dos acc">${ops.map(([k, n]) => `<button class="op${j.k === k || `${j.k}:${j.v}` === k ? ' prim' : ''}" data-a="cqpya" data-v="${k}">${n}</button>`).join('')}</div>`;
   }
   if (st.hoja === 'conv') {
@@ -1325,7 +1329,7 @@ const lugarDe = (y) => (y <= CAMPO / 2 ? `nuestra ${Math.round(y)}` : `su ${Math
 // en defensa el balón es de ellos: su spot se cuenta desde su zona
 const lugarEllos = (y) => (y <= CAMPO / 2 ? `su ${Math.round(y)}` : `nuestra ${Math.round(CAMPO - y)}`);
 const fmtYd = (y) => (y > 0 ? '+' : '') + y;
-const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `incompleto, iba a ${n}` : 'incompleto'), parada: (n) => (n ? `pararon a ${n}` : 'nos pararon'), buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera de ${n}`, tapado: (n) => `pase tapado por ${n}`, presion: (n) => `presión de ${n}, incompleto`, fallo: () => 'pase incompleto, falló solo', intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
+const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `incompleto, iba a ${n}` : 'incompleto, mal pase'), parada: (n) => (n ? `pararon a ${n}` : 'nos pararon'), buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera de ${n}`, tapado: (n) => `pase tapado por ${n}`, presion: (n) => `presión de ${n}, incompleto`, fallo: () => 'pase incompleto, no la atraparon', intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
 function textoDe(j) {
   const cv = !j.conv ? '' : !j.conv[1] ? ` · no entró la de ${j.conv[0]}` : ['tdr', 'pick6c'].includes(j.k) ? ` + ${j.conv[0]}` : ` + ${j.conv[0]} (atrapó ${nom(j.convId)})`;
   if (j.k === 'castigo') return `castigo ${j.v === 'favor' ? 'a favor' : 'en contra'}`;
@@ -1336,6 +1340,7 @@ function textoDe(j) {
   if (j.k === 'pick6c') return `pick 6 de ${R(HOY).corto}, lanzó ${nom(j.qb)}${cv}`;
   if (j.k === 'safetyc') return j.id ? `safety en contra, agarraron a ${nom(j.id)}` : 'safety en contra';
   if (j.k === 'int') return `intercepción, lanzó ${nom(j.qb)}`;
+  if (j.k === 'incompleto' && j.drop) return `incompleto, se le cayó a ${nom(j.id)}`;
   return TXT[j.k](SIN_QUIEN.includes(j.k) ? (j.id && P(j.id) ? P(j.id).corto : '') : nom(j.id)) + (j.drop ? ' · se le cayó' : '') + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '') + (pdDe(j) ? ' · 1ª y 10' : pdEllos(j) ? ' · lograron 1ª y 10' : '');
 }
 // 1ª y 10: se marca a mano en pase completo o corrida nuestra (las jugadas se anotan sueltas, sin orden)
@@ -1682,6 +1687,7 @@ const A = {
   res: (v) => {
     st.sel = v; st.lanzo = null; st.corre = false; st.pd = false; st.tapo = 'tapado';
     if (v === 'td') { st.hoja = 'como'; return; }
+    if (v === 'incompleto' || v === 'tapado') { st.cayo = false; st.hoja = 'inc'; return; }
     if (v === 'pick6c') { const j = guarda({ k: 'pick6c', qb: st.partido.qb }); st.hoja = null; abrirConv(j); return; }
     if (SIN_QUIEN.includes(v)) { const q = st.partido.qb, j = guarda({ k: v, qb: ['incompleto', 'int'].includes(v) ? q : null, id: ['sackr', 'safetyc'].includes(v) ? q : null }); st.hoja = null; if (conYardas(j)) abrirCuanto(j); return; }
     st.hoja = 'quien';
@@ -1692,6 +1698,13 @@ const A = {
   pdt: () => { st.pd = !st.pd; },
   // pase incompleto que falló solo: sin nombre, no da puntos
   fallo: () => { st.hoja = null; guarda({ k: 'fallo' }); },
+  inc: (v) => {
+    if (v === 'fallo') { A.fallo(); return; }
+    if (v === 'tapo') { st.sel = 'tapado'; st.hoja = 'quien'; return; }
+    if (v === 'cayo') { st.sel = 'incompleto'; st.cayo = true; st.hoja = 'quien'; return; }
+    // mal pase: se guarda ya; a quién iba se puede poner desde el aviso (no resta)
+    st.hoja = null; guarda({ k: 'incompleto', qb: st.partido.qb });
+  },
   cpd: () => { const j = st.partido.jugadas[st.edita]; st.hoja = null; corrige(j, (x) => { x.pd = !x.pd; }); },
   // «¿se le cayó?», desde el aviso del incompleto ya con nombre (o desde Corregir)
   cayo: () => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; corrige(j, (x) => { x.drop = !x.drop; }, 'Guardado'); },
@@ -1711,12 +1724,13 @@ const A = {
       if (s === 'td' && st.yds === 'si') { abrirCuanto(j); st.cuanto.yd = j.antes.sabe ? CAMPO - j.antes.spot : 10; st.convLuego = j.uid; } else abrirConv(j);
       return; }
     const k = s === 'tapado' && st.tapo === 'presion' ? 'presion' : s;
-    const j = guarda({ k, id, qb: s === 'pase' ? lanzo() : null, ...(st.pd && PD_EN.includes(s) ? { pd: true } : {}) });
+    const j = guarda({ k, id, qb: ['pase', 'incompleto'].includes(s) ? lanzo() : null, ...(st.pd && PD_EN.includes(s) ? { pd: true } : {}), ...(s === 'incompleto' && st.cayo && id ? { drop: true } : {}) });
+    st.cayo = false;
     st.lanzo = null; st.pd = false;
     if (conYardas(j)) abrirCuanto(j);
   },
   // el nombre opcional desde el aviso (incompleto: a quién iba; nos pararon: a quién)
-  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = Date.now(); rehacer(st.partido); avisar({ ...ta, txt: 'Guardado: ' + j.txt + conMarcador(j), id, opc: j.k === 'incompleto' ? { cayo: true } : null }); subir(); },
+  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = Date.now(); rehacer(st.partido); avisar({ ...ta, txt: 'Guardado: ' + j.txt + conMarcador(j), id, opc: null }); subir(); },
   castigo: (v) => { st.hoja = null; guarda({ k: 'castigo', v }); },
   tdr: () => { st.sel = 'tdr'; st.lanzo = null; const j = guarda({ k: 'tdr' }); abrirConv(j); },
   conv: (v) => {
