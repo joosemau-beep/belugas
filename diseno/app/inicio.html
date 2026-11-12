@@ -397,6 +397,41 @@ table.bs td.v { color: #b8c2cf; }
 .lado { display: grid; grid-template-columns: 1fr 1fr; background: #e3e8ef; border-radius: 12px; padding: 4px; margin: 14px 0 4px; }
 .lado button { height: 46px; border-radius: 9px; font: 700 15px/1 Inter; color: var(--mut); }
 .lado button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+/* MARCAR (12-nov, ronda 6 opción 2 de Mau): marcador gigante; 4 grandes; los chicos y los castigos en un bloque; el TD hasta abajo.
+   Sin títulos; la defensa no cambia de color. Al abrir se ve justo hasta el TD (en ataque); la última jugada y la lista quedan abajo.
+   Medidas fijas: grande 3:2 (112 de alto), chico 52; 10 entre grandes, 8 entre chicos, 24 entre grupos. */
+.mbar .qbchip { max-width: 40%; }
+.mbar .mk-lado { display: flex; align-items: center; gap: 7px; background: #fff !important; color: var(--navy) !important; text-shadow: none; font-weight: 800; }
+.mbar .mk-lado svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.mk-marc { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 4px; color: #fff; }
+.mk-marc strong { font: italic 900 78px/.95 var(--disp); letter-spacing: -.01em; text-shadow: 0 3px 14px rgba(0,0,0,.25); }
+.mk-marc strong i { font-style: normal; opacity: .55; margin: 0 8px; }
+.mk-marc strong span { display: inline-block; }
+.tel.anim .mk-marc .sube { animation: bump .38s cubic-bezier(.3,1.6,.5,1); }
+.mk-eq { display: grid; justify-items: center; gap: 6px; }
+.mk-eq img, .mk-eq .rlogo { width: 44px; height: 44px; }
+.mk-eq span { display: flex; align-items: center; gap: 5px; font: 800 12.5px/1 Inter; letter-spacing: .05em; text-transform: uppercase; opacity: .92; }
+.mk-bal { width: 18px; height: 18px; flex: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+.mk-cuerpo { padding-top: 18px; display: flex; flex-direction: column; }
+.mk-cuerpo > * { flex-shrink: 0; }
+.mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
+.mk-grandes, .mk-chicos { display: grid; grid-template-columns: 1fr 1fr; }
+.mk-grandes { grid-auto-rows: 112px; gap: 10px; }
+.mk-chicos { grid-auto-rows: 52px; gap: 8px; margin-top: 24px; }
+.mk-grande { background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 14px 14px 13px; text-align: left; }
+.mk-grande b { display: block; font: 800 17px/1.15 Inter; }
+.mk-grande small { display: block; color: var(--mut); font: 500 12.5px/1.25 Inter; margin-top: 3px; }
+.mk-chico { background: #fff; border-radius: 14px; box-shadow: var(--sombra); display: flex; align-items: center; gap: 10px; padding: 0 14px; text-align: left; }
+.mk-chico b { font: 700 14.5px/1.15 Inter; }
+.mk-grande:active, .mk-chico:active, .mk-td:active { transform: scale(.98); }
+.mk-ic { display: grid; place-items: center; flex: none; }
+.mk-ic svg { width: 100%; height: 100%; fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mk-td { width: 100%; margin-top: 24px; height: 74px; border-radius: 18px; background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(13,35,71,.25); }
+.mk-td small { margin-left: auto; font: 600 12.5px/1.2 Inter; opacity: .85; white-space: nowrap; }
+/* en defensa el encabezado y el TD de ellos toman el color del rival (--rc, de EQUIPOS), en degradado como el nuestro */
+.mcab.mk-def, .mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
+.mk-td.riv { box-shadow: 0 8px 18px color-mix(in srgb, var(--rc) 35%, transparent); text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.mcab.mk-def .mbar .mk-lado { color: color-mix(in srgb, var(--rc) 70%, #000) !important; }
 .pregunta { font: 800 22px/1.2 Inter; margin: 14px 2px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 /* «Corregir la última» siempre a la vista: el renglón «Última» queda abajo de la barra con las 8 tiras */
 .pregunta .ult { min-height: 40px; padding: 0 2px 0 10px; font: 700 13.5px/1 Inter; color: var(--acento); flex: none; }
@@ -739,11 +774,12 @@ const ESTS = [['actual', 'Actual'], ['glass', 'Liquid glass'], ['ligero', 'Glass
 const YDS = [['si', 'Regla «¿Cuánto avanzó?»'], ['no', 'Sin yardas']];
 
 // los 12 de la liga (archivos/equipos/equipos.json); los logos son los reales, mejorados con Higgsfield
+// los 12 de la liga (archivos/equipos/equipos.json); los logos son los reales, mejorados con Higgsfield
 const EQUIPOS = [
   ['only-fins', 'ONF', 'Only Fins', '#10a6b3'], ['triple-t', 'TTT', 'Triple T', '#c5353e'], ['bucaneros', 'BUC', 'Bucaneros', '#bd3e44'],
   ['destroyers', 'DES', 'Destroyers', '#3c6f34'], ['kickass', 'KCK', 'Kickass', '#141723'], ['bulldogs', 'BUL', 'Bulldogs', '#714246'],
-  ['lobos-its', 'LOB', 'Lobos ITS', '#767577'], ['kaffies', 'KAF', 'Kaffies', '#d1a050'], ['ultimos-aztecas', 'AZT', 'Últimos Aztecas', '#d3a45a'],
-  ['los-fantasmas', 'FAN', 'Los Fantasmas', '#3a3a3b'], ['panini', 'PAN', 'Panini', '#dba466'],
+  ['lobos-its', 'LOB', 'Lobos ITSZ', '#767577'], ['kaffies', 'KAF', 'Kaffies', '#d1a050'], ['ultimos-aztecas', 'AZT', 'Últimos Aztecas', '#d3a45a'],
+  ['los-fantasmas', 'FAN', 'Los Fantas', '#3a3a3b'], ['panini', 'PAN', 'Panini', '#dba466'],
 ];
 // tamaño visible de cada logo en su caja (raíz del área pintada y ancho), medido en los PNG de 256:
 // en listas se igualan entre ellos; frente al logo de Belugas (marcador y partido) pesan como él
@@ -848,16 +884,16 @@ JUEGOS.forEach((g) => { const cv = Object.values(g.st).reduce((a, y) => a + (y.c
 const PUNTOS = [
   ['yds', 'Yarda de recepción o corrida', .1], ['pyd', 'Yarda de pase completo, al QB', .1], ['rec', 'Recepción', 1], ['td', 'Touchdown', 6], ['tdp', 'TD de pase, al QB', 4],
   ['pd', 'Primero y diez', 1], ['conv', 'Conversión, por punto, al que la atrapa', 1], ['convp', 'Conversión, por punto, al QB', 1],
-  ['intl', 'Intercepción lanzada', -2], ['sackr', 'Sack recibido, al QB', -1], ['drop', 'Se le cayó', -.5], ['safc', 'Safety en contra, al que agarraron', -2],
+  ['intl', 'Intercepción lanzada', -2], ['sackr', 'Sack recibido, al QB', -1], ['skyd', 'Yarda perdida en el sack, al QB', -.1], ['drop', 'Se le cayó', -.5], ['safc', 'Safety en contra, al que agarraron', -2],
   ['band', 'Bandera quitada', 1], ['bandx', 'Extra si no ganaron yardas', 1], ['tap', 'Pase tapado', 2], ['pres', 'Presión que provoca incompleto', 1],
   ['intn', 'Intercepción', 5], ['sack', 'Sack', 3], ['saf', 'Safety', 3]];
-const PUNTOS_DEF = 12; // desde aquí, defensa
+const PUNTOS_DEF = 13; // desde aquí, defensa
 const CAMPOS = ['att', 'comp', 'car', ...PUNTOS.map(([k]) => k)];
 const puntosDe = (x) => Math.round(PUNTOS.reduce((a, [k, , w]) => a + ((x && x[k]) || 0) * w, 0) * 10) / 10;
 const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
 const tablaPuntos = () => `<details class="card reglas"><summary>Cómo se cuentan los puntos</summary>
   ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
-  <p>Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni "se le fue". No hay puntos de defensa por equipo, porque casi todos juegan de los dos lados.</p></details>`;
+  <p>Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni "se le fue". No hay puntos de defensa por equipo, porque casi todos juegan de los dos lados.</p></details>`;
 const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); return [p.id, t]; }));
 const TEMP = calcTemp();
 const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, k === 'pts' ? TEMP[p.id].pts : TEMP[p.id][k]]));
@@ -1079,19 +1115,32 @@ const RES = {
 const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', presion: 'tapado', fallo: 'tapado'};
 // en marcar la lista trae todas las jugadas y cada renglón se toca para corregirlo
 const jlista = (j, max, tocable) => `<div class="jlista"><h4>Este partido <span>${j.length} jugada${j.length === 1 ? '' : 's'}</span></h4>${j.map((x, i) => [x, i]).slice(-max).reverse().map(([x, i]) => `<${tocable ? `button class="jfila" data-a="fila" data-v="${i}"` : 'div class="jfila"'}>${ic(x.tipo, true)}<span class="corta">${x.txt}</span>${x.por && x.por !== APARATO ? '<small><span class="otro">otro cel.</span></small>' : ''}${x.marc ? `<span class="mk num">${x.marc}</span>` : ''}</${tocable ? 'button' : 'div'}>`).join('')}</div>`;
-// el castigo en una sola tira, partida a favor y en contra (mapa de toques)
-const mitadesO = '<div class="castigo2"><button class="res mitad" data-a="res" data-v="int"><small>Intercepción</small><b>nos la quitaron</b></button><button class="res mitad" data-a="res" data-v="pick6c"><small>Pick 6</small><b>en contra</b></button></div><div class="castigo2"><button class="res mitad" data-a="res" data-v="sackr"><small>Sack</small><b>a nuestro QB</b></button><button class="res mitad" data-a="res" data-v="safetyc"><small>Safety</small><b>en contra</b></button></div>';
-const castigo2 = '<div class="castigo2"><button class="res mitad" data-a="castigo" data-v="favor"><small>Castigo</small><b>A favor</b></button><button class="res mitad" data-a="castigo" data-v="contra"><small>Castigo</small><b>En contra</b></button></div>';
+// MARCAR (12-nov, la que escogió Mau en la ronda 6): íconos sueltos, sin cuadro de fondo; el color dice qué es
+// (verde lo que suma, rojo lo que nos sale mal, amarillo el castigo, azul lo demás). Ver el CSS «MARCAR».
+const mkGlifo = (k) => ICONOS_S[{intn: 'int', sackr: 'sack', pick6c: 'int'}[k] || k] || ICONOS_S.parada;
+const mkIc = (k, px, c) => `<span class="mk-ic" style="--c:${c};width:${px}px;height:${px}px"><svg viewBox="0 0 24 24" aria-hidden="true">${mkGlifo(k)}</svg></span>`;
+const mkColor = (k) => (['pase', 'corrida', 'pick6', 'safety'].includes(k) ? '#16a05a' : ['int', 'pick6c', 'sackr', 'safetyc'].includes(k) ? '#e0483e' : k === 'castigo' ? '#c99400' : '#1d4f8f');
+// sin títulos de grupo, lo malo lleva el nombre completo para no confundirse con lo de la defensa
+const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase incompleto'};
+const MK_SUB = {tapado: 'Tapado o se les cayó'};
+const MK_LADO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>';
+const MK_BALON = '<svg class="mk-bal" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9.5" ry="5.6" transform="rotate(-32 12 12)" fill="#fff"/><path d="M9.6 14.2l4.8-4.4M10.6 11.6l1.3 1.3M12.1 10.2l1.3 1.3" stroke="#0d2347" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
 function marcar() {
   const p = st.partido, O = p.lado === 'O', u = p.jugadas[p.jugadas.length - 1], r = R(HOY);
-  return `<div class="pant"><div class="mcab">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
-    <div class="mbar"><button data-a="ir" data-v="inicio">‹ Inicio</button><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button><button data-a="terminar">Terminar</button></div>
-    <div class="mscore"><div class="eq"><img src="${LOGO}" alt=""><strong class="num${st.flash && st.flash.nos ? ' sube' : ''}">${p.nos}</strong></div><button class="down" data-a="editar"><span class="op1">vs ${r.corto}</span><small>${O && p.sabe ? lugarDe(p.spot) + ' · ' : ''}Partido ✎</small></button><div class="eq r2"><strong class="num${st.flash && st.flash.ellos ? ' sube' : ''}">${p.ellos}</strong>${rlogo(r)}</div></div></div>
-    <div class="cuerpo" style="padding-top:2px">
-      <div class="lado"><button data-a="lado" data-v="O" class="${O ? 'on' : ''}">Atacamos</button><button data-a="lado" data-v="D" class="${O ? '' : 'on'}">Defendemos</button></div>
-      <div class="pregunta">¿Qué pasó?${u ? `<button class="ult" data-a="fila" data-v="${p.jugadas.length - 1}">Corregir la última</button>` : ''}</div>
-      <div class="grid tiras">${RES[p.lado].filter(([k]) => !['castigo', 'sackr', 'safetyc', 'int', 'pick6c'].includes(k)).map(([k, t, s]) => `<button class="res" data-a="res" data-v="${k}">${ic(ICO_DE[k] || k)}<b>${t}</b><small>${s}</small></button>`).join('')}
-        ${O ? mitadesO + castigo2 + `<button class="res td" data-a="res" data-v="td">${ic('td')}<b>Touchdown</b><small>+6 y luego la conversión</small></button>` : `<button class="res tdr" data-a="tdr">${ic('tdr')}<b>TD de ${r.corto}</b><small>Suma 6 al tocarlo</small></button>` + castigo2}</div>
+  const de = (k) => RES[p.lado].find((x) => x[0] === k);
+  const grande = (k) => `<button class="mk-grande" data-a="res" data-v="${k}">${mkIc(k, 30, mkColor(k))}<span><b>${MK_NOMBRE[k] || de(k)[1]}</b><small>${MK_SUB[k] || de(k)[2]}</small></span></button>`;
+  const chico = (k) => `<button class="mk-chico" data-a="res" data-v="${k}">${mkIc(k, 20, mkColor(k))}<b>${MK_NOMBRE[k] || de(k)[1]}</b></button>`;
+  const castigo = (v) => `<button class="mk-chico" data-a="castigo" data-v="${v}">${mkIc('castigo', 20, mkColor('castigo'))}<b>Castigo ${v === 'favor' ? 'a favor' : 'en contra'}</b></button>`;
+  const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIc('td', 30, '#fff')}Touchdown<small>+6 y la conversión</small></button>`
+    : `<button class="mk-td riv" data-a="tdr">${mkIc('tdr', 30, '#fff')}TD de ${r.corto}<small>Suma 6 al tocarlo</small></button>`;
+  const eq = (img, n, conBalon) => `<div class="mk-eq">${img}<span>${conBalon ? MK_BALON : ''}${n}</span></div>`;
+  const sube = (k) => (st.flash && st.flash[k] ? ' class="sube"' : '');
+  return `<div class="pant" style="--rc:${r.color}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
+    <div class="mbar"><button class="mk-lado" data-a="lado" data-v="${O ? 'D' : 'O'}">${MK_LADO}${O ? 'Ataque' : 'Defensa'}</button><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button><button data-a="terminar">Terminar</button></div>
+    <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas', O)}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto, !O)}</button></div>
+    <div class="cuerpo mk-cuerpo">
+      <div class="mk-vista"><div class="mk-grandes">${(O ? ['pase', 'corrida', 'incompleto', 'parada'] : ['bandera', 'tapado', 'intn', 'sack']).map(grande).join('')}</div>
+        <div class="mk-chicos">${(O ? ['int', 'pick6c', 'sackr', 'safetyc'] : ['pick6', 'safety']).map(chico).join('')}${castigo('favor')}${castigo('contra')}</div>${td}</div>
       ${u ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer">Deshacer</button></div>` : ''}
       ${p.jugadas.length ? jlista(p.jugadas, p.jugadas.length, true) : ''}
     </div>${nav()}</div>`;
@@ -1429,7 +1478,7 @@ function juegoDe(p) {
     if (j.k === 'incompleto') { s(qb, 'att'); if (j.drop) s(j.id, 'drop'); }
     if (j.k === 'int' || j.k === 'pick6c') { per++; s(qb, 'att'); s(qb, 'intl'); }
     if (j.k === 'corrida') s(j.id, 'car');
-    if (j.k === 'sackr') s(j.id || qb0, 'sackr');
+    if (j.k === 'sackr') { s(j.id || qb0, 'sackr'); if (y != null && y < 0) s(j.id || qb0, 'skyd', -y); } // el sack resta sus yardas
     if (j.k === 'safetyc') s(j.id, 'safc');
     if (['pase', 'corrida', 'td'].includes(j.k) && y != null) s(j.id, 'yds', y);
     if (pdDe(j)) { prim++; s(j.id, 'pd'); } // +1 al que llevaba el balón
@@ -1577,7 +1626,7 @@ function ponerYardas(yd) {
 function trasYardas(j) { if (j && st.convLuego === j.uid) { st.convLuego = null; abrirConv(j); } }
 function montarCuanto() {
   const th = $('#rgth'); if (!th || !st.cuanto) return;
-  const c = st.cuanto, j = porUid(c.uid), a = antesDe(j), s = RG.sep, lo = j.k === 'td' ? 1 : a === j.antes ? Math.max(-12, -a.spot) : -20, hi = j.k === 'td' ? CAMPO : a === j.antes ? CAMPO - a.spot - (j.k === 'sackr' || j.lado === 'D' ? 1 : 0) : 35;
+  const c = st.cuanto, j = porUid(c.uid), a = antesDe(j), s = RG.sep, lo = j.k === 'td' ? 1 : a === j.antes ? Math.max(-12, -a.spot) : -20, hi = j.k === 'td' ? CAMPO : j.k === 'sackr' ? 0 : a === j.antes ? CAMPO - a.spot - (j.lado === 'D' ? 1 : 0) : 35;
   // en defensa la regla va volteada: ellos avanzan hacia nuestra zona (a la izquierda) desde su balón
   const inv = j.lado === 'D', enRegla = (f) => (inv ? CAMPO - f : f);
   let armado = false;
