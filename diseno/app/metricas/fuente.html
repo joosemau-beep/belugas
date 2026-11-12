@@ -1,0 +1,1130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="color-scheme" content="light">
+<title>Métricas Belugas</title>
+<!-- Prototipo de Métricas (tarea belugas-metricas). Un solo archivo: los datos y los logos van adentro.
+     NO se edita a mano: se arma con `node metricas/armar.mjs` desde metricas/fuente.html.
+     Datos de ejemplo: los 3 primeros marcadores son los reales que trae la app; los otros 3 y todas
+     las jugadas son inventados (metricas/generar-datos.mjs). Plantel inventado, el mismo de inicio.html. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f3f5f8; --card: #fff; --ink: #0b1b33; --navy: #0d2347; --azul: #1d4f8f; --hielo: #5aaeff; --mut: #56647a; --tenue: #a3acb9; --linea: #e4e8ee;
+  --sombra: 0 1px 2px rgba(11,27,51,.05), 0 6px 18px rgba(11,27,51,.07);
+  --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --grad: radial-gradient(120% 90% at 100% 0%, rgba(120,190,255,.85) 0%, rgba(120,190,255,0) 55%), linear-gradient(135deg, #0d2347 0%, #1d4f8f 62%, #3f8fe6 100%);
+  --boton: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%);
+  --anillo: conic-gradient(from 210deg, #0d2347, #5aaeff, #1d4f8f, #0d2347);
+  --plata: linear-gradient(180deg, #f1f4f8 0%, #c6cfda 60%, #9aa7b6 100%);
+  --bronce: linear-gradient(180deg, #ffd9b5 0%, #d99257 60%, #a9602b 100%);
+  /* gráficas: Belugas en el azul de la marca (un paso más claro para pasar el validador), el rival en gris */
+  --nos: #245ea8; --nos-suave: #cddcf1; --riv: #8a94a3; --riv-suave: #e3e7ed; --rejilla: #e4e8ee; --eje: #c4ccd8;
+  /* estado: siempre con ícono y palabra, nunca solo el color */
+  --bien: #0b6b3a; --bien-f: #e3f5ea; --mal: #b3261e; --mal-f: #fdecea; --igual-f: #eef1f5;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font: 15px/1.4 Inter, -apple-system, system-ui, sans-serif; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; text-align: inherit; }
+button:focus-visible, [tabindex]:focus-visible, a:focus-visible { outline: 2px solid var(--hielo); outline-offset: 2px; border-radius: 6px; }
+a { color: var(--azul); }
+.corta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+h2 { font: 800 15px/1.2 Inter; margin: 22px 2px 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+h2 small { font: 600 12.5px/1.2 Inter; color: var(--mut); text-align: right; }
+h2 small button { color: var(--azul); font-weight: 700; }
+.card { background: var(--card); border-radius: 16px; box-shadow: var(--sombra); }
+.ej { text-align: center; font: 600 10px/1.5 Inter; letter-spacing: .08em; text-transform: uppercase; color: var(--mut); margin: 22px 0 0; }
+
+/* ---------- armazón: teléfono (columna y barra abajo) o laptop (barra al lado) ---------- */
+#app { min-height: 100%; }
+.lado { display: none; }
+.cuerpo { padding: max(10px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom)); max-width: 620px; margin: 0 auto; }
+.cab { display: flex; align-items: center; gap: 10px; padding: 6px 2px 12px; }
+.cab img { width: 38px; height: 38px; object-fit: contain; }
+.cab b { font: 800 20px/1 Inter; display: block; }
+.cab small { display: block; color: var(--mut); font: 500 13px/1.2 Inter; margin-top: 3px; }
+.cab .info { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; background: rgba(11,27,51,.07); display: grid; place-items: center; font: 800 14px/1 Inter; }
+.nav { position: fixed; left: 0; right: 0; bottom: 0; height: calc(66px + env(safe-area-inset-bottom)); padding: 8px 6px env(safe-area-inset-bottom); background: #fff; border-top: 1px solid var(--linea); display: flex; justify-content: space-around; z-index: 5; }
+.nav button { flex: 1; max-width: 96px; display: grid; justify-items: center; align-content: start; gap: 4px; font: 600 11px/1 Inter; color: #5d6a7e; }
+.nav button.on { color: var(--navy); font-weight: 800; }
+.nav svg, .lado nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.volver { display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 8px; border-radius: 999px; background: rgba(11,27,51,.07); font: 700 13.5px/1 Inter; margin: 4px 0 8px; }
+
+.ancho .cuerpo { max-width: 1240px; margin: 0; padding: 22px 28px 60px; }
+.ancho .nav { display: none; }
+.ancho .cab { display: none; }
+.ancho { display: grid; grid-template-columns: 232px minmax(0, 1fr); }
+.ancho .lado { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; padding: 20px 14px; background: #fff; border-right: 1px solid var(--linea); overflow-y: auto; }
+.lado .marca { display: flex; align-items: center; gap: 10px; padding: 0 6px 16px; }
+.lado .marca img { width: 44px; height: 44px; object-fit: contain; }
+.lado .marca b { font: 800 17px/1.1 Inter; display: block; }
+.lado .marca small { font: 500 12px/1.2 Inter; color: var(--mut); }
+.lado nav { display: grid; gap: 2px; }
+.lado nav button { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 10px; border-radius: 10px; font: 600 14px/1 Inter; color: var(--mut); }
+.lado nav button.on { background: #eaf1fb; color: var(--navy); font-weight: 800; }
+.lado h4 { font: 700 11px/1 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--mut); margin: 18px 6px 6px; }
+.lado p { font: 500 12px/1.45 Inter; color: var(--mut); margin: 4px 6px; }
+.lado .conm { margin: 0 4px; }
+
+/* el teléfono enmarcado, para verlo desde la laptop */
+body.marco { background: #e6eaf0; }
+.marco #app { width: 390px; height: 844px; min-height: 0; margin: 20px auto; border-radius: 46px; box-shadow: 0 0 0 10px #10151d, 0 30px 60px rgba(0,0,0,.25); overflow: hidden; position: relative; background: var(--bg); transform: translateZ(0); }
+.marco #app .scroll { height: 100%; overflow-y: auto; }
+.marco .nav { position: absolute; }
+.marco .hoja-cont { position: absolute; }
+.salir-marco { display: none; }
+.marco .salir-marco { display: block; position: fixed; left: 20px; top: 20px; height: 40px; padding: 0 16px; border-radius: 999px; background: #fff; box-shadow: var(--sombra); font: 700 13.5px/1 Inter; z-index: 30; }
+
+/* conmutadores */
+.conm { display: flex; background: #e3e8ef; border-radius: 11px; padding: 3px; gap: 2px; }
+.conm button { flex: 1; min-height: 36px; padding: 6px 8px; border-radius: 8px; font: 700 12.5px/1.15 Inter; color: var(--mut); text-align: center; }
+.conm button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.conm button small { display: block; font: 700 9.5px/1 Inter; letter-spacing: .05em; text-transform: uppercase; color: var(--azul); margin-top: 3px; }
+.conm.col { flex-direction: column; }
+.conm.col button { text-align: left; padding: 8px 10px; }
+.pastillas { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 10px; scrollbar-width: none; }
+.pastillas::-webkit-scrollbar { display: none; }
+.past { flex: none; min-height: 36px; padding: 0 14px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: 700 13px/1 Inter; color: var(--mut); display: inline-flex; align-items: center; gap: 6px; }
+.past.on { background: var(--boton); color: #fff; box-shadow: 0 3px 0 rgba(13,35,71,.25); }
+.past img { width: 22px; height: 22px; object-fit: contain; }
+
+/* logos y retratos */
+.rlogo { display: inline-block; flex: none; }
+.rlogo img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); }
+.rlogo.sin { border-radius: 50%; background: linear-gradient(135deg, #4b5563, #9ca3af); color: #fff; display: grid; place-items: center; font: 800 11px/1 Inter; }
+.foto { position: relative; flex: none; display: block; border-radius: 50%; padding: 2px; background: var(--anillo); }
+.foto > span { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #fff; }
+.foto svg { display: block; width: 100%; height: 100%; }
+.foto .ini { display: grid; place-items: center; height: 100%; background: #e8eef7; color: var(--navy); font: 800 13px/1 Inter; }
+
+/* ---------- partido: marcador ---------- */
+.heroe { border-radius: 22px; background: var(--grad); color: #fff; padding: 16px 18px 18px; position: relative; overflow: hidden; box-shadow: 0 12px 28px rgba(13,35,71,.26); text-shadow: 0 1px 3px rgba(5,15,35,.35); }
+.heroe .eti { font: 700 12px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .92; }
+.heroe .vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: 12px 0 10px; }
+.heroe .eq { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 13px/1 Inter; }
+.heroe .eq .rlogo { width: 56px; height: 56px; }
+.heroe .mid { text-align: center; font: italic 900 54px/1 var(--disp); white-space: nowrap; padding: 0 6px; }
+.heroe .titular { font: 600 14.5px/1.4 Inter; margin: 0; }
+.heroe .titular b { font-weight: 800; }
+.ancho .heroe, .ancho .record, .ancho .fj { background: radial-gradient(90% 80% at 100% 0%, rgba(90,160,235,.5) 0%, rgba(90,160,235,0) 55%), linear-gradient(135deg, #0d2347 0%, #1d4f8f 68%, #2b6cc0 100%); }
+.ancho .heroe { display: grid; grid-template-columns: minmax(300px, 420px) 1fr; align-items: center; gap: 8px 28px; padding: 20px 26px; }
+.ancho .heroe .eti { grid-column: 1 / -1; }
+.ancho .heroe .vs { margin: 4px 0; }
+.ancho .heroe .titular { font-size: 17px; }
+
+/* ---------- fichas de métrica ---------- */
+.fichas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.ancho .fichas { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.ancho .fichas.seis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.ficha { background: #fff; border-radius: 16px; box-shadow: var(--sombra); padding: 12px 12px 11px; min-width: 0; display: flex; flex-direction: column; gap: 6px; width: 100%; position: relative; }
+.ficha.doble { grid-column: span 2; }
+.ancho .ficha.doble { grid-column: auto; }
+.ficha .nom { font: 700 12px/1.2 Inter; color: var(--mut); padding-right: 22px; }
+.ficha .inf { position: absolute; right: 9px; top: 9px; width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--tenue); color: var(--mut); display: grid; place-items: center; font: 800 11px/1 Inter; }
+.val { font: italic 900 34px/1 var(--disp); color: var(--navy); letter-spacing: .005em; white-space: nowrap; }
+.val small { font: italic 800 19px/1 var(--disp); color: var(--mut); margin-left: 3px; }
+.val em { font: 700 12px/1 Inter; font-style: normal; color: var(--mut); margin-left: 6px; }
+.ficha .pie { font: 500 12px/1.3 Inter; color: var(--mut); }
+.ficha .pie b { color: var(--ink); font-weight: 700; }
+.pips { display: flex; gap: 3px; flex-wrap: wrap; }
+.pips i { width: 14px; height: 14px; border-radius: 4px; background: var(--nos-suave); }
+.pips i.si { background: var(--nos); }
+.pips.riv i { background: var(--riv-suave); } .pips.riv i.si { background: var(--riv); }
+.pips.ch i { width: 9px; height: 9px; border-radius: 3px; }
+.metro { height: 8px; border-radius: 4px; background: var(--nos-suave); overflow: hidden; }
+.metro i { display: block; height: 100%; background: var(--nos); border-radius: 0 4px 4px 0; }
+.chip { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; height: 22px; padding: 0 8px; border-radius: 999px; font: 700 11.5px/1 Inter; white-space: nowrap; }
+.chip.mejor { background: var(--bien-f); color: var(--bien); }
+.chip.peor { background: var(--mal-f); color: var(--mal); }
+.chip.igual { background: var(--igual-f); color: var(--mut); }
+.chip.gris { background: var(--igual-f); color: var(--mut); }
+.dosn { display: flex; gap: 6px 18px; align-items: flex-end; flex-wrap: wrap; }
+.dosn .val { display: block; }
+.dosn .et { display: block; font: 600 11.5px/1.2 Inter; color: var(--mut); margin-top: 2px; }
+
+/* tira de series: cómo acabó cada vez que alguien tuvo el balón */
+.tira { padding: 12px 14px; display: grid; gap: 10px; }
+.tira .fila { display: grid; grid-template-columns: 62px 1fr; align-items: center; gap: 8px; }
+.tira .fila > b { font: 700 12.5px/1.2 Inter; }
+.tira .fila > b small { display: block; font: 600 11px/1.2 Inter; color: var(--mut); }
+.cuadros { display: flex; gap: 3px; flex-wrap: wrap; align-items: center; }
+.cuadros .sep { width: 1px; height: 22px; background: var(--eje); margin: 0 3px; }
+.cq { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font: 800 11px/1 Inter; color: var(--mut); background: var(--igual-f); }
+.cq svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.cq.td { background: var(--nos); color: #fff; }
+.riv .cq.td { background: var(--riv); color: #fff; }
+.cq.int { background: #fff; color: var(--mal); box-shadow: inset 0 0 0 1.5px var(--mal); }
+.cq.reloj { background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); color: #7c8798; }
+.clave { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 600 11.5px/1 Inter; color: var(--mut); padding-top: 2px; }
+.clave span { display: inline-flex; align-items: center; gap: 5px; }
+.clave .cq { width: 20px; height: 20px; border-radius: 6px; font-size: 9px; }
+.clave .cq svg { width: 12px; height: 12px; }
+
+/* lo que funcionó y lo que no; destacados */
+.dos { display: grid; gap: 8px; }
+.lect { padding: 12px 14px; }
+.lect h3 { margin: 0 0 8px; font: 800 13px/1 Inter; display: flex; align-items: center; gap: 7px; }
+.lect h3 i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 Inter; font-style: normal; }
+.lect.si h3 i { background: var(--bien-f); color: var(--bien); } .lect.no h3 i { background: var(--mal-f); color: var(--mal); }
+.lect ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+.lect li button { display: block; width: 100%; font: 500 14px/1.35 Inter; }
+.lect li button b { font-weight: 700; }
+.lect li.nada { color: var(--mut); font-size: 13.5px; }
+.pp { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--linea); width: 100%; }
+.pp:first-child { border-top: 0; }
+.pp .rlogo { width: 34px; height: 34px; }
+.pp .foto { width: 42px; height: 42px; }
+.pp > div { flex: 1; min-width: 0; }
+.pp b { display: block; font: 700 14px/1.2 Inter; }
+.pp small { color: var(--mut); font-size: 12.5px; display: block; }
+.pp .der { flex: none; text-align: right; }
+.pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
+.pp .der small.g { color: var(--bien); font-weight: 700; } .pp .der small.p { color: var(--mal); font-weight: 700; }
+.pp .rk { width: 18px; flex: none; font: 800 13px/1 Inter; color: var(--mut); text-align: center; }
+
+/* cara a cara */
+.cara { padding: 4px 14px 8px; }
+.cara .enc { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px; padding: 10px 0 8px; font: 800 12.5px/1 Inter; }
+.cara .enc span { display: inline-flex; align-items: center; gap: 6px; }
+.cara .enc span:last-child { justify-content: flex-end; }
+.cara .enc i { width: 10px; height: 10px; border-radius: 3px; }
+.cara .enc em { font: 600 11px/1 Inter; font-style: normal; color: var(--mut); }
+.cara .nota-c { margin: 8px 0 4px; padding-top: 10px; border-top: 1px solid var(--linea); font: 500 12px/1.45 Inter; color: var(--mut); }
+.cara h4 { margin: 12px 0 0; padding: 8px 0 2px; border-top: 1px solid var(--linea); font: 700 11px/1 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--mut); }
+.cr { display: grid; grid-template-columns: 1fr; gap: 5px; padding: 8px 0; width: 100%; }
+.cr .txt { display: grid; grid-template-columns: 76px 1fr 76px; align-items: baseline; gap: 6px; }
+.cr .txt b { font: 600 15px/1.1 Inter; font-variant-numeric: tabular-nums; }
+.cr .txt b.gana { font-weight: 800; }
+.cr .txt b:last-child { text-align: right; }
+.cr .txt span { text-align: center; font: 600 13px/1.2 Inter; color: var(--ink); }
+.cr .txt span small { display: block; font: 500 11.5px/1.3 Inter; color: var(--mut); }
+.cr .bar { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.cr .bar div { height: 6px; background: var(--igual-f); display: flex; }
+.cr .bar div:first-child { justify-content: flex-end; border-radius: 4px 0 0 4px; }
+.cr .bar div:last-child { border-radius: 0 4px 4px 0; }
+.cr .bar i { display: block; height: 100%; }
+.cr .bar div:first-child i { background: var(--nos); border-radius: 4px 0 0 4px; }
+.cr .bar div:last-child i { background: var(--riv); border-radius: 0 4px 4px 0; }
+
+/* la historia */
+.graf { padding: 14px 12px 10px; }
+.graf svg { display: block; width: 100%; height: auto; overflow: visible; }
+.graf .tit { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 2px 8px; }
+.graf .tit b { font: 800 13.5px/1.2 Inter; }
+.graf .tit button { font: 700 12px/1 Inter; color: var(--azul); height: 28px; padding: 0 10px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--linea); flex: none; }
+.leyenda { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 600 12px/1 Inter; color: var(--mut); margin: 0 2px 8px; }
+.leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+.leyenda i { width: 14px; height: 3px; border-radius: 2px; }
+.leyenda i.cuad { width: 10px; height: 10px; border-radius: 3px; }
+.leyenda i.raya { height: 0; border-top: 1.5px dashed var(--mut); background: none; border-radius: 0; }
+svg text { font-family: Inter, system-ui, sans-serif; }
+svg .golpe { fill: transparent; cursor: pointer; }
+svg .golpe:focus-visible { outline: none; stroke: var(--hielo); stroke-width: 2; }
+.tv { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tv th { text-align: right; font: 700 11px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; padding: 8px 6px; border-bottom: 1px solid var(--linea); white-space: nowrap; }
+.tv td { text-align: right; padding: 7px 6px; border-bottom: 1px solid var(--linea); font-variant-numeric: tabular-nums; }
+.tv th:first-child, .tv td:first-child { text-align: left; }
+.tv tr:last-child td { border-bottom: 0; }
+.tv td.f { font-weight: 800; color: var(--navy); }
+.tv .jn { display: flex; align-items: center; gap: 8px; font-weight: 700; min-width: 0; }
+.tv .jn .foto { width: 28px; height: 28px; }
+.tv .jn .rlogo { width: 24px; height: 24px; }
+.tv tr[data-a] { cursor: pointer; }
+.tv th button { font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; }
+.tv th.ord { color: var(--navy); }
+.rueda { overflow-x: auto; }
+.linea-t { padding: 4px 14px 10px; }
+.linea-t h4 { margin: 0; padding: 12px 0 6px; font: 700 11px/1 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--mut); display: flex; justify-content: space-between; }
+.se { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--linea); width: 100%; }
+.se .q b { display: block; font: 700 13.5px/1.25 Inter; }
+.se .q small { display: block; font: 500 12px/1.3 Inter; color: var(--mut); }
+.se .m { text-align: right; font: italic 900 20px/1 var(--disp); color: var(--navy); white-space: nowrap; }
+.se .m small { display: block; font: 600 11px/1.2 Inter; font-style: normal; color: var(--mut); margin-top: 2px; }
+.se.menor .q b { font-weight: 500; color: var(--mut); }
+.se.menor .m { font: 600 12px/1 Inter; color: var(--mut); }
+.jugs { padding: 0 0 8px 40px; display: grid; gap: 4px; }
+.jugs div { display: flex; gap: 8px; font: 500 12.5px/1.3 Inter; color: var(--mut); }
+.jugs div span:first-child { width: 22px; flex: none; font-weight: 700; }
+
+/* ---------- temporada ---------- */
+.record { border-radius: 22px; background: var(--grad); color: #fff; padding: 16px 18px; box-shadow: 0 12px 28px rgba(13,35,71,.26); text-shadow: 0 1px 3px rgba(5,15,35,.35); display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; align-items: center; }
+.record .rec { font: italic 900 60px/1 var(--disp); grid-row: span 2; }
+.record .rec small { display: block; font: 700 11px/1 Inter; font-style: normal; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin-top: 4px; }
+.record p { margin: 0; font: 600 14px/1.35 Inter; }
+.record .ult { display: flex; gap: 5px; align-items: center; font: 700 12px/1 Inter; flex-wrap: wrap; }
+.record .ult i { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font: 800 11px/1 Inter; font-style: normal; text-shadow: none; }
+.record .ult i.g { background: #fff; color: var(--navy); } .record .ult i.p { background: rgba(6,18,40,.35); color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.55); }
+.chispa { display: block; width: 100%; height: auto; max-width: 220px; }
+.rejilla { display: grid; gap: 12px; }
+.ancho .rejilla.g2 { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: start; }
+.ancho .rejilla.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
+.ancho .rejilla.g21 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+.col > h2:first-child { margin-top: 0; }
+.ancho .rejilla { margin-top: 22px; }
+.aviso { display: flex; gap: 10px; padding: 12px 14px; font: 500 13px/1.45 Inter; color: var(--ink); }
+.aviso i { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #fff3cd; color: #7a5200; display: grid; place-items: center; font: 800 13px/1 Inter; font-style: normal; }
+.aviso b { font-weight: 700; }
+
+.desg { display: grid; gap: 8px; padding: 12px 14px; width: 100%; align-content: start; }
+.desg > b { font: 800 13.5px/1.2 Inter; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.desg .inf { flex: none; width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--tenue); color: var(--mut); display: grid; place-items: center; font: 800 11px/1 Inter; }
+.dr { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; align-items: baseline; font: 500 13px/1.3 Inter; }
+.dr strong { font: 700 13.5px/1 Inter; font-variant-numeric: tabular-nums; }
+.dr i { grid-column: 1 / -1; height: 6px; display: block; }
+.dr u { display: block; height: 6px; min-width: 2px; background: var(--nos); border-radius: 0 4px 4px 0; text-decoration: none; }
+.porque { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+/* podio en escalones (lo que ya escogió Iker) */
+.lideres { background: #fff; border-radius: 22px; box-shadow: var(--sombra); overflow: hidden; }
+.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 16px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
+.pcol { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+.pcol .foto { width: 64px; height: 64px; box-shadow: 0 8px 16px rgba(13,35,71,.18); }
+.pcol.p1 .foto { width: 84px; height: 84px; }
+.pcol .corona { width: 34px; height: 22px; margin-bottom: -4px; }
+.pcol b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 7px; }
+.valor { font: italic 900 24px/1 var(--disp); color: var(--navy); }
+.valor small { font: 700 11px/1 Inter; font-style: normal; color: var(--mut); margin-left: 3px; }
+.escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); box-shadow: inset 0 5px 0 rgba(255,255,255,.35); }
+.p1 .escalon { height: 96px; background: var(--grad); color: #fff; }
+.p2 .escalon { height: 72px; background: var(--plata); color: #4d5868; }
+.p3 .escalon { height: 54px; background: var(--bronce); color: #6b3a16; }
+.tfila { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--linea); width: 100%; }
+.tfila .rk { width: 20px; flex: none; text-align: center; font: 800 14px/1 Inter; color: var(--mut); }
+.tfila .foto { width: 34px; height: 34px; }
+.tfila > div { flex: 1; min-width: 0; }
+.tfila b { display: block; font: 700 14px/1.2 Inter; }
+.tfila .valor { font-size: 20px; flex: none; }
+
+/* ---------- jugador ---------- */
+.fj { border-radius: 22px; background: var(--grad); color: #fff; padding: 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 12px 26px rgba(13,35,71,.24); text-shadow: 0 1px 3px rgba(5,15,35,.35); }
+.fj .foto { width: 84px; height: 84px; box-shadow: 0 0 0 3px rgba(255,255,255,.85); }
+.fj b { display: block; font: italic 900 30px/.95 var(--disp); text-transform: uppercase; }
+.fj small { display: block; font: 600 13px/1.35 Inter; opacity: .92; margin-top: 6px; }
+.roles { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.roles span { height: 22px; padding: 0 9px; border-radius: 999px; background: rgba(255,255,255,.2); font: 700 11.5px/22px Inter; text-shadow: none; }
+.barras { padding: 6px 14px 10px; }
+.bj { display: grid; grid-template-columns: 30px 88px 1fr 30px; align-items: center; gap: 8px; padding: 7px 0; width: 100%; }
+.bj .rlogo { width: 28px; height: 28px; }
+.bj small { font: 600 12px/1.2 Inter; color: var(--mut); white-space: nowrap; }
+.bj .b { height: 14px; display: flex; align-items: center; }
+.bj .b i { display: block; height: 14px; min-width: 2px; background: var(--nos); border-radius: 0 4px 4px 0; }
+.bj .b i.cero { background: var(--eje); }
+.bj strong { font: 700 13.5px/1 Inter; font-variant-numeric: tabular-nums; text-align: right; }
+.bj.no small, .bj.no strong { color: #7c8798; }
+
+/* ---------- guía ---------- */
+.nivel { display: flex; align-items: center; gap: 10px; margin: 24px 2px 4px; }
+.nivel i { width: 30px; height: 30px; border-radius: 10px; background: var(--boton); color: #fff; display: grid; place-items: center; font: italic 900 20px/1 var(--disp); }
+.nivel b { font: 800 16px/1.2 Inter; display: block; }
+.nivel small { font: 500 12.5px/1.3 Inter; color: var(--mut); display: block; }
+.gm { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; padding: 11px 14px; border-top: 1px solid var(--linea); width: 100%; }
+.gm:first-child { border-top: 0; }
+.gm b { font: 700 14px/1.25 Inter; }
+.gm small { grid-column: 1; font: 500 12.5px/1.35 Inter; color: var(--mut); }
+.gm .v { grid-row: span 2; font: italic 900 22px/1 var(--disp); color: var(--navy); text-align: right; white-space: nowrap; }
+.gm .v em { display: block; font: 600 11px/1.2 Inter; font-style: normal; color: var(--mut); margin-top: 2px; }
+.gm .v.falta { font: 700 11.5px/1.2 Inter; color: var(--mut); max-width: 110px; white-space: normal; }
+.ancho .guia { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; align-items: start; }
+.ancho .guia > div > div:first-child .nivel { margin-top: 8px; }
+.sub { font: 700 11px/1 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--mut); margin: 16px 4px 8px; }
+
+/* ---------- hoja que explica cada métrica ---------- */
+.hoja-cont { position: fixed; inset: 0; z-index: 20; }
+.velo { position: absolute; inset: 0; background: rgba(11,27,51,.38); animation: ap .15s ease-out; }
+.hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 8px 18px calc(22px + env(safe-area-inset-bottom)); max-height: 90%; overflow-y: auto; animation: sube .2s ease-out; }
+.hoja::before { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d3d9e2; margin: 0 auto 10px; }
+.ancho .hoja { left: auto; top: 0; width: 440px; max-height: none; border-radius: 0; padding: 22px 24px; animation: entra .2s ease-out; box-shadow: -12px 0 40px rgba(11,27,51,.18); }
+.ancho .hoja::before { display: none; }
+.hoja .cierra { position: sticky; top: 0; float: right; width: 36px; height: 36px; border-radius: 50%; background: var(--igual-f); display: grid; place-items: center; font: 400 22px/1 Inter; margin: 0 -6px 0 8px; z-index: 2; }
+.hoja h3 { font: 800 21px/1.2 Inter; margin: 2px 0 2px; }
+.hoja .donde { font: 600 12.5px/1.3 Inter; color: var(--mut); margin: 0 0 12px; }
+.hoja .grande { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.hoja .grande .val { font-size: 46px; }
+.hoja .grande .val small { font-size: 24px; }
+.hoja h4 { font: 700 11px/1 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--mut); margin: 18px 0 6px; }
+.hoja p { margin: 0 0 6px; font: 500 14.5px/1.5 Inter; }
+.hoja p.q { font: 600 16px/1.45 Inter; }
+.hoja .cuenta { background: var(--bg); border-radius: 12px; padding: 10px 12px; font: 600 14px/1.5 Inter; }
+.hoja .cuenta b { font-weight: 800; color: var(--navy); }
+.hoja .par { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hoja .par > div { background: var(--bg); border-radius: 12px; padding: 10px 12px; }
+.hoja .par span { display: block; font: 600 11.5px/1.2 Inter; color: var(--mut); margin-bottom: 4px; }
+.hoja .par b { font: italic 900 24px/1 var(--disp); color: var(--navy); }
+.hoja .par b small { font: 600 11.5px/1 Inter; font-style: normal; color: var(--mut); margin-left: 4px; }
+.mas { display: flex; flex-wrap: wrap; gap: 6px; }
+.mas button { min-height: 36px; padding: 0 12px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--linea); font: 700 13px/1 Inter; color: var(--azul); }
+.conf { display: flex; gap: 10px; align-items: flex-start; }
+.conf .pts { display: flex; gap: 3px; padding-top: 5px; flex: none; }
+.conf .pts i { width: 9px; height: 9px; border-radius: 50%; background: var(--linea); }
+.conf .pts i.si { background: var(--navy); }
+.conf b { font-weight: 800; }
+@keyframes sube { from { transform: translateY(24px); opacity: 0; } }
+@keyframes entra { from { transform: translateX(24px); opacity: 0; } }
+@keyframes ap { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+/* globo de las gráficas */
+#globo { position: fixed; z-index: 40; pointer-events: none; background: var(--ink); color: #fff; border-radius: 10px; padding: 8px 10px; font: 500 12px/1.35 Inter; box-shadow: 0 6px 18px rgba(0,0,0,.25); max-width: 240px; display: none; }
+#globo b { display: block; font: 800 14px/1.25 Inter; }
+#globo span { display: block; opacity: .85; }
+#globo .r { display: flex; align-items: center; gap: 7px; margin-top: 3px; }
+#globo .r i { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+#globo .r b { display: inline; font-size: 13px; }
+#globo .r span { display: inline; }
+</style>
+</head>
+<body>
+<button class="salir-marco" data-a="tel">‹ Ver en laptop</button>
+<div id="app"></div>
+<div id="globo" role="status"></div>
+<script>
+'use strict';
+const D = /*__DATOS__*/null;
+const LOGOS = /*__LOGOS__*/null;
+
+// ---------- lo fijo: equipos, plantel, íconos ----------
+const EQUIPOS = {belugas: ['BEL', 'Belugas'], 'only-fins': ['ONF', 'Only Fins'], 'triple-t': ['TTT', 'Triple T'], bucaneros: ['BUC', 'Bucaneros'], destroyers: ['DES', 'Destroyers'], kickass: ['KCK', 'Kickass'], bulldogs: ['BUL', 'Bulldogs'],
+  'lobos-its': ['LOB', 'Lobos ITS'], kaffies: ['KAF', 'Kaffies'], 'ultimos-aztecas': ['AZT', 'Últimos Aztecas'], 'los-fantasmas': ['FAN', 'Los Fantasmas'], panini: ['PAN', 'Panini']};
+const R = (id) => ({id, corto: EQUIPOS[id][0], largo: EQUIPOS[id][1]});
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+const rlogo = (id, px) => LOGOS[id] ? `<span class="rlogo"${px ? ` style="width:${px}px;height:${px}px"` : ''}><img src="${LOGOS[id]}" alt="${esc(EQUIPOS[id][1])}"></span>` : `<span class="rlogo sin"${px ? ` style="width:${px}px;height:${px}px"` : ''}>${EQUIPOS[id][0]}</span>`;
+// plantel inventado, el mismo del prototipo de Inicio; retrato: [piel, pelo, color de pelo, barba, extra, fondo]
+const PIEL = ['#f3cfb3', '#e5b18c', '#cf9268', '#ad7249', '#8b5636', '#f7d9c4'], PELO = ['#1c1917', '#3b2a20', '#5a3b26', '#2b2b2b', '#8a5a2b'];
+const FONDO = ['#dbeafe', '#e0f2fe', '#ede9fe', '#dcfce7', '#fee2e2', '#fef3c7', '#e2e8f0', '#fae8ff', '#ccfbf1'];
+const PLANTEL = [
+  {id: 'sr', nombre: 'Santiago Ruiz', corto: 'Santiago', r: [1, 'corto', 0, '', '', 0]}, {id: 'eo', nombre: 'Emiliano Ortega', corto: 'Emiliano', r: [2, 'chino', 1, '', '', 3]},
+  {id: 'mv', nombre: 'Mateo Villalobos', corto: 'Mateo', r: [3, 'rapado', 0, 'barba', '', 5]}, {id: 'rs', nombre: 'Rodrigo Salinas', corto: 'Rodrigo', r: [0, 'raya', 2, '', 'lentes', 2]},
+  {id: 'me', nombre: 'Maximiliano Echeverría Santibáñez', corto: 'Maximiliano', r: [2, 'largo', 0, '', '', 7]}, {id: 'ic', nombre: 'Iván Cárdenas', corto: 'Iván', r: [4, 'calvo', 0, 'barba', '', 4]},
+  {id: 'jm', nombre: 'Jesús Morales', corto: 'Jesús', r: [3, 'gorra', 3, 'bigote', '', 1]}, {id: 'bt', nombre: 'Bruno Tapia', corto: 'Bruno', r: [5, 'corto', 4, '', '', 8]},
+  {id: 'lp', nombre: 'Leo Pineda', corto: 'Leo', r: [1, 'chino', 0, 'candado', '', 6]}, {id: 'jg', nombre: 'Joaquín de la Garza', corto: 'Joaquín', r: null},
+];
+const P = (id) => PLANTEL.find((x) => x.id === id);
+const nom = (id) => id ? esc(P(id).corto) : 'alguien';
+function retrato(p) {
+  const [piel, pelo, cp, barba, extra, fondo] = p.r, sk = PIEL[piel], hc = PELO[cp], bg = FONDO[fondo];
+  let atras = '', arriba = '', cara = '';
+  if (pelo === 'largo') atras = `<path d="M27 44 C25 24 36 14 48 14 C61 14 71 24 69 44 L71 70 C64 74 32 74 25 70 Z" fill="${hc}"/>`;
+  if (pelo === 'corto') arriba = `<path d="M30.5 40 C29 23 38 15 48.5 15 C60 15 68 23 65.5 40 C63 31 57 26.5 48 26.5 C39.5 26.5 33 31 30.5 40 Z" fill="${hc}"/>`;
+  if (pelo === 'rapado') arriba = `<path d="M31.5 38 C31 24 39 18 48 18 C57 18 65 24 64.5 38 C62 31 56 28 48 28 C40 28 34 31 31.5 38 Z" fill="${hc}" opacity=".78"/>`;
+  if (pelo === 'raya') arriba = `<path d="M30.5 41 C28 22 40 14 50 15 C61 16 68 24 65.5 40 C64 32 60 28 54 27 C50 30 42 31 33 33 C31.5 35.5 31 38 30.5 41 Z" fill="${hc}"/>`;
+  if (pelo === 'chino') arriba = [[34, 30, 7], [41, 23, 7.5], [49, 20, 8], [57, 23, 7.5], [63, 30, 7], [31, 37, 5], [65, 37, 5], [45, 26, 6], [53, 26, 6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${hc}"/>`).join('');
+  if (pelo === 'largo') arriba = `<path d="M30.5 40 C29 22 38 15 48.5 15 C60 15 68 22 65.5 40 C62 30 56 25 48 25 C40 25 34 30 30.5 40 Z" fill="${hc}"/>`;
+  if (pelo === 'gorra') arriba = '<path d="M29.5 36 C29 22 38 16 48 16 C58 16 67 22 66.5 36 Z" fill="#0d2347"/><path d="M60 33 C66 32 72 34 76 37 C71 38 65 37.5 61 37 Z" fill="#0d2347"/><circle cx="48" cy="17.5" r="2" fill="#5aaeff"/>';
+  if (barba === 'barba') cara += `<path d="M32 46 C33 60 40 64 48 64 C56 64 63 60 64 46 C61 54 57 56 48 56 C39 56 35 54 32 46 Z" fill="${hc}" opacity=".92"/>`;
+  if (barba === 'candado') cara += `<path d="M41 53.5 C43 52 53 52 55 53.5 C55 58.5 52 61 48 61 C44 61 41 58.5 41 53.5 Z M43.5 55.5 C45 57.5 51 57.5 52.5 55.5 C51 54.8 45 54.8 43.5 55.5 Z" fill="${hc}" fill-rule="evenodd" opacity=".95"/>`;
+  if (barba === 'bigote') cara += `<path d="M41.5 51.5 C44 49.5 52 49.5 54.5 51.5 C52 52.5 44 52.5 41.5 51.5 Z" fill="${hc}"/>`;
+  if (extra === 'lentes') cara += '<g fill="none" stroke="#1f2937" stroke-width="1.6"><rect x="36" y="38.5" width="10" height="7.5" rx="3"/><rect x="50" y="38.5" width="10" height="7.5" rx="3"/><path d="M46 41.5 h4"/></g>';
+  return `<svg viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="${bg}"/>${atras}
+  <path d="M10 98 C13 78 29 69 48 69 C67 69 83 78 86 98 Z" fill="#0d2347"/><path d="M38 69 L48 79 L58 69" fill="none" stroke="#5aaeff" stroke-width="3"/>
+  <rect x="41" y="56" width="14" height="15" rx="5" fill="${sk}"/><rect x="41" y="56" width="14" height="6" fill="rgba(0,0,0,.08)"/>
+  <ellipse cx="31.5" cy="43" rx="3.4" ry="4.6" fill="${sk}"/><ellipse cx="64.5" cy="43" rx="3.4" ry="4.6" fill="${sk}"/><ellipse cx="48" cy="41" rx="17" ry="20" fill="${sk}"/>${arriba}
+  <path d="M38.5 36.5 q3.5 -2 7 0 M50.5 36.5 q3.5 -2 7 0" fill="none" stroke="${hc}" stroke-width="1.9" stroke-linecap="round"/>
+  <circle cx="42" cy="42.2" r="1.9" fill="#1b1b1b"/><circle cx="54" cy="42.2" r="1.9" fill="#1b1b1b"/>
+  <path d="M48.5 43 q-2.2 4.8 .6 5.4" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M43 52.3 q5 3.6 10 0" fill="none" stroke="#7a3b2a" stroke-width="1.8" stroke-linecap="round"/>${cara}</svg>`;
+}
+const iniciales = (n) => n.split(/\s+/).filter((w) => w.length > 2).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+const foto = (p) => `<span class="foto"><span>${p.r ? retrato(p) : `<span class="ini">${iniciales(p.nombre)}</span>`}</span></span>`;
+// íconos simples, de una tinta (los glifos de TD e intercepción son los del prototipo de Inicio) y los de las pestañas
+const ICO = {
+  int: '<path d="M18 5v6a5 5 0 0 1-5 5H6M10 12l-4 4 4 4"/>', td: '<path d="M12 20v-7M6 13h12M6 13V4.5M18 13V4.5"/>',
+  reloj: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  partido: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M12 5v14"/><circle cx="12" cy="12" r="2.6"/>', temporada: '<path d="M3 17l5-5 4 3 8-8M15 7h5v5"/>',
+  jugadores: '<circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c.6-3.6 3.2-5.6 6.5-5.6s5.9 2 6.5 5.6M16 5.2a3.2 3.2 0 0 1 0 6M18.5 14.8c1.7.8 2.7 2.5 3 5.2"/>', guia: '<path d="M5 4.5h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3zM9 9h5M9 13h5"/>',
+};
+const svgIco = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICO[k]}</svg>`;
+
+// ---------- las cuentas: todo sale de las filas (una por jugada) ----------
+const JUEGOS = D.juegos, FILAS = D.filas, G = (id) => JUEGOS.find((j) => j.id === id), TODOS = JUEGOS.map((j) => j.id);
+const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const fecha = (g) => { const [, m, d] = G(g).fecha.split('-'); return `${+d} ${MES[m - 1]}`; };
+const rival = (g) => R(G(g).rival);
+const minuto = (t) => Math.floor(t / 60) + 1;
+const memo = (fn) => { const c = {}; return (k) => c[k] || (c[k] = fn(k)); };
+// una serie = cada vez que un equipo tiene el balón, hasta que anota, lo pierde o se acaba el tiempo
+const seriesDe = memo((g) => {
+  const fs = FILAS.filter((f) => f.g === g); let nos = 0, ellos = 0;
+  return [...new Set(fs.map((f) => f.s))].map((s) => {
+    const todas = fs.filter((f) => f.s === s), jug = todas.filter((f) => f.tipo !== 'castigo' && f.tipo !== 'conv'), ult = jug[jug.length - 1], conv = todas.find((f) => f.tipo === 'conv');
+    const l = jug[0].l, m = jug[0].m, sig = fs.find((f) => f.s === s + 1), tdDef = ult.tipo === 'intn' && !!ult.td;
+    const fin = ult.td && !tdDef ? 'td' : ult.tipo === 'int' || ult.tipo === 'intn' ? 'int' : sig && sig.m === m ? 'downs' : 'reloj';
+    const cv = conv && conv.ok ? conv.pts : 0, ptsNos = (l === 'A' && fin === 'td' ? 6 + cv : 0) + (tdDef ? 6 + cv : 0), ptsEllos = l === 'D' && fin === 'td' ? 6 + cv : 0;
+    nos += ptsNos; ellos += ptsEllos;
+    return {g, s, l, m, todas, jug, ult, conv, fin, tdDef, corta: !!jug[0].corta, cruzo: fin === 'td' || jug.some((f) => f.pr), ptsNos, ptsEllos, nos, ellos, t: ult.t};
+  });
+});
+const qbDe = memo((g) => (FILAS.find((f) => f.g === g && f.qb) || {}).qb); // quien lanzó ese partido
+const VACIO = () => ({ser: 0, td: 0, sInt: 0, int: 0, sackr: 0, downs: 0, reloj: 0, jug: 0, pase: 0, incompleto: 0, corrida: 0, parada: 0, bandera: 0, tapado: 0, sack: 0, intn: 0, tdr: 0, tdPase: 0, tdCorr: 0, tdDef: 0,
+  cInt: 0, cOk: 0, c1i: 0, c1o: 0, c2i: 0, c2o: 0, cPts: 0, pts: 0, cruzo: 0, d34: 0, d34ok: 0, mit: [0, 0], orden: []});
+// A = cuando atacamos, D = cuando defendemos (o sea, lo que hizo el rival con el balón)
+const cuenta = memo((clave) => {
+  const gs = clave.split(','), c = {gs, pj: gs.length, pf: 0, pc: 0, gan: 0, per: 0, robos: 0, perdidas: 0, favor: 0, contra: 0, A: VACIO(), D: VACIO()};
+  for (const g of gs) {
+    const j = G(g); c.pf += j.nos; c.pc += j.ellos; if (j.nos > j.ellos) c.gan++; else c.per++;
+    for (const f of FILAS) if (f.g === g && f.tipo === 'castigo') c[f.a]++;
+    for (const s of seriesDe(g)) {
+      const X = c[s.l]; X.ser++; X[s.fin === 'int' ? 'sInt' : s.fin]++; X.orden.push(s.fin); if (s.cruzo) X.cruzo++;
+      for (const f of s.jug) { X.jug++; X[f.tipo]++; if (f.tipo === 'parada' && f.q === qbDe(g)) X.sackr++; if (f.td && f.tipo === 'pase') X.tdPase++; if (f.td && f.tipo === 'corrida') X.tdCorr++; if (f.d >= 3) { X.d34++; if (f.pr || (f.td && f.tipo !== 'intn')) X.d34ok++; } }
+      if (s.tdDef) c.A.tdDef++;
+      if (s.conv) { const Y = c[s.conv.l]; Y.cInt++; Y[`c${s.conv.pts}i`]++; if (s.conv.ok) { Y.cOk++; Y[`c${s.conv.pts}o`]++; Y.cPts += s.conv.pts; } }
+      c.A.pts += s.l === 'A' ? s.ptsNos : 0; c.A.mit[s.m - 1] += s.ptsNos; c.D.mit[s.m - 1] += s.ptsEllos;
+    }
+  }
+  c.A.att = c.A.pase + c.A.incompleto + c.A.int; c.A.buenas = c.A.pase + c.A.corrida; c.D.frenadas = c.D.tapado + c.D.sack + c.D.intn;
+  c.robos = c.D.intn; c.perdidas = c.A.int; c.D.fren = c.D.ser - c.D.td;
+  return c;
+});
+const C = (gs) => cuenta((Array.isArray(gs) ? gs : [gs]).join(','));
+const otros = (g) => TODOS.filter((x) => x !== g);
+// rachas dentro de los partidos: series seguidas anotando y puntos seguidos sin respuesta
+const rachas = memo((clave) => { let ser = 0, nos = 0, ellos = 0;
+  for (const g of clave.split(',')) { let a = 0, pn = 0, pe = 0; for (const s of seriesDe(g)) { if (s.l === 'A') { a = s.fin === 'td' ? a + 1 : 0; ser = Math.max(ser, a); } if (s.ptsNos) { pn += s.ptsNos; pe = 0; nos = Math.max(nos, pn); } if (s.ptsEllos) { pe += s.ptsEllos; pn = 0; ellos = Math.max(ellos, pe); } } }
+  return {ser, nos, ellos}; });
+const rachaPartidos = () => { let n = 0; const u = JUEGOS[JUEGOS.length - 1], gano = u.nos > u.ellos; for (let i = JUEGOS.length - 1; i >= 0 && (JUEGOS[i].nos > JUEGOS[i].ellos) === gano; i--) n++; return `${n} ${gano ? (n === 1 ? 'ganado' : 'ganados') : (n === 1 ? 'perdido' : 'perdidos')}`; };
+// lo de cada jugador
+const PESOS = {td: 6, tdp: 4, intn: 4, sack: 2, rec: 1, band: 1, tap: 1, conv: 1, comp: .5, car: .5}; // los «puntos» del prototipo de Inicio
+const jugStats = memo((clave) => {
+  const [id, ...gs] = clave.split(','), x = {pj: 0, att: 0, comp: 0, tdp: 0, intl: 0, sackr: 0, rec: 0, tgt: 0, car: 0, td: 0, conv: 0, band: 0, tap: 0, sack: 0, intn: 0, tdd: 0};
+  for (const g of gs) {
+    if (!G(g).van.includes(id)) continue; x.pj++;
+    for (const f of FILAS) { if (f.g !== g) continue;
+      if (f.l === 'A' && f.tipo !== 'conv') {
+        if (f.qb === id && ['pase', 'incompleto', 'int'].includes(f.tipo)) { x.att++; if (f.tipo === 'pase') { x.comp++; if (f.td) x.tdp++; } if (f.tipo === 'int') x.intl++; }
+        if (f.q === id) { if (f.tipo === 'pase') { x.rec++; x.tgt++; } if (f.tipo === 'incompleto') x.tgt++; if (f.tipo === 'corrida') x.car++; if (f.td) x.td++; if (f.tipo === 'parada' && qbDe(g) === id) x.sackr++; }
+      } else if (f.q === id) {
+        if (f.tipo === 'conv') { if (f.l === 'A' && f.ok) x.conv += f.pts; if (f.l === 'D') x.tap++; }
+        else if (f.tipo === 'bandera') x.band++; else if (f.tipo === 'tapado') x.tap++; else if (f.tipo === 'sack') x.sack++; else if (f.tipo === 'intn') { x.intn++; if (f.td) { x.td++; x.tdd++; } }
+      }
+    }
+  }
+  x.grandes = x.intn + x.sack + x.tap; x.ptsAnot = x.td * 6 + x.conv;
+  x.pts = Math.round(Object.entries(PESOS).reduce((a, [k, w]) => a + (x[k] || 0) * w, 0) * 10) / 10;
+  return x;
+});
+const J = (id, gs) => jugStats([id, ...(Array.isArray(gs) ? gs : [gs])].join(','));
+const linea = (x) => { if (!x.pj) return 'No fue'; const o = [];
+  if (x.att) o.push(`${x.comp} de ${x.att} pases`); if (x.tdp) o.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} recepci${x.rec > 1 ? 'ones' : 'ón'}`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`);
+  if (x.intn) o.push(`${x.intn} intercepci${x.intn > 1 ? 'ones' : 'ón'}`); if (x.sack) o.push(`${x.sack} sack${x.sack > 1 ? 's' : ''}`); if (x.band) o.push(`${x.band} bandera${x.band > 1 ? 's' : ''}`); if (x.tap) o.push(`${x.tap} tapado${x.tap > 1 ? 's' : ''}`); if (x.conv) o.push(`conversión +${x.conv}`);
+  return o.slice(0, 3).join(' · ') || 'Sin jugadas con su nombre'; };
+const roles = (x) => [x.att >= 10 && 'Lanza', x.tgt >= 6 && 'Recibe', x.car >= 5 && 'Corre', x.band + x.tap + x.sack + x.intn >= 6 && 'Defiende'].filter(Boolean);
+
+// ---------- muestra chica: cuándo un número todavía no dice nada ----------
+const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+// intervalo de Wilson al 95 %: entre qué valores podría andar el porcentaje «de verdad»
+function wilson(a, n) { if (!n) return [0, 100]; const z = 1.96, p = a / n, d = 1 + z * z / n, c = (p + z * z / (2 * n)) / d, h = z * Math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / d; return [Math.max(0, Math.round((c - h) * 100)), Math.min(100, Math.round((c + h) * 100))]; }
+const CONF = [['Todavía no dice nada', 'Con menos de 10 no se puede sacar un porcentaje serio: por eso lo ves como «tantos de tantos».'], ['Apenas una pista', 'De 10 a 29: da una idea, pero un par de jugadas lo mueven mucho.'], ['Ya dice algo', 'De 30 a 99: ya se puede comparar, con cuidado.'], ['Confiable', 'Con 100 o más, el número ya es de fiar.']];
+const nivelConf = (n) => n >= 100 ? 3 : n >= 30 ? 2 : n >= 10 ? 1 : 0;
+const NCONF_P = (pj) => pj >= 6 ? 2 : pj >= 3 ? 1 : 0;
+
+// ---------- las métricas: nombre llano, cuenta exacta, de qué toques sale, cuánta muestra pide ----------
+// tipo fr = «tantos de tantos» (num y den); n = un número; mejor = hacia dónde es bueno; umbral = cuánto es «distinto de costumbre»
+const fr = (num, den) => ({num, den});
+const M = {
+  dif: {n: 'Marcador y diferencia', nivel: 1, grupo: 'Marcador', tipo: 'n', mejor: 'alto', umbral: 6, unidad: 'puntos',
+    v: (c) => c.pf - c.pc, riv: (c) => c.pc - c.pf, f: (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10) / 10),
+    que: 'Los puntos que hicimos menos los que nos hicieron. Es lo primero que hay que ver: ganar por mucho o por poco cuenta una historia distinta.',
+    como: 'Touchdown = 6. Conversión = 1 (desde la yarda 5) o 2 (desde la 10). Diferencia = puntos a favor − puntos en contra.',
+    ej: (c) => `Hicimos <b>${c.pf}</b> y nos hicieron <b>${c.pc}</b>: ${c.pf} − ${c.pc} = <b>${M.dif.f(c.pf - c.pc)}</b>.`,
+    toques: 'TD nuestro, TD del rival y cada conversión (entró o no). Ningún toque extra.',
+    muestra: 'En un partido es un hecho. En la temporada, la diferencia total dice más de qué tan buenos somos que el récord, pero pide unos 5 partidos.'},
+  serieAnot: {n: 'Series anotadas', nivel: 1, grupo: 'Ataque', tipo: 'fr', mejor: 'alto', umbral: 1, unidad: 'series', pips: 'A',
+    v: (c) => fr(c.A.td, c.A.ser), riv: (c) => fr(c.D.td, c.D.ser),
+    que: 'De todas las veces que tuvimos el balón, en cuántas acabamos anotando touchdown.',
+    como: 'Series que acabaron en TD ÷ series que tuvimos. Una serie empieza cuando nos toca atacar y acaba cuando anotamos, nos interceptan, se nos acaban las 4 oportunidades o se acaba el tiempo.',
+    ej: (c) => `Tuvimos el balón <b>${c.A.ser}</b> veces y anotamos en <b>${c.A.td}</b>: ${c.A.td} ÷ ${c.A.ser} = <b>${pct(c.A.td, c.A.ser)}%</b>.`,
+    toques: 'Ningún toque extra: sale de marcar el TD y de cambiar entre «Atacamos» y «Defendemos».',
+    muestra: 'Un partido trae unas 7 series: ahí solo vale el «3 de 7». Como porcentaje empieza a decir algo con 30 series (4 o 5 partidos).',
+    nota: 'En tochito casi todas las series arrancan en el mismo lugar (tu yarda 5), así que este número compara parejo. En la NFL no: ahí depende de dónde te dejan el balón.'},
+  serieFren: {n: 'Series frenadas', nivel: 1, grupo: 'Defensa', tipo: 'fr', mejor: 'alto', umbral: 1, unidad: 'series', pips: 'D',
+    v: (c) => fr(c.D.fren, c.D.ser), riv: (c) => fr(c.A.ser - c.A.td, c.A.ser),
+    que: 'De todas las veces que el rival tuvo el balón, en cuántas NO nos anotó.',
+    como: 'Series del rival sin TD ÷ series del rival. Cuenta frenarlos en la 4ª oportunidad, interceptarlos o que se les acabe el tiempo.',
+    ej: (c) => `El rival tuvo el balón <b>${c.D.ser}</b> veces y lo frenamos en <b>${c.D.fren}</b>: ${c.D.fren} ÷ ${c.D.ser} = <b>${pct(c.D.fren, c.D.ser)}%</b>.`,
+    toques: 'Ningún toque extra: sale de marcar «TD del rival» y de cambiar entre «Atacamos» y «Defendemos».',
+    muestra: 'Igual que las series anotadas: en un partido solo vale el «5 de 7»; el porcentaje pide 30 series (4 o 5 partidos).'},
+  pases: {n: 'Pases completos', nivel: 1, grupo: 'Ataque', tipo: 'fr', mejor: 'alto', umbral: 2, unidad: 'pases',
+    v: (c) => fr(c.A.pase, c.A.att),
+    que: 'De cada pase que lanzamos, cuántos llegaron a las manos de un compañero.',
+    como: 'Pases completos ÷ pases lanzados. Lanzado = completo + incompleto + interceptado. Un sack no cuenta como pase.',
+    ej: (c) => `Lanzamos <b>${c.A.att}</b> pases y completamos <b>${c.A.pase}</b>: ${c.A.pase} ÷ ${c.A.att} = <b>${pct(c.A.pase, c.A.att)}%</b>.`,
+    toques: '«Pase completo», «Incompleto» o «Intercepción», y quién. Ningún toque extra.',
+    muestra: 'Un partido trae unos 20 pases: es apenas una pista (dos pases mueven 10 puntos). Dice algo desde 5 partidos, unos 100 pases.'},
+  balones: {n: 'Balones robados y perdidos', nivel: 1, grupo: 'Balones', tipo: 'n', mejor: 'alto', umbral: 1, unidad: 'balones',
+    v: (c) => c.robos - c.perdidas, riv: (c) => c.perdidas - c.robos, f: (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(Math.round(v * 10) / 10),
+    que: 'Las intercepciones que hicimos menos las que nos hicieron. Cada balón perdido es una serie regalada.',
+    como: 'Intercepciones nuestras − intercepciones que lanzamos. En tochito no hay balones sueltos: el balón solo se pierde por intercepción.',
+    ej: (c) => `Robamos <b>${c.robos}</b> y perdimos <b>${c.perdidas}</b>: ${c.robos} − ${c.perdidas} = <b>${M.balones.f(c.robos - c.perdidas)}</b>.`,
+    toques: '«Intercepción» en ataque (la perdimos) y en defensa (la robamos, y quién). Ningún toque extra.',
+    muestra: 'Son pocas por partido (0 a 2) y tienen mucho de suerte. Mira el total de la temporada, no el de un partido.'},
+  conv: {n: 'Conversiones', nivel: 1, grupo: 'Ataque', tipo: 'fr', mejor: 'alto', umbral: 1, unidad: 'conversiones', pipsConv: 1,
+    v: (c) => fr(c.A.cOk, c.A.cInt), riv: (c) => fr(c.D.cOk, c.D.cInt),
+    que: 'Los puntos extra después de cada touchdown: cuántas metimos de las que intentamos.',
+    como: 'Conversiones que entraron ÷ conversiones intentadas, juntando las de 1 y las de 2.',
+    ej: (c) => `Intentamos <b>${c.A.cInt}</b> y entraron <b>${c.A.cOk}</b> (${c.A.cPts} punto${c.A.cPts === 1 ? '' : 's'}).`,
+    toques: 'Después del TD: de 1 o de 2, «Entró» o «No entró», y quién. Ya viene en el flujo.',
+    muestra: 'Son 2 o 3 por partido: en un partido no dice nada. Toda la temporada junta apenas da una pista (unas 25).',
+    nota: 'Los partidos cerrados se deciden aquí: 21–20 contra Últimos Aztecas fue 3 de 3 nuestras contra 2 de 3 de ellos.'},
+  ptsSerie: {n: 'Puntos por serie', nivel: 2, grupo: 'Ataque', tipo: 'n', mejor: 'alto', umbral: .9, unidad: 'puntos',
+    v: (c) => c.A.ser ? c.A.pts / c.A.ser : 0, riv: (c) => c.D.ser ? c.pc / c.D.ser : 0, f: (v) => v.toFixed(1),
+    que: 'Cuántos puntos sacamos, en promedio, cada vez que tuvimos el balón.',
+    como: 'Puntos del ataque (TD y conversiones) ÷ series que tuvimos. No cuenta los TD de la defensa.',
+    ej: (c) => `El ataque hizo <b>${c.A.pts}</b> puntos en <b>${c.A.ser}</b> series: ${c.A.pts} ÷ ${c.A.ser} = <b>${(c.A.pts / c.A.ser).toFixed(1)}</b>.`,
+    toques: 'Ningún toque extra.', muestra: 'Lo mismo que las series anotadas: pide unas 30 series (4 o 5 partidos).'},
+  buenas: {n: 'Jugadas buenas', nivel: 2, grupo: 'Ataque', tipo: 'fr', mejor: 'alto', umbral: 3, unidad: 'jugadas',
+    v: (c) => fr(c.A.buenas, c.A.jug), riv: (c) => fr(c.D.bandera + c.D.tdr, c.D.jug),
+    que: 'De cada jugada de ataque, cuántas avanzaron: pase completo o corrida.',
+    como: '(Pases completos + corridas) ÷ jugadas de ataque. No son buenas: incompleto, «nos pararon» e intercepción. Los castigos no cuentan.',
+    ej: (c) => `De <b>${c.A.jug}</b> jugadas, <b>${c.A.buenas}</b> avanzaron (${c.A.pase} pases y ${c.A.corrida} corridas): <b>${pct(c.A.buenas, c.A.jug)}%</b>.`,
+    toques: 'El primer toque de cada jugada («¿Qué pasó?»). Ningún toque extra.',
+    muestra: 'Un partido trae unas 30 jugadas: ya dice algo desde el primer partido.',
+    nota: 'Ojo: sin yardas, un pase de 1 yarda cuenta igual que uno de 20. La app de hoy pide 3 yardas o Primera para decir que «funcionó».'},
+  frenadas: {n: 'Jugadas que les frenamos', nivel: 2, grupo: 'Defensa', tipo: 'fr', mejor: 'alto', umbral: 3, unidad: 'jugadas',
+    v: (c) => fr(c.D.frenadas, c.D.jug), riv: (c) => fr(c.A.incompleto + c.A.parada + c.A.int, c.A.jug),
+    que: 'De cada jugada del rival, en cuántas no avanzó: pase incompleto o tapado, sack o intercepción.',
+    como: '(Pases incompletos del rival + sacks + intercepciones) ÷ jugadas del rival.',
+    ej: (c) => `De <b>${c.D.jug}</b> jugadas del rival, frenamos <b>${c.D.frenadas}</b> (${c.D.tapado} incompletos, ${c.D.sack} sack${c.D.sack === 1 ? '' : 's'}, ${c.D.intn} intercepci${c.D.intn === 1 ? 'ón' : 'ones'}): <b>${pct(c.D.frenadas, c.D.jug)}%</b>.`,
+    toques: 'El primer toque de cada jugada en defensa. Ningún toque extra.', muestra: 'Unas 30 jugadas por partido: ya dice algo desde el primer partido.'},
+  comoAnot: {n: 'Cómo anotamos', nivel: 2, grupo: 'Ataque', tipo: 'd',
+    partes: (c) => [['TD de pase', c.A.tdPase], ['TD corriendo', c.A.tdCorr], ['TD de la defensa', c.A.tdDef]],
+    corto: (c) => [c.A.tdPase, 'TD de pase'],
+    que: 'De dónde salen nuestros touchdowns: por pase, corriendo o de la defensa.',
+    como: 'Se cuenta cada TD según la jugada que lo anotó. Una intercepción regresada hasta la zona de anotación es TD de la defensa.',
+    toques: 'TD, y si fue pase o corrida. Ningún toque extra.', muestra: 'Son 2 o 3 TD por partido: míralo por temporada.'},
+  finSeries: {n: 'Cómo acabaron nuestras series', nivel: 2, grupo: 'Ataque', tipo: 'd',
+    partes: (c) => [['Touchdown', c.A.td], ['Se acabaron las oportunidades', c.A.downs], ['Intercepción', c.A.sInt], ['Se acabó el tiempo', c.A.reloj]],
+    corto: (c) => [c.A.downs, 'sin poder avanzar'],
+    que: 'Qué pasó cada vez que tuvimos el balón. Dice dónde se nos van las series: regalando el balón o sin poder avanzar.',
+    como: 'Cada serie cae en una de cuatro: TD, intercepción, se acabaron las 4 oportunidades o se acabó el tiempo.',
+    toques: 'Ningún toque extra.', muestra: 'Por temporada.'},
+  unoODos: {n: '¿Conviene ir por 1 o por 2?', nivel: 2, grupo: 'Ataque', tipo: 'd',
+    partes: (c) => [[`De 1: ${c.A.c1o} de ${c.A.c1i}`, c.A.c1i >= 5 ? (c.A.c1o / c.A.c1i).toFixed(2) + ' pts por intento' : 'muy pocos intentos'], [`De 2: ${c.A.c2o} de ${c.A.c2i}`, c.A.c2i >= 5 ? (c.A.c2o * 2 / c.A.c2i).toFixed(2) + ' pts por intento' : 'muy pocos intentos']],
+    corto: (c) => [c.A.c1i >= 5 ? (c.A.c1o / c.A.c1i).toFixed(2) : '—', 'puntos por intento de 1'],
+    que: 'Cuántos puntos nos deja, en promedio, cada intento de 1 y cada intento de 2. El que deje más es el que conviene.',
+    como: 'De 1: las que entraron ÷ las intentadas. De 2: (las que entraron × 2) ÷ las intentadas.',
+    toques: 'Ya viene en la conversión. Ningún toque extra.',
+    muestra: 'Es la que más partidos pide: hacen falta unos 15 intentos de cada una. En una temporada no se junta eso de las de 2: no decidas con este número todavía.'},
+  sacks: {n: 'Sacks', nivel: 2, grupo: 'Defensa', tipo: 'n', mejor: 'alto', umbral: 2, unidad: 'sacks', v: (c) => c.D.sack, riv: (c) => c.A.sackr, f: (v) => String(Math.round(v * 10) / 10),
+    que: 'Las veces que le quitamos la bandera al que lanza antes de que soltara el balón.', como: 'Se cuentan los «Sack» marcados en defensa. Del otro lado van los que nos hicieron: «Nos pararon» cuando el que traía el balón era el que lanza.',
+    ej: (c) => `Hicimos <b>${c.D.sack}</b> y nos hicieron <b>${c.A.sackr}</b>.`, toques: '«Sack» y quién. Ningún toque extra.', muestra: 'De 0 a 4 por partido: míralo por temporada.'},
+  castigos: {n: 'Castigos', nivel: 2, grupo: 'Disciplina', tipo: 'n', mejor: 'bajo', umbral: 2, unidad: 'castigos', v: (c) => c.contra, riv: (c) => c.favor, f: (v) => String(Math.round(v * 10) / 10),
+    que: 'Cuántas veces nos castigaron. Menos es mejor.', como: 'Castigos en contra nuestra. A un lado van los que fueron a favor (los que cometió el rival).',
+    ej: (c) => `Nos marcaron <b>${c.contra}</b> y al rival <b>${c.favor}</b>.`, toques: '«Castigo» y «A favor» o «En contra»: 2 toques. No hace falta el tipo de castigo.', muestra: 'Pocos por partido y dependen del árbitro: por temporada.'},
+  mitades: {n: 'Por mitad', nivel: 2, grupo: 'Marcador', tipo: 'd',
+    partes: (c) => [['1ª mitad', `${c.A.mit[0]}–${c.D.mit[0]}`], ['2ª mitad', `${c.A.mit[1]}–${c.D.mit[1]}`]],
+    corto: (c) => [`${c.A.mit[1]}–${c.D.mit[1]}`, 'en las segundas mitades'],
+    que: 'Los puntos de cada mitad. Dice si arrancamos dormidos o si se nos acaba la gasolina.',
+    como: 'Se suman los puntos de cada equipo antes y después del medio tiempo.',
+    toques: 'Un toque nuevo, una vez por partido: «Medio tiempo».', muestra: 'Por temporada: una mitad sola son 3 o 4 series.'},
+  racha: {n: 'Rachas', nivel: 2, grupo: 'Marcador', tipo: 'd',
+    partes: (c) => { const r = rachas(c.gs.join(',')); return [...(c.pj > 1 ? [['Racha de partidos', rachaPartidos() + ' al hilo']] : []), ['Series seguidas anotando', r.ser], ['Puntos seguidos nuestros', r.nos], ['Puntos seguidos de ellos', r.ellos]]; },
+    corto: () => [rachaPartidos(), 'al hilo'],
+    que: 'Los momentos en que el partido se fue de un lado: cuántas series seguidas anotamos y cuántos puntos metió un equipo sin que el otro contestara.',
+    como: 'Se recorre el partido en orden. «Series seguidas» cuenta nuestras series con TD una tras otra. «Puntos seguidos» suma lo que anota un equipo hasta que anota el otro.',
+    toques: 'Ningún toque extra: sale del orden en que se marcó.', muestra: 'Es un hecho de cada partido; no predice nada. Sirve para contar la historia, no para decidir.'},
+  reparto: {n: 'A quién le lanzamos', nivel: 2, grupo: 'Ataque', tipo: 'd',
+    partes: (c) => PLANTEL.map((p) => [p, J(p.id, c.gs)]).filter(([, x]) => x.tgt).sort((a, b) => b[1].tgt - a[1].tgt).slice(0, 5).map(([p, x]) => [`${esc(p.corto)}: atrapó ${x.rec} de`, x.tgt]),
+    corto: (c) => { const [p, x] = PLANTEL.map((q) => [q, J(q.id, c.gs)]).sort((a, b) => b[1].tgt - a[1].tgt)[0]; return [pct(x.tgt, c.A.pase + c.A.incompleto) + '%', `de los pases van a ${esc(p.corto)}`]; },
+    que: 'Cómo se reparten los pases: a quién buscamos más y cuántos atrapa cada quien.',
+    como: 'Pases que le lanzaron a cada quien = los completos más los incompletos que iban a él. Las intercepciones no cuentan porque ahí no se marca a quién iba.',
+    toques: '«Pase completo» y quién; «Incompleto» ya pregunta a quién iba. Ningún toque extra.', muestra: 'En un partido son 4 a 8 pases por persona: míralo por temporada.',
+    nota: 'Si casi todo va a una sola persona, el rival la va a cubrir doble. Un reparto parejo es más difícil de defender.'},
+  // con el toque «Primera» (hoy no se marca): ver la sección 6 del reporte
+  media: {n: 'Cruzamos media cancha', nivel: 3, grupo: 'Con el toque «Primera»', tipo: 'fr', mejor: 'alto', umbral: 1, unidad: 'series', pide: 'primera',
+    v: (c) => fr(c.A.cruzo, c.A.ser), riv: (c) => fr(c.D.cruzo, c.D.ser),
+    que: 'En cuántas series logramos la Primera, o sea pasar de media cancha.', como: 'Series en las que cruzamos media cancha (o anotamos) ÷ series que tuvimos.',
+    ej: (c) => `Cruzamos en <b>${c.A.cruzo}</b> de <b>${c.A.ser}</b> series.`, toques: 'Un toque más, solo cuando pasa: «Primera». Unas 4 veces por partido.', muestra: 'Como las series: 30 para un porcentaje.'},
+  cerrar: {n: 'Cerrar la serie', nivel: 3, grupo: 'Con el toque «Primera»', tipo: 'fr', mejor: 'alto', umbral: 1, unidad: 'series', pide: 'primera',
+    v: (c) => fr(c.A.td, c.A.cruzo), riv: (c) => fr(c.D.td, c.D.cruzo),
+    que: 'Ya que pasamos de media cancha, en cuántas acabamos anotando. Es la «zona roja» del tochito.', como: 'Series con TD ÷ series que cruzaron media cancha.',
+    ej: (c) => `Cruzamos <b>${c.A.cruzo}</b> veces y anotamos en <b>${c.A.td}</b>.`, toques: 'El mismo toque «Primera».', muestra: 'Unas 4 por partido: por temporada.'},
+  cuarta: {n: '3ª y 4ª oportunidad', nivel: 3, grupo: 'Con el toque «Primera»', tipo: 'fr', mejor: 'alto', umbral: 2, unidad: 'jugadas', pide: 'primera',
+    v: (c) => fr(c.A.d34ok, c.A.d34), riv: (c) => fr(c.D.d34ok, c.D.d34),
+    que: 'Cuando ya solo nos quedaban una o dos oportunidades, en cuántas sacamos la Primera o el TD.', como: 'Jugadas en 3ª o 4ª que lograron Primera o TD ÷ jugadas en 3ª o 4ª.',
+    ej: (c) => `En 3ª o 4ª jugamos <b>${c.A.d34}</b> veces y la sacamos en <b>${c.A.d34ok}</b>.`, toques: 'Con «Primera» la app sabe en qué oportunidad va cada jugada.', muestra: 'Unas 10 por partido: una pista desde el primer partido.'},
+  yardas: {n: 'Yardas', nivel: 3, grupo: 'Piden más captura', tipo: 'x', falta: 'Pide marcar yardas en cada jugada',
+    que: 'Cuánto avanza cada jugada, cada pase y cada jugador.', como: 'Yardas ganadas ÷ jugadas. Es la base de casi toda la estadística de football.',
+    toques: 'Un toque más por jugada con tres botones (corta, media, larga), o arrastrar en el mapa como hoy en el iPad.', muestra: 'Desde el primer partido.'},
+  playbook: {n: 'Qué jugada funciona', nivel: 3, grupo: 'Piden más captura', tipo: 'x', falta: 'Pide el número de pulsera',
+    que: 'Cuáles jugadas del playbook avanzan más y cuáles hay que quitar.', como: 'Jugadas buenas ÷ veces que se llamó, por cada jugada de la pulsera.',
+    toques: 'Un toque más por jugada: el número de la pulsera. Solo sirve si quien marca lo oye.', muestra: 'Cada jugada se llama 2 o 3 veces por partido: pide media temporada.'},
+  drops: {n: 'Pases soltados', nivel: 3, grupo: 'Piden más captura', tipo: 'x', falta: 'Pide decir por qué falló el pase',
+    que: 'De los incompletos, cuántos eran atrapables.', como: 'Pases soltados ÷ pases que le lanzaron.',
+    toques: 'Un toque más en cada incompleto (unos 8 por partido): «mal pase», «se le cayó» o «bien defendido». Es de opinión.', muestra: 'Pide toda la temporada por jugador.'},
+  conSin: {n: 'Con y sin un jugador', nivel: 3, grupo: 'Piden más partidos', tipo: 'x', falta: 'Pide varias temporadas',
+    que: 'Cómo le va al equipo cuando alguien está en la cancha y cuando no.', como: 'Series anotadas con él ÷ series con él, contra lo mismo sin él.',
+    toques: 'Ya se puede con «Quiénes van hoy», pero un partido sin alguien son 7 series.', muestra: 'Pide decenas de partidos; antes de eso es pura casualidad.'},
+};
+// jugador: lo que se muestra en su ficha, por lo que hace
+const MJ = {
+  pComp: {n: 'Pases completos', rol: 'Lanza', v: (x) => fr(x.comp, x.att), que: 'De los pases que lanzó, cuántos completó.', como: 'Pases completos ÷ pases lanzados (completos + incompletos + interceptados).', muestra: 'Un partido son unos 20 pases: apenas una pista. Dice algo con 100 (5 partidos). Hasta en la NFL, las yardas por pase de un QB tardan casi 400 pases en reflejar más habilidad que suerte.', toques: 'El que lanza queda marcado y solo se cambia cuando cambia.'},
+  tdp: {n: 'TD de pase', rol: 'Lanza', v: (x) => x.tdp, que: 'Touchdowns que lanzó.', como: 'TD que llegaron por un pase suyo.', muestra: 'Por temporada.', toques: 'TD y quién lo anotó; el que lanza ya está marcado.'},
+  intl: {n: 'Intercepciones lanzadas', rol: 'Lanza', v: (x) => x.intl, menos: 1, que: 'Pases suyos que acabaron en manos del rival. Menos es mejor.', como: 'Se cuentan las «Intercepción» marcadas en ataque.', muestra: 'Son pocas y con mucha suerte de por medio: nunca juzgues por un partido.', toques: '«Intercepción» en ataque.'},
+  rec: {n: 'Recepciones', rol: 'Recibe', v: (x) => x.rec, que: 'Pases que atrapó.', como: 'Se cuentan los «Pase completo» con su nombre.', muestra: 'Por temporada; en un partido son 3 a 6.', toques: '«Pase completo» y quién.'},
+  atrapa: {n: 'Atrapadas', rol: 'Recibe', v: (x) => fr(x.rec, x.tgt), que: 'De los pases que le lanzaron, cuántos atrapó.', como: 'Recepciones ÷ pases que le lanzaron (los completos más los incompletos que iban a él).', muestra: 'Le lanzan 4 a 8 por partido: el porcentaje pide 30 (5 partidos o más).', toques: '«Incompleto» ya pregunta a quién iba.', nota: 'No todo incompleto es culpa del que recibe: puede ser mal pase o buena defensa.'},
+  td: {n: 'Touchdowns', rol: 'Todos', v: (x) => x.td, que: 'Touchdowns que anotó: atrapando, corriendo o regresando una intercepción.', como: 'Se cuenta cada TD con su nombre.', muestra: 'Por temporada.', toques: 'TD y quién.'},
+  car: {n: 'Corridas', rol: 'Corre', v: (x) => x.car, que: 'Veces que corrió con el balón y avanzó.', como: 'Se cuentan las «Corrida» con su nombre.', muestra: 'Por temporada.', toques: '«Corrida» y quién.'},
+  conv: {n: 'Puntos de conversión', rol: 'Todos', v: (x) => x.conv, que: 'Puntos extra que anotó después de un touchdown.', como: 'Suma 1 o 2 por cada conversión que metió.', muestra: 'Por temporada.', toques: 'Conversión, «Entró» y quién.'},
+  band: {n: 'Banderas', rol: 'Defiende', v: (x) => x.band, que: 'Banderas que quitó. Es la tacleada del tochito.', como: 'Se cuentan las «Quitamos la bandera» con su nombre.', muestra: 'Unas 3 a 5 por partido: el orden entre jugadores se asienta en 4 partidos.', toques: '«Quitamos la bandera» y quién.', nota: 'Muchas banderas no siempre es bueno para el equipo: quiere decir que el rival completó muchas jugadas.'},
+  intn: {n: 'Intercepciones', rol: 'Defiende', v: (x) => x.intn, que: 'Pases del rival que atrapó.', como: 'Se cuentan las «Intercepción» marcadas en defensa.', muestra: 'Por temporada.', toques: '«Intercepción» en defensa y quién.'},
+  sack: {n: 'Sacks', rol: 'Defiende', v: (x) => x.sack, que: 'Veces que alcanzó al que lanza antes del pase.', como: 'Se cuentan los «Sack» con su nombre.', muestra: 'Por temporada.', toques: '«Sack» y quién.'},
+  tap: {n: 'Pases tapados', rol: 'Defiende', v: (x) => x.tap, que: 'Pases del rival que no dejó completar.', como: 'Se cuentan los «Pase incompleto» de defensa con su nombre.', muestra: 'Por temporada.', toques: '«Pase incompleto» en defensa y quién lo tapó.'},
+  grandes: {n: 'Jugadas grandes', rol: 'Defiende', v: (x) => x.grandes, que: 'Las jugadas que cambian una serie: intercepciones, sacks y pases tapados.', como: 'Intercepciones + sacks + pases tapados.', muestra: 'Por temporada.', toques: 'Ningún toque extra.'},
+  ptsAnot: {n: 'Puntos anotados', rol: 'Todos', v: (x) => x.ptsAnot, que: 'Los puntos del marcador que anotó él.', como: 'TD × 6 + puntos de conversión.', muestra: 'Por temporada.', toques: 'Ningún toque extra.'},
+  pts: {n: 'Puntos Belugas', rol: 'Todos', v: (x) => x.pts, que: 'Una calificación inventada para el podio, que junta todo lo que hizo. No sale en el marcador.', como: 'TD 6 · TD de pase 4 · intercepción 4 · sack 2 · recepción, bandera, pase tapado y punto de conversión 1 · pase completo y corrida 0.5.', muestra: 'Sirve para el podio, no para decidir quién juega: los pesos son a gusto.', toques: 'Ningún toque extra.'},
+  pj: {n: 'Partidos jugados', rol: 'Todos', v: (x) => x.pj, que: 'A cuántos partidos fue.', como: 'Se cuenta cada partido en el que salió en «Quiénes van hoy».', muestra: 'Es un hecho.', toques: '«Quiénes van hoy», una vez por partido.'},
+};
+
+// valor de una métrica con su texto; con menos de 10 no hay porcentaje
+function valor(id, c) {
+  const m = M[id], v = m.v(c);
+  if (m.tipo === 'fr') return v.den >= 10 ? {g: `${pct(v.num, v.den)}<small>%</small>`, ch: `${v.num} de ${v.den}`, plano: `${pct(v.num, v.den)}%`, n: v.den} : {g: `${v.num}<small>de ${v.den}</small>`, ch: v.den ? '' : 'sin intentos', plano: `${v.num} de ${v.den}`, n: v.den};
+  return {g: m.f(v), ch: '', plano: m.f(v), n: null};
+}
+// contra nuestro promedio: cuántas «cosas» de más o de menos que lo que solemos hacer (en los otros partidos)
+function contra(id, g) {
+  const m = M[id], c = C(g), o = C(otros(g)), sg = m.mejor === 'bajo' ? -1 : 1; let d, esp, real, txt;
+  if (m.tipo === 'fr') { const a = m.v(c), b = m.v(o); if (!a.den || !b.den) return null; esp = b.num / b.den * a.den; real = a.num; d = real - esp; txt = `Con ${a.den} ${m.unidad}, lo nuestro de siempre serían ${esp.toFixed(1)}.`; }
+  else { real = m.v(c); esp = otros(g).reduce((s, x) => s + m.v(C(x)), 0) / otros(g).length; d = real - esp; txt = `En los otros ${otros(g).length} partidos promediamos ${m.f(esp)}.`; }
+  const z = d * sg / m.umbral;
+  return {z, d, esp, real, txt, cls: z >= 1 ? 'mejor' : z <= -1 ? 'peor' : 'igual', eti: z >= 1 ? 'Mejor que de costumbre' : z <= -1 ? 'Peor que de costumbre' : 'Como de costumbre', corto: z >= 1 ? 'Mejor' : z <= -1 ? 'Peor' : 'Como siempre', sim: z >= 1 ? '▲' : z <= -1 ? '▼' : '●'};
+}
+const UNO = {series: 'serie', pases: 'pase', balones: 'balón', conversiones: 'conversión', jugadas: 'jugada', puntos: 'punto', sacks: 'sack', castigos: 'castigo'};
+const tantos = (n, u) => `${n} ${n === 1 ? UNO[u] : u}`;
+const chip = (k, largo) => k ? `<span class="chip ${k.cls}" title="${k.eti}"><span aria-hidden="true">${k.sim}</span>${largo ? k.eti : k.corto}</span>` : '';
+
+// qué funcionó y qué no, en frases, a partir de las 5 de un vistazo
+const CLAVE = ['serieAnot', 'serieFren', 'pases', 'balones', 'conv'];
+// al picar una de un vistazo, estas explican su porqué
+const MAS = {dif: ['mitades', 'racha', 'comoAnot'], serieAnot: ['finSeries', 'ptsSerie', 'buenas', 'media', 'cerrar', 'cuarta'], serieFren: ['frenadas', 'sacks'], pases: ['reparto', 'buenas'], balones: ['finSeries'], conv: ['unoODos']};
+function lectura(g) {
+  const c = C(g), r = rival(g), si = [], no = [], fr0 = (id) => M[id].v(c);
+  const F = {
+    serieAnot: [`Anotamos en <b>${c.A.td} de ${c.A.ser}</b> series.`, `Solo anotamos en <b>${c.A.td} de ${c.A.ser}</b> series.`],
+    serieFren: [`La defensa frenó <b>${c.D.fren} de ${c.D.ser}</b> series.`, `Nos anotaron en <b>${c.D.td} de ${c.D.ser}</b> series.`],
+    pases: [`Completamos <b>${c.A.pase} de ${c.A.att}</b> pases (${pct(c.A.pase, c.A.att)}%).`, `Solo completamos <b>${c.A.pase} de ${c.A.att}</b> pases (${pct(c.A.pase, c.A.att)}%).`],
+    balones: [c.perdidas ? `Robamos <b>${c.robos}</b> ${c.robos === 1 ? 'balón' : 'balones'} y perdimos <b>${c.perdidas}</b>.` : `Robamos <b>${c.robos}</b> ${c.robos === 1 ? 'balón' : 'balones'} y no regalamos ninguno.`, `Regalamos <b>${c.perdidas}</b> ${c.perdidas === 1 ? 'balón' : 'balones'} y robamos <b>${c.robos}</b>.`],
+    conv: [`Conversiones: <b>${fr0('conv').num} de ${fr0('conv').den}</b>.`, `Fallamos <b>${c.A.cInt - c.A.cOk} de ${c.A.cInt}</b> conversiones.`],
+  };
+  for (const id of CLAVE) { const k = contra(id, g); if (!k) continue; if (k.z >= 1) si.push([k.z, id, F[id][0]]); if (k.z <= -1) no.push([-k.z, id, F[id][1]]); }
+  if (c.A.tdDef) si.push([2, 'comoAnot', `La defensa anotó <b>${c.A.tdDef}</b> touchdown.`]);
+  si.sort((a, b) => b[0] - a[0]); no.sort((a, b) => b[0] - a[0]);
+  const dif = c.pf - c.pc, gano = dif > 0, sin = (s) => s.replace(/<\/?b>/g, '');
+  let t = `<b>${gano ? 'Ganamos' : 'Perdimos'} por ${Math.abs(dif)}.</b> `;
+  const pr = gano ? si : no, ot = gano ? no : si;
+  t += pr.length ? sin(pr[0][2]) + (pr[1] ? ' ' + sin(pr[1][2]) : '') : gano ? `Sin nada fuera de lo normal: anotamos en ${c.A.td} de ${c.A.ser} series y frenamos ${c.D.fren} de ${c.D.ser}.` : `Fue parejo: anotamos en ${c.A.td} de ${c.A.ser} series y ellos en ${c.D.td} de ${c.D.ser}.`;
+  if (ot.length) t += ` ${gano ? 'A mejorar' : 'Lo bueno'}: ${sin(ot[0][2]).replace(/^./, (x) => x.toLowerCase())}`;
+  return {si, no, titular: t, r};
+}
+const destacados = (g, n = 3) => G(g).van.map((id) => [id, J(id, g)]).sort((a, b) => b[1].pts - a[1].pts).slice(0, n);
+
+// ---------- estado y navegación ----------
+const st = {vista: 'partido', g: TODOS[TODOS.length - 1], res: 'a', jug: null, hoja: null, cat: 'td', tend: 'dif', tabla: {}, primera: false, tel: false, abre: {}, orden: 'pts', barra: null, desde: 'jugadores'};
+const $ = (s) => document.querySelector(s);
+const ancho = () => !st.tel && window.innerWidth >= 900;
+const TABS = [['partido', 'Partido'], ['temporada', 'Temporada'], ['jugadores', 'Jugadores'], ['guia', 'Guía']];
+const RES = [['a', 'De un vistazo', 'Recomendada'], ['b', 'Cara a cara', ''], ['c', 'La historia', '']];
+const tabDe = () => st.vista === 'jugador' ? 'jugadores' : st.vista;
+
+// ---------- piezas ----------
+const pips = (orden, cls = '') => `<span class="pips ${cls}" aria-hidden="true">${orden.map((f) => `<i class="${f === 'td' ? 'si' : ''}"></i>`).join('')}</span>`;
+const pipsN = (si, total, cls = '') => `<span class="pips ${cls}" aria-hidden="true">${Array.from({length: total}, (_, i) => `<i class="${i < si ? 'si' : ''}"></i>`).join('')}</span>`;
+function ficha(id, g) {
+  const m = M[id], c = C(g), v = valor(id, c), k = contra(id, g), r = rival(g), rv = m.riv ? m.riv(c) : null;
+  let dib = '';
+  if (m.pips) dib = pips(c[m.pips].orden.map((f) => m.pips === 'D' ? (f === 'td' ? '' : 'td') : f));
+  else if (m.pipsConv) dib = pipsN(c.A.cOk, c.A.cInt);
+  else if (m.tipo === 'fr') dib = `<div class="metro" aria-hidden="true"><i style="width:${pct(m.v(c).num, m.v(c).den)}%"></i></div>`;
+  const pie = rv === null ? '' : `<div class="pie">${esc(r.largo)}: <b>${m.tipo === 'fr' ? `${rv.num} de ${rv.den}` : m.f(rv)}</b></div>`;
+  return `<button class="ficha" data-a="hoja" data-v="${id}"><span class="nom">${m.n}</span><span class="inf" aria-hidden="true">i</span>
+    <span class="val">${v.g}${v.ch ? `<em>${v.ch}</em>` : ''}</span>${dib}${chip(k)}${pie}</button>`;
+}
+function fichaBalones(g) {
+  const c = C(g), k = contra('balones', g);
+  return `<button class="ficha doble" data-a="hoja" data-v="balones"><span class="nom">${M.balones.n}</span><span class="inf" aria-hidden="true">i</span>
+    <div class="dosn"><div><span class="val">${c.robos}</span><span class="et">robamos</span></div><div><span class="val">${c.perdidas}</span><span class="et">perdimos</span></div><div style="margin-left:auto">${chip(k)}</div></div></button>`;
+}
+// la tira: cada cuadro es una serie, en orden
+const FIN = {td: ['td', 'Touchdown'], int: ['int', 'Intercepción'], downs: [null, 'Se acabaron las oportunidades'], reloj: ['reloj', 'Se acabó el tiempo']};
+const cq = (fin) => `<span class="cq ${fin}">${FIN[fin][0] ? svgIco(FIN[fin][0]) : '4ª'}</span>`;
+function tira(g) {
+  const ss = seriesDe(g), r = rival(g), fila = (l) => { let m = 1, h = ''; for (const s of ss.filter((x) => x.l === l)) { if (s.m !== m) { h += '<span class="sep" title="Medio tiempo"></span>'; m = s.m; } h += `<span class="cq ${s.fin}" title="${FIN[s.fin][1]}">${FIN[s.fin][0] ? svgIco(FIN[s.fin][0]) : '4ª'}</span>`; } return h; };
+  return `<div class="card tira"><div class="fila"><b>Belugas<small>${C(g).A.ser} series</small></b><div class="cuadros">${fila('A')}</div></div>
+    <div class="fila riv"><b>${esc(r.corto)}<small>${C(g).D.ser} series</small></b><div class="cuadros">${fila('D')}</div></div>
+    <div class="clave">${Object.keys(FIN).map((f) => `<span>${cq(f)}${FIN[f][1]}</span>`).join('')}<span><span class="sep" style="display:inline-block;width:1px;height:14px;background:var(--eje)"></span>Medio tiempo</span></div></div>`;
+}
+function funciono(g) {
+  const L = lectura(g), li = (l) => l.length ? l.slice(0, 3).map(([, id, t]) => `<li><button data-a="hoja" data-v="${id}">${t}</button></li>`).join('') : '<li class="nada">Nada fuera de lo normal.</li>';
+  return `<div class="dos"><div class="card lect si"><h3><i aria-hidden="true">✓</i>Lo que funcionó</h3><ul>${li(L.si)}</ul></div><div class="card lect no"><h3><i aria-hidden="true">✕</i>Lo que no</h3><ul>${li(L.no)}</ul></div></div>`;
+}
+const filaJug = (id, x, extra = '') => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${extra}${foto(p)}<div><b class="corta">${esc(p.nombre)}</b><small class="corta">${linea(x)}</small></div><div class="der"><strong>${x.pts}</strong><small>pts</small></div></button>`; };
+const dest = (g) => `<div class="card">${destacados(g).map(([id, x]) => filaJug(id, x)).join('')}</div>`;
+
+// texto de cada jugada y de cada serie
+function txtJug(f, r) {
+  const q = nom(f.q), td = f.td ? ' · <b>touchdown</b>' : '';
+  if (f.tipo === 'castigo') return `Castigo ${f.a === 'favor' ? 'a favor' : 'en contra'}`;
+  if (f.tipo === 'conv') return f.l === 'A' ? `Conversión de ${f.pts}: ${f.ok ? `entró${f.q ? ` (${q})` : ''}` : 'no entró'}` : `Conversión de ${f.pts} de ${esc(r.corto)}: ${f.ok ? 'entró' : f.q ? `la tapó ${q}` : 'no entró'}`;
+  return {pase: `Pase completo a ${q}${td}`, corrida: `Corrida de ${q}${td}`, incompleto: `Incompleto, iba a ${q}`, parada: f.q === qbDe(f.g) ? `Sack a ${q}` : `Pararon a ${q}`, int: `Intercepción lanzada por ${q}`,
+    bandera: `Bandera de ${q}`, tapado: f.q ? `Pase tapado por ${q}` : `Pase incompleto de ${esc(r.corto)}`, sack: `Sack de ${q}`, intn: `Intercepción de ${q}${td}`, tdr: `Touchdown de ${esc(r.corto)}`}[f.tipo];
+}
+function txtSerie(s, r) {
+  const u = s.ult, cv = s.conv ? ` · conversión de ${s.conv.pts} ${s.conv.ok ? (s.conv.q && s.conv.l === 'A' ? `de ${nom(s.conv.q)}` : 'buena') : (s.conv.q && s.conv.l === 'D' ? `tapada por ${nom(s.conv.q)}` : 'fallada')}` : '';
+  if (s.l === 'A') return s.fin === 'td' ? [`TD de ${nom(u.q)}`, (u.tipo === 'pase' ? `Pase de ${nom(u.qb)}` : 'Corriendo') + cv] : s.fin === 'int' ? ['Nos interceptaron', `Pase de ${nom(u.q)}`] : s.fin === 'downs' ? ['Se nos acabaron las oportunidades', `${s.jug.length} jugadas`] : ['Se acabó el tiempo', `${s.jug.length} jugada${s.jug.length === 1 ? '' : 's'}`];
+  return s.fin === 'td' ? [`TD de ${esc(r.largo)}`, (s.corta ? 'Serie corta, tras nuestra intercepción' : `${s.jug.length} jugadas`) + cv] : s.fin === 'int' ? [`Intercepción de ${nom(u.q)}`, s.tdDef ? 'La regresó para touchdown' + cv : 'Les quitamos el balón'] : s.fin === 'downs' ? ['Los frenamos', `En ${s.jug.length} jugadas`] : ['Se acabó el tiempo', 'Tenían el balón'];
+}
+
+// ---------- gráficas (siguen la skill dataviz: forma primero, una sola escala, marcas finas, leyenda, globo y tabla) ----------
+const tip = (titulo, filas) => `data-tip="${esc(JSON.stringify([titulo, filas]))}"`;
+const bienY = (max) => { const paso = max <= 4 ? 1 : max <= 12 ? 3 : max <= 30 ? 10 : max <= 60 ? 20 : 25; const t = []; for (let v = 0; v <= max + .001; v += paso) t.push(v); return t; };
+// líneas por partido: una o dos series, misma escala
+function grafLineas({W, series, ymax, yf, ref, sel, logos = true, H = 200}) {
+  const mi = 34, md = 40, ms = 16, mb = logos ? 52 : 26, n = TODOS.length, x = (i) => mi + (W - mi - md) * (n === 1 ? .5 : i / (n - 1)), y = (v) => ms + (H - ms - mb) * (1 - v / ymax);
+  let h = bienY(ymax).map((v) => `<line x1="${mi}" x2="${W - md + 8}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? 'var(--rejilla)' : 'var(--eje)'}"/><text x="${mi - 8}" y="${y(v) + 4}" font-size="11" text-anchor="end" fill="#56647a">${yf(v)}</text>`).join('');
+  if (sel != null) h += `<rect x="${x(sel) - 16}" y="${ms - 6}" width="32" height="${H - ms - mb + 6}" rx="8" fill="#eaf1fb"/>`;
+  if (ref) h += `<line x1="${mi}" x2="${W - md + 8}" y1="${y(ref.v)}" y2="${y(ref.v)}" stroke="#56647a" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  for (const s of series.slice().reverse()) h += `<polyline points="${s.vals.map((v, i) => `${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` + s.vals.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="${s.color}" stroke="#fff" stroke-width="2"/>`).join('');
+  // etiqueta directa solo en el último punto; si las dos chocan, se queda la nuestra
+  const fin = series.map((s) => y(s.vals[n - 1]));
+  series.forEach((s, k) => { if (k && Math.abs(fin[k] - fin[0]) < 15) return; h += `<text x="${x(n - 1) + 10}" y="${fin[k] + 4}" font-size="12" font-weight="800" fill="#0b1b33">${s.txt[n - 1]}</text>`; });
+  h += TODOS.map((g, i) => `${logos ? `<image href="${LOGOS[G(g).rival] || ''}" x="${x(i) - 13}" y="${H - mb + 8}" width="26" height="26"/>` : ''}<text x="${x(i)}" y="${H - 5}" font-size="10.5" font-weight="600" text-anchor="middle" fill="#56647a">${rival(g).corto}</text>`).join('');
+  h += TODOS.map((g, i) => `<rect class="golpe" tabindex="0" role="img" aria-label="${esc(`vs ${rival(g).largo}: ${series.map((s) => `${s.nombre} ${s.txt[i]}`).join(', ')}`)}" x="${x(i) - 22}" y="0" width="44" height="${H}" ${tip(`vs ${rival(g).largo} · ${fecha(g)}`, series.map((s) => [s.color, s.txt[i], s.nombre]))}/>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfica por partido">${h}</svg>`;
+}
+// columnas chicas: una sola serie, el partido que se está viendo resaltado
+function grafCols({W, vals, txt, sel, ymax, ref, H = 132}) {
+  const mi = 6, md = 6, ms = 20, mb = 22, n = vals.length, paso = (W - mi - md) / n, bw = Math.min(24, paso - 8), y = (v) => ms + (H - ms - mb) * (1 - v / (ymax || 1));
+  let h = `<line x1="${mi}" x2="${W - md}" y1="${y(0)}" y2="${y(0)}" stroke="var(--eje)"/>`;
+  vals.forEach((v, i) => { const cx = mi + paso * (i + .5), top = y(v), alto = Math.max(y(0) - top, 0), r = Math.min(4, alto);
+    h += alto > 0 ? `<path d="M${cx - bw / 2} ${y(0)}V${top + r}q0-${r} ${r}-${r}h${bw - 2 * r}q${r} 0 ${r} ${r}V${y(0)}z" fill="${i === sel || sel == null ? 'var(--nos)' : 'var(--nos-suave)'}"/>` : `<line x1="${cx - bw / 2}" x2="${cx + bw / 2}" y1="${y(0) - 1}" y2="${y(0) - 1}" stroke="var(--eje)" stroke-width="2"/>`;
+    h += `<text x="${cx}" y="${top - 6}" font-size="11.5" font-weight="${i === sel || sel == null ? 800 : 600}" text-anchor="middle" fill="${i === sel || sel == null ? '#0b1b33' : '#56647a'}">${txt[i]}</text>`;
+    h += `<text x="${cx}" y="${H - 6}" font-size="10" font-weight="${i === sel ? 800 : 600}" text-anchor="middle" fill="${i === sel ? '#0b1b33' : '#56647a'}">${rival(TODOS[i]).corto}</text>`;
+    h += `<rect class="golpe" tabindex="0" role="img" aria-label="${esc(`vs ${rival(TODOS[i]).largo}: ${txt[i]}`)}" x="${cx - paso / 2}" y="0" width="${paso}" height="${H}" ${tip(`vs ${rival(TODOS[i]).largo} · ${fecha(TODOS[i])}`, [['var(--nos)', txt[i], '']])}/>`; });
+  if (ref != null) h += `<line x1="${mi}" x2="${W - md}" y1="${y(ref)}" y2="${y(ref)}" stroke="#56647a" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Partido por partido">${h}</svg>`;
+}
+const chispa = (vals) => { const W = 150, H = 34, mx = Math.max(...vals), mn = Math.min(...vals), y = (v) => mx === mn ? H / 2 : 6 + (H - 12) * (1 - (v - mn) / (mx - mn)), x = (i) => 6 + (W - 12) * i / (vals.length - 1);
+  return `<svg class="chispa" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${vals.map((v, i) => `${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="var(--riv)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${x(vals.length - 1)}" cy="${y(vals[vals.length - 1])}" r="4" fill="var(--nos)" stroke="#fff" stroke-width="1.5"/></svg>`; };
+// marcador corrido: los puntos de cada equipo conforme pasó el partido (dos líneas, una sola escala)
+function grafMarcador(g, W) {
+  const H = 210, mi = 30, md = 34, ms = 16, mb = 30, ss = seriesDe(g), r = rival(g), tmax = Math.max(...FILAS.filter((f) => f.g === g).map((f) => f.t)) + 30, ymax = Math.ceil((Math.max(G(g).nos, G(g).ellos) + 2) / 7) * 7;
+  const x = (t) => mi + (W - mi - md) * t / tmax, y = (v) => ms + (H - ms - mb) * (1 - v / ymax), medio = (ss.filter((s) => s.m === 1).pop().t + ss.find((s) => s.m === 2).todas[0].t) / 2;
+  let h = Array.from({length: ymax / 7 + 1}, (_, i) => i * 7).map((v) => `<line x1="${mi}" x2="${W - md}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? 'var(--rejilla)' : 'var(--eje)'}"/><text x="${mi - 8}" y="${y(v) + 4}" font-size="11" text-anchor="end" fill="#56647a">${v}</text>`).join('');
+  h += `<line x1="${x(medio)}" x2="${x(medio)}" y1="${ms - 4}" y2="${y(0)}" stroke="var(--eje)"/><text x="${x(medio)}" y="${H - 8}" font-size="10.5" font-weight="600" text-anchor="middle" fill="#56647a">Medio tiempo</text>`;
+  h += `<text x="${mi}" y="${H - 8}" font-size="10.5" font-weight="600" fill="#56647a">Inicio</text><text x="${W - md}" y="${H - 8}" font-size="10.5" font-weight="600" text-anchor="end" fill="#56647a">Final</text>`;
+  const traza = (k, color) => { let pts = [[0, 0]], v = 0; for (const s of ss) if (s[k] !== v) { pts.push([s.t, v], [s.t, s[k]]); v = s[k]; } pts.push([tmax, v]); return `<polyline points="${pts.map(([t, p]) => `${x(t)},${y(p)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`; };
+  h += traza('ellos', 'var(--riv)') + traza('nos', 'var(--nos)');
+  for (const s of ss) { const nos = s.ptsNos > 0; if (!nos && !s.ptsEllos) continue; const [a, b] = txtSerie(s, r), cy = y(nos ? s.nos : s.ellos);
+    h += `<circle cx="${x(s.t)}" cy="${cy}" r="4.5" fill="${nos ? 'var(--nos)' : 'var(--riv)'}" stroke="#fff" stroke-width="2"/><circle class="golpe" tabindex="0" role="img" aria-label="${esc(`${a}. ${s.nos} a ${s.ellos}, minuto ${minuto(s.t)}`)}" cx="${x(s.t)}" cy="${cy}" r="14" ${tip(`${s.nos}–${s.ellos} · min ${minuto(s.t)}`, [[nos ? 'var(--nos)' : 'var(--riv)', a.replace(/<[^>]+>/g, ''), b.replace(/<[^>]+>/g, '')]])}/>`; }
+  const fa = y(G(g).nos), fb = y(G(g).ellos), sep = Math.abs(fa - fb) < 15 ? (fa <= fb ? -8 : 8) : 0;
+  h += `<text x="${W - md + 7}" y="${fa + 4 + sep}" font-size="13" font-weight="800" fill="#0b1b33">${G(g).nos}</text><text x="${W - md + 7}" y="${fb + 4 - sep}" font-size="13" font-weight="800" fill="#56647a">${G(g).ellos}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Marcador conforme pasó el partido">${h}</svg>`;
+}
+const leyenda = (items) => `<div class="leyenda">${items.map(([c, t, cls = '']) => `<span><i class="${cls}" style="${cls === 'raya' ? '' : `background:${c}`}"></i>${esc(t)}</span>`).join('')}</div>`;
+const marcoGraf = (id, titulo, cuerpo, tabla) => `<div class="card graf"><div class="tit"><b>${titulo}</b><button data-a="tabla" data-v="${id}" aria-pressed="${!!st.tabla[id]}">${st.tabla[id] ? 'Ver gráfica' : 'Ver tabla'}</button></div>${st.tabla[id] ? `<div class="rueda">${tabla}</div>` : cuerpo}</div>`;
+
+// ---------- vista: partido ----------
+function heroe(g) {
+  const j = G(g), r = rival(g), gano = j.nos > j.ellos;
+  return `<div class="heroe"><div class="eti">${gano ? 'Ganamos' : 'Perdimos'} · ${fecha(g)}${j.real ? '' : ' · partido de ejemplo'}</div>
+    <div class="vs"><div class="eq">${rlogo('belugas')}BEL</div><div class="mid">${j.nos} – ${j.ellos}</div><div class="eq">${rlogo(r.id)}${r.corto}</div></div>
+    <p class="titular">${lectura(g).titular}</p></div>`;
+}
+const pastPartidos = () => `<div class="pastillas" role="tablist" aria-label="Partidos">${TODOS.slice().reverse().map((g) => { const j = G(g); return `<button class="past ${st.g === g ? 'on' : ''}" data-a="partido" data-v="${g}" role="tab" aria-selected="${st.g === g}"><img src="${LOGOS[j.rival] || ''}" alt="">${rival(g).corto} · ${j.nos}–${j.ellos}</button>`; }).join('')}</div>`;
+const conmRes = (col) => `<div class="conm ${col ? 'col' : ''}" role="tablist" aria-label="Manera de ver el resumen">${RES.map(([k, t, e]) => `<button class="${st.res === k ? 'on' : ''}" data-a="res" data-v="${k}" role="tab" aria-selected="${st.res === k}">${t}${e ? `<small>${e}</small>` : ''}</button>`).join('')}</div>`;
+// A · De un vistazo
+function resA(g, an) {
+  const fs = `<div class="fichas">${ficha('serieAnot', g)}${ficha('serieFren', g)}${ficha('pases', g)}${ficha('conv', g)}${fichaBalones(g)}</div>`;
+  if (!an) return `${fs}<h2>Serie por serie <small>cada cuadro, una vez con el balón</small></h2>${tira(g)}
+    <h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}
+    <h2>Quién anotó <small><button data-a="res" data-v="c">Ver la historia ›</button></small></h2>${historia(g, true)}`;
+  const r = rival(g);
+  return `${fs}<div class="rejilla g3"><div class="col"><h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}</div>
+    <div class="col"><h2>Serie por serie</h2>${tira(g)}<div style="height:12px"></div>${marcoGraf('marc', 'El marcador, conforme pasó', leyenda([['var(--nos)', 'Belugas'], ['var(--riv)', r.largo]]) + grafMarcador(g, 380), tablaMarc(g))}</div>
+    <div class="col"><h2>Quién anotó <small><button data-a="res" data-v="c">Ver la historia ›</button></small></h2>${historia(g, true)}<div style="height:12px"></div><div class="porque" style="grid-template-columns:1fr">${desglose('finSeries', [g])}</div></div></div>${detalle(g)}`;
+}
+// B · Cara a cara
+const CARA = [['Ataque', ['serieAnot', 'ptsSerie', 'pases', 'buenas', 'conv']], ['Defensa', ['serieFren', 'frenadas', 'sacks']], ['Balones y castigos', ['robos', 'castigos']]];
+function filaCara(id, g) {
+  const c = C(g), o = C(otros(g));
+  if (id === 'robos') { const mx = Math.max(c.robos, c.perdidas, 1); return `<button class="cr" data-a="hoja" data-v="balones"><div class="txt"><b class="${c.robos > c.perdidas ? 'gana' : ''}">${c.robos}</b><span>Balones robados<small>solemos robar ${(o.robos / o.pj).toFixed(1)}</small></span><b class="${c.perdidas > c.robos ? 'gana' : ''}">${c.perdidas}</b></div><div class="bar"><div><i style="width:${c.robos / mx * 100}%"></i></div><div><i style="width:${c.perdidas / mx * 100}%"></i></div></div></button>`; }
+  const m = M[id], a = m.v(c), b = m.riv ? m.riv(c) : null, fa = m.tipo === 'fr' ? (a.den ? a.num / a.den : 0) : a, fb = b === null ? 0 : m.tipo === 'fr' ? (b.den ? b.num / b.den : 0) : b, mx = m.tipo === 'fr' ? 1 : Math.max(fa, fb, .01);
+  const t = (v) => v === null ? '—' : m.tipo === 'fr' ? (v.den >= 10 ? `${pct(v.num, v.den)}%` : `${v.num} de ${v.den}`) : m.f(v), mejorA = b !== null && (m.mejor === 'bajo' ? fa < fb : fa > fb), mejorB = b !== null && (m.mejor === 'bajo' ? fb < fa : fb > fa);
+  const prom = m.tipo === 'fr' ? (() => { const p = m.v(o); return `solemos ${pct(p.num, p.den)}%`; })() : `solemos ${m.f(otros(g).reduce((s, x) => s + m.v(C(x)), 0) / otros(g).length)}`;
+  return `<button class="cr" data-a="hoja" data-v="${id}"><div class="txt"><b class="${mejorA ? 'gana' : ''}">${t(a)}</b><span>${m.n}<small>${prom}${m.tipo === 'fr' && a.den >= 10 ? ` · ${a.num} de ${a.den}` : ''}${b === null ? ' · del rival no se marca' : ''}</small></span><b class="${mejorB ? 'gana' : ''}">${t(b)}</b></div>
+    <div class="bar"><div><i style="width:${Math.max(0, fa) / mx * 100}%"></i></div><div><i style="width:${Math.max(0, fb) / mx * 100}%"></i></div></div></button>`;
+}
+function resB(g, an) {
+  const r = rival(g), t = `<div class="card cara"><div class="enc"><span><i style="background:var(--nos)"></i>Belugas</span><em></em><span>${esc(r.largo)}<i style="background:var(--riv)"></i></span></div>
+    ${[...CARA, ...(st.primera ? [['Con el toque «Primera»', ['media', 'cerrar', 'cuarta']]] : [])].map(([tit, ids]) => `<h4>${tit}</h4>${ids.map((id) => filaCara(id, g)).join('')}`).join('')}<p class="nota-c">En negritas, quien lo hizo mejor. «Solemos» es nuestro promedio en los otros partidos. Toca un renglón para ver cómo se calcula.</p></div>`;
+  if (!an) return `${t}<h2>Lo bueno y lo malo</h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}`;
+  return `<div class="rejilla g2"><div class="col">${t}</div><div class="col"><h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Serie por serie</h2>${tira(g)}<h2>Destacados</h2>${dest(g)}</div></div>${detalle(g)}`;
+}
+// C · La historia
+function historia(g, soloPuntos) {
+  const ss = seriesDe(g), r = rival(g); let h = '', m = 0;
+  for (const s of ss) {
+    const pts = s.ptsNos || s.ptsEllos; if (soloPuntos && !pts) continue;
+    if (s.m !== m && !soloPuntos) { m = s.m; h += `<h4><span>${m}ª mitad</span><span>${C(g).A.mit[m - 1]}–${C(g).D.mit[m - 1]}</span></h4>`; }
+    const [a, b] = txtSerie(s, r), ab = st.abre[g + s.s], nos = s.l === 'A' ? s.fin === 'td' : s.tdDef;
+    h += `<button class="se ${pts ? '' : 'menor'}" data-a="abre" data-v="${g + s.s}" aria-expanded="${!!ab}"><span class="cq ${s.fin}" style="${s.l === 'D' && s.fin === 'td' ? 'background:var(--riv);color:#fff' : ''}">${FIN[s.fin][0] ? svgIco(FIN[s.fin][0]) : '4ª'}</span>
+      <span class="q"><b>${a}</b><small>${s.l === 'A' ? 'Atacamos' : 'Defendemos'} · ${b}</small></span><span class="m">${pts ? `${s.nos}–${s.ellos}` : ''}<small>min ${minuto(s.t)}</small></span></button>`;
+    if (ab) h += `<div class="jugs">${s.todas.map((f) => `<div><span>${f.d ? f.d + 'ª' : ''}</span><span>${txtJug(f, r)}</span></div>`).join('')}</div>`;
+  }
+  return `<div class="card linea-t">${h}</div>`;
+}
+const tablaMarc = (g) => `<table class="tv"><tr><th>Minuto</th><th>Qué pasó</th><th>Marcador</th></tr>${seriesDe(g).filter((s) => s.ptsNos || s.ptsEllos).map((s) => `<tr><td>${minuto(s.t)}</td><td style="text-align:left">${txtSerie(s, rival(g))[0]}</td><td class="f">${s.nos}–${s.ellos}</td></tr>`).join('')}</table>`;
+function resC(g, an) {
+  const r = rival(g), W = an ? 640 : 340;
+  const gr = marcoGraf('marc', 'El marcador, conforme pasó', leyenda([['var(--nos)', 'Belugas'], ['var(--riv)', r.largo]]) + grafMarcador(g, W), tablaMarc(g));
+  const lt = `<h2>Serie por serie <small>toca una para ver sus jugadas</small></h2>${historia(g)}`;
+  if (!an) return `${gr}${lt}<h2>Los números</h2><div class="fichas">${ficha('serieAnot', g)}${ficha('serieFren', g)}${ficha('pases', g)}${ficha('conv', g)}${fichaBalones(g)}</div>`;
+  return `<div class="rejilla g2"><div class="col">${gr}<h2>Los números</h2><div class="fichas" style="grid-template-columns:repeat(3,minmax(0,1fr))">${ficha('serieAnot', g)}${ficha('serieFren', g)}${ficha('pases', g)}${ficha('conv', g)}${fichaBalones(g)}</div></div><div class="col">${lt}</div></div>${detalle(g)}`;
+}
+// en la laptop: los números de cada quien en ese partido
+const COLS = [['pts', 'Pts'], ['comp', 'Pases'], ['tdp', 'TD pase'], ['intl', 'Int. lanz.'], ['rec', 'Rec.'], ['tgt', 'Le lanzaron'], ['car', 'Corr.'], ['td', 'TD'], ['conv', 'Conv.'], ['band', 'Band.'], ['tap', 'Tapados'], ['sack', 'Sacks'], ['intn', 'Int.']];
+function tablaJug(gs, conPj) {
+  const ids = PLANTEL.map((p) => p.id).filter((id) => J(id, gs).pj), k = st.orden, val = (x) => k === 'comp' ? x.comp : x[k];
+  ids.sort((a, b) => val(J(b, gs)) - val(J(a, gs)) || J(b, gs).pts - J(a, gs).pts);
+  return `<div class="card rueda"><table class="tv"><tr><th>Jugador</th>${conPj ? '<th>PJ</th>' : ''}${COLS.map(([c, t]) => `<th class="${k === c ? 'ord' : ''}" aria-sort="${k === c ? 'descending' : 'none'}"><button data-a="orden" data-v="${c}">${t}${k === c ? ' ↓' : ''}</button></th>`).join('')}</tr>
+    ${ids.map((id) => { const x = J(id, gs), p = P(id); return `<tr data-a="jug" data-v="${id}" tabindex="0"><td><span class="jn">${foto(p)}<span class="corta">${esc(p.corto)}</span></span></td>${conPj ? `<td>${x.pj}</td>` : ''}${COLS.map(([c]) => `<td class="${k === c ? 'f' : ''}">${c === 'comp' ? (x.att ? `${x.comp}/${x.att}` : '·') : x[c] || '·'}</td>`).join('')}</tr>`; }).join('')}</table></div>`;
+}
+const detalle = (g) => `<h2>Los números de cada quien <small>toca una columna para ordenar</small></h2>${tablaJug([g])}`;
+function vPartido(an) {
+  const g = st.g;
+  return `${an ? `<h2 style="margin-top:0">Partido <small>${JUEGOS.length} jugados · toca uno</small></h2>` : ''}${pastPartidos()}${heroe(g)}
+    <div style="margin:12px 0 ${an ? 16 : 12}px;${an ? 'max-width:520px' : ''}">${conmRes()}</div>
+    ${{a: resA, b: resB, c: resC}[st.res](g, an)}
+    <div class="ej">${G(g).real ? 'Marcador real · las jugadas son de ejemplo' : 'Partido y jugadas de ejemplo'}</div>`;
+}
+
+// desglose: partes de un total, cada una con su barra
+function desglose(id, gs, enTemp) {
+  const m = M[id], ps = m.partes(C(gs)), nums = ps.every(([, v]) => typeof v === 'number'), mx = nums ? Math.max(...ps.map(([, v]) => v), 1) : 0;
+  return `<button class="card desg" data-a="hoja" data-v="${id}" data-c="${enTemp ? 't' : 'p'}"><b>${m.n}<span class="inf" aria-hidden="true">i</span></b>${ps.map(([t, v]) => `<span class="dr"><span>${t}</span><strong>${v}</strong>${nums ? `<i><u style="width:${v / mx * 100}%"></u></i>` : ''}</span>`).join('')}</button>`;
+}
+const PORQUE = ['finSeries', 'comoAnot', 'unoODos', 'mitades'];
+// ---------- vista: temporada ----------
+const TEND = ['dif', 'serieAnot', 'serieFren', 'pases', 'balones', 'conv'];
+function fichaTemp(id) {
+  const m = M[id], c = C(TODOS), v = valor(id, c), por = TODOS.map((g) => { const x = m.v(C(g)); return m.tipo === 'fr' ? (x.den ? x.num / x.den : 0) : x; });
+  const extra = id === 'dif' ? `${c.pf} a favor · ${c.pc} en contra` : id === 'balones' ? `${c.robos} robados · ${c.perdidas} perdidos` : v.ch;
+  return `<button class="ficha" data-a="hoja" data-v="${id}"><span class="nom">${id === 'dif' ? 'Diferencia de puntos' : m.n}</span><span class="inf" aria-hidden="true">i</span><span class="val">${v.g}</span><span class="pie">${extra}</span>${chispa(por)}</button>`;
+}
+function grafTend(an) {
+  const id = st.tend, m = M[id], W = an ? 640 : 340, c = C(TODOS);
+  let series, ymax, yf, ref, tabla;
+  if (id === 'dif') { series = [{nombre: 'Belugas', color: 'var(--nos)', vals: JUEGOS.map((j) => j.nos), txt: JUEGOS.map((j) => String(j.nos))}, {nombre: 'Rival', color: 'var(--riv)', vals: JUEGOS.map((j) => j.ellos), txt: JUEGOS.map((j) => String(j.ellos))}]; ymax = 30; yf = String; ref = null;
+    tabla = `<table class="tv"><tr><th>Rival</th><th>Belugas</th><th>Rival</th><th>Diferencia</th></tr>${JUEGOS.map((j) => `<tr><td>${esc(R(j.rival).largo)}</td><td class="f">${j.nos}</td><td>${j.ellos}</td><td>${M.dif.f(j.nos - j.ellos)}</td></tr>`).join('')}</table>`;
+  } else if (m.tipo === 'fr') { const xs = TODOS.map((g) => m.v(C(g))), t = m.v(c); series = [{nombre: m.n, color: 'var(--nos)', vals: xs.map((x) => x.den ? x.num / x.den * 100 : 0), txt: xs.map((x) => `${x.num} de ${x.den}`)}]; ymax = 100; yf = (v) => v + '%'; ref = {v: t.num / t.den * 100, txt: `Temporada: ${pct(t.num, t.den)}%`};
+    tabla = `<table class="tv"><tr><th>Rival</th><th>${m.n}</th><th>%</th></tr>${TODOS.map((g, i) => `<tr><td>${esc(rival(g).largo)}</td><td class="f">${xs[i].num} de ${xs[i].den}</td><td>${pct(xs[i].num, xs[i].den)}%</td></tr>`).join('')}</table>`;
+  } else { const rb = TODOS.map((g) => C(g).robos), pd = TODOS.map((g) => C(g).perdidas); series = [{nombre: 'Robados', color: 'var(--nos)', vals: rb, txt: rb.map(String)}, {nombre: 'Perdidos', color: 'var(--riv)', vals: pd, txt: pd.map(String)}]; ymax = 3; yf = String; ref = null;
+    tabla = `<table class="tv"><tr><th>Rival</th><th>Robados</th><th>Perdidos</th></tr>${TODOS.map((g, i) => `<tr><td>${esc(rival(g).largo)}</td><td class="f">${rb[i]}</td><td>${pd[i]}</td></tr>`).join('')}</table>`; }
+  const ley = series.length > 1 ? leyenda(series.map((s) => [s.color, s.nombre])) : ref ? leyenda([['', ref.txt, 'raya']]) : '';
+  const titulo = id === 'dif' ? 'Puntos por partido' : id === 'balones' ? 'Balones robados y perdidos' : m.n + ' por partido';
+  return `<div class="pastillas" role="tablist" aria-label="Qué métrica ver">${TEND.map((k) => `<button class="past ${id === k ? 'on' : ''}" data-a="tend" data-v="${k}" role="tab" aria-selected="${id === k}">${k === 'dif' ? 'Puntos' : k === 'balones' ? 'Balones' : M[k].n}</button>`).join('')}</div>
+    ${marcoGraf('tend', titulo, ley + grafLineas({W, series, ymax, yf, ref}), tabla)}`;
+}
+const CATS = [['td', 'TD', 'TD'], ['rec', 'Recepciones', 'rec.'], ['band', 'Banderas', 'band.'], ['grandes', 'Jugadas grandes', ''], ['pts', 'Puntos Belugas', 'pts']];
+const CORONA = '<svg class="corona" viewBox="0 0 34 22" aria-hidden="true"><path d="M3 19 1.5 5.5l8 6L17 1.5l7.500 10 8-6L31 19z" fill="#f6b73c" stroke="#b7700f" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+function lideres() {
+  const [k, , u] = CATS.find(([x]) => x === st.cat), r = PLANTEL.map((p) => [p, J(p.id, TODOS)[k]]).sort((a, b) => b[1] - a[1]), [a, b, c] = r, val = (v) => `<span class="valor">${v}${u ? `<small>${u}</small>` : ''}</span>`;
+  return `<div class="pastillas" role="tablist" aria-label="Categoría">${CATS.map(([x, t]) => `<button class="past ${st.cat === x ? 'on' : ''}" data-a="cat" data-v="${x}" role="tab" aria-selected="${st.cat === x}">${t}</button>`).join('')}</div>
+  <div class="lideres"><div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<button class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? CORONA : ''}${foto(x[0])}<b class="corta">${esc(x[0].corto)}</b>${val(x[1])}<span class="escalon">${n}</span></button>`).join('')}</div>
+    ${r.slice(3, 6).filter(([, v]) => v > 0).map(([p, v], i) => `<button class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${esc(p.nombre)}</b></div>${val(v)}</button>`).join('')}
+    <button class="tfila" data-a="hojaj" data-v="${k}" style="justify-content:center;color:var(--azul);font:700 13.5px/1 Inter;min-height:44px">¿Qué cuenta como «${CATS.find(([x]) => x === k)[1]}»?</button></div>`;
+}
+function listaPartidos() {
+  return `<div class="card">${TODOS.slice().reverse().map((g) => { const j = G(g), r = rival(g), c = C(g); return `<button class="pp" data-a="ir-partido" data-v="${g}">${rlogo(r.id)}<div><b class="corta">${esc(r.largo)}</b><small>${fecha(g)} · anotamos en ${c.A.td} de ${c.A.ser}</small>${pips(c.A.orden, 'ch')}</div><div class="der"><strong>${j.nos}–${j.ellos}</strong><small class="${j.nos > j.ellos ? 'g' : 'p'}">${j.nos > j.ellos ? 'Ganamos' : 'Perdimos'}</small></div></button>`; }).join('')}</div>`;
+}
+function vTemporada(an) {
+  const c = C(TODOS), racha = rachaPartidos() + ' al hilo';
+  const rec = `<div class="record"><div class="rec">${c.gan}–${c.per}<small>Ganados–perdidos</small></div><p>${racha}. Diferencia de puntos: <b>${M.dif.f(c.pf - c.pc)}</b> (${c.pf} a favor, ${c.pc} en contra).</p>
+    <div class="ult">${JUEGOS.map((j) => `<i class="${j.nos > j.ellos ? 'g' : 'p'}" title="${esc(R(j.rival).largo)} ${j.nos}–${j.ellos}">${j.nos > j.ellos ? 'G' : 'P'}</i>`).join('')}<span style="opacity:.9;margin-left:4px">del primero al último</span></div></div>`;
+  const aviso = `<div class="card aviso"><i aria-hidden="true">!</i><div><b>Van ${c.pj} partidos: todavía es poca muestra.</b> Ya dicen algo los pases (${c.A.att}) y las series (${c.A.ser}). Las conversiones (${c.A.cInt}) y los balones (${c.robos + c.perdidas}) siguen siendo una pista. Toca cualquier número para ver cuánto creerle.</div></div>`;
+  const fs = `<div class="fichas seis">${TEND.map(fichaTemp).join('')}</div>`;
+  if (!an) return `${rec}<h2>De un vistazo <small>toda la temporada</small></h2>${fs}<div style="height:10px"></div>${aviso}<h2>Partido a partido</h2>${grafTend(false)}
+    <h2>El porqué <small>toca una para entenderla</small></h2><div class="porque" style="grid-template-columns:1fr">${PORQUE.map((k) => desglose(k, TODOS, true)).join('')}</div>
+    <h2>Partidos</h2>${listaPartidos()}<h2>Líderes</h2>${lideres()}<div class="ej">3 marcadores reales · lo demás es de ejemplo</div>`;
+  return `<h2 style="margin-top:0">Temporada 2026 <small>${c.pj} partidos jugados</small></h2><div class="rejilla g2" style="margin-top:0"><div class="col">${rec}</div><div class="col">${aviso}</div></div>
+    <h2>De un vistazo</h2>${fs}
+    <div class="rejilla g2"><div class="col"><h2>Partido a partido</h2>${grafTend(true)}<h2>El porqué <small>toca una para entenderla</small></h2><div class="porque">${PORQUE.map((k) => desglose(k, TODOS, true)).join('')}</div></div>
+      <div class="col"><h2>Partidos</h2>${listaPartidos()}<h2>Líderes</h2>${lideres()}</div></div>
+    <h2>Todos los jugadores <small>toca una columna para ordenar, o un renglón para ver su ficha</small></h2>${tablaJug(TODOS, true)}
+    <div class="ej">3 marcadores reales · lo demás es de ejemplo</div>`;
+}
+
+// ---------- vista: jugadores y ficha ----------
+function vJugadores(an) {
+  const orden = PLANTEL.slice().sort((a, b) => J(b.id, TODOS).pts - J(a.id, TODOS).pts);
+  if (an) return `<h2 style="margin-top:0">Jugadores <small>${PLANTEL.length} en el plantel</small></h2><div class="rejilla g2" style="margin-top:0"><div class="col">${tablaJug(TODOS, true)}</div><div class="col">${lideres()}</div></div><div class="ej">Plantel inventado · datos de ejemplo</div>`;
+  return `<h2 style="margin-top:4px">Líderes <small>temporada</small></h2>${lideres()}<h2>Todos <small>por Puntos Belugas</small></h2>
+    <div class="card">${orden.map((p, i) => filaJug(p.id, J(p.id, TODOS), `<span class="rk">${i + 1}</span>`)).join('')}</div><div class="ej">Plantel inventado · datos de ejemplo</div>`;
+}
+const FJ = {Lanza: ['pComp', 'tdp', 'intl'], Recibe: ['rec', 'atrapa', 'td'], Corre: ['car'], Defiende: ['band', 'intn', 'tap', 'sack']};
+function fichaJ(k, id) {
+  const m = MJ[k], x = J(id, TODOS), v = m.v(x), esFr = typeof v === 'object', g = esFr ? (v.den >= 10 ? `${pct(v.num, v.den)}<small>%</small>` : `${v.num}<small>de ${v.den}</small>`) : String(v);
+  const lugar = esFr ? '' : (() => { const o = PLANTEL.map((p) => MJ[k].v(J(p.id, TODOS))).sort((a, b) => m.menos ? a - b : b - a); const l = o.indexOf(v) + 1; return v && !m.menos && l <= 3 ? `${l}º del equipo` : ''; })();
+  return `<button class="ficha" data-a="hojaj" data-v="${k}"><span class="nom">${m.n}</span><span class="inf" aria-hidden="true">i</span><span class="val">${g}</span><span class="pie">${esFr ? (v.den >= 10 ? `${v.num} de ${v.den}` : 'pocos intentos: sin porcentaje') : lugar || (x.pj ? `${(v / x.pj).toFixed(1)} por partido` : '')}</span></button>`;
+}
+function vJugador(an) {
+  const id = st.jug, p = P(id), x = J(id, TODOS), rs = roles(x), ks = [...new Set([...rs.flatMap((r) => FJ[r]), 'td', 'conv'])].filter((k) => { const v = MJ[k].v(x); return typeof v === 'object' ? v.den : v; });
+  const barras = ks.filter((k) => typeof MJ[k].v(x) !== 'object'), bk = barras.includes(st.barra) ? st.barra : barras[0] || 'pj', mx = Math.max(...TODOS.map((g) => MJ[bk].v(J(id, g))), 1);
+  const cab = `<div class="fj">${foto(p)}<div style="min-width:0"><b class="corta">${esc(p.corto)}</b><small>${esc(p.nombre)} · ${x.pj} de ${JUEGOS.length} partidos</small><div class="roles">${rs.map((r) => `<span>${r}</span>`).join('') || '<span>Pocas jugadas todavía</span>'}</div></div></div>`;
+  const fs = `<div class="fichas" ${an ? 'style="grid-template-columns:repeat(4,minmax(0,1fr))"' : ''}>${ks.map((k) => fichaJ(k, id)).join('')}${x.ptsAnot ? fichaJ('ptsAnot', id) : ''}${fichaJ('pts', id)}</div>`;
+  const pp = `<div class="pastillas" role="tablist" aria-label="Qué ver partido por partido">${barras.map((k) => `<button class="past ${bk === k ? 'on' : ''}" data-a="barra" data-v="${k}" role="tab" aria-selected="${bk === k}">${MJ[k].n}</button>`).join('')}</div>
+    <div class="card barras">${TODOS.slice().reverse().map((g) => { const y = J(id, g), v = MJ[bk].v(y), r = rival(g); return `<button class="bj ${y.pj ? '' : 'no'}" data-a="ir-partido" data-v="${g}">${rlogo(r.id)}<small>${r.corto} · ${fecha(g)}</small><span class="b"><i class="${v ? '' : 'cero'}" style="width:${v / mx * 100}%"></i></span><strong>${y.pj ? v : '—'}</strong></button>`; }).join('')}</div>`;
+  const tabla = `<div class="card rueda"><table class="tv"><tr><th>Partido</th>${COLS.filter(([c]) => TODOS.some((g) => J(id, g)[c])).map(([, t]) => `<th>${t}</th>`).join('')}</tr>${TODOS.slice().reverse().map((g) => { const y = J(id, g); return `<tr data-a="ir-partido" data-v="${g}" tabindex="0"><td><span class="jn">${rlogo(rival(g).id)}<span class="corta">${rival(g).corto} · ${fecha(g)}</span></span></td>${COLS.filter(([c]) => TODOS.some((h) => J(id, h)[c])).map(([c]) => `<td>${!y.pj ? '—' : c === 'comp' ? (y.att ? `${y.comp}/${y.att}` : '·') : y[c] || '·'}</td>`).join('')}</tr>`; }).join('')}</table></div>`;
+  const cuerpo = an ? `<div class="rejilla g2" style="margin-top:0"><div class="col">${cab}<h2>Temporada <small>toca un número para entenderlo</small></h2>${fs}</div><div class="col"><h2 style="margin-top:0">Partido por partido</h2>${pp}</div></div><h2>Todos sus números</h2>${tabla}`
+    : `${cab}<h2>Temporada <small>toca un número para entenderlo</small></h2>${fs}<h2>Partido por partido</h2>${pp}`;
+  return `<button class="volver" data-a="ir" data-v="${st.desde}">‹ ${st.desde === 'partido' ? 'Partido' : st.desde === 'temporada' ? 'Temporada' : 'Jugadores'}</button>${cuerpo}<div class="ej">Jugador inventado · datos de ejemplo</div>`;
+}
+
+// ---------- vista: guía (todas las métricas, en tres niveles) ----------
+const NIV = [[1, 'De un vistazo', 'Las 6 que se ven siempre, en el partido y en la temporada.'], [2, 'Al picar', 'Las que explican el porqué. Salen al tocar una de arriba o en la ficha de cada quien.'], [3, 'Para después', 'Valen la pena, pero piden un toque más al marcar o más partidos.']];
+function filaGuia(id) {
+  const m = M[id], c = C(TODOS);
+  let v = '';
+  if (m.tipo === 'x' || (m.pide && !st.primera)) v = `<span class="v falta">${m.falta || 'Pide el toque «Primera»'}</span>`;
+  else if (m.tipo === 'd') v = `<span class="v">${m.corto(c)[0]}<em>${m.corto(c)[1]}</em></span>`;
+  else { const x = valor(id, c); v = `<span class="v">${x.g.replace(/<small>/, '<small style="font:italic 800 14px/1 var(--disp);color:var(--mut);margin-left:2px">')}<em>${x.ch || 'temporada'}</em></span>`; }
+  return `<button class="gm" data-a="hoja" data-v="${id}" data-c="t"><b>${m.n}</b>${v}<small>${m.que.split('. ')[0].replace(/\.$/, '')}.</small></button>`;
+}
+function vGuia(an) {
+  const bloque = (n, t, s) => { const ids = Object.keys(M).filter((id) => M[id].nivel === n), grupos = [...new Set(ids.map((id) => M[id].grupo))];
+    return `<div><div class="nivel"><i>${n}</i><div><b>${t}</b><small>${s}</small></div></div>${n === 3 ? `<div style="margin:10px 0 0"><div class="conm" role="group" aria-label="Simular el toque Primera"><button class="${st.primera ? '' : 'on'}" data-a="primera" data-v="0">Como se marca hoy</button><button class="${st.primera ? 'on' : ''}" data-a="primera" data-v="1">Con el toque «Primera»</button></div></div>` : ''}
+      ${n === 1 ? `<div class="card" style="margin-top:10px">${ids.map(filaGuia).join('')}</div>` : grupos.map((gr) => `<div class="sub">${gr}</div><div class="card">${ids.filter((id) => M[id].grupo === gr).map(filaGuia).join('')}</div>`).join('')}
+      ${n === 2 ? `<div class="sub">De cada jugador</div><div class="card">${Object.keys(MJ).map((k) => `<button class="gm" data-a="hojaj" data-v="${k}" data-c="t"><b>${MJ[k].n}</b><span class="v falta" style="max-width:none">${MJ[k].rol}</span><small>${MJ[k].que.split('. ')[0].replace(/\.$/, '')}.</small></button>`).join('')}</div>` : ''}</div>`; };
+  const no = `<div><div class="nivel"><i style="background:#e3e8ef;color:var(--mut)">✕</i><div><b>Las de moda que aquí no sirven</b><small>Y por qué. El detalle y las fuentes están en el reporte.</small></div></div>
+    <div class="card" style="margin-top:10px">${[['EPA (puntos esperados)', 'Pide la yarda exacta de cada jugada y un modelo hecho con años de jugadas de la NFL.'], ['Rating del pasador y QBR', 'Piden yardas, y dan un número de 0 a 158 que nadie sabe leer.'], ['Yardas por aire y después de atrapar', 'Son 2 o 3 arrastres en el mapa por cada pase.'], ['CPOE y Next Gen Stats', 'Salen de chips en las hombreras y antenas en el estadio.'], ['DVOA', 'Se ajusta contra el promedio de toda una liga, jugada por jugada.'], ['Victorias pitagóricas', 'Con 6 partidos es ruido: la diferencia de puntos dice lo mismo.']].map(([a, b]) => `<div class="gm" style="grid-template-columns:1fr"><b>${a}</b><small>${b}</small></div>`).join('')}</div></div>`;
+  return `${an ? '<h2 style="margin-top:0">Guía de métricas <small>toca cualquiera para ver qué es, cómo se calcula y cuánto creerle</small></h2>' : '<p style="margin:0 2px;font:500 13.5px/1.45 Inter;color:var(--mut)">Toca cualquiera para ver qué es, cómo se calcula y cuánto creerle. Los valores son de toda la temporada.</p>'}
+    <div class="guia">${an ? `<div>${bloque(...NIV[0])}${bloque(...NIV[2])}${no}</div><div>${bloque(...NIV[1])}</div>` : NIV.map(([n, t, s]) => bloque(n, t, s)).join('') + no}</div><div class="ej">Datos de ejemplo</div>`;
+}
+
+// ---------- la hoja: qué es, cómo se calcula, un ejemplo con estos datos y cuánto creerle ----------
+function confBloque(n, texto) {
+  const k = nivelConf(n), [a, b] = wilson(...texto.wil || [0, 0]);
+  return `<div class="conf"><span class="pts" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < k ? 'si' : ''}"></i>`).join('')}</span><p><b>${CONF[k][0]}.</b> ${texto.wil ? `Con ${n} ${texto.unidad}, el número «de verdad» podría andar entre ${a}% y ${b}%. ` : ''}${texto.m}</p></div>`;
+}
+function hojaEquipo(id, enTemp) {
+  const m = M[id], g = st.g, gs = enTemp ? TODOS : [g], c = C(gs), r = rival(g), donde = enTemp ? `Temporada · ${JUEGOS.length} partidos` : `vs ${esc(r.largo)} · ${fecha(g)}`;
+  let cab = '', cuerpo = '';
+  if (m.tipo === 'x' || (m.pide && !st.primera)) cab = `<div class="grande"><span class="chip gris">Hoy no se puede calcular</span></div>`;
+  else if (m.tipo === 'd') cab = `<div class="par" style="margin-bottom:6px">${m.partes(c).map(([t, v]) => `<div><span>${t}</span><b>${v}</b></div>`).join('')}</div>`;
+  else { const v = valor(id, c), k = enTemp ? null : contra(id, g); cab = `<div class="grande"><span class="val">${v.g}</span>${v.ch ? `<span class="pie" style="font:600 13px/1.2 Inter;color:var(--mut);padding-bottom:6px">${v.ch}</span>` : ''}${k ? `<span style="padding-bottom:6px">${chip(k, true)}</span>` : ''}</div>`;
+    if (m.pips && !enTemp) cab += `<div style="margin:0 0 4px">${pips(c[m.pips].orden.map((f) => m.pips === 'D' ? (f === 'td' ? '' : 'td') : f))}<div class="pie" style="font:500 12px/1.4 Inter;color:var(--mut);margin-top:5px">Cada cuadro es una serie, en orden. Los llenos son las que ${m.pips === 'D' ? 'frenamos' : 'acabaron en TD'}.</div></div>`; }
+  cuerpo += `<h4>Qué es</h4><p class="q">${m.que}</p><h4>Cómo se calcula</h4><p>${m.como}</p>`;
+  if (m.ej && !(m.pide && !st.primera)) cuerpo += `<div class="cuenta">${enTemp ? 'En la temporada: ' : `Contra ${esc(r.largo)}: `}${m.ej(c).replace(/^[A-ZÁÉÍÓÚ]/, (x) => x.toLowerCase())}</div>`;
+  if (m.nota) cuerpo += `<p style="margin-top:8px;color:var(--mut);font-size:13.5px">${m.nota}</p>`;
+  if (m.v && !(m.pide && !st.primera)) {
+    if (!enTemp) { const k = contra(id, g), rv = m.riv ? m.riv(c) : null, o = C(otros(g)), pv = m.tipo === 'fr' ? m.v(o) : null;
+      cuerpo += `<h4>Contra quién se compara</h4><div class="par">${rv !== null ? `<div><span>${esc(r.largo)}</span><b>${m.tipo === 'fr' ? `${rv.num}<small>de ${rv.den}</small>` : m.f(rv)}</b></div>` : ''}<div><span>Nuestro promedio</span><b>${m.tipo === 'fr' ? `${pct(pv.num, pv.den)}%<small>${pv.num} de ${pv.den}</small>` : m.f(k.esp)}</b></div></div>
+        ${k ? `<p style="margin-top:8px">${k.txt} Hicimos ${m.tipo === 'fr' ? k.real : m.f(k.real)}: <b>${k.eti.toLowerCase()}</b>. Solo lo marco como mejor o peor si la diferencia llega a ${tantos(m.umbral, m.unidad)}; menos que eso puede ser pura suerte.</p>` : ''}`; }
+    const xs = TODOS.map((x) => m.v(C(x))), vals = xs.map((x) => m.tipo === 'fr' ? (x.den ? x.num / x.den * 100 : 0) : x), minV = Math.min(...vals, 0), t = m.v(C(TODOS));
+    if (minV >= 0) cuerpo += `<h4>Partido a partido</h4>${grafCols({W: 340, vals, txt: xs.map((x) => m.tipo === 'fr' ? `${x.num}/${x.den}` : m.f(x)), sel: enTemp ? null : TODOS.indexOf(g), ymax: Math.max(...vals, 1) * 1.12, ref: m.tipo === 'fr' ? t.num / t.den * 100 : null})}${m.tipo === 'fr' ? leyenda([['', `Temporada: ${pct(t.num, t.den)}% (${t.num} de ${t.den})`, 'raya']]) : ''}`;
+    else cuerpo += `<h4>Partido a partido</h4><div class="rueda"><table class="tv"><tr>${TODOS.map((x) => `<th style="text-align:center">${rival(x).corto}</th>`).join('')}</tr><tr>${xs.map((x, i) => `<td style="text-align:center" class="${TODOS[i] === g && !enTemp ? 'f' : ''}">${m.f(x)}</td>`).join('')}</tr></table></div>`;
+  }
+  const v = m.v && m.tipo === 'fr' ? m.v(c) : null;
+  cuerpo += `<h4>¿Cuánto creerle?</h4>${v ? confBloque(v.den, {wil: [v.num, v.den], unidad: m.unidad, m: m.muestra}) : `<div class="conf"><span class="pts" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < NCONF_P(c.pj) && m.tipo !== 'x' ? 'si' : ''}"></i>`).join('')}</span><p>${m.muestra}</p></div>`}`;
+  cuerpo += `<h4>De qué toques sale</h4><p>${m.toques}</p>`;
+  const mas = (MAS[id] || []).filter((k) => !M[k].pide || st.primera);
+  if (mas.length) cuerpo += `<h4>Para entender el porqué</h4><div class="mas">${mas.map((k) => `<button data-a="hoja" data-v="${k}" data-c="${enTemp ? 't' : 'p'}">${M[k].n} ›</button>`).join('')}</div>`;
+  return `<h3>${m.n}</h3><p class="donde">${donde}</p>${cab}${cuerpo}`;
+}
+function hojaJug(k, id) {
+  const m = MJ[k];
+  let cab = '', ej = '';
+  if (id) { const p = P(id), x = J(id, TODOS), v = m.v(x), esFr = typeof v === 'object';
+    cab = `<p class="donde">${esc(p.nombre)} · temporada (${x.pj} partidos)</p><div class="grande"><span class="val">${esFr ? (v.den >= 10 ? `${pct(v.num, v.den)}<small>%</small>` : `${v.num}<small>de ${v.den}</small>`) : v}</span></div>`;
+    ej = esFr ? `<div class="cuenta">${esc(p.corto)}: <b>${v.num}</b> de <b>${v.den}</b>${v.den ? ` = <b>${pct(v.num, v.den)}%</b>` : ''}.</div>${confBloque(v.den, {wil: [v.num, v.den], unidad: k === 'pComp' ? 'pases' : 'pases que le lanzaron', m: ''})}`
+      : k === 'pts' ? `<div class="cuenta">${esc(p.corto)}: ${Object.entries(PESOS).filter(([c]) => x[c]).map(([c, w]) => `${x[c]} × ${w}`).join(' + ')} = <b>${x.pts}</b>.</div>` : k === 'ptsAnot' ? `<div class="cuenta">${esc(p.corto)}: ${x.td} TD × 6 + ${x.conv} de conversión = <b>${x.ptsAnot}</b>.</div>`
+      : `<div class="cuenta">${esc(p.corto)} lleva <b>${v}</b> en ${x.pj} partidos${x.pj ? `: ${(v / x.pj).toFixed(1)} por partido` : ''}.</div>`;
+    const orden = PLANTEL.map((q) => [q, m.v(J(q.id, TODOS))]).filter(([, w]) => typeof w === 'object' ? w.den >= 10 : w > 0).sort((a, b) => { const f = (w) => typeof w === 'object' ? w.num / w.den : w; return m.menos ? f(a[1]) - f(b[1]) : f(b[1]) - f(a[1]); }).slice(0, 5);
+    if (orden.length > 1 && !m.menos) ej += `<h4>En el equipo${esFr ? ' (con 10 intentos o más)' : ''}</h4><div class="rueda"><table class="tv">${orden.map(([q, w], i) => `<tr><td><span class="jn">${foto(q)}<span class="corta">${i + 1}. ${esc(q.corto)}</span></span></td><td class="${q.id === id ? 'f' : ''}">${typeof w === 'object' ? `${pct(w.num, w.den)}% · ${w.num} de ${w.den}` : w}</td></tr>`).join('')}</table></div>`;
+  } else cab = `<p class="donde">De cada jugador · ${m.rol === 'Todos' ? 'para todos' : 'para quien ' + m.rol.toLowerCase()}</p>`;
+  return `<h3>${m.n}</h3>${cab}<h4>Qué es</h4><p class="q">${m.que}</p><h4>Cómo se calcula</h4><p>${m.como}</p>${ej}${m.nota ? `<p style="margin-top:8px;color:var(--mut);font-size:13.5px">${m.nota}</p>` : ''}
+    <h4>¿Cuánto creerle?</h4><p>${m.muestra}</p><h4>De qué toques sale</h4><p>${m.toques}</p>`;
+}
+const INFO = () => `<h3>Sobre este prototipo</h3><p class="donde">Métricas de Belugas · datos de ejemplo</p>
+  <p>Todo lo que ves se calcula aquí mismo a partir de <b>${FILAS.length} jugadas</b> guardadas una por fila, como en el camino B. Los 3 primeros marcadores (Kaffies, Only Fins y Últimos Aztecas) son los reales; los otros 3 y todas las jugadas son inventados. El plantel es el mismo del prototipo de Inicio.</p>
+  <h4>Qué se puede tocar</h4><p>Cualquier número abre su explicación. Los partidos, los jugadores y las columnas de las tablas también. En «Partido» hay tres maneras de ver el resumen.</p>
+  <h4>Lo que falta decidir</h4>
+  ${[['¿Agregamos el toque «Primera»?', 'Recomiendo que sí, para los dos equipos: unos 8 toques más por partido. Pruébalo en Guía, nivel 3.'], ['¿Marcamos yardas?', 'Recomiendo que no por ahora.'], ['¿Cuál resumen del partido va primero?', 'Recomiendo «De un vistazo».'], ['¿Con qué tabla de puntos se arma el podio?', 'Recomiendo la de este prototipo, restando 2 por intercepción lanzada.'], ['¿Quién ve los números delicados de cada quien?', 'Recomiendo dejarlos en la ficha de cada quien, sin tablas de «peores».']].map(([a, b], i) => `<p style="margin:0;padding:8px 0;border-top:1px solid var(--linea)"><b>${i + 1}. ${a}</b><br><span style="color:var(--mut);font-size:13.5px">${b}</span></p>`).join('')}
+  <p style="color:var(--mut);font-size:13px">Las opciones completas están en el reporte, sección 7.</p>
+  <h4>En qué pantallas se basa (Mobbin)</h4>
+  ${[['NBA · resumen del partido', 'Destacados arriba y comparación del equipo en fichas', 'https://mobbin.com/screens/2a85cf45-0207-498a-afe1-65473c8d3bae'], ['Apple Sports · stats del partido', 'Los dos equipos cara a cara, con barra', 'https://mobbin.com/screens/a85e8a79-016d-47f3-b938-046bc96dbd74'], ['Premier League · match stats', 'En negritas el que lo hizo mejor', 'https://mobbin.com/screens/20854574-a9a3-4acb-b20e-3de8f4f7f854'], ['DAZN · stats con «i»', 'Una «i» junto a cada grupo de números', 'https://mobbin.com/screens/8d8a3504-a464-4891-b710-887d31185017'], ['FotMob · lo que pasó', 'Quién anotó y cuándo, con el medio tiempo', 'https://mobbin.com/screens/6b4079e1-8bdc-4bb1-b2ee-763cf985b190'], ['NFL · stats del jugador', 'Números grandes en itálica', 'https://mobbin.com/screens/b1db4193-155f-4dfa-a982-370437eb063b'], ['The Outsiders · una métrica', 'El número, una frase que lo lee y su tendencia', 'https://mobbin.com/screens/6d346800-a549-4071-a82b-16899f9443ac'], ['Visible · resumen en frases', 'Cada dato contra tu propio promedio', 'https://mobbin.com/screens/3f60710a-3d4e-4892-a146-05dc3a432fc9'], ['Bevel · «¿Qué es…?»', 'La explicación de cada número, ahí mismo', 'https://mobbin.com/screens/4f8f0190-3baa-4d7d-8ce6-446415e56392']].map(([t, s, u]) => `<p style="margin:0;padding:9px 0;border-top:1px solid var(--linea)"><a href="${u}?utm_source=claude&amp;utm_medium=ai-assistant&amp;utm_source_platform=mcp" target="_blank" rel="noopener">${t} ↗</a><br><span style="color:var(--mut);font-size:13px">${s}</span></p>`).join('')}`;
+function pintarHoja() {
+  const h = st.hoja, c = $('#hoja');
+  if (!h) { c.innerHTML = ''; return; }
+  const cuerpo = h.tipo === 'info' ? INFO() : h.tipo === 'j' ? hojaJug(h.id, h.jug) : hojaEquipo(h.id, h.temp);
+  c.innerHTML = `<div class="hoja-cont"><div class="velo" data-a="cerrar"></div><div class="hoja" role="dialog" aria-modal="true" aria-label="Explicación"><button class="cierra" data-a="cerrar" aria-label="Cerrar">×</button>${cuerpo}</div></div>`;
+  c.querySelector('.cierra').focus({preventScroll: true});
+}
+
+// ---------- pintar ----------
+let vistaAnt = '';
+function pintar() {
+  const an = ancho(), app = $('#app');
+  document.body.classList.toggle('marco', st.tel && window.innerWidth >= 900);
+  app.className = an ? 'ancho' : '';
+  const v = {partido: vPartido, temporada: vTemporada, jugadores: vJugadores, jugador: vJugador, guia: vGuia}[st.vista](an);
+  const c = C(TODOS), sub = {partido: 'Cómo nos fue en cada partido', temporada: `Temporada 2026 · ${c.gan}–${c.per}`, jugadores: 'Cómo va cada quien', jugador: 'Cómo va cada quien', guia: 'Qué mide cada número'}[st.vista];
+  const lado = `<aside class="lado"><div class="marca">${rlogo('belugas', 44)}<div><b>Belugas</b><small>Métricas · temporada 2026</small></div></div>
+    <nav>${TABS.map(([k, t]) => `<button class="${tabDe() === k ? 'on' : ''}" data-a="ir" data-v="${k}">${svgIco(k)}${t}</button>`).join('')}</nav>
+    <h4>Prototipo</h4><p>Resumen del partido:</p>${conmRes(true)}
+    <p style="margin-top:10px"><button data-a="tel" style="color:var(--azul);font-weight:700">Ver como en el teléfono ›</button></p>
+    <p><button data-a="info" style="color:var(--azul);font-weight:700">Sobre este prototipo ›</button></p>
+    <p style="margin-top:auto">Datos de ejemplo: 3 marcadores reales; lo demás, inventado.</p></aside>`;
+  const scroll = st.tel && window.innerWidth >= 900 ? app.querySelector('.scroll') : null, y = scroll ? scroll.scrollTop : window.scrollY, misma = vistaAnt === st.vista + st.g + st.jug;
+  app.innerHTML = `${lado}<div class="scroll"><main class="cuerpo"><div class="cab">${rlogo('belugas', 38)}<div><b>${{partido: 'Partido', temporada: 'Temporada', jugadores: 'Jugadores', jugador: 'Jugador', guia: 'Guía de métricas'}[st.vista]}</b><small>${sub}</small></div><button class="info" data-a="info" aria-label="Sobre este prototipo">i</button></div>${v}</main></div>
+    <div class="nav">${TABS.map(([k, t]) => `<button class="${tabDe() === k ? 'on' : ''}" data-a="ir" data-v="${k}">${svgIco(k)}${t}</button>`).join('')}</div><div id="hoja"></div>`;
+  const s2 = app.querySelector('.scroll');
+  if (st.tel && window.innerWidth >= 900) s2.scrollTop = misma ? y : 0; else window.scrollTo(0, misma ? y : 0);
+  vistaAnt = st.vista + st.g + st.jug;
+  pintarHoja();
+  const hash = '#' + [st.vista, st.vista === 'partido' ? st.g : st.vista === 'jugador' ? st.jug : '', st.vista === 'partido' ? st.res : ''].filter(Boolean).join('/');
+  if (location.hash !== hash) { try { history[location.hash ? 'pushState' : 'replaceState'](null, '', hash); } catch (e) { /* en una página sin historial (vista previa) no pasa nada */ } }
+}
+function deHash() { const [v, a, b] = location.hash.slice(1).split('/'); if (!TABS.some(([k]) => k === v) && v !== 'jugador') return;
+  if (v === 'jugador' && !P(a)) return; st.vista = v; if (v === 'partido') { if (G(a)) st.g = a; if (RES.some(([k]) => k === b)) st.res = b; } if (v === 'jugador') st.jug = a; }
+
+// ---------- toques ----------
+const ACC = {
+  ir: (v) => { st.vista = v; st.hoja = null; }, partido: (v) => { st.g = v; }, 'ir-partido': (v) => { st.g = v; st.vista = 'partido'; st.hoja = null; },
+  res: (v) => { st.res = v; st.vista = 'partido'; }, jug: (v) => { if (st.vista !== 'jugador') st.desde = st.vista; st.jug = v; st.vista = 'jugador'; st.hoja = null; st.barra = null; },
+  cat: (v) => { st.cat = v; }, tend: (v) => { st.tend = v; }, tabla: (v) => { st.tabla[v] = !st.tabla[v]; }, orden: (v) => { st.orden = v; }, barra: (v) => { st.barra = v; },
+  abre: (v) => { st.abre[v] = !st.abre[v]; }, primera: (v) => { st.primera = v === '1'; }, tel: () => { st.tel = !st.tel; },
+  hoja: (v, el) => { st.hoja = {tipo: 'e', id: v, temp: el.dataset.c ? el.dataset.c === 't' : st.vista !== 'partido'}; return 'hoja'; },
+  hojaj: (v, el) => { st.hoja = {tipo: 'j', id: v, jug: st.vista === 'jugador' && el.dataset.c !== 't' ? st.jug : null}; return 'hoja'; },
+  info: () => { st.hoja = {tipo: 'info'}; return 'hoja'; }, cerrar: () => { st.hoja = null; return 'hoja'; },
+};
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-a]'); if (!el) return;
+  const r = ACC[el.dataset.a](el.dataset.v, el); globo(null);
+  if (r === 'hoja') pintarHoja(); else pintar();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && st.hoja) { st.hoja = null; pintarHoja(); } if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('svg .golpe[data-a], tr[data-a]')) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent('click', {bubbles: true})); } });
+// globo: lo mismo al pasar el cursor, al tocar y con el teclado; los valores van primero
+function globo(el, ev) {
+  const gl = $('#globo'); if (!el) { gl.style.display = 'none'; return; }
+  const [t, filas] = JSON.parse(el.dataset.tip); gl.textContent = '';
+  const b = document.createElement('span'); b.textContent = t; gl.append(b);
+  for (const [color, v, n] of filas) { const r = document.createElement('div'); r.className = 'r'; const i = document.createElement('i'); i.style.background = color; const bb = document.createElement('b'); bb.textContent = v; const s = document.createElement('span'); s.textContent = n; r.append(i, bb, s); gl.append(r); }
+  gl.style.display = 'block';
+  const q = el.getBoundingClientRect(), w = gl.offsetWidth, h = gl.offsetHeight, x = Math.min(Math.max(8, (ev && ev.clientX ? ev.clientX : q.left + q.width / 2) - w / 2), window.innerWidth - w - 8), y = (ev && ev.clientY ? ev.clientY : q.top) - h - 14;
+  gl.style.left = x + 'px'; gl.style.top = (y < 8 ? (ev && ev.clientY ? ev.clientY : q.bottom) + 16 : y) + 'px';
+}
+for (const ev of ['pointermove', 'pointerdown']) document.addEventListener(ev, (e) => { const el = e.target.closest && e.target.closest('[data-tip]'); globo(el, e); });
+document.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('[data-tip]')) globo(e.target); });
+document.addEventListener('focusout', () => globo(null));
+window.addEventListener('scroll', () => globo(null), true);
+let anAnt = ancho();
+window.addEventListener('resize', () => { if (ancho() !== anAnt || st.tel) { anAnt = ancho(); pintar(); } });
+for (const ev of ['popstate', 'hashchange']) window.addEventListener(ev, () => { deHash(); st.hoja = null; pintar(); });
+deHash(); pintar();
+</script>
+</body>
+</html>
