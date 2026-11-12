@@ -737,7 +737,8 @@ const PLANTEL = [
   {id: 'lp', nombre: 'Leo Pineda', corto: 'Leo', num: 9, pos: 'LB', r: [1, 'chino', 0, 'candado', '', 6]},
   {id: 'jg', nombre: 'Joaquín de la Garza', corto: 'Joaquín', num: 30, pos: 'CB', r: null},
 ];
-// los retratos reales de amigos no van en esta copia pública: sin ellos, la tarjeta cae sola en su estado sin foto
+// amigos con retrato generado (el que escogió Iker); solo nombre de pila; número y posición los pone Iker; sin partidos marcados todavía
+PLANTEL.push(...[['nico', 'Nico'], ['rodrigo', 'Rodrigo F.'], ['mau', 'Maú']].map(([id, corto]) => ({id, nombre: corto, corto, num: null, pos: '', r: null, img: `../archivos/jugadores/${id}.jpg`, cara: `../archivos/jugadores/${id}.jpg`})));
 const ATAQUE = ['sr', 'mv', 'eo', 'rs', 'me'], DEFENSA = ['ic', 'jm', 'bt', 'lp', 'jg'];
 const P = (id) => PLANTEL.find((x) => x.id === id);
 // estadísticas por partido: los 3 marcadores son los reales que trae la app (index.html:487);

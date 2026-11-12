@@ -19,9 +19,10 @@ Si prefieres un servidor: `python3 -m http.server 4710` dentro de esta carpeta y
 | `archivos/equipos/` | Los 12 logos en 1024 y 256 px con fondo transparente, y `equipos.json` con nombre, nombre corto y color. `recortes/` son los recortes de la captura de la tabla de la liga de donde salieron. |
 | `archivos/marca/` | Logo, letras e ícono de Belugas (los mismos de la raíz del repo). |
 | `archivos/inicio/` | El balón y la corona 3D del inicio. |
+| `archivos/jugadores/` | Tres retratos generados (`nico.jpg`, `rodrigo.jpg`, `mau.jpg`), aprobados para publicarse, que usa la tarjeta de jugador. |
 
 ## Qué no está aquí
 
-- Fotos y retratos de personas reales: son privados. La tarjeta de jugador se ve con retratos ilustrados o en su estado sin foto.
+- Las fotos originales de las personas, las variantes de retrato que no se escogieron y sus apellidos. Los demás jugadores son inventados y usan retratos ilustrados.
 - Las capturas de las rondas anteriores del prototipo y las hojas de comparación de logos (unos 70 MB entre todo).
 - El tablero de ideas con sus referencias de Mobbin, que son de terceros.
