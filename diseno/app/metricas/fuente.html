@@ -6,10 +6,12 @@
 <meta name="theme-color" content="#ffffff">
 <meta name="color-scheme" content="light">
 <title>Métricas Belugas</title>
+<link rel="icon" href="../archivos/marca/icon.png">
 <!-- Prototipo de Métricas (tarea belugas-metricas). Un solo archivo: los datos y los logos van adentro.
      NO se edita a mano: se arma con `node metricas/armar.mjs` desde metricas/fuente.html.
-     Datos de ejemplo: los 3 primeros marcadores son los reales que trae la app; los otros 3 y todas
-     las jugadas son inventados (metricas/generar-datos.mjs). Plantel inventado, el mismo de inicio.html. -->
+     Datos de ejemplo: los 3 primeros marcadores son los reales que trae la app; los otros 7 y todas
+     las jugadas son inventados (metricas/generar-datos.mjs). Plantel inventado, el mismo de inicio.html,
+     más Nico, Rodrigo F. y Maú (solo nombre de pila; su retrato es el de ../archivos/jugadores/). -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Inter:wght@400;500;600;700;800&display=swap">
 <style>
 :root {
@@ -19,11 +21,12 @@
   --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --grad: radial-gradient(120% 90% at 100% 0%, rgba(120,190,255,.85) 0%, rgba(120,190,255,0) 55%), linear-gradient(135deg, #0d2347 0%, #1d4f8f 62%, #3f8fe6 100%);
   --boton: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%);
-  --anillo: conic-gradient(from 210deg, #0d2347, #5aaeff, #1d4f8f, #0d2347);
   --plata: linear-gradient(180deg, #f1f4f8 0%, #c6cfda 60%, #9aa7b6 100%);
   --bronce: linear-gradient(180deg, #ffd9b5 0%, #d99257 60%, #a9602b 100%);
   /* gráficas: Belugas en el azul de la marca (un paso más claro para pasar el validador), el rival en gris */
   --nos: #245ea8; --nos-suave: #cddcf1; --riv: #8a94a3; --riv-suave: #e3e7ed; --rejilla: #e4e8ee; --eje: #c4ccd8;
+  /* «en contra» va en gris con rayas y lo que no se logró va hueco: se distinguen por la forma, no solo por el tono */
+  --contra: repeating-linear-gradient(135deg, #8a94a3 0 3px, #5d6878 3px 5px); --hueco: #7b8798;
   /* estado: siempre con ícono y palabra, nunca solo el color */
   --bien: #0b6b3a; --bien-f: #e3f5ea; --mal: #b3261e; --mal-f: #fdecea; --igual-f: #eef1f5;
 }
@@ -40,24 +43,28 @@ h2 small button { color: var(--azul); font-weight: 700; }
 .card { background: var(--card); border-radius: 16px; box-shadow: var(--sombra); }
 .ej { text-align: center; font: 600 10px/1.5 Inter; letter-spacing: .08em; text-transform: uppercase; color: var(--mut); margin: 22px 0 0; }
 
-/* ---------- armazón: teléfono (columna y barra abajo) o laptop (barra al lado) ---------- */
+/* ---------- armazón: teléfono (columna y pestañas arriba) o laptop (barra al lado) ---------- */
 #app { min-height: 100%; }
 .lado { display: none; }
-.cuerpo { padding: max(10px, env(safe-area-inset-top)) 16px calc(96px + env(safe-area-inset-bottom)); max-width: 620px; margin: 0 auto; }
+.cuerpo { padding: max(10px, env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom)); max-width: 620px; margin: 0 auto; }
 .cab { display: flex; align-items: center; gap: 10px; padding: 6px 2px 12px; }
 .cab img { width: 38px; height: 38px; object-fit: contain; }
 .cab b { font: 800 20px/1 Inter; display: block; }
 .cab small { display: block; color: var(--mut); font: 500 13px/1.2 Inter; margin-top: 3px; }
 .cab .info { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; background: rgba(11,27,51,.07); display: grid; place-items: center; font: 800 14px/1 Inter; }
-.nav { position: fixed; left: 0; right: 0; bottom: 0; height: calc(66px + env(safe-area-inset-bottom)); padding: 8px 6px env(safe-area-inset-bottom); background: #fff; border-top: 1px solid var(--linea); display: flex; justify-content: space-around; z-index: 5; }
-.nav button { flex: 1; max-width: 96px; display: grid; justify-items: center; align-content: start; gap: 4px; font: 600 11px/1 Inter; color: #5d6a7e; }
-.nav button.on { color: var(--navy); font-weight: 800; }
-.nav svg, .lado nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav { display: flex; gap: 2px; background: #e3e8ef; border-radius: 11px; padding: 3px; margin: 0 0 10px; }
+.nav button { flex: 1; min-height: 38px; border-radius: 8px; font: 700 12.5px/1 Inter; color: var(--mut); text-align: center; }
+.nav button.on { background: #fff; color: var(--navy); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.datos { display: flex; align-items: center; gap: 8px; margin: 0 2px 12px; font: 600 12px/1.2 Inter; color: var(--mut); }
+.datos .conm button { min-height: 30px; min-width: 40px; }
+.lado nav svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .volver { display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 8px; border-radius: 999px; background: rgba(11,27,51,.07); font: 700 13.5px/1 Inter; margin: 4px 0 8px; }
 
 .ancho .cuerpo { max-width: 1240px; margin: 0; padding: 22px 28px 60px; }
 .ancho .nav { display: none; }
 .ancho .cab { display: none; }
+/* dentro de inicio.html ya hay encabezado «Métricas»: aquí no se repite */
+.dentro .cab { display: none; }
 .ancho { display: grid; grid-template-columns: 232px minmax(0, 1fr); }
 .ancho .lado { display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; padding: 20px 14px; background: #fff; border-right: 1px solid var(--linea); overflow-y: auto; }
 .lado .marca { display: flex; align-items: center; gap: 10px; padding: 0 6px 16px; }
@@ -75,7 +82,6 @@ h2 small button { color: var(--azul); font-weight: 700; }
 body.marco { background: #e6eaf0; }
 .marco #app { width: 390px; height: 844px; min-height: 0; margin: 20px auto; border-radius: 46px; box-shadow: 0 0 0 10px #10151d, 0 30px 60px rgba(0,0,0,.25); overflow: hidden; position: relative; background: var(--bg); transform: translateZ(0); }
 .marco #app .scroll { height: 100%; overflow-y: auto; }
-.marco .nav { position: absolute; }
 .marco .hoja-cont { position: absolute; }
 .salir-marco { display: none; }
 .marco .salir-marco { display: block; position: fixed; left: 20px; top: 20px; height: 40px; padding: 0 16px; border-radius: 999px; background: #fff; box-shadow: var(--sombra); font: 700 13.5px/1 Inter; z-index: 30; }
@@ -97,9 +103,10 @@ body.marco { background: #e6eaf0; }
 .rlogo { display: inline-block; flex: none; }
 .rlogo img { display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); }
 .rlogo.sin { border-radius: 50%; background: linear-gradient(135deg, #4b5563, #9ca3af); color: #fff; display: grid; place-items: center; font: 800 11px/1 Inter; }
-.foto { position: relative; flex: none; display: block; border-radius: 50%; padding: 2px; background: var(--anillo); }
+.foto { position: relative; flex: none; display: block; border-radius: 50%; }
 .foto > span { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #fff; }
-.foto svg { display: block; width: 100%; height: 100%; }
+.foto svg, .foto img { display: block; width: 100%; height: 100%; }
+.foto img { object-fit: cover; object-position: 50% 18%; }
 .foto .ini { display: grid; place-items: center; height: 100%; background: #e8eef7; color: var(--navy); font: 800 13px/1 Inter; }
 
 /* ---------- partido: marcador ---------- */
@@ -120,32 +127,73 @@ body.marco { background: #e6eaf0; }
 /* ---------- fichas de métrica ---------- */
 .fichas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .ancho .fichas { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
-.ancho .fichas.seis { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .ficha { background: #fff; border-radius: 16px; box-shadow: var(--sombra); padding: 12px 12px 11px; min-width: 0; display: flex; flex-direction: column; gap: 6px; width: 100%; position: relative; }
-.ficha.doble { grid-column: span 2; }
-.ancho .ficha.doble { grid-column: auto; }
-.ficha .nom { font: 700 12px/1.2 Inter; color: var(--mut); padding-right: 22px; }
-.ficha .inf { position: absolute; right: 9px; top: 9px; width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--tenue); color: var(--mut); display: grid; place-items: center; font: 800 11px/1 Inter; }
+.ficha .nom { font: 700 12px/1.2 Inter; color: var(--mut); }
 .val { font: italic 900 34px/1 var(--disp); color: var(--navy); letter-spacing: .005em; white-space: nowrap; }
 .val small { font: italic 800 19px/1 var(--disp); color: var(--mut); margin-left: 3px; }
 .val em { font: 700 12px/1 Inter; font-style: normal; color: var(--mut); margin-left: 6px; }
 .ficha .pie { font: 500 12px/1.3 Inter; color: var(--mut); }
 .ficha .pie b { color: var(--ink); font-weight: 700; }
 .pips { display: flex; gap: 3px; flex-wrap: wrap; }
-.pips i { width: 14px; height: 14px; border-radius: 4px; background: var(--nos-suave); }
-.pips i.si { background: var(--nos); }
-.pips.riv i { background: var(--riv-suave); } .pips.riv i.si { background: var(--riv); }
+.pips i { width: 14px; height: 14px; border-radius: 4px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--hueco); }
+.pips i.si { background: var(--nos); box-shadow: none; }
 .pips.ch i { width: 9px; height: 9px; border-radius: 3px; }
-.metro { height: 8px; border-radius: 4px; background: var(--nos-suave); overflow: hidden; }
+.metro { height: 8px; border-radius: 4px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--hueco); overflow: hidden; }
 .metro i { display: block; height: 100%; background: var(--nos); border-radius: 0 4px 4px 0; }
 .chip { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; height: 22px; padding: 0 8px; border-radius: 999px; font: 700 11.5px/1 Inter; white-space: nowrap; }
 .chip.mejor { background: var(--bien-f); color: var(--bien); }
 .chip.peor { background: var(--mal-f); color: var(--mal); }
 .chip.igual { background: var(--igual-f); color: var(--mut); }
 .chip.gris { background: var(--igual-f); color: var(--mut); }
-.dosn { display: flex; gap: 6px 18px; align-items: flex-end; flex-wrap: wrap; }
-.dosn .val { display: block; }
-.dosn .et { display: block; font: 600 11.5px/1.2 Inter; color: var(--mut); margin-top: 2px; }
+
+/* ---------- los números del equipo, en un solo molde: renglones en el partido, rejilla en la temporada ---------- */
+.nums { overflow: hidden; }
+.nr { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 58px; padding: 10px 14px; border-top: 1px solid var(--linea); }
+.nr:first-child { border-top: 0; }
+.nr.sel { background: #eaf1fb; box-shadow: inset 3px 0 0 var(--nos); }
+.nr > div:first-child { flex: 1; min-width: 0; }
+.nr > div:first-child b { display: block; font: 600 15px/1.25 Inter; }
+.nr > div:first-child small { display: block; font: 500 12.5px/1.3 Inter; color: var(--mut); }
+.nr .metro { margin-top: 7px; }
+.nr .pips { flex: none; flex-wrap: nowrap; gap: 2px; } .nr .pips i, .clave-n .pips i { width: 11px; height: 11px; border-radius: 3px; }
+.nr .cf { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.nr .val { font-size: 30px; } .nr .val small { font-size: 17px; }
+.marca-k { font: 700 10px/1 Inter; white-space: nowrap; } .marca-k.mejor { color: var(--bien); } .marca-k.peor { color: var(--mal); }
+.clave-n { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 9px 14px 11px; border-top: 1px solid var(--linea); font: 500 12px/1.2 Inter; color: var(--mut); }
+.clave-n span { display: inline-flex; align-items: center; gap: 5px; }
+.rej6 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0 -1px -1px 0; }
+.rej6 button { display: flex; flex-direction: column; gap: 5px; min-width: 0; padding: 13px 14px 12px; border-right: 1px solid var(--linea); border-bottom: 1px solid var(--linea); }
+.rej6 button.sel { background: #eaf1fb; box-shadow: inset 0 -3px 0 var(--nos); }
+.rej6 .nom { font: 600 12.5px/1.2 Inter; color: var(--mut); } .rej6 .pie { font: 500 12.5px/1.25 Inter; color: var(--mut); }
+.nota-g { margin: 8px 2px 12px; font: 500 12.5px/1.4 Inter; color: var(--mut); }
+/* partido a partido: un renglón o una columna por partido */
+.forma { max-width: 240px; margin: 0 2px 10px; }
+.pr { display: grid; grid-template-columns: 96px 1fr 64px; align-items: center; gap: 10px; width: 100%; padding: 8px 6px; border-top: 1px solid var(--linea); }
+.pr:first-child { border-top: 0; }
+.pr.este { background: #eaf1fb; border-radius: 10px; border-top-color: transparent; } .pr.este + .pr { border-top-color: transparent; }
+.pr b { display: block; font: 700 13px/1.1 Inter; white-space: nowrap; }
+.pr small { font: 600 11.5px/1.2 Inter; color: var(--mut); } .pr small.G { color: var(--bien); } .pr small.P { color: var(--mal); }
+.pr .v { font: italic 900 20px/1 var(--disp); color: var(--navy); text-align: right; white-space: nowrap; }
+.pr .v.sin { font: 500 11.5px/1.1 Inter; color: var(--mut); white-space: normal; }
+.pista { position: relative; height: 12px; border-radius: 4px; background: var(--igual-f); }
+.pista i { position: absolute; top: 0; bottom: 0; background: var(--nos); border-radius: 0 4px 4px 0; }
+.pista i.contra { background: var(--contra); border-radius: 4px 0 0 4px; }
+.pista u { position: absolute; top: -5px; bottom: -5px; width: 0; border-left: 2px dashed var(--navy); opacity: .6; }
+.pista u.cero { border-left-style: solid; opacity: .3; }
+.graf .que { display: block; margin: 10px 2px 2px; font: 700 13px/1 Inter; color: var(--azul); min-height: 30px; }
+.graf .nota-g { margin: 6px 2px 0; }
+/* la tabla de jugadores partida por lo que hizo cada quien (teléfono) */
+.tg { overflow: hidden; margin-bottom: 10px; }
+.tg .tv th:first-child { font: 800 13.5px/1.15 Inter; color: var(--ink); text-transform: none; letter-spacing: 0; white-space: normal; padding-left: 14px; }
+/* columnas de ancho fijo: el título y sus números van centrados en el mismo eje */
+.tg .tv { table-layout: fixed; }
+.tg .tv th, .tg .tv td { text-align: center; padding-left: 2px; padding-right: 2px; white-space: nowrap; }
+.tg .tv td.v { color: var(--tenue); }
+.tg .tv th:first-child, .tg .tv td:first-child { text-align: left; padding-left: 14px; }
+.tg .tv th:last-child, .tg .tv td:last-child { padding-right: 8px; }
+.tg .jn small { display: block; font: 500 11.5px/1.2 Inter; color: var(--mut); }
+.sinj { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 14px; font: 500 13px/1.4 Inter; color: var(--mut); }
+.sinj .foto { width: 28px; height: 28px; } .sinj b { color: var(--ink); font-weight: 600; }
 
 /* tira de series: cómo acabó cada vez que alguien tuvo el balón */
 .tira { padding: 12px 14px; display: grid; gap: 10px; }
@@ -253,26 +301,25 @@ svg .golpe:focus-visible { outline: none; stroke: var(--hielo); stroke-width: 2;
 
 /* ---------- temporada ---------- */
 .record { border-radius: 22px; background: var(--grad); color: #fff; padding: 16px 18px; box-shadow: 0 12px 28px rgba(13,35,71,.26); text-shadow: 0 1px 3px rgba(5,15,35,.35); display: grid; grid-template-columns: auto 1fr; gap: 4px 18px; align-items: center; }
-.record .rec { font: italic 900 60px/1 var(--disp); grid-row: span 2; }
-.record .rec small { display: block; font: 700 11px/1 Inter; font-style: normal; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin-top: 4px; }
+.record .rec { font: italic 900 60px/1 var(--disp); white-space: nowrap; }
+.record .rec small { display: block; white-space: normal; font: 700 11px/1.3 Inter; font-style: normal; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin-top: 4px; }
 .record p { margin: 0; font: 600 14px/1.35 Inter; }
-.record .ult { display: flex; gap: 5px; align-items: center; font: 700 12px/1 Inter; flex-wrap: wrap; }
+.record .ult { grid-column: 1 / -1; margin-top: 8px; display: flex; gap: 5px; align-items: center; font: 700 12px/1 Inter; flex-wrap: wrap; }
 .record .ult i { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font: 800 11px/1 Inter; font-style: normal; text-shadow: none; }
-.record .ult i.g { background: #fff; color: var(--navy); } .record .ult i.p { background: rgba(6,18,40,.35); color: #fff; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.55); }
-.chispa { display: block; width: 100%; height: auto; max-width: 220px; }
+/* resultados: un degradado muy suave por color (verde ganado, rojo perdido, amarillo empate y lo demás); la letra se queda */
+.record .ult i.g { background: linear-gradient(180deg, #e0f4e8, #c3e6d0); color: #0b4f2c; }
+.record .ult i.p { background: linear-gradient(180deg, #fae1de, #f0c5c0); color: #7d1a14; }
+.record .ult i.e, .record .ult i.inc { background: linear-gradient(180deg, #fcf2cf, #f3e2a6); color: #624800; }
+.record .ult i.inc { opacity: .8; }
 .rejilla { display: grid; gap: 12px; }
 .ancho .rejilla.g2 { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: start; }
 .ancho .rejilla.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; }
 .ancho .rejilla.g21 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
 .col > h2:first-child { margin-top: 0; }
 .ancho .rejilla { margin-top: 22px; }
-.aviso { display: flex; gap: 10px; padding: 12px 14px; font: 500 13px/1.45 Inter; color: var(--ink); }
-.aviso i { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #fff3cd; color: #7a5200; display: grid; place-items: center; font: 800 13px/1 Inter; font-style: normal; }
-.aviso b { font-weight: 700; }
 
 .desg { display: grid; gap: 8px; padding: 12px 14px; width: 100%; align-content: start; }
 .desg > b { font: 800 13.5px/1.2 Inter; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.desg .inf { flex: none; width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--tenue); color: var(--mut); display: grid; place-items: center; font: 800 11px/1 Inter; }
 .dr { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; align-items: baseline; font: 500 13px/1.3 Inter; }
 .dr strong { font: 700 13.5px/1 Inter; font-variant-numeric: tabular-nums; }
 .dr i { grid-column: 1 / -1; height: 6px; display: block; }
@@ -301,7 +348,7 @@ svg .golpe:focus-visible { outline: none; stroke: var(--hielo); stroke-width: 2;
 
 /* ---------- jugador ---------- */
 .fj { border-radius: 22px; background: var(--grad); color: #fff; padding: 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 12px 26px rgba(13,35,71,.24); text-shadow: 0 1px 3px rgba(5,15,35,.35); }
-.fj .foto { width: 84px; height: 84px; box-shadow: 0 0 0 3px rgba(255,255,255,.85); }
+.fj .foto { width: 84px; height: 84px; }
 .fj b { display: block; font: italic 900 30px/.95 var(--disp); text-transform: uppercase; }
 .fj small { display: block; font: 600 13px/1.35 Inter; opacity: .92; margin-top: 6px; }
 .roles { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
@@ -401,6 +448,9 @@ const PLANTEL = [
   {id: 'me', nombre: 'Maximiliano Echeverría Santibáñez', corto: 'Maximiliano', r: [2, 'largo', 0, '', '', 7]}, {id: 'ic', nombre: 'Iván Cárdenas', corto: 'Iván', r: [4, 'calvo', 0, 'barba', '', 4]},
   {id: 'jm', nombre: 'Jesús Morales', corto: 'Jesús', r: [3, 'gorra', 3, 'bigote', '', 1]}, {id: 'bt', nombre: 'Bruno Tapia', corto: 'Bruno', r: [5, 'corto', 4, '', '', 8]},
   {id: 'lp', nombre: 'Leo Pineda', corto: 'Leo', r: [1, 'chino', 0, 'candado', '', 6]}, {id: 'jg', nombre: 'Joaquín de la Garza', corto: 'Joaquín', r: null},
+  // los tres con retrato de verdad: solo nombre de pila; si la foto no carga (sin el servidor del tablero), salen sus iniciales
+  {id: 'nico', nombre: 'Nico', corto: 'Nico', r: null, cara: '../archivos/jugadores/nico.jpg'}, {id: 'rodrigo', nombre: 'Rodrigo F.', corto: 'Rodrigo F.', r: null, cara: '../archivos/jugadores/rodrigo.jpg'},
+  {id: 'mau', nombre: 'Maú', corto: 'Maú', r: null, cara: '../archivos/jugadores/mau.jpg'},
 ];
 const P = (id) => PLANTEL.find((x) => x.id === id);
 const nom = (id) => id ? esc(P(id).corto) : 'alguien';
@@ -428,7 +478,8 @@ function retrato(p) {
   <path d="M43 52.3 q5 3.6 10 0" fill="none" stroke="#7a3b2a" stroke-width="1.8" stroke-linecap="round"/>${cara}</svg>`;
 }
 const iniciales = (n) => n.split(/\s+/).filter((w) => w.length > 2).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
-const foto = (p) => `<span class="foto"><span>${p.r ? retrato(p) : `<span class="ini">${iniciales(p.nombre)}</span>`}</span></span>`;
+const sinFoto = (el) => { const s = document.createElement('span'); s.className = 'ini'; s.textContent = el.dataset.ini; el.replaceWith(s); };
+const foto = (p) => `<span class="foto"><span>${p.cara ? `<img src="${p.cara}" alt="" data-ini="${iniciales(p.nombre)}" onerror="sinFoto(this)">` : p.r ? retrato(p) : `<span class="ini">${iniciales(p.nombre)}</span>`}</span></span>`;
 // íconos simples, de una tinta (los glifos de TD e intercepción son los del prototipo de Inicio) y los de las pestañas
 const ICO = {
   int: '<path d="M18 5v6a5 5 0 0 1-5 5H6M10 12l-4 4 4 4"/>', td: '<path d="M12 20v-7M6 13h12M6 13V4.5M18 13V4.5"/>',
@@ -439,7 +490,12 @@ const ICO = {
 const svgIco = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICO[k]}</svg>`;
 
 // ---------- las cuentas: todo sale de las filas (una por jugada) ----------
-const JUEGOS = D.juegos, FILAS = D.filas, G = (id) => JUEGOS.find((j) => j.id === id), TODOS = JUEGOS.map((j) => j.id);
+const FILAS = D.filas, G = (id) => D.juegos.find((j) => j.id === id);
+// JUEGOS y TODOS son los partidos que se están viendo: el conmutador «datos» del prototipo deja la temporada en 2, 5 o todos
+let JUEGOS = D.juegos, TODOS = JUEGOS.map((j) => j.id);
+// G ganado, P perdido, E empate, I incompleto (se dejó de marcar: sus jugadas cuentan, pero no entra al récord)
+const res = (j) => j.incompleto ? 'I' : j.nos > j.ellos ? 'G' : j.nos < j.ellos ? 'P' : 'E';
+const RESN = {G: 'Ganamos', P: 'Perdimos', E: 'Empatamos', I: 'Incompleto'};
 const MES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const fecha = (g) => { const [, m, d] = G(g).fecha.split('-'); return `${+d} ${MES[m - 1]}`; };
 const rival = (g) => R(G(g).rival);
@@ -462,9 +518,9 @@ const VACIO = () => ({ser: 0, td: 0, sInt: 0, int: 0, sackr: 0, downs: 0, reloj:
   cInt: 0, cOk: 0, c1i: 0, c1o: 0, c2i: 0, c2o: 0, cPts: 0, pts: 0, cruzo: 0, d34: 0, d34ok: 0, mit: [0, 0], orden: []});
 // A = cuando atacamos, D = cuando defendemos (o sea, lo que hizo el rival con el balón)
 const cuenta = memo((clave) => {
-  const gs = clave.split(','), c = {gs, pj: gs.length, pf: 0, pc: 0, gan: 0, per: 0, robos: 0, perdidas: 0, favor: 0, contra: 0, A: VACIO(), D: VACIO()};
+  const gs = clave.split(','), c = {gs, pj: gs.length, pf: 0, pc: 0, gan: 0, per: 0, emp: 0, inc: 0, robos: 0, perdidas: 0, favor: 0, contra: 0, A: VACIO(), D: VACIO()};
   for (const g of gs) {
-    const j = G(g); c.pf += j.nos; c.pc += j.ellos; if (j.nos > j.ellos) c.gan++; else c.per++;
+    const j = G(g); c.pf += j.nos; c.pc += j.ellos; c[{G: 'gan', P: 'per', E: 'emp', I: 'inc'}[res(j)]]++;
     for (const f of FILAS) if (f.g === g && f.tipo === 'castigo') c[f.a]++;
     for (const s of seriesDe(g)) {
       const X = c[s.l]; X.ser++; X[s.fin === 'int' ? 'sInt' : s.fin]++; X.orden.push(s.fin); if (s.cruzo) X.cruzo++;
@@ -479,14 +535,14 @@ const cuenta = memo((clave) => {
   return c;
 });
 const C = (gs) => cuenta((Array.isArray(gs) ? gs : [gs]).join(','));
-const otros = (g) => TODOS.filter((x) => x !== g);
+const otros = (g) => TODOS.filter((x) => x !== g && !G(x).incompleto);
 // rachas dentro de los partidos: series seguidas anotando y puntos seguidos sin respuesta
 const rachas = memo((clave) => { let ser = 0, nos = 0, ellos = 0;
   for (const g of clave.split(',')) { let a = 0, pn = 0, pe = 0; for (const s of seriesDe(g)) { if (s.l === 'A') { a = s.fin === 'td' ? a + 1 : 0; ser = Math.max(ser, a); } if (s.ptsNos) { pn += s.ptsNos; pe = 0; nos = Math.max(nos, pn); } if (s.ptsEllos) { pe += s.ptsEllos; pn = 0; ellos = Math.max(ellos, pe); } } }
   return {ser, nos, ellos}; });
-const rachaPartidos = () => { let n = 0; const u = JUEGOS[JUEGOS.length - 1], gano = u.nos > u.ellos; for (let i = JUEGOS.length - 1; i >= 0 && (JUEGOS[i].nos > JUEGOS[i].ellos) === gano; i--) n++; return `${n} ${gano ? (n === 1 ? 'ganado' : 'ganados') : (n === 1 ? 'perdido' : 'perdidos')}`; };
+const rachaPartidos = () => { const js = JUEGOS.filter((j) => !j.incompleto), r = res(js[js.length - 1]); let n = 0; for (let i = js.length - 1; i >= 0 && res(js[i]) === r; i--) n++; return `${n} ${{G: ['ganado', 'ganados'], P: ['perdido', 'perdidos'], E: ['empate', 'empates']}[r][n === 1 ? 0 : 1]}`; };
 // lo de cada jugador
-const PESOS = {td: 6, tdp: 4, intn: 4, sack: 2, rec: 1, band: 1, tap: 1, conv: 1, comp: .5, car: .5}; // los «puntos» del prototipo de Inicio
+const PESOS = {td: 6, tdp: 4, intn: 4, sack: 2, rec: 1, band: 1, tap: 1, conv: 1, comp: .5, car: .5, intl: -2}; // los «puntos» del prototipo de Inicio; −2 por intercepción lanzada (decidido por Iker)
 const jugStats = memo((clave) => {
   const [id, ...gs] = clave.split(','), x = {pj: 0, att: 0, comp: 0, tdp: 0, intl: 0, sackr: 0, rec: 0, tgt: 0, car: 0, td: 0, conv: 0, band: 0, tap: 0, sack: 0, intn: 0, tdd: 0};
   for (const g of gs) {
@@ -674,7 +730,7 @@ const MJ = {
   tap: {n: 'Pases tapados', rol: 'Defiende', v: (x) => x.tap, que: 'Pases del rival que no dejó completar.', como: 'Se cuentan los «Pase incompleto» de defensa con su nombre.', muestra: 'Por temporada.', toques: '«Pase incompleto» en defensa y quién lo tapó.'},
   grandes: {n: 'Jugadas grandes', rol: 'Defiende', v: (x) => x.grandes, que: 'Las jugadas que cambian una serie: intercepciones, sacks y pases tapados.', como: 'Intercepciones + sacks + pases tapados.', muestra: 'Por temporada.', toques: 'Ningún toque extra.'},
   ptsAnot: {n: 'Puntos anotados', rol: 'Todos', v: (x) => x.ptsAnot, que: 'Los puntos del marcador que anotó él.', como: 'TD × 6 + puntos de conversión.', muestra: 'Por temporada.', toques: 'Ningún toque extra.'},
-  pts: {n: 'Puntos Belugas', rol: 'Todos', v: (x) => x.pts, que: 'Una calificación inventada para el podio, que junta todo lo que hizo. No sale en el marcador.', como: 'TD 6 · TD de pase 4 · intercepción 4 · sack 2 · recepción, bandera, pase tapado y punto de conversión 1 · pase completo y corrida 0.5.', muestra: 'Sirve para el podio, no para decidir quién juega: los pesos son a gusto.', toques: 'Ningún toque extra.'},
+  pts: {n: 'Puntos Belugas', rol: 'Todos', v: (x) => x.pts, que: 'Una calificación inventada para el podio, que junta todo lo que hizo. No sale en el marcador.', como: 'TD 6 · TD de pase 4 · intercepción 4 · sack 2 · recepción, bandera, pase tapado y punto de conversión 1 · pase completo y corrida 0.5 · intercepción lanzada −2.', muestra: 'Sirve para el podio, no para decidir quién juega: los pesos son a gusto.', toques: 'Ningún toque extra.'},
   pj: {n: 'Partidos jugados', rol: 'Todos', v: (x) => x.pj, que: 'A cuántos partidos fue.', como: 'Se cuenta cada partido en el que salió en «Quiénes van hoy».', muestra: 'Es un hecho.', toques: '«Quiénes van hoy», una vez por partido.'},
 };
 
@@ -686,6 +742,7 @@ function valor(id, c) {
 }
 // contra nuestro promedio: cuántas «cosas» de más o de menos que lo que solemos hacer (en los otros partidos)
 function contra(id, g) {
+  if (G(g).incompleto || otros(g).length < 2) return null;
   const m = M[id], c = C(g), o = C(otros(g)), sg = m.mejor === 'bajo' ? -1 : 1; let d, esp, real, txt;
   if (m.tipo === 'fr') { const a = m.v(c), b = m.v(o); if (!a.den || !b.den) return null; esp = b.num / b.den * a.den; real = a.num; d = real - esp; txt = `Con ${a.den} ${m.unidad}, lo nuestro de siempre serían ${esp.toFixed(1)}.`; }
   else { real = m.v(c); esp = otros(g).reduce((s, x) => s + m.v(C(x)), 0) / otros(g).length; d = real - esp; txt = `En los otros ${otros(g).length} partidos promediamos ${m.f(esp)}.`; }
@@ -697,7 +754,7 @@ const tantos = (n, u) => `${n} ${n === 1 ? UNO[u] : u}`;
 const chip = (k, largo) => k ? `<span class="chip ${k.cls}" title="${k.eti}"><span aria-hidden="true">${k.sim}</span>${largo ? k.eti : k.corto}</span>` : '';
 
 // qué funcionó y qué no, en frases, a partir de las 5 de un vistazo
-const CLAVE = ['serieAnot', 'serieFren', 'pases', 'balones', 'conv'];
+const CLAVE = ['serieAnot', 'serieFren', 'pases', 'conv', 'balones'];
 // al picar una de un vistazo, estas explican su porqué
 const MAS = {dif: ['mitades', 'racha', 'comoAnot'], serieAnot: ['finSeries', 'ptsSerie', 'buenas', 'media', 'cerrar', 'cuarta'], serieFren: ['frenadas', 'sacks'], pases: ['reparto', 'buenas'], balones: ['finSeries'], conv: ['unoODos']};
 function lectura(g) {
@@ -712,8 +769,9 @@ function lectura(g) {
   for (const id of CLAVE) { const k = contra(id, g); if (!k) continue; if (k.z >= 1) si.push([k.z, id, F[id][0]]); if (k.z <= -1) no.push([-k.z, id, F[id][1]]); }
   if (c.A.tdDef) si.push([2, 'comoAnot', `La defensa anotó <b>${c.A.tdDef}</b> touchdown.`]);
   si.sort((a, b) => b[0] - a[0]); no.sort((a, b) => b[0] - a[0]);
+  if (G(g).incompleto) return {si, no, titular: '<b>Se dejó de marcar al medio tiempo.</b> Estos números son solo de la primera mitad.', r};
   const dif = c.pf - c.pc, gano = dif > 0, sin = (s) => s.replace(/<\/?b>/g, '');
-  let t = `<b>${gano ? 'Ganamos' : 'Perdimos'} por ${Math.abs(dif)}.</b> `;
+  let t = `<b>${dif ? `${gano ? 'Ganamos' : 'Perdimos'} por ${Math.abs(dif)}` : `Empatamos a ${c.pf}`}.</b> `;
   const pr = gano ? si : no, ot = gano ? no : si;
   t += pr.length ? sin(pr[0][2]) + (pr[1] ? ' ' + sin(pr[1][2]) : '') : gano ? `Sin nada fuera de lo normal: anotamos en ${c.A.td} de ${c.A.ser} series y frenamos ${c.D.fren} de ${c.D.ser}.` : `Fue parejo: anotamos en ${c.A.td} de ${c.A.ser} series y ellos en ${c.D.td} de ${c.D.ser}.`;
   if (ot.length) t += ` ${gano ? 'A mejorar' : 'Lo bueno'}: ${sin(ot[0][2]).replace(/^./, (x) => x.toLowerCase())}`;
@@ -722,7 +780,7 @@ function lectura(g) {
 const destacados = (g, n = 3) => G(g).van.map((id) => [id, J(id, g)]).sort((a, b) => b[1].pts - a[1].pts).slice(0, n);
 
 // ---------- estado y navegación ----------
-const st = {vista: 'partido', g: TODOS[TODOS.length - 1], res: 'a', jug: null, hoja: null, cat: 'td', tend: 'dif', tabla: {}, primera: false, tel: false, abre: {}, orden: 'pts', barra: null, desde: 'jugadores'};
+const st = {vista: 'partido', g: TODOS[TODOS.length - 1], n: D.juegos.length, forma: 'r', res: 'a', jug: null, hoja: null, cat: 'td', tend: 'serieAnot', tabla: {}, primera: false, tel: false, abre: {}, orden: 'pts', barra: null, desde: 'jugadores'};
 const $ = (s) => document.querySelector(s);
 const ancho = () => !st.tel && window.innerWidth >= 900;
 const TABS = [['partido', 'Partido'], ['temporada', 'Temporada'], ['jugadores', 'Jugadores'], ['guia', 'Guía']];
@@ -732,20 +790,18 @@ const tabDe = () => st.vista === 'jugador' ? 'jugadores' : st.vista;
 // ---------- piezas ----------
 const pips = (orden, cls = '') => `<span class="pips ${cls}" aria-hidden="true">${orden.map((f) => `<i class="${f === 'td' ? 'si' : ''}"></i>`).join('')}</span>`;
 const pipsN = (si, total, cls = '') => `<span class="pips ${cls}" aria-hidden="true">${Array.from({length: total}, (_, i) => `<i class="${i < si ? 'si' : ''}"></i>`).join('')}</span>`;
-function ficha(id, g) {
-  const m = M[id], c = C(g), v = valor(id, c), k = contra(id, g), r = rival(g), rv = m.riv ? m.riv(c) : null;
-  let dib = '';
-  if (m.pips) dib = pips(c[m.pips].orden.map((f) => m.pips === 'D' ? (f === 'td' ? '' : 'td') : f));
-  else if (m.pipsConv) dib = pipsN(c.A.cOk, c.A.cInt);
-  else if (m.tipo === 'fr') dib = `<div class="metro" aria-hidden="true"><i style="width:${pct(m.v(c).num, m.v(c).den)}%"></i></div>`;
-  const pie = rv === null ? '' : `<div class="pie">${esc(r.largo)}: <b>${m.tipo === 'fr' ? `${rv.num} de ${rv.den}` : m.f(rv)}</b></div>`;
-  return `<button class="ficha" data-a="hoja" data-v="${id}"><span class="nom">${m.n}</span><span class="inf" aria-hidden="true">i</span>
-    <span class="val">${v.g}${v.ch ? `<em>${v.ch}</em>` : ''}</span>${dib}${chip(k)}${pie}</button>`;
-}
-function fichaBalones(g) {
-  const c = C(g), k = contra('balones', g);
-  return `<button class="ficha doble" data-a="hoja" data-v="balones"><span class="nom">${M.balones.n}</span><span class="inf" aria-hidden="true">i</span>
-    <div class="dosn"><div><span class="val">${c.robos}</span><span class="et">robamos</span></div><div><span class="val">${c.perdidas}</span><span class="et">perdimos</span></div><div style="margin-left:auto">${chip(k)}</div></div></button>`;
+// solo «Mejor» o «Peor»: si fue como siempre no sale nada
+const marcaK = (k) => k && k.cls !== 'igual' ? `<span class="marca-k ${k.cls}" title="${k.eti}"><span aria-hidden="true">${k.sim}</span> ${k.corto}</span>` : '';
+// en el partido la diferencia de puntos ya es el marcador: la gráfica arranca en series anotadas
+const tendP = () => CLAVE.includes(st.tend) ? st.tend : 'serieAnot';
+// los números del partido, un renglón cada uno. acc = 'tend': al tocarlo cambia la gráfica de abajo; acc = 'hoja': abre su explicación
+function numsPartido(g, acc) {
+  const c = C(g), r = rival(g), sel = acc === 'tend' ? tendP() : null;
+  const fila = (id) => { const m = M[id], v = valor(id, c), x = m.tipo === 'fr' ? m.v(c) : null, rv = x && m.riv ? m.riv(c) : null;
+    const dib = m.pips ? pips(c[m.pips].orden.map((f) => m.pips === 'D' ? (f === 'td' ? '' : 'td') : f)) : m.pipsConv ? pipsN(c.A.cOk, c.A.cInt) : '';
+    const sub = !x ? `${c.robos} ${c.robos === 1 ? 'robado' : 'robados'} · ${c.perdidas} ${c.perdidas === 1 ? 'perdido' : 'perdidos'}` : !x.den ? 'sin intentos' : rv ? `${esc(r.largo)}: ${rv.num} de ${rv.den}` : x.den >= 10 ? `${x.num} de ${x.den}` : 'pocos intentos: sin porcentaje';
+    return `<button class="nr${sel === id ? ' sel' : ''}" data-a="${acc}" data-v="${id}"${sel ? ` aria-pressed="${sel === id}"` : ''}><div><b>${id === 'balones' ? 'Balones' : m.n}</b><small>${sub}</small>${id === 'pases' ? `<div class="metro" aria-hidden="true"><i style="width:${pct(x.num, x.den)}%"></i></div>` : ''}</div>${dib}<span class="cf"><span class="val">${v.g}</span>${marcaK(contra(id, g))}</span></button>`; };
+  return `<div class="card nums">${CLAVE.map(fila).join('')}<div class="clave-n"><span>${pipsN(1, 1)}sí se logró</span><span>${pipsN(0, 1)}no se logró</span></div></div>`;
 }
 // la tira: cada cuadro es una serie, en orden
 const FIN = {td: ['td', 'Touchdown'], int: ['int', 'Intercepción'], downs: [null, 'Se acabaron las oportunidades'], reloj: ['reloj', 'Se acabó el tiempo']};
@@ -779,20 +835,33 @@ function txtSerie(s, r) {
 
 // ---------- gráficas (siguen la skill dataviz: forma primero, una sola escala, marcas finas, leyenda, globo y tabla) ----------
 const tip = (titulo, filas) => `data-tip="${esc(JSON.stringify([titulo, filas]))}"`;
-const bienY = (max) => { const paso = max <= 4 ? 1 : max <= 12 ? 3 : max <= 30 ? 10 : max <= 60 ? 20 : 25; const t = []; for (let v = 0; v <= max + .001; v += paso) t.push(v); return t; };
-// líneas por partido: una o dos series, misma escala
-function grafLineas({W, series, ymax, yf, ref, sel, logos = true, H = 200}) {
-  const mi = 34, md = 40, ms = 16, mb = logos ? 52 : 26, n = TODOS.length, x = (i) => mi + (W - mi - md) * (n === 1 ? .5 : i / (n - 1)), y = (v) => ms + (H - ms - mb) * (1 - v / ymax);
-  let h = bienY(ymax).map((v) => `<line x1="${mi}" x2="${W - md + 8}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? 'var(--rejilla)' : 'var(--eje)'}"/><text x="${mi - 8}" y="${y(v) + 4}" font-size="11" text-anchor="end" fill="#56647a">${yf(v)}</text>`).join('');
-  if (sel != null) h += `<rect x="${x(sel) - 16}" y="${ms - 6}" width="32" height="${H - ms - mb + 6}" rx="8" fill="#eaf1fb"/>`;
-  if (ref) h += `<line x1="${mi}" x2="${W - md + 8}" y1="${y(ref.v)}" y2="${y(ref.v)}" stroke="#56647a" stroke-width="1.5" stroke-dasharray="5 4"/>`;
-  for (const s of series.slice().reverse()) h += `<polyline points="${s.vals.map((v, i) => `${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>` + s.vals.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="${s.color}" stroke="#fff" stroke-width="2"/>`).join('');
-  // etiqueta directa solo en el último punto; si las dos chocan, se queda la nuestra
-  const fin = series.map((s) => y(s.vals[n - 1]));
-  series.forEach((s, k) => { if (k && Math.abs(fin[k] - fin[0]) < 15) return; h += `<text x="${x(n - 1) + 10}" y="${fin[k] + 4}" font-size="12" font-weight="800" fill="#0b1b33">${s.txt[n - 1]}</text>`; });
-  h += TODOS.map((g, i) => `${logos ? `<image href="${LOGOS[G(g).rival] || ''}" x="${x(i) - 13}" y="${H - mb + 8}" width="26" height="26"/>` : ''}<text x="${x(i)}" y="${H - 5}" font-size="10.5" font-weight="600" text-anchor="middle" fill="#56647a">${rival(g).corto}</text>`).join('');
-  h += TODOS.map((g, i) => `<rect class="golpe" tabindex="0" role="img" aria-label="${esc(`vs ${rival(g).largo}: ${series.map((s) => `${s.nombre} ${s.txt[i]}`).join(', ')}`)}" x="${x(i) - 22}" y="0" width="44" height="${H}" ${tip(`vs ${rival(g).largo} · ${fecha(g)}`, series.map((s) => [s.color, s.txt[i], s.nombre]))}/>`).join('');
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfica por partido">${h}</svg>`;
+// partido a partido: un renglón o una columna por partido. Azul liso = a favor de Belugas; gris con rayas = en contra.
+// La raya punteada es lo que llevamos en los partidos que se ven. El partido abierto va resaltado; tocar uno lleva a ese partido.
+function grafPP(id, an, enTemp) {
+  const m = M[id], signo = m.tipo !== 'fr', sel = enTemp ? -1 : TODOS.indexOf(st.g), n = TODOS.length;
+  const xs = TODOS.map((g) => m.v(C(g))), vals = xs.map((x) => signo ? x : x.den ? x.num / x.den : null), txt = xs.map((x) => signo ? m.f(x) : x.den ? `${x.num} de ${x.den}` : 'sin intentos');
+  const t = signo ? null : m.v(C(TODOS)), prom = t && t.den ? t.num / t.den : null, max = signo ? Math.max(...vals.map(Math.abs), 1) : 1;
+  const marc = (g) => { const j = G(g), r = res(j); return `${r === 'I' ? 'inc.' : r} ${j.nos}–${j.ellos}`; };
+  const nombre = id === 'dif' ? 'Diferencia de puntos' : id === 'balones' ? 'Balones' : m.n;
+  let cuerpo;
+  if (st.forma === 'r') cuerpo = `<div>${TODOS.map((g, i) => { const v = vals[i];
+      const barra = v === null ? '' : signo ? `<i class="${v < 0 ? 'contra' : ''}" style="left:${v < 0 ? 50 - Math.abs(v) / max * 50 : 50}%;width:${Math.abs(v) / max * 50}%"></i><u class="cero" style="left:50%"></u>` : `<i style="left:0;width:${v * 100}%"></i><u style="left:${prom * 100}%"></u>`;
+      return `<button class="pr${i === sel ? ' este' : ''}" data-a="ir-partido" data-v="${g}"><div><b>${rival(g).corto} · ${fecha(g)}</b><small class="${res(G(g))}">${marc(g)}</small></div><div class="pista">${barra}</div><div class="v${v === null ? ' sin' : ''}">${txt[i]}</div></button>`; }).reverse().join('')}</div>`;
+  else { const W0 = an ? 480 : 340, paso = Math.max(46, (W0 - 8) / n), W = Math.max(W0, Math.round(n * paso + 8)), bw = 24, H = signo ? 206 : 176, base = signo ? 92 : 136, alto = signo ? 62 : 104, yEt = H - 18;
+    // columna con la punta redonda y la base recta
+    const col = (x, y, a, abajo, fill) => { const r = Math.min(4, a); return abajo ? `<path d="M${x} ${y}h${bw}v${a - r}a${r} ${r} 0 0 1 ${-r} ${r}h${2 * r - bw}a${r} ${r} 0 0 1 ${-r} ${-r}z" fill="${fill}"/>` : `<path d="M${x} ${y + a}v${r - a}a${r} ${r} 0 0 1 ${r} ${-r}h${bw - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${a - r}z" fill="${fill}"/>`; };
+    let h = '<defs><pattern id="rayas" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#8a94a3"/><rect width="2" height="5" fill="#5d6878"/></pattern></defs>';
+    TODOS.forEach((g, i) => { const v = vals[i], cx = 4 + paso * (i + .5), x = cx - bw / 2, a = v === null ? 0 : Math.max(Math.abs(v) / max * alto, 2), abajo = v !== null && v < 0, y = abajo ? base : base - a, r = res(G(g));
+      h += `${i === sel ? `<rect x="${cx - paso / 2 + 1}" y="2" width="${paso - 2}" height="${H - 4}" rx="10" fill="#eaf1fb"/>` : ''}${v === null ? '' : col(x, y, a, abajo, abajo ? 'url(#rayas)' : 'var(--nos)')}
+        <text x="${cx}" y="${abajo ? base + a + 14 : y - 6}" font-size="${v === null ? 9.5 : 11.5}" font-weight="800" text-anchor="middle" fill="${v === null ? '#56647a' : '#0b1b33'}">${v === null ? 'sin int.' : txt[i]}</text>
+        <text x="${cx}" y="${yEt}" font-size="11" font-weight="700" text-anchor="middle" fill="#0b1b33">${rival(g).corto}</text><text x="${cx}" y="${yEt + 12}" font-size="10" font-weight="700" text-anchor="middle" fill="${{G: '#0b6b3a', P: '#b3261e'}[r] || '#56647a'}">${r === 'I' ? 'inc.' : r}</text>
+        <rect class="golpe" tabindex="0" role="img" aria-label="${esc(`vs ${rival(g).largo}: ${txt[i]}`)}" data-a="ir-partido" data-v="${g}" x="${cx - paso / 2}" y="0" width="${paso}" height="${H}" ${tip(`vs ${rival(g).largo} · ${fecha(g)}`, [[abajo ? 'var(--riv)' : 'var(--nos)', txt[i], marc(g)]])}/>`; });
+    h += `<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--eje)"/>${prom === null ? '' : `<line x1="0" x2="${W}" y1="${base - prom * alto}" y2="${base - prom * alto}" stroke="#0b1b33" stroke-width="1.5" stroke-dasharray="5 4" opacity=".6"/>`}`;
+    cuerpo = `<div class="rueda cols-pp"><svg viewBox="0 0 ${W} ${H}"${W > W0 ? ` style="width:${W}px;max-width:none"` : ''} role="img" aria-label="${esc(nombre)} en cada partido">${h}</svg></div>${W > W0 ? '<p class="nota-g">Desliza la gráfica: lo más nuevo está a la derecha.</p>' : ''}`; }
+  const ley = signo ? leyenda([['var(--nos)', 'A favor', 'cuad'], ['var(--contra)', 'En contra', 'cuad']]) : prom === null ? '' : leyenda([['', `Lo de ${n === 1 ? 'este partido' : `estos ${n} partidos`}: ${t.den >= 10 ? pct(t.num, t.den) + '%' : `${t.num} de ${t.den}`}`, 'raya']]);
+  const tabla = `<table class="tv"><tr><th>Partido</th><th>${nombre}</th><th>Marcador</th></tr>${TODOS.map((g, i) => `<tr><td>${esc(rival(g).largo)} · ${fecha(g)}</td><td class="f">${txt[i]}</td><td>${marc(g)}</td></tr>`).join('')}</table>`;
+  const forma = `<div class="conm forma" role="group" aria-label="Forma de la gráfica">${[['r', 'Renglones'], ['c', 'Columnas']].map(([k, tx]) => `<button class="${st.forma === k ? 'on' : ''}" data-a="forma" data-v="${k}" aria-pressed="${st.forma === k}">${tx}</button>`).join('')}</div>`;
+  return marcoGraf('tend', `${nombre}, partido a partido`, `${forma}${ley}${cuerpo}<button class="que" data-a="hoja" data-v="${id}" data-c="${enTemp ? 't' : 'p'}">Qué es y cuánto creerle ›</button>`, tabla);
 }
 // columnas chicas: una sola serie, el partido que se está viendo resaltado
 function grafCols({W, vals, txt, sel, ymax, ref, H = 132}) {
@@ -800,20 +869,19 @@ function grafCols({W, vals, txt, sel, ymax, ref, H = 132}) {
   let h = `<line x1="${mi}" x2="${W - md}" y1="${y(0)}" y2="${y(0)}" stroke="var(--eje)"/>`;
   vals.forEach((v, i) => { const cx = mi + paso * (i + .5), top = y(v), alto = Math.max(y(0) - top, 0), r = Math.min(4, alto);
     h += alto > 0 ? `<path d="M${cx - bw / 2} ${y(0)}V${top + r}q0-${r} ${r}-${r}h${bw - 2 * r}q${r} 0 ${r} ${r}V${y(0)}z" fill="${i === sel || sel == null ? 'var(--nos)' : 'var(--nos-suave)'}"/>` : `<line x1="${cx - bw / 2}" x2="${cx + bw / 2}" y1="${y(0) - 1}" y2="${y(0) - 1}" stroke="var(--eje)" stroke-width="2"/>`;
-    h += `<text x="${cx}" y="${top - 6}" font-size="11.5" font-weight="${i === sel || sel == null ? 800 : 600}" text-anchor="middle" fill="${i === sel || sel == null ? '#0b1b33' : '#56647a'}">${txt[i]}</text>`;
+    // con más de 6 partidos las cifras se enciman: solo se rotula el partido abierto (o el último); las demás salen en el globo
+    if (n <= 6 || i === (sel == null ? n - 1 : sel)) h += `<text x="${cx}" y="${top - 6}" font-size="11.5" font-weight="${i === sel || sel == null ? 800 : 600}" text-anchor="middle" fill="${i === sel || sel == null ? '#0b1b33' : '#56647a'}">${txt[i]}</text>`;
     h += `<text x="${cx}" y="${H - 6}" font-size="10" font-weight="${i === sel ? 800 : 600}" text-anchor="middle" fill="${i === sel ? '#0b1b33' : '#56647a'}">${rival(TODOS[i]).corto}</text>`;
     h += `<rect class="golpe" tabindex="0" role="img" aria-label="${esc(`vs ${rival(TODOS[i]).largo}: ${txt[i]}`)}" x="${cx - paso / 2}" y="0" width="${paso}" height="${H}" ${tip(`vs ${rival(TODOS[i]).largo} · ${fecha(TODOS[i])}`, [['var(--nos)', txt[i], '']])}/>`; });
   if (ref != null) h += `<line x1="${mi}" x2="${W - md}" y1="${y(ref)}" y2="${y(ref)}" stroke="#56647a" stroke-width="1.5" stroke-dasharray="5 4"/>`;
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Partido por partido">${h}</svg>`;
 }
-const chispa = (vals) => { const W = 150, H = 34, mx = Math.max(...vals), mn = Math.min(...vals), y = (v) => mx === mn ? H / 2 : 6 + (H - 12) * (1 - (v - mn) / (mx - mn)), x = (i) => 6 + (W - 12) * i / (vals.length - 1);
-  return `<svg class="chispa" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${vals.map((v, i) => `${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="var(--riv)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${x(vals.length - 1)}" cy="${y(vals[vals.length - 1])}" r="4" fill="var(--nos)" stroke="#fff" stroke-width="1.5"/></svg>`; };
 // marcador corrido: los puntos de cada equipo conforme pasó el partido (dos líneas, una sola escala)
 function grafMarcador(g, W) {
   const H = 210, mi = 30, md = 34, ms = 16, mb = 30, ss = seriesDe(g), r = rival(g), tmax = Math.max(...FILAS.filter((f) => f.g === g).map((f) => f.t)) + 30, ymax = Math.ceil((Math.max(G(g).nos, G(g).ellos) + 2) / 7) * 7;
-  const x = (t) => mi + (W - mi - md) * t / tmax, y = (v) => ms + (H - ms - mb) * (1 - v / ymax), medio = (ss.filter((s) => s.m === 1).pop().t + ss.find((s) => s.m === 2).todas[0].t) / 2;
+  const x = (t) => mi + (W - mi - md) * t / tmax, y = (v) => ms + (H - ms - mb) * (1 - v / ymax), s2 = ss.find((s) => s.m === 2), medio = s2 ? (ss.filter((s) => s.m === 1).pop().t + s2.todas[0].t) / 2 : null;
   let h = Array.from({length: ymax / 7 + 1}, (_, i) => i * 7).map((v) => `<line x1="${mi}" x2="${W - md}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? 'var(--rejilla)' : 'var(--eje)'}"/><text x="${mi - 8}" y="${y(v) + 4}" font-size="11" text-anchor="end" fill="#56647a">${v}</text>`).join('');
-  h += `<line x1="${x(medio)}" x2="${x(medio)}" y1="${ms - 4}" y2="${y(0)}" stroke="var(--eje)"/><text x="${x(medio)}" y="${H - 8}" font-size="10.5" font-weight="600" text-anchor="middle" fill="#56647a">Medio tiempo</text>`;
+  if (medio !== null) h += `<line x1="${x(medio)}" x2="${x(medio)}" y1="${ms - 4}" y2="${y(0)}" stroke="var(--eje)"/><text x="${x(medio)}" y="${H - 8}" font-size="10.5" font-weight="600" text-anchor="middle" fill="#56647a">Medio tiempo</text>`;
   h += `<text x="${mi}" y="${H - 8}" font-size="10.5" font-weight="600" fill="#56647a">Inicio</text><text x="${W - md}" y="${H - 8}" font-size="10.5" font-weight="600" text-anchor="end" fill="#56647a">Final</text>`;
   const traza = (k, color) => { let pts = [[0, 0]], v = 0; for (const s of ss) if (s[k] !== v) { pts.push([s.t, v], [s.t, s[k]]); v = s[k]; } pts.push([tmax, v]); return `<polyline points="${pts.map(([t, p]) => `${x(t)},${y(p)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`; };
   h += traza('ellos', 'var(--riv)') + traza('nos', 'var(--nos)');
@@ -828,8 +896,8 @@ const marcoGraf = (id, titulo, cuerpo, tabla) => `<div class="card graf"><div cl
 
 // ---------- vista: partido ----------
 function heroe(g) {
-  const j = G(g), r = rival(g), gano = j.nos > j.ellos;
-  return `<div class="heroe"><div class="eti">${gano ? 'Ganamos' : 'Perdimos'} · ${fecha(g)}${j.real ? '' : ' · partido de ejemplo'}</div>
+  const j = G(g), r = rival(g);
+  return `<div class="heroe"><div class="eti">${RESN[res(j)]} · ${fecha(g)}${j.incompleto ? ' · solo la 1ª mitad' : ''}${j.real ? '' : ' · partido de ejemplo'}</div>
     <div class="vs"><div class="eq">${rlogo('belugas')}BEL</div><div class="mid">${j.nos} – ${j.ellos}</div><div class="eq">${rlogo(r.id)}${r.corto}</div></div>
     <p class="titular">${lectura(g).titular}</p></div>`;
 }
@@ -837,12 +905,12 @@ const pastPartidos = () => `<div class="pastillas" role="tablist" aria-label="Pa
 const conmRes = (col) => `<div class="conm ${col ? 'col' : ''}" role="tablist" aria-label="Manera de ver el resumen">${RES.map(([k, t, e]) => `<button class="${st.res === k ? 'on' : ''}" data-a="res" data-v="${k}" role="tab" aria-selected="${st.res === k}">${t}${e ? `<small>${e}</small>` : ''}</button>`).join('')}</div>`;
 // A · De un vistazo
 function resA(g, an) {
-  const fs = `<div class="fichas">${ficha('serieAnot', g)}${ficha('serieFren', g)}${ficha('pases', g)}${ficha('conv', g)}${fichaBalones(g)}</div>`;
-  if (!an) return `${fs}<h2>Serie por serie <small>cada cuadro, una vez con el balón</small></h2>${tira(g)}
+  const nums = numsPartido(g, 'tend'), gr = grafPP(tendP(), an, false);
+  if (!an) return `<p class="nota-g" style="margin-top:0">Toca un número y cambia la gráfica.</p>${nums}<div style="height:12px"></div>${gr}<h2>Serie por serie <small>cada cuadro, una vez con el balón</small></h2>${tira(g)}
     <h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}
     <h2>Quién anotó <small><button data-a="res" data-v="c">Ver la historia ›</button></small></h2>${historia(g, true)}`;
   const r = rival(g);
-  return `${fs}<div class="rejilla g3"><div class="col"><h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}</div>
+  return `<div class="rejilla g21" style="margin-top:0"><div class="col">${nums}<p class="nota-g">Toca un número y cambia la gráfica.</p></div><div class="col">${gr}</div></div><div class="rejilla g3"><div class="col"><h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}</div>
     <div class="col"><h2>Serie por serie</h2>${tira(g)}<div style="height:12px"></div>${marcoGraf('marc', 'El marcador, conforme pasó', leyenda([['var(--nos)', 'Belugas'], ['var(--riv)', r.largo]]) + grafMarcador(g, 380), tablaMarc(g))}</div>
     <div class="col"><h2>Quién anotó <small><button data-a="res" data-v="c">Ver la historia ›</button></small></h2>${historia(g, true)}<div style="height:12px"></div><div class="porque" style="grid-template-columns:1fr">${desglose('finSeries', [g])}</div></div></div>${detalle(g)}`;
 }
@@ -881,8 +949,8 @@ function resC(g, an) {
   const r = rival(g), W = an ? 640 : 340;
   const gr = marcoGraf('marc', 'El marcador, conforme pasó', leyenda([['var(--nos)', 'Belugas'], ['var(--riv)', r.largo]]) + grafMarcador(g, W), tablaMarc(g));
   const lt = `<h2>Serie por serie <small>toca una para ver sus jugadas</small></h2>${historia(g)}`;
-  if (!an) return `${gr}${lt}<h2>Los números</h2><div class="fichas">${ficha('serieAnot', g)}${ficha('serieFren', g)}${ficha('pases', g)}${ficha('conv', g)}${fichaBalones(g)}</div>`;
-  return `<div class="rejilla g2"><div class="col">${gr}<h2>Los números</h2><div class="fichas" style="grid-template-columns:repeat(3,minmax(0,1fr))">${ficha('serieAnot', g)}${ficha('serieFren', g)}${ficha('pases', g)}${ficha('conv', g)}${fichaBalones(g)}</div></div><div class="col">${lt}</div></div>${detalle(g)}`;
+  if (!an) return `${gr}${lt}<h2>Los números</h2>${numsPartido(g, 'hoja')}`;
+  return `<div class="rejilla g2"><div class="col">${gr}<h2>Los números</h2>${numsPartido(g, 'hoja')}</div><div class="col">${lt}</div></div>${detalle(g)}`;
 }
 // en la laptop: los números de cada quien en ese partido
 const COLS = [['pts', 'Pts'], ['comp', 'Pases'], ['tdp', 'TD pase'], ['intl', 'Int. lanz.'], ['rec', 'Rec.'], ['tgt', 'Le lanzaron'], ['car', 'Corr.'], ['td', 'TD'], ['conv', 'Conv.'], ['band', 'Band.'], ['tap', 'Tapados'], ['sack', 'Sacks'], ['intn', 'Int.']];
@@ -892,41 +960,42 @@ function tablaJug(gs, conPj) {
   return `<div class="card rueda"><table class="tv"><tr><th>Jugador</th>${conPj ? '<th>PJ</th>' : ''}${COLS.map(([c, t]) => `<th class="${k === c ? 'ord' : ''}" aria-sort="${k === c ? 'descending' : 'none'}"><button data-a="orden" data-v="${c}">${t}${k === c ? ' ↓' : ''}</button></th>`).join('')}</tr>
     ${ids.map((id) => { const x = J(id, gs), p = P(id); return `<tr data-a="jug" data-v="${id}" tabindex="0"><td><span class="jn">${foto(p)}<span class="corta">${esc(p.corto)}</span></span></td>${conPj ? `<td>${x.pj}</td>` : ''}${COLS.map(([c]) => `<td class="${k === c ? 'f' : ''}">${c === 'comp' ? (x.att ? `${x.comp}/${x.att}` : '·') : x[c] || '·'}</td>`).join('')}</tr>`; }).join('')}</table></div>`;
 }
+// en el teléfono: tres tablas cortas que caben sin deslizar, con el retrato o las iniciales antes del nombre.
+// Columnas de ancho fijo: el título y sus números van centrados en el mismo eje.
+function tablaGrupos(gs, conPj) {
+  const ids = PLANTEL.map((p) => p.id).filter((id) => J(id, gs).pj), X = (id) => J(id, gs), pl = gs.length > 1, c0 = (v, tx) => v ? `<td>${tx === undefined ? v : tx}</td>` : '<td class="v">·</td>';
+  const nombre = (id) => { const p = P(id); return `<td><span class="jn">${foto(p)}<span style="min-width:0"><span class="corta" style="display:block">${esc(p.corto)}</span>${conPj ? `<small>${X(id).pj} ${X(id).pj === 1 ? 'partido' : 'partidos'}</small>` : ''}</span></span></td>`; };
+  // cols: [título, ancho en px]
+  const grupo = (tit, cols, filtro, orden, celdas) => { const l = ids.filter((id) => filtro(X(id))).sort((a, b) => orden(X(b)) - orden(X(a)));
+    return l.length ? `<div class="card tg"><table class="tv"><colgroup><col>${cols.map(([, w]) => `<col style="width:${w}px">`).join('')}</colgroup><tr><th>${tit}</th>${cols.map(([tx]) => `<th>${tx}</th>`).join('')}</tr>${l.map((id) => `<tr data-a="jug" data-v="${id}" tabindex="0">${nombre(id)}${celdas(X(id))}</tr>`).join('')}</table></div>` : ''; };
+  const ancho = pl ? 88 : 72, hizo = (x) => x.att || x.tgt || x.car || x.td || x.conv || x.band || x.tap || x.sack || x.intn, sin = ids.filter((id) => !hizo(X(id)));
+  return grupo(pl ? 'Lanzaron' : 'Lanzó', [['Pases', ancho + 10], ['TD', 44], ['Int.', 48]], (x) => x.att, (x) => x.att, (x) => `<td>${x.comp} de ${x.att}</td>${c0(x.tdp)}<td>${x.intl}</td>`)
+    + grupo(pl ? 'Recibieron o corrieron' : 'Recibió o corrió', [['Rec.', ancho], ['Corr.', 44], ['TD', 38], ['Conv.', 48]], (x) => x.tgt || x.car || x.conv || x.td > x.tdd, (x) => x.rec * 100 + x.car, (x) => `${x.tgt ? `<td>${x.rec} de ${x.tgt}</td>` : '<td class="v">·</td>'}${c0(x.car)}${c0(x.td - x.tdd)}${c0(x.conv, '+' + x.conv)}`)
+    + grupo(pl ? 'Defendieron' : 'Defendió', [['Band.', 48], ['Tap.', 44], ['Sacks', 48], ['Int.', 52]], (x) => x.band || x.tap || x.sack || x.intn, (x) => x.band * 100 + x.tap, (x) => `${c0(x.band)}${c0(x.tap)}${c0(x.sack)}${c0(x.intn, x.intn + (x.tdd ? ' · TD' : ''))}`)
+    + (sin.length ? `<div class="card sinj"><span>${pl || sin.length > 1 ? 'Fueron y no tienen jugadas:' : 'Fue y no tuvo jugadas:'}</span>${sin.map((id) => `${foto(P(id))}<b>${esc(P(id).corto)}</b>`).join('')}</div>` : '');
+}
 const detalle = (g) => `<h2>Los números de cada quien <small>toca una columna para ordenar</small></h2>${tablaJug([g])}`;
 function vPartido(an) {
   const g = st.g;
   return `${an ? `<h2 style="margin-top:0">Partido <small>${JUEGOS.length} jugados · toca uno</small></h2>` : ''}${pastPartidos()}${heroe(g)}
     <div style="margin:12px 0 ${an ? 16 : 12}px;${an ? 'max-width:520px' : ''}">${conmRes()}</div>
-    ${{a: resA, b: resB, c: resC}[st.res](g, an)}
+    ${{a: resA, b: resB, c: resC}[st.res](g, an)}${an ? '' : `<h2>Los números de cada quien</h2>${tablaGrupos([g])}`}
     <div class="ej">${G(g).real ? 'Marcador real · las jugadas son de ejemplo' : 'Partido y jugadas de ejemplo'}</div>`;
 }
 
 // desglose: partes de un total, cada una con su barra
 function desglose(id, gs, enTemp) {
   const m = M[id], ps = m.partes(C(gs)), nums = ps.every(([, v]) => typeof v === 'number'), mx = nums ? Math.max(...ps.map(([, v]) => v), 1) : 0;
-  return `<button class="card desg" data-a="hoja" data-v="${id}" data-c="${enTemp ? 't' : 'p'}"><b>${m.n}<span class="inf" aria-hidden="true">i</span></b>${ps.map(([t, v]) => `<span class="dr"><span>${t}</span><strong>${v}</strong>${nums ? `<i><u style="width:${v / mx * 100}%"></u></i>` : ''}</span>`).join('')}</button>`;
+  return `<button class="card desg" data-a="hoja" data-v="${id}" data-c="${enTemp ? 't' : 'p'}"><b>${m.n}</b>${ps.map(([t, v]) => `<span class="dr"><span>${t}</span><strong>${v}</strong>${nums ? `<i><u style="width:${v / mx * 100}%"></u></i>` : ''}</span>`).join('')}</button>`;
 }
 const PORQUE = ['finSeries', 'comoAnot', 'unoODos', 'mitades'];
 // ---------- vista: temporada ----------
 const TEND = ['dif', 'serieAnot', 'serieFren', 'pases', 'balones', 'conv'];
-function fichaTemp(id) {
-  const m = M[id], c = C(TODOS), v = valor(id, c), por = TODOS.map((g) => { const x = m.v(C(g)); return m.tipo === 'fr' ? (x.den ? x.num / x.den : 0) : x; });
-  const extra = id === 'dif' ? `${c.pf} a favor · ${c.pc} en contra` : id === 'balones' ? `${c.robos} robados · ${c.perdidas} perdidos` : v.ch;
-  return `<button class="ficha" data-a="hoja" data-v="${id}"><span class="nom">${id === 'dif' ? 'Diferencia de puntos' : m.n}</span><span class="inf" aria-hidden="true">i</span><span class="val">${v.g}</span><span class="pie">${extra}</span>${chispa(por)}</button>`;
-}
-function grafTend(an) {
-  const id = st.tend, m = M[id], W = an ? 640 : 340, c = C(TODOS);
-  let series, ymax, yf, ref, tabla;
-  if (id === 'dif') { series = [{nombre: 'Belugas', color: 'var(--nos)', vals: JUEGOS.map((j) => j.nos), txt: JUEGOS.map((j) => String(j.nos))}, {nombre: 'Rival', color: 'var(--riv)', vals: JUEGOS.map((j) => j.ellos), txt: JUEGOS.map((j) => String(j.ellos))}]; ymax = 30; yf = String; ref = null;
-    tabla = `<table class="tv"><tr><th>Rival</th><th>Belugas</th><th>Rival</th><th>Diferencia</th></tr>${JUEGOS.map((j) => `<tr><td>${esc(R(j.rival).largo)}</td><td class="f">${j.nos}</td><td>${j.ellos}</td><td>${M.dif.f(j.nos - j.ellos)}</td></tr>`).join('')}</table>`;
-  } else if (m.tipo === 'fr') { const xs = TODOS.map((g) => m.v(C(g))), t = m.v(c); series = [{nombre: m.n, color: 'var(--nos)', vals: xs.map((x) => x.den ? x.num / x.den * 100 : 0), txt: xs.map((x) => `${x.num} de ${x.den}`)}]; ymax = 100; yf = (v) => v + '%'; ref = {v: t.num / t.den * 100, txt: `Temporada: ${pct(t.num, t.den)}%`};
-    tabla = `<table class="tv"><tr><th>Rival</th><th>${m.n}</th><th>%</th></tr>${TODOS.map((g, i) => `<tr><td>${esc(rival(g).largo)}</td><td class="f">${xs[i].num} de ${xs[i].den}</td><td>${pct(xs[i].num, xs[i].den)}%</td></tr>`).join('')}</table>`;
-  } else { const rb = TODOS.map((g) => C(g).robos), pd = TODOS.map((g) => C(g).perdidas); series = [{nombre: 'Robados', color: 'var(--nos)', vals: rb, txt: rb.map(String)}, {nombre: 'Perdidos', color: 'var(--riv)', vals: pd, txt: pd.map(String)}]; ymax = 3; yf = String; ref = null;
-    tabla = `<table class="tv"><tr><th>Rival</th><th>Robados</th><th>Perdidos</th></tr>${TODOS.map((g, i) => `<tr><td>${esc(rival(g).largo)}</td><td class="f">${rb[i]}</td><td>${pd[i]}</td></tr>`).join('')}</table>`; }
-  const ley = series.length > 1 ? leyenda(series.map((s) => [s.color, s.nombre])) : ref ? leyenda([['', ref.txt, 'raya']]) : '';
-  const titulo = id === 'dif' ? 'Puntos por partido' : id === 'balones' ? 'Balones robados y perdidos' : m.n + ' por partido';
-  return `<div class="pastillas" role="tablist" aria-label="Qué métrica ver">${TEND.map((k) => `<button class="past ${id === k ? 'on' : ''}" data-a="tend" data-v="${k}" role="tab" aria-selected="${id === k}">${k === 'dif' ? 'Puntos' : k === 'balones' ? 'Balones' : M[k].n}</button>`).join('')}</div>
-    ${marcoGraf('tend', titulo, ley + grafLineas({W, series, ymax, yf, ref}), tabla)}`;
+// los 6 números de la temporada en una rejilla; al tocar uno, la gráfica de al lado cambia a ese número
+function numsTemp() {
+  const c = C(TODOS);
+  return `<div class="card nums"><div class="rej6">${TEND.map((id) => { const m = M[id], v = valor(id, c), extra = id === 'dif' ? `${c.pf} a favor, ${c.pc} en contra` : id === 'balones' ? `${c.robos} robados, ${c.perdidas} perdidos` : v.ch || (v.n ? 'pocos intentos: sin porcentaje' : 'sin intentos');
+    return `<button class="${st.tend === id ? 'sel' : ''}" data-a="tend" data-v="${id}" aria-pressed="${st.tend === id}"><span class="nom">${id === 'dif' ? 'Diferencia de puntos' : id === 'balones' ? 'Balones' : m.n}</span><span class="val">${v.g}</span><span class="pie">${extra}</span></button>`; }).join('')}</div></div>`;
 }
 const CATS = [['td', 'TD', 'TD'], ['rec', 'Recepciones', 'rec.'], ['band', 'Banderas', 'band.'], ['grandes', 'Jugadas grandes', ''], ['pts', 'Puntos Belugas', 'pts']];
 const CORONA = '<svg class="corona" viewBox="0 0 34 22" aria-hidden="true"><path d="M3 19 1.5 5.5l8 6L17 1.5l7.500 10 8-6L31 19z" fill="#f6b73c" stroke="#b7700f" stroke-width="1.5" stroke-linejoin="round"/></svg>';
@@ -938,20 +1007,19 @@ function lideres() {
     <button class="tfila" data-a="hojaj" data-v="${k}" style="justify-content:center;color:var(--azul);font:700 13.5px/1 Inter;min-height:44px">¿Qué cuenta como «${CATS.find(([x]) => x === k)[1]}»?</button></div>`;
 }
 function listaPartidos() {
-  return `<div class="card">${TODOS.slice().reverse().map((g) => { const j = G(g), r = rival(g), c = C(g); return `<button class="pp" data-a="ir-partido" data-v="${g}">${rlogo(r.id)}<div><b class="corta">${esc(r.largo)}</b><small>${fecha(g)} · anotamos en ${c.A.td} de ${c.A.ser}</small>${pips(c.A.orden, 'ch')}</div><div class="der"><strong>${j.nos}–${j.ellos}</strong><small class="${j.nos > j.ellos ? 'g' : 'p'}">${j.nos > j.ellos ? 'Ganamos' : 'Perdimos'}</small></div></button>`; }).join('')}</div>`;
+  return `<div class="card">${TODOS.slice().reverse().map((g) => { const j = G(g), r = rival(g), c = C(g); return `<button class="pp" data-a="ir-partido" data-v="${g}">${rlogo(r.id)}<div><b class="corta">${esc(r.largo)}</b><small>${fecha(g)} · anotamos en ${c.A.td} de ${c.A.ser}</small>${pips(c.A.orden, 'ch')}</div><div class="der"><strong>${j.nos}–${j.ellos}</strong><small class="${{G: 'g', P: 'p'}[res(j)] || ''}">${RESN[res(j)]}</small></div></button>`; }).join('')}</div>`;
 }
 function vTemporada(an) {
   const c = C(TODOS), racha = rachaPartidos() + ' al hilo';
-  const rec = `<div class="record"><div class="rec">${c.gan}–${c.per}<small>Ganados–perdidos</small></div><p>${racha}. Diferencia de puntos: <b>${M.dif.f(c.pf - c.pc)}</b> (${c.pf} a favor, ${c.pc} en contra).</p>
-    <div class="ult">${JUEGOS.map((j) => `<i class="${j.nos > j.ellos ? 'g' : 'p'}" title="${esc(R(j.rival).largo)} ${j.nos}–${j.ellos}">${j.nos > j.ellos ? 'G' : 'P'}</i>`).join('')}<span style="opacity:.9;margin-left:4px">del primero al último</span></div></div>`;
-  const aviso = `<div class="card aviso"><i aria-hidden="true">!</i><div><b>Van ${c.pj} partidos: todavía es poca muestra.</b> Ya dicen algo los pases (${c.A.att}) y las series (${c.A.ser}). Las conversiones (${c.A.cInt}) y los balones (${c.robos + c.perdidas}) siguen siendo una pista. Toca cualquier número para ver cuánto creerle.</div></div>`;
-  const fs = `<div class="fichas seis">${TEND.map(fichaTemp).join('')}</div>`;
-  if (!an) return `${rec}<h2>De un vistazo <small>toda la temporada</small></h2>${fs}<div style="height:10px"></div>${aviso}<h2>Partido a partido</h2>${grafTend(false)}
+  const rec = `<div class="record"><div class="rec">${c.gan}–${c.per}${c.emp ? '–' + c.emp : ''}<small>${c.emp ? 'Ganados, perdidos y empates' : 'Ganados–perdidos'}</small></div><p>${racha}.${c.inc ? ` ${c.inc === 1 ? 'Un partido incompleto no cuenta' : `${c.inc} partidos incompletos no cuentan`} en el récord.` : ''}</p>
+    <div class="ult">${JUEGOS.map((j) => { const r = res(j); return `<i class="${{G: 'g', P: 'p', E: 'e', I: 'inc'}[r]}" title="${esc(R(j.rival).largo)} ${j.nos}–${j.ellos}${r === 'I' ? ' (incompleto)' : ''}">${r === 'I' ? '·' : r}</i>`; }).join('')}<span style="opacity:.9;margin-left:4px">del primero al último</span></div></div>`;
+  const nota = `<p class="nota-g">Van ${c.pj} ${c.pj === 1 ? 'partido' : 'partidos'} y ${c.A.ser} series: ${CONF[nivelConf(c.A.ser)][0].toLowerCase()}. Toca un número y cambia la gráfica.</p>`;
+  if (!an) return `${rec}<h2>De un vistazo <small>toda la temporada</small></h2>${numsTemp()}${nota}${grafPP(st.tend, false, true)}
     <h2>El porqué <small>toca una para entenderla</small></h2><div class="porque" style="grid-template-columns:1fr">${PORQUE.map((k) => desglose(k, TODOS, true)).join('')}</div>
     <h2>Partidos</h2>${listaPartidos()}<h2>Líderes</h2>${lideres()}<div class="ej">3 marcadores reales · lo demás es de ejemplo</div>`;
-  return `<h2 style="margin-top:0">Temporada 2026 <small>${c.pj} partidos jugados</small></h2><div class="rejilla g2" style="margin-top:0"><div class="col">${rec}</div><div class="col">${aviso}</div></div>
-    <h2>De un vistazo</h2>${fs}
-    <div class="rejilla g2"><div class="col"><h2>Partido a partido</h2>${grafTend(true)}<h2>El porqué <small>toca una para entenderla</small></h2><div class="porque">${PORQUE.map((k) => desglose(k, TODOS, true)).join('')}</div></div>
+  return `<h2 style="margin-top:0">Temporada 2026 <small>${c.pj} partidos jugados</small></h2>${rec}
+    <h2>De un vistazo</h2><div class="rejilla g21" style="margin-top:0"><div class="col">${numsTemp()}${nota}</div><div class="col">${grafPP(st.tend, true, true)}</div></div>
+    <div class="rejilla g2"><div class="col"><h2>El porqué <small>toca una para entenderla</small></h2><div class="porque">${PORQUE.map((k) => desglose(k, TODOS, true)).join('')}</div></div>
       <div class="col"><h2>Partidos</h2>${listaPartidos()}<h2>Líderes</h2>${lideres()}</div></div>
     <h2>Todos los jugadores <small>toca una columna para ordenar, o un renglón para ver su ficha</small></h2>${tablaJug(TODOS, true)}
     <div class="ej">3 marcadores reales · lo demás es de ejemplo</div>`;
@@ -962,13 +1030,14 @@ function vJugadores(an) {
   const orden = PLANTEL.slice().sort((a, b) => J(b.id, TODOS).pts - J(a.id, TODOS).pts);
   if (an) return `<h2 style="margin-top:0">Jugadores <small>${PLANTEL.length} en el plantel</small></h2><div class="rejilla g2" style="margin-top:0"><div class="col">${tablaJug(TODOS, true)}</div><div class="col">${lideres()}</div></div><div class="ej">Plantel inventado · datos de ejemplo</div>`;
   return `<h2 style="margin-top:4px">Líderes <small>temporada</small></h2>${lideres()}<h2>Todos <small>por Puntos Belugas</small></h2>
-    <div class="card">${orden.map((p, i) => filaJug(p.id, J(p.id, TODOS), `<span class="rk">${i + 1}</span>`)).join('')}</div><div class="ej">Plantel inventado · datos de ejemplo</div>`;
+    <div class="card">${orden.map((p, i) => filaJug(p.id, J(p.id, TODOS), `<span class="rk">${i + 1}</span>`)).join('')}</div>
+    <h2>Todos los números</h2>${tablaGrupos(TODOS, true)}<div class="ej">Plantel inventado · datos de ejemplo</div>`;
 }
 const FJ = {Lanza: ['pComp', 'tdp', 'intl'], Recibe: ['rec', 'atrapa', 'td'], Corre: ['car'], Defiende: ['band', 'intn', 'tap', 'sack']};
 function fichaJ(k, id) {
   const m = MJ[k], x = J(id, TODOS), v = m.v(x), esFr = typeof v === 'object', g = esFr ? (v.den >= 10 ? `${pct(v.num, v.den)}<small>%</small>` : `${v.num}<small>de ${v.den}</small>`) : String(v);
   const lugar = esFr ? '' : (() => { const o = PLANTEL.map((p) => MJ[k].v(J(p.id, TODOS))).sort((a, b) => m.menos ? a - b : b - a); const l = o.indexOf(v) + 1; return v && !m.menos && l <= 3 ? `${l}º del equipo` : ''; })();
-  return `<button class="ficha" data-a="hojaj" data-v="${k}"><span class="nom">${m.n}</span><span class="inf" aria-hidden="true">i</span><span class="val">${g}</span><span class="pie">${esFr ? (v.den >= 10 ? `${v.num} de ${v.den}` : 'pocos intentos: sin porcentaje') : lugar || (x.pj ? `${(v / x.pj).toFixed(1)} por partido` : '')}</span></button>`;
+  return `<button class="ficha" data-a="hojaj" data-v="${k}"><span class="nom">${m.n}</span><span class="val">${g}</span><span class="pie">${esFr ? (v.den >= 10 ? `${v.num} de ${v.den}` : 'pocos intentos: sin porcentaje') : lugar || (x.pj ? `${(v / x.pj).toFixed(1)} por partido` : '')}</span></button>`;
 }
 function vJugador(an) {
   const id = st.jug, p = P(id), x = J(id, TODOS), rs = roles(x), ks = [...new Set([...rs.flatMap((r) => FJ[r]), 'td', 'conv'])].filter((k) => { const v = MJ[k].v(x); return typeof v === 'object' ? v.den : v; });
@@ -1021,7 +1090,7 @@ function hojaEquipo(id, enTemp) {
   if (m.nota) cuerpo += `<p style="margin-top:8px;color:var(--mut);font-size:13.5px">${m.nota}</p>`;
   if (m.v && !(m.pide && !st.primera)) {
     if (!enTemp) { const k = contra(id, g), rv = m.riv ? m.riv(c) : null, o = C(otros(g)), pv = m.tipo === 'fr' ? m.v(o) : null;
-      cuerpo += `<h4>Contra quién se compara</h4><div class="par">${rv !== null ? `<div><span>${esc(r.largo)}</span><b>${m.tipo === 'fr' ? `${rv.num}<small>de ${rv.den}</small>` : m.f(rv)}</b></div>` : ''}<div><span>Nuestro promedio</span><b>${m.tipo === 'fr' ? `${pct(pv.num, pv.den)}%<small>${pv.num} de ${pv.den}</small>` : m.f(k.esp)}</b></div></div>
+      cuerpo += `<h4>Contra quién se compara</h4><div class="par">${rv !== null ? `<div><span>${esc(r.largo)}</span><b>${m.tipo === 'fr' ? `${rv.num}<small>de ${rv.den}</small>` : m.f(rv)}</b></div>` : ''}<div><span>Nuestro promedio</span><b>${m.tipo === 'fr' ? `${pct(pv.num, pv.den)}%<small>${pv.num} de ${pv.den}</small>` : k ? m.f(k.esp) : '—'}</b></div></div>
         ${k ? `<p style="margin-top:8px">${k.txt} Hicimos ${m.tipo === 'fr' ? k.real : m.f(k.real)}: <b>${k.eti.toLowerCase()}</b>. Solo lo marco como mejor o peor si la diferencia llega a ${tantos(m.umbral, m.unidad)}; menos que eso puede ser pura suerte.</p>` : ''}`; }
     const xs = TODOS.map((x) => m.v(C(x))), vals = xs.map((x) => m.tipo === 'fr' ? (x.den ? x.num / x.den * 100 : 0) : x), minV = Math.min(...vals, 0), t = m.v(C(TODOS));
     if (minV >= 0) cuerpo += `<h4>Partido a partido</h4>${grafCols({W: 340, vals, txt: xs.map((x) => m.tipo === 'fr' ? `${x.num}/${x.den}` : m.f(x)), sel: enTemp ? null : TODOS.indexOf(g), ymax: Math.max(...vals, 1) * 1.12, ref: m.tipo === 'fr' ? t.num / t.den * 100 : null})}${m.tipo === 'fr' ? leyenda([['', `Temporada: ${pct(t.num, t.den)}% (${t.num} de ${t.den})`, 'raya']]) : ''}`;
@@ -1043,16 +1112,16 @@ function hojaJug(k, id) {
       : k === 'pts' ? `<div class="cuenta">${esc(p.corto)}: ${Object.entries(PESOS).filter(([c]) => x[c]).map(([c, w]) => `${x[c]} × ${w}`).join(' + ')} = <b>${x.pts}</b>.</div>` : k === 'ptsAnot' ? `<div class="cuenta">${esc(p.corto)}: ${x.td} TD × 6 + ${x.conv} de conversión = <b>${x.ptsAnot}</b>.</div>`
       : `<div class="cuenta">${esc(p.corto)} lleva <b>${v}</b> en ${x.pj} partidos${x.pj ? `: ${(v / x.pj).toFixed(1)} por partido` : ''}.</div>`;
     const orden = PLANTEL.map((q) => [q, m.v(J(q.id, TODOS))]).filter(([, w]) => typeof w === 'object' ? w.den >= 10 : w > 0).sort((a, b) => { const f = (w) => typeof w === 'object' ? w.num / w.den : w; return m.menos ? f(a[1]) - f(b[1]) : f(b[1]) - f(a[1]); }).slice(0, 5);
-    if (orden.length > 1 && !m.menos) ej += `<h4>En el equipo${esFr ? ' (con 10 intentos o más)' : ''}</h4><div class="rueda"><table class="tv">${orden.map(([q, w], i) => `<tr><td><span class="jn">${foto(q)}<span class="corta">${i + 1}. ${esc(q.corto)}</span></span></td><td class="${q.id === id ? 'f' : ''}">${typeof w === 'object' ? `${pct(w.num, w.den)}% · ${w.num} de ${w.den}` : w}</td></tr>`).join('')}</table></div>`;
+    if (orden.length > 1) ej += `<h4>En el equipo${esFr ? ' (con 10 intentos o más)' : ''}</h4><div class="rueda"><table class="tv">${orden.map(([q, w], i) => `<tr><td><span class="jn">${foto(q)}<span class="corta">${i + 1}. ${esc(q.corto)}</span></span></td><td class="${q.id === id ? 'f' : ''}">${typeof w === 'object' ? `${pct(w.num, w.den)}% · ${w.num} de ${w.den}` : w}</td></tr>`).join('')}</table></div>`;
   } else cab = `<p class="donde">De cada jugador · ${m.rol === 'Todos' ? 'para todos' : 'para quien ' + m.rol.toLowerCase()}</p>`;
   return `<h3>${m.n}</h3>${cab}<h4>Qué es</h4><p class="q">${m.que}</p><h4>Cómo se calcula</h4><p>${m.como}</p>${ej}${m.nota ? `<p style="margin-top:8px;color:var(--mut);font-size:13.5px">${m.nota}</p>` : ''}
     <h4>¿Cuánto creerle?</h4><p>${m.muestra}</p><h4>De qué toques sale</h4><p>${m.toques}</p>`;
 }
 const INFO = () => `<h3>Sobre este prototipo</h3><p class="donde">Métricas de Belugas · datos de ejemplo</p>
-  <p>Todo lo que ves se calcula aquí mismo a partir de <b>${FILAS.length} jugadas</b> guardadas una por fila, como en el camino B. Los 3 primeros marcadores (Kaffies, Only Fins y Últimos Aztecas) son los reales; los otros 3 y todas las jugadas son inventados. El plantel es el mismo del prototipo de Inicio.</p>
-  <h4>Qué se puede tocar</h4><p>Cualquier número abre su explicación. Los partidos, los jugadores y las columnas de las tablas también. En «Partido» hay tres maneras de ver el resumen.</p>
-  <h4>Lo que falta decidir</h4>
-  ${[['¿Agregamos el toque «Primera»?', 'Recomiendo que sí, para los dos equipos: unos 8 toques más por partido. Pruébalo en Guía, nivel 3.'], ['¿Marcamos yardas?', 'Recomiendo que no por ahora.'], ['¿Cuál resumen del partido va primero?', 'Recomiendo «De un vistazo».'], ['¿Con qué tabla de puntos se arma el podio?', 'Recomiendo la de este prototipo, restando 2 por intercepción lanzada.'], ['¿Quién ve los números delicados de cada quien?', 'Recomiendo dejarlos en la ficha de cada quien, sin tablas de «peores».']].map(([a, b], i) => `<p style="margin:0;padding:8px 0;border-top:1px solid var(--linea)"><b>${i + 1}. ${a}</b><br><span style="color:var(--mut);font-size:13.5px">${b}</span></p>`).join('')}
+  <p>Todo lo que ves se calcula aquí mismo a partir de <b>${FILAS.length} jugadas</b> guardadas una por fila, como en el camino B. Los 3 primeros marcadores (Kaffies, Only Fins y Últimos Aztecas) son los reales; los otros ${D.juegos.length - 3} y todas las jugadas son inventados, con un empate, un partido incompleto y dos palizas para ver los casos raros. El plantel es el del prototipo de Inicio. Arriba, «datos de ejemplo» deja ver la temporada con 2, 5 o todos los partidos.</p>
+  <h4>Qué se puede tocar</h4><p>En Partido y en Temporada, tocar un número cambia la gráfica de abajo, y «Qué es y cuánto creerle» abre su explicación. Los partidos, los jugadores y las columnas de las tablas también se tocan. En «Partido» hay tres maneras de ver el resumen.</p>
+  <h4>Lo decidido y lo que falta</h4>
+  ${[['¿Agregamos el toque «Primera»?', 'Sin decidir: con las yardas la primera puede salir sola (ver la prueba de yardas); el toque solo haría falta para el rival.'], ['¿Marcamos yardas?', 'Iker lo está probando: diez reglas en la página de yardas.'], ['¿Cuál resumen del partido va primero?', 'Decidido: «De un vistazo».'], ['¿Con qué tabla de puntos se arma el podio?', 'Decidido: la de este prototipo, restando 2 por intercepción lanzada.'], ['¿Quién ve los números delicados de cada quien?', 'Decidido: todo a la vista de todos, con tablas.']].map(([a, b], i) => `<p style="margin:0;padding:8px 0;border-top:1px solid var(--linea)"><b>${i + 1}. ${a}</b><br><span style="color:var(--mut);font-size:13.5px">${b}</span></p>`).join('')}
   <p style="color:var(--mut);font-size:13px">Las opciones completas están en el reporte, sección 7.</p>
   <h4>En qué pantallas se basa (Mobbin)</h4>
   ${[['NBA · resumen del partido', 'Destacados arriba y comparación del equipo en fichas', 'https://mobbin.com/screens/2a85cf45-0207-498a-afe1-65473c8d3bae'], ['Apple Sports · stats del partido', 'Los dos equipos cara a cara, con barra', 'https://mobbin.com/screens/a85e8a79-016d-47f3-b938-046bc96dbd74'], ['Premier League · match stats', 'En negritas el que lo hizo mejor', 'https://mobbin.com/screens/20854574-a9a3-4acb-b20e-3de8f4f7f854'], ['DAZN · stats con «i»', 'Una «i» junto a cada grupo de números', 'https://mobbin.com/screens/8d8a3504-a464-4891-b710-887d31185017'], ['FotMob · lo que pasó', 'Quién anotó y cuándo, con el medio tiempo', 'https://mobbin.com/screens/6b4079e1-8bdc-4bb1-b2ee-763cf985b190'], ['NFL · stats del jugador', 'Números grandes en itálica', 'https://mobbin.com/screens/b1db4193-155f-4dfa-a982-370437eb063b'], ['The Outsiders · una métrica', 'El número, una frase que lo lee y su tendencia', 'https://mobbin.com/screens/6d346800-a549-4071-a82b-16899f9443ac'], ['Visible · resumen en frases', 'Cada dato contra tu propio promedio', 'https://mobbin.com/screens/3f60710a-3d4e-4892-a146-05dc3a432fc9'], ['Bevel · «¿Qué es…?»', 'La explicación de cada número, ahí mismo', 'https://mobbin.com/screens/4f8f0190-3baa-4d7d-8ce6-446415e56392']].map(([t, s, u]) => `<p style="margin:0;padding:9px 0;border-top:1px solid var(--linea)"><a href="${u}?utm_source=claude&amp;utm_medium=ai-assistant&amp;utm_source_platform=mcp" target="_blank" rel="noopener">${t} ↗</a><br><span style="color:var(--mut);font-size:13px">${s}</span></p>`).join('')}`;
@@ -1071,7 +1140,7 @@ function pintar() {
   document.body.classList.toggle('marco', st.tel && window.innerWidth >= 900);
   app.className = an ? 'ancho' : '';
   const v = {partido: vPartido, temporada: vTemporada, jugadores: vJugadores, jugador: vJugador, guia: vGuia}[st.vista](an);
-  const c = C(TODOS), sub = {partido: 'Cómo nos fue en cada partido', temporada: `Temporada 2026 · ${c.gan}–${c.per}`, jugadores: 'Cómo va cada quien', jugador: 'Cómo va cada quien', guia: 'Qué mide cada número'}[st.vista];
+  const c = C(TODOS), sub = {partido: 'Cómo nos fue en cada partido', temporada: `Temporada 2026 · ${c.gan}–${c.per}${c.emp ? '–' + c.emp : ''}`, jugadores: 'Cómo va cada quien', jugador: 'Cómo va cada quien', guia: 'Qué mide cada número'}[st.vista];
   const lado = `<aside class="lado"><div class="marca">${rlogo('belugas', 44)}<div><b>Belugas</b><small>Métricas · temporada 2026</small></div></div>
     <nav>${TABS.map(([k, t]) => `<button class="${tabDe() === k ? 'on' : ''}" data-a="ir" data-v="${k}">${svgIco(k)}${t}</button>`).join('')}</nav>
     <h4>Prototipo</h4><p>Resumen del partido:</p>${conmRes(true)}
@@ -1079,8 +1148,10 @@ function pintar() {
     <p><button data-a="info" style="color:var(--azul);font-weight:700">Sobre este prototipo ›</button></p>
     <p style="margin-top:auto">Datos de ejemplo: 3 marcadores reales; lo demás, inventado.</p></aside>`;
   const scroll = st.tel && window.innerWidth >= 900 ? app.querySelector('.scroll') : null, y = scroll ? scroll.scrollTop : window.scrollY, misma = vistaAnt === st.vista + st.g + st.jug;
-  app.innerHTML = `${lado}<div class="scroll"><main class="cuerpo"><div class="cab">${rlogo('belugas', 38)}<div><b>${{partido: 'Partido', temporada: 'Temporada', jugadores: 'Jugadores', jugador: 'Jugador', guia: 'Guía de métricas'}[st.vista]}</b><small>${sub}</small></div><button class="info" data-a="info" aria-label="Sobre este prototipo">i</button></div>${v}</main></div>
-    <div class="nav">${TABS.map(([k, t]) => `<button class="${tabDe() === k ? 'on' : ''}" data-a="ir" data-v="${k}">${svgIco(k)}${t}</button>`).join('')}</div><div id="hoja"></div>`;
+  app.innerHTML = `${lado}<div class="scroll"><main class="cuerpo"><div class="cab">${rlogo('belugas', 38)}<div><b>${{partido: 'Partido', temporada: 'Temporada', jugadores: 'Jugadores', jugador: 'Jugador', guia: 'Guía de métricas'}[st.vista]}</b><small>${sub}</small></div><button class="info" data-a="info" aria-label="Sobre este prototipo">i</button></div>
+    <div class="nav" role="tablist" aria-label="Secciones">${TABS.map(([k, t]) => `<button class="${tabDe() === k ? 'on' : ''}" data-a="ir" data-v="${k}" role="tab" aria-selected="${tabDe() === k}">${t}</button>`).join('')}</div>
+    <div class="datos"><span>Datos de ejemplo:</span><div class="conm" role="group" aria-label="Cuántos partidos de ejemplo">${[2, 5, D.juegos.length].map((n) => `<button class="${st.n === n ? 'on' : ''}" data-a="datos" data-v="${n}" aria-pressed="${st.n === n}">${n}</button>`).join('')}</div><span>partidos</span></div>${v}</main></div><div id="hoja"></div>`;
+  app.querySelectorAll('.cols-pp').forEach((e) => { e.scrollLeft = e.scrollWidth; });
   const s2 = app.querySelector('.scroll');
   if (st.tel && window.innerWidth >= 900) s2.scrollTop = misma ? y : 0; else window.scrollTo(0, misma ? y : 0);
   vistaAnt = st.vista + st.g + st.jug;
@@ -1089,13 +1160,14 @@ function pintar() {
   if (location.hash !== hash) { try { history[location.hash ? 'pushState' : 'replaceState'](null, '', hash); } catch (e) { /* en una página sin historial (vista previa) no pasa nada */ } }
 }
 function deHash() { const [v, a, b] = location.hash.slice(1).split('/'); if (!TABS.some(([k]) => k === v) && v !== 'jugador') return;
-  if (v === 'jugador' && !P(a)) return; st.vista = v; if (v === 'partido') { if (G(a)) st.g = a; if (RES.some(([k]) => k === b)) st.res = b; } if (v === 'jugador') st.jug = a; }
+  if (v === 'jugador' && !P(a)) return; st.vista = v; if (v === 'partido') { if (TODOS.includes(a)) st.g = a; if (RES.some(([k]) => k === b)) st.res = b; } if (v === 'jugador') st.jug = a; }
 
 // ---------- toques ----------
 const ACC = {
   ir: (v) => { st.vista = v; st.hoja = null; }, partido: (v) => { st.g = v; }, 'ir-partido': (v) => { st.g = v; st.vista = 'partido'; st.hoja = null; },
   res: (v) => { st.res = v; st.vista = 'partido'; }, jug: (v) => { if (st.vista !== 'jugador') st.desde = st.vista; st.jug = v; st.vista = 'jugador'; st.hoja = null; st.barra = null; },
-  cat: (v) => { st.cat = v; }, tend: (v) => { st.tend = v; }, tabla: (v) => { st.tabla[v] = !st.tabla[v]; }, orden: (v) => { st.orden = v; }, barra: (v) => { st.barra = v; },
+  cat: (v) => { st.cat = v; }, tend: (v) => { st.tend = v; }, forma: (v) => { st.forma = v; },
+  datos: (v) => { st.n = +v; JUEGOS = D.juegos.slice(0, st.n); TODOS = JUEGOS.map((j) => j.id); if (!TODOS.includes(st.g)) st.g = TODOS[TODOS.length - 1]; }, tabla: (v) => { st.tabla[v] = !st.tabla[v]; }, orden: (v) => { st.orden = v; }, barra: (v) => { st.barra = v; },
   abre: (v) => { st.abre[v] = !st.abre[v]; }, primera: (v) => { st.primera = v === '1'; }, tel: () => { st.tel = !st.tel; },
   hoja: (v, el) => { st.hoja = {tipo: 'e', id: v, temp: el.dataset.c ? el.dataset.c === 't' : st.vista !== 'partido'}; return 'hoja'; },
   hojaj: (v, el) => { st.hoja = {tipo: 'j', id: v, jug: st.vista === 'jugador' && el.dataset.c !== 't' ? st.jug : null}; return 'hoja'; },
@@ -1124,6 +1196,7 @@ window.addEventListener('scroll', () => globo(null), true);
 let anAnt = ancho();
 window.addEventListener('resize', () => { if (ancho() !== anAnt || st.tel) { anAnt = ancho(); pintar(); } });
 for (const ev of ['popstate', 'hashchange']) window.addEventListener(ev, () => { deHash(); st.hoja = null; pintar(); });
+document.documentElement.classList.toggle('dentro', window.self !== window.top);
 deHash(); pintar();
 </script>
 </body>

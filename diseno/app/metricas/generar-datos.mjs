@@ -1,8 +1,11 @@
 // Temporada de ejemplo para el prototipo de Métricas: una fila por jugada (camino B).
 // Uso: node generar-datos.mjs  → escribe datos.json junto a este archivo y un resumen en la terminal.
-// Los 3 primeros marcadores son los reales que trae la app (index.html:487); los otros 3 y TODAS
-// las jugadas son de ejemplo. El guion de cada partido (qué pasó en cada serie) está escrito a mano;
-// el relleno de cada serie sale de un azar con semilla fija, así que siempre da lo mismo.
+// Son 10 partidos y 13 jugadores. Los 3 primeros marcadores son los reales que trae la app (index.html:487);
+// los otros 7 y TODAS las jugadas son de ejemplo. g1 a g6 son los de la primera versión, fila por fila;
+// g7 a g10 se agregaron para ver los casos raros: un empate, uno incompleto (solo se marcó la 1ª mitad),
+// una paliza en contra y una a favor. Nico, Rodrigo F. y Maú faltan a g1–g6; Rodrigo F. va a un partido y no tiene jugadas.
+// El guion de cada partido (qué pasó en cada serie) está escrito a mano; el relleno de cada serie sale de un
+// azar con semilla fija, así que siempre da lo mismo.
 import { writeFileSync } from 'node:fs';
 
 // azar con semilla (mulberry32)
@@ -10,11 +13,12 @@ function azar(semilla) { let a = semilla >>> 0; return () => { a |= 0; a = a + 0
 const escoge = (r, pesos) => { const e = Object.entries(pesos).filter(([, w]) => w > 0); let x = r() * e.reduce((a, [, w]) => a + w, 0); for (const [k, w] of e) { if ((x -= w) < 0) return k; } return e[e.length - 1][0]; };
 const entre = (r, a, b) => a + Math.floor(r() * (b - a + 1));
 
-const PLANTEL = ['sr', 'eo', 'mv', 'rs', 'me', 'ic', 'jm', 'bt', 'lp', 'jg'];
+const PLANTEL = ['sr', 'eo', 'mv', 'rs', 'me', 'ic', 'jm', 'bt', 'lp', 'jg', 'nico', 'rodrigo', 'mau'];
+const NUEVOS = ['nico', 'rodrigo', 'mau']; // no fueron a los 6 primeros; 'rodrigo' no tiene pesos: va y no hace jugadas
 // a quién le lanzan, quién atrapa mejor, quién corre y quién defiende (pesos, no porcentajes)
-const BLANCO = {me: 30, rs: 26, eo: 22, mv: 14, jg: 5, lp: 3}, MANOS = {me: .72, rs: .68, eo: .55, mv: .62, jg: .5, lp: .5};
-const CORRE = {mv: 55, eo: 20, me: 10}, BANDERA = {bt: 26, lp: 22, jm: 18, jg: 14, ic: 12, me: 3, rs: 3, eo: 2};
-const TAPA = {bt: 34, jg: 28, jm: 24, lp: 10, ic: 4}, SACK = {ic: 60, lp: 25, jm: 15};
+const BLANCO = {me: 30, rs: 26, eo: 22, mv: 14, jg: 5, lp: 3, nico: 14}, MANOS = {me: .72, rs: .68, eo: .55, mv: .62, jg: .5, lp: .5, nico: .6};
+const CORRE = {mv: 55, eo: 20, me: 10}, BANDERA = {bt: 26, lp: 22, jm: 18, jg: 14, ic: 12, me: 3, rs: 3, eo: 2, mau: 14, nico: 3};
+const TAPA = {bt: 34, jg: 28, jm: 24, lp: 10, ic: 4, mau: 10}, SACK = {ic: 60, lp: 25, jm: 15};
 
 // Guion: cada serie es [lado, fin, extra]. lado A = atacamos, D = defendemos.
 // fin nuestro: T touchdown, I intercepción lanzada, D se acabaron las oportunidades, R se acabó el tiempo.
@@ -22,26 +26,38 @@ const TAPA = {bt: 34, jg: 28, jm: 24, lp: 10, ic: 4}, SACK = {ic: 60, lp: 25, jm
 // c = conversión [de cuánto, entró, quién la anotó o quién la tapó]; corta = serie que empieza cerca por una intercepción.
 const T = (q, c, v = 'pase') => ['A', 'T', {q, v, c}];
 const PARTIDOS = [
-  {id: 'g1', rival: 'kaffies', fecha: '2026-10-05', real: true, falta: [], qb: 'sr', semilla: 11, mitades: [
+  {id: 'g1', rival: 'kaffies', fecha: '2026-10-05', real: true, falta: [...NUEVOS], qb: 'sr', semilla: 11, mitades: [
     [['A', 'D'], ['D', 't', {c: [1, 1]}], T('rs', [1, 1, 'eo']), ['D', 'd'], ['A', 'I'], ['D', 't', {c: [1, 1], corta: 1}], ['A', 'R']],
     [['D', 'd'], T('me', [1, 0]), ['D', 't', {c: [2, 0]}], ['A', 'D'], ['D', 'd'], ['A', 'I'], ['D', 'r']]]},
-  {id: 'g2', rival: 'only-fins', fecha: '2026-10-12', real: true, falta: [], qb: 'sr', semilla: 23, mitades: [
+  {id: 'g2', rival: 'only-fins', fecha: '2026-10-12', real: true, falta: [...NUEVOS], qb: 'sr', semilla: 23, mitades: [
     [['D', 'd'], T('me', [1, 1, 'rs']), ['D', 'i', {q: 'bt'}], ['A', 'D'], ['D', 'd'], ['A', 'I'], ['D', 't', {c: [2, 1], corta: 1}], ['A', 'R']],
     [['A', 'D'], ['D', 'd'], T('eo', [1, 1, 'mv']), ['D', 'i', {q: 'jg'}], ['A', 'D'], ['D', 'd'], ['A', 'R']]]},
-  {id: 'g3', rival: 'ultimos-aztecas', fecha: '2026-10-19', real: true, falta: [], qb: 'sr', semilla: 37, mitades: [
+  {id: 'g3', rival: 'ultimos-aztecas', fecha: '2026-10-19', real: true, falta: [...NUEVOS], qb: 'sr', semilla: 37, mitades: [
     [T('me', [1, 1, 'me']), ['D', 't', {c: [1, 1]}], ['A', 'D'], ['D', 't', {c: [1, 1]}], T('rs', [1, 1, 'rs']), ['D', 'd'], ['A', 'R']],
     [['D', 'i', {q: 'jg'}], T('mv', [1, 1, 'eo'], 'corrida'), ['D', 'd'], ['A', 'D'], ['D', 't', {c: [2, 0, 'jg']}], ['A', 'R']]]},
-  {id: 'g4', rival: 'bulldogs', fecha: '2026-10-26', real: false, falta: ['jm'], qb: 'sr', semilla: 41, mitades: [
+  {id: 'g4', rival: 'bulldogs', fecha: '2026-10-26', real: false, falta: ['jm', ...NUEVOS], qb: 'sr', semilla: 41, mitades: [
     [['D', 'd'], T('eo', [1, 1, 'rs']), ['D', 't', {c: [1, 0]}], T('me', [1, 0]), ['D', 'i', {q: 'bt', td: 1, c: [1, 1, 'eo']}], ['D', 'd'], ['A', 'D'], ['D', 'r']],
     [T('mv', [2, 0], 'corrida'), ['D', 'd'], ['A', 'D'], ['D', 't', {c: [2, 0]}], ['A', 'I'], ['D', 'd'], ['A', 'R']]]},
-  {id: 'g5', rival: 'lobos-its', fecha: '2026-11-02', real: false, falta: ['sr'], qb: 'mv', semilla: 59, mitades: [
+  {id: 'g5', rival: 'lobos-its', fecha: '2026-11-02', real: false, falta: ['sr', ...NUEVOS], qb: 'mv', semilla: 59, mitades: [
     [['A', 'I'], ['D', 't', {c: [1, 1], corta: 1}], ['A', 'D'], ['D', 'd'], T('rs', [1, 0]), ['D', 't', {c: [1, 0]}], ['A', 'R']],
     [['D', 'd'], ['A', 'D'], ['D', 't', {c: [2, 0]}], T('me', [2, 0]), ['D', 'd'], ['A', 'I'], ['D', 'r']]]},
-  {id: 'g6', rival: 'destroyers', fecha: '2026-11-09', real: false, falta: ['jg'], qb: 'sr', semilla: 67, mitades: [
+  {id: 'g6', rival: 'destroyers', fecha: '2026-11-09', real: false, falta: ['jg', ...NUEVOS], qb: 'sr', semilla: 67, mitades: [
     [['D', 't', {c: [1, 1]}], T('me', [1, 1, 'eo']), ['D', 'd'], T('rs', [1, 1, 'me']), ['D', 'd'], ['A', 'D'], ['D', 'r']],
     [['A', 'D'], ['D', 't', {c: [1, 0]}], T('eo', [1, 0]), ['D', 'i', {q: 'jm'}], ['A', 'D'], ['D', 'd'], ['A', 'R']]]},
+  // ---- los casos raros ----
+  {id: 'g7', rival: 'triple-t', fecha: '2026-11-16', real: false, falta: ['rodrigo'], qb: 'sr', semilla: 73, mitades: [ // empate
+    [T('me', [1, 1, 'nico']), ['D', 't', {c: [1, 1]}], ['A', 'D'], ['D', 'd'], T('nico', [1, 0]), ['D', 't', {c: [1, 0]}], ['A', 'R']],
+    [['D', 'd'], ['A', 'I'], ['D', 't', {c: [1, 1], corta: 1}], T('rs', [1, 1, 'me']), ['D', 'd'], ['A', 'D'], ['D', 'r']]]},
+  {id: 'g8', rival: 'bucaneros', fecha: '2026-11-23', real: false, incompleto: true, falta: ['rodrigo', 'ic'], qb: 'sr', semilla: 79, mitades: [ // solo se marcó la 1ª mitad
+    [['D', 't', {c: [1, 0]}], T('eo', [1, 1, 'me']), ['D', 'd'], ['A', 'D'], ['D', 'r']]]},
+  {id: 'g9', rival: 'panini', fecha: '2026-11-30', real: false, falta: ['me'], qb: 'sr', semilla: 83, mitades: [ // paliza en contra; Rodrigo F. va y no hace jugadas
+    [['A', 'I'], ['D', 't', {c: [1, 1], corta: 1}], ['A', 'D'], ['D', 't', {c: [2, 1]}], ['A', 'D'], ['D', 'd'], ['A', 'R']],
+    [['D', 't', {c: [1, 0]}], T('nico', [2, 0]), ['D', 't', {c: [1, 0]}], ['A', 'I'], ['D', 'd'], ['A', 'D'], ['D', 'r']]]},
+  {id: 'g10', rival: 'kickass', fecha: '2026-12-07', real: false, falta: ['rodrigo'], qb: 'sr', semilla: 89, mitades: [ // paliza a favor
+    [T('me', [1, 1, 'rs']), ['D', 'd'], T('eo', [1, 1, 'me']), ['D', 'i', {q: 'mau'}], ['A', 'D'], ['D', 'd'], T('mv', [1, 0], 'corrida'), ['D', 'r']],
+    [['D', 't', {c: [1, 1]}], ['A', 'D'], ['D', 'd'], T('rs', [1, 1, 'nico']), ['D', 'i', {q: 'bt'}], ['A', 'R']]]},
 ];
-const MARCADOR = {g1: [13, 20], g2: [14, 8], g3: [21, 20], g4: [26, 12], g5: [12, 19], g6: [20, 13]};
+const MARCADOR = {g1: [13, 20], g2: [14, 8], g3: [21, 20], g4: [26, 12], g5: [12, 19], g6: [20, 13], g7: [20, 20], g8: [7, 6], g9: [6, 27], g10: [27, 7]};
 
 // cuántas jugadas trae la serie y en cuál se cruzó media cancha (k; 0 = no se cruzó antes del final)
 function forma(r, fin) {
@@ -96,7 +112,7 @@ function partido(g) {
   });
   const [a, b] = MARCADOR[g.id];
   if (nos !== a || ellos !== b) throw new Error(`${g.id}: el guion da ${nos}-${ellos} y debe dar ${a}-${b}`);
-  return {id: g.id, rival: g.rival, fecha: g.fecha, real: g.real, van, nos, ellos, filas};
+  return {id: g.id, rival: g.rival, fecha: g.fecha, real: g.real, incompleto: g.incompleto, van, nos, ellos, filas};
 }
 
 const juegos = PARTIDOS.map(partido);
@@ -110,6 +126,6 @@ for (const j of juegos) {
   const A = j.filas.filter((f) => f.l === 'A' && f.tipo !== 'castigo' && f.tipo !== 'conv'), D = j.filas.filter((f) => f.l === 'D' && f.tipo !== 'castigo' && f.tipo !== 'conv');
   const c = (l, ...t) => l.filter((f) => t.includes(f.tipo)).length;
   const comp = c(A, 'pase'), att = comp + c(A, 'incompleto', 'int');
-  console.log(`${j.id} ${j.rival.padEnd(16)} ${j.nos}-${j.ellos}  ataque ${A.length} jug · pases ${comp}/${att} (${Math.round(comp / att * 100)}%) · corridas ${c(A, 'corrida')} · paradas ${c(A, 'parada')} · INT ${c(A, 'int')}  |  defensa ${D.length} jug · banderas ${c(D, 'bandera')} · tapados ${c(D, 'tapado')} · sacks ${c(D, 'sack')} · INT ${c(D, 'intn')}  |  castigos ${j.filas.filter((f) => f.tipo === 'castigo').length} · dura ${Math.round(j.filas[j.filas.length - 1].t / 60)} min`);
+  console.log(`${j.id} ${j.rival.padEnd(16)} ${j.nos}-${j.ellos}  ataque ${A.length} jug · pases ${comp}/${att} (${Math.round(comp / att * 100)}%) · corridas ${c(A, 'corrida')} · paradas ${c(A, 'parada')} · INT ${c(A, 'int')}  |  defensa ${D.length} jug · banderas ${c(D, 'bandera')} · tapados ${c(D, 'tapado')} · sacks ${c(D, 'sack')} · INT ${c(D, 'intn')}  |  castigos ${j.filas.filter((f) => f.tipo === 'castigo').length} · dura ${Math.round(j.filas[j.filas.length - 1].t / 60)} min · van ${j.van.length}`);
 }
 console.log(`${datos.filas.length} filas, ${JSON.stringify(datos).length} bytes`);

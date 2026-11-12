@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Editor de yardas</title>
+<link rel="icon" href="../archivos/marca/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,700;0,800;0,900;1,500;1,700;1,800;1,900&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700;1,800;1,900&display=swap">
+<style>
+:root {
+  --bg: #f3f5f8; --ink: #0b1b33; --navy: #0d2347; --azul: #1d4f8f; --hielo: #5aaeff; --mut: #56647a; --linea: #e4e8ee; --suave: #f1f4f8; --falta: #e3e8ef; --neutro: #d6dce5; --circulo: #eceef1;
+  --sombra: 0 1px 2px rgba(11,27,51,.05), 0 6px 18px rgba(11,27,51,.07);
+  --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; overflow-x: hidden; }
+body { font: 15px/1.4 Inter, -apple-system, system-ui, sans-serif; color: var(--ink); background: #e6eaf0; -webkit-font-smoothing: antialiased; }
+button, select, input { font: inherit; color: inherit; }
+button { border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* en la Mac: el teléfono a la izquierda y los controles al lado; en el iPhone: la regla arriba, fija, y los controles debajo */
+.mesa { display: flex; gap: 28px; justify-content: center; align-items: flex-start; padding: 24px; min-height: 100vh; }
+.vista { width: 390px; height: 844px; border-radius: 46px; background: var(--bg); box-shadow: 0 0 0 10px #10151d, 0 30px 60px rgba(0,0,0,.25); overflow: hidden; position: relative; flex: none; }
+.panel { width: 460px; height: 844px; overflow-y: auto; background: #fff; border-radius: 22px; box-shadow: var(--sombra); padding: 18px 18px 40px; }
+@media (max-width: 860px) {
+  .mesa { display: block; padding: 0; }
+  .vista { width: 100%; height: auto; border-radius: 0 0 22px 22px; box-shadow: 0 8px 24px rgba(11,27,51,.14); position: sticky; top: 0; z-index: 20; }
+  .panel { width: auto; height: auto; overflow: visible; border-radius: 0; box-shadow: none; padding: 16px 18px 60px; background: var(--bg); }
+}
+
+/* ---------- la pantalla de prueba ---------- */
+.pant { display: flex; flex-direction: column; height: 100%; }
+.mcab { background: linear-gradient(135deg, #0d2347 0%, #1d4f8f 70%, #2f6fbf 100%); color: #fff; padding: max(12px, env(safe-area-inset-top)) 18px 12px; border-radius: 0 0 22px 22px; flex: none; }
+.mcab .fila { display: flex; align-items: center; justify-content: space-between; }
+.mcab .marc { font: italic 900 32px/1 var(--disp); display: flex; align-items: center; gap: 8px; }
+.mcab .marc img { width: 28px; height: 28px; object-fit: contain; }
+.mcab .modo { display: flex; background: rgba(255,255,255,.14); border-radius: 10px; padding: 3px; }
+.mcab .modo button { height: 28px; padding: 0 10px; border-radius: 8px; font: 700 11.5px/1 Inter; color: rgba(255,255,255,.85); }
+.mcab .modo button.on { background: #fff; color: var(--navy); }
+.cuerpo { flex: 1; padding: 12px 18px 16px; overflow: hidden; position: relative; }
+@media (max-width: 860px) { .cuerpo { overflow: visible; } }
+.arriba { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.arriba .tr { position: relative; border-radius: 99px; background: var(--falta); overflow: hidden; }
+.arriba .tr i { position: absolute; top: 0; bottom: 0; }
+.arriba .dw { display: flex; gap: 5px; }
+.arriba .dw i { width: 20px; height: 8px; border-radius: 4px; background: var(--falta); }
+.arriba .dw i.ya { background: #9fb3cc; } .arriba .dw i.ahora { background: var(--navy); }
+.arriba.finas { margin-top: 8px; } .arriba.finas .dw i { height: 4px; width: 16px; border-radius: 2px; }
+.opt { font-family: var(--disp); font-style: italic; font-weight: 900; line-height: 1; color: var(--navy); letter-spacing: .01em; font-variant-numeric: tabular-nums; transition: color .15s; }
+.seg4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.seg4 i { height: 10px; border-radius: 6px; background: var(--falta); }
+.seg4 i.ya { background: #9fb3cc; } .seg4 i.ahora { background: var(--navy); }
+/* alto entero para que la barra de abajo caiga en pixel completo */
+.tit { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; height: 22px; }
+.tit b { font: 800 18px/1.2 Inter; }
+.tit small { font: 600 12.5px/1.2 Inter; color: var(--mut); }
+.pm { display: grid; align-items: center; gap: 8px; margin-top: 10px; }
+.pmb { border-radius: 50%; background: var(--circulo); color: var(--navy); display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pmb svg { display: block; }
+.pmb:active { transform: scale(.95); }
+.valw { text-align: center; position: relative; min-width: 0; white-space: nowrap; display: flex; flex-direction: column; align-items: center; }
+.val { transform-origin: 50% 60%; }
+.val { color: var(--ink); line-height: .95; transition: color .15s; display: inline-block; }
+.val small { font-family: Inter, sans-serif; font-style: normal; font-weight: 700; color: var(--mut); margin-left: 4px; line-height: 1; }
+.val.tic { animation: tic .18s ease-out; }
+@keyframes tic { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.rebote { animation: rebote .42s cubic-bezier(.3,1.7,.5,1); }
+@keyframes rebote { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 100% { transform: scale(1); } }
+.anuncio { position: absolute; left: 50%; top: calc(100% - 22px); transform: translate(-50%, 0); background: #f6c90e; color: #3a2c00; font: 900 12px/1 Inter; padding: 6px 10px; border-radius: 999px; white-space: nowrap; opacity: 0; transition: opacity .15s, transform .2s; pointer-events: none; }
+.anuncio.ver { opacity: 1; transform: translate(-50%, 2px); }
+.subnum { font: 800 13px/1 Inter; color: #b38a00; height: 22px; margin-top: 2px; }
+.env { position: relative; margin-top: 14px; }
+.th { position: relative; overflow-x: scroll; scrollbar-width: none; -webkit-mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent); cursor: grab; touch-action: pan-x; }
+.th.sininercia { overflow-x: hidden; touch-action: none; }
+.th::-webkit-scrollbar { display: none; }
+.th.flash { animation: flash .5s ease-out; }
+@keyframes flash { 0% { background: rgba(246,201,14,.35); } 100% { background: transparent; } }
+.th-p { position: relative; height: 100%; }
+.th-m { position: absolute; top: 0; bottom: 0; }
+.snap { position: absolute; top: 0; height: 100%; width: 1px; scroll-snap-align: center; }
+.bp { position: absolute; border-radius: 3px; background: var(--neutro); }
+.lab { position: absolute; transform: translateX(-50%); color: var(--mut); font-weight: 700; white-space: nowrap; }
+.zs { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.banda { position: absolute; border-radius: 4px; }
+.pm-linea { position: absolute; width: 3px; margin-left: -1.5px; background: #f6c90e; border-radius: 2px; box-shadow: 0 0 6px rgba(246,201,14,.6); }
+.pm-tramo { position: absolute; background: rgba(246,201,14,.18); border-radius: 4px; }
+.pm-poste { position: absolute; width: 3px; margin-left: -1.5px; background: #f2a516; border-radius: 2px; }
+.pm-poste::after { content: ''; position: absolute; top: -5px; left: 50%; width: 9px; height: 9px; margin-left: -4.5px; border-radius: 2px; background: #f2a516; }
+.pm-cadena { position: absolute; height: 0; border-top: 2px dotted #f2a516; }
+.aguja { position: absolute; left: 50%; border-radius: 3px; background: var(--navy); pointer-events: none; z-index: 3; }
+.sinyd { margin-top: 14px; width: 100%; height: 48px; border-radius: 15px; font: 700 15px/1 Inter; color: var(--navy); background: #eef2f8; }
+.ultima { margin-top: 10px; font-size: 12.5px; color: var(--mut); display: flex; gap: 8px; }
+.ultima b { color: var(--ink); }
+.ultima .t { margin-left: auto; color: var(--azul); font-weight: 700; }
+.aviso { display: inline-block; margin-top: 8px; background: #e6f4ec; color: #14532d; font: 800 12.5px/1 Inter; padding: 7px 11px; border-radius: 999px; }
+.tiras { display: grid; gap: 8px; margin-top: 12px; }
+.tira { background: #fff; border-radius: 14px; box-shadow: var(--sombra); height: 52px; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; font: 700 15.5px/1 Inter; }
+.tira small { color: var(--mut); font: 500 12.5px/1 Inter; }
+.tira.td { background: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%); color: #fff; }
+.tira.td small { color: rgba(255,255,255,.85); }
+.velo { position: absolute; inset: 0; background: rgba(8,16,32,.34); z-index: 8; }
+.hoja { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; background: #fff; border-radius: 24px 24px 0 0; padding: 12px 18px calc(16px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 30px rgba(0,0,0,.18); animation: subir .22s cubic-bezier(.2,.8,.3,1); }
+.hoja::before { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d6dce5; margin: 0 auto 10px; }
+@keyframes subir { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .hoja, .val.tic, .rebote, .th.flash { animation: none; } }
+.pjs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; }
+.pj { display: grid; justify-items: center; gap: 6px; padding: 10px 2px 9px; border-radius: 14px; background: var(--suave); font: 600 12.5px/1.1 Inter; }
+.pj span { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: #e2eaf5; color: var(--navy); font: 800 13px/1 Inter; }
+
+/* ---------- el panel de controles ---------- */
+.panel h1 { font: 800 20px/1.2 Inter; margin: 0 0 4px; }
+.panel .intro { margin: 0 0 12px; color: var(--mut); font-size: 13.5px; }
+.panel .intro a { color: var(--azul); }
+.acc { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.acc button { height: 40px; padding: 0 14px; border-radius: 11px; background: var(--navy); color: #fff; font: 700 13.5px/1 Inter; }
+.acc button.sec { background: #e3e8ef; color: var(--ink); }
+.copia { width: 100%; min-height: 70px; border-radius: 10px; border: 1px solid var(--linea); padding: 8px 10px; font: 500 12px/1.4 ui-monospace, Menlo, monospace; color: var(--ink); background: var(--suave); resize: vertical; display: none; }
+.copia.ver { display: block; }
+.ok { color: #16a05a; font: 700 12.5px/1 Inter; margin-left: 4px; }
+details.grupo { border-top: 1px solid var(--linea); padding: 4px 0; }
+details.grupo summary { list-style: none; cursor: pointer; padding: 12px 2px; font: 800 15px/1.2 Inter; display: flex; justify-content: space-between; align-items: center; }
+details.grupo summary::-webkit-details-marker { display: none; }
+details.grupo summary::after { content: '+'; font: 400 20px/1 Inter; color: var(--mut); }
+details.grupo[open] summary::after { content: '–'; }
+.ctl { padding: 6px 2px 12px; }
+.ctl .eti { display: flex; justify-content: space-between; font: 600 13px/1.2 Inter; color: #334; margin-bottom: 8px; }
+.ctl .eti output { color: var(--azul); font-weight: 800; }
+input[type=range] { width: 100%; height: 30px; accent-color: var(--navy); }
+.segm { display: flex; flex-wrap: wrap; gap: 6px; }
+.segm button { min-height: 36px; padding: 0 12px; border-radius: 10px; background: var(--suave); font: 700 12.5px/1 Inter; color: var(--ink); box-shadow: inset 0 0 0 1px var(--linea); }
+.segm button.on { background: var(--navy); color: #fff; box-shadow: none; }
+.swatch { display: flex; gap: 8px; flex-wrap: wrap; }
+.swatch button { display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 11px 0 7px; border-radius: 10px; background: var(--suave); font: 700 12.5px/1 Inter; box-shadow: inset 0 0 0 1px var(--linea); }
+.swatch button i { width: 22px; height: 22px; border-radius: 7px; }
+.swatch button.on { box-shadow: inset 0 0 0 2px var(--navy); }
+.tog { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 2px; font: 600 13.5px/1.25 Inter; }
+.tog small { display: block; color: var(--mut); font-weight: 500; font-size: 12px; margin-top: 2px; }
+.tog input { width: 46px; height: 26px; accent-color: var(--navy); flex: none; }
+select { width: 100%; height: 40px; border-radius: 10px; border: 1px solid var(--linea); background: #fff; padding: 0 10px; }
+.dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.nota { color: var(--mut); font-size: 12px; margin: 4px 2px 0; }
+</style>
+</head>
+<body>
+<div class="mesa">
+  <div class="vista"><div class="pant" id="pant"></div></div>
+  <aside class="panel" id="panel"></aside>
+</div>
+<script>
+// Editor de yardas: la regla de la vuelta 4 en vivo y, al lado, todo lo que se le puede cambiar.
+// Se guarda en este navegador; «Copiar mi configuración» da un texto corto para pegar en el chat.
+// La mecánica es la de siempre: dos pasos (quién y luego cuánto), se guarda al soltar y el avance se acumula.
+// Tochito como NFL Flag: 50 yardas; cada serie empieza en nuestra 5; la primera es al cruzar medio campo (25).
+const CAMPO = 50, PRIMERA = 25, FMIN = -10, FMAX = 60;
+const EQUIPOS = [['belugas', 'Belugas', '#102132'], ['only-fins', 'Only Fins', '#10a6b3'], ['triple-t', 'Triple T', '#c5353e'], ['bucaneros', 'Bucaneros', '#bd3e44'], ['destroyers', 'Destroyers', '#3c6f34'], ['kickass', 'Kickass', '#141723'], ['bulldogs', 'Bulldogs', '#714246'], ['lobos-its', 'Lobos ITS', '#767577'], ['kaffies', 'Kaffies', '#d1a050'], ['ultimos-aztecas', 'Últimos Aztecas', '#d3a45a'], ['los-fantasmas', 'Los Fantasmas', '#3a3a3b'], ['panini', 'Panini', '#dba466']];
+const EQ = (id) => EQUIPOS.find((e) => e[0] === id) || EQUIPOS[0];
+const logoDe = (id) => `../archivos/equipos/${id}-256.png?v=9`;
+const AVANCE = { marino: ['Marino', '#1d4f8f'], noche: ['Noche', '#0d2347'], pizarra: ['Pizarra', '#475569'], bosque: ['Bosque', '#166534'] };
+const JUGADA = { hielo: ['Hielo', '#5aaeff'], cian: ['Cian', '#22b8cf'], verde: ['Verde', '#16a05a'], ambar: ['Ámbar', '#f2a516'] };
+const PERDIDA = { coral: ['Coral', '#f08a7e'], rojo: ['Rojo', '#e5484d'], naranja: ['Naranja', '#f97316'], gris: ['Gris', '#94a3b8'] };
+const DEF = {
+  num: 100, peso: 900, cursiva: true, fuente: 'barlow', yd: 15,
+  pm: 70, sim: 40, trazo: 3,
+  sep: 15, marcaAlto: 34, marcaAncho: 4, barra: 84, numeros: true, etiquetas: 12,
+  arriba: 6, oport: 'corto', oportTam: 26,
+  avance: 'marino', jugada: 'hielo', perdida: 'coral', numColor: true,
+  relleno: 'liso', raya: 7,
+  zona: 'bloque', zonaLogo: 'centro', zonaColor: 'equipo', borde: 1,
+  tdIzq: true, tdIzqQue: 'logo', tdIzqEq: 'belugas', tdDer: true, tdDerQue: 'logo', tdDerEq: 'bucaneros',
+  primera: 'linea', anuncio: 'pastilla',
+  pasos: '1', inercia: true, rebote: true, vibra: true, anim: true,
+  modo: 'abierta',
+};
+const leer = (k, d) => { try { const v = localStorage.getItem('yardasEd.' + k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const poner = (k, v) => { try { localStorage.setItem('yardasEd.' + k, JSON.stringify(v)); } catch { /* sin guardado, no pasa nada */ } };
+// la primera versión guardaba 92 y 12 por omisión; si nadie los movió, pasan a los de Iker (una sola vez)
+const guardado = leer('cfg', null);
+if (guardado && !leer('v2', false)) { if (guardado.num === 92) guardado.num = DEF.num; if (guardado.arriba === 12) guardado.arriba = DEF.arriba; poner('cfg', guardado); }
+// la segunda (lo que escogió Iker el 11-nov): ± 70 y zona en bloque, si nadie los había movido
+if (guardado && !leer('v3', false)) { if (guardado.pm === 76) guardado.pm = DEF.pm; if (!guardado.zona || guardado.zona === 'rayado') guardado.zona = DEF.zona; poner('cfg', guardado); }
+poner('v2', true); poner('v3', true);
+let cfg = { ...DEF, ...guardado };
+const JUGADAS = [['pase', 'Emiliano'], ['corrida', 'Mateo'], ['pase', 'Maximiliano'], ['parada', 'Mateo'], ['pase', 'Rodrigo'], ['corrida', 'Iván']];
+const JUG = [['eo', 'Emiliano'], ['mv', 'Mateo'], ['me', 'Maximiliano'], ['rs', 'Rodrigo'], ['ic', 'Iván'], ['sr', 'Santiago'], ['lp', 'Leo']];
+let st = { nos: 0, down: 1, spot: 5, ini: 5, primera: false, yd: 0, paso: cfg.modo === 'abierta' ? 'cuanto' : null, sel: 'pase', pend: { txt: 'pase · Emiliano' }, n: 0, t0: performance.now(), toques: 1, ultima: null, aviso: null, cruzado: false };
+const $ = (s) => document.querySelector(s);
+const fmt = (y) => (y > 0 ? '+' : '') + y;
+const meta = () => (st.primera || st.spot >= PRIMERA ? CAMPO : PRIMERA);
+const rango = () => [Math.max(-12, -st.spot), CAMPO - st.spot];
+const paso = () => (cfg.pasos === '5' ? 5 : 1);
+const col = () => ({ h: AVANCE[cfg.avance][1], a: JUGADA[cfg.jugada][1], p: PERDIDA[cfg.perdida][1] });
+const rayas = (c) => `repeating-linear-gradient(135deg, ${c} 0 ${cfg.raya / 2}px, transparent ${cfg.raya / 2}px ${cfg.raya}px)`;
+let tG;
+
+// ---------- arriba: la oportunidad en texto, las barritas o las dos ----------
+// Tochito como NFL Flag: la primera es al cruzar medio campo, así que «y 6» son las yardas a medio campo y,
+// ya pasado, «y gol» (Iker escogió esta redacción sobre «a medio campo»).
+const ORD = ['', 'Primera', 'Segunda', 'Tercera', 'Cuarta'];
+function oportunidad(y) {
+  const f = st.spot + y, largo = cfg.oport === 'largo';
+  if (f >= CAMPO) return { txt: '¡Touchdown!', logro: true };
+  if (!st.primera && st.spot < PRIMERA && f >= PRIMERA) return { txt: largo ? '¡Primera y gol!' : '¡1ª y gol!', logro: true };
+  const dn = largo ? ORD[st.down] : `${st.down}ª`, falta = st.primera ? CAMPO - st.spot : PRIMERA - st.spot;
+  return { txt: `${dn} y ${st.primera ? 'gol' : falta}`, logro: false };
+}
+function arriba(y) {
+  if (cfg.oport !== 'barras') {
+    const o = oportunidad(y), txt = `<div class="opt${o.logro ? ' logro' : ''}" style="font-size:${cfg.oportTam}px;${o.logro ? `color:${col().a}` : ''}">${o.txt}</div>`;
+    if (cfg.oport !== 'texto-barras') return txt;
+    return txt + barritas(y, true);
+  }
+  return barritas(y, false);
+}
+function barritas(y, finas) {
+  const c = col(), m = meta(), a = st.primera ? PRIMERA : st.ini, tramo = Math.max(1, m - a), pc = (f) => Math.max(0, Math.min(100, ((f - a) / tramo) * 100));
+  const f = st.spot + y, h0 = pc(st.spot), fondoH = cfg.relleno === 'rayado' ? `${rayas(c.h)}, ${c.h}33` : c.h;
+  const capa = y >= 0 ? `<i style="left:0;width:${h0}%;background:${fondoH}"></i><i style="left:${h0}%;width:${pc(f) - h0}%;background:${c.a}"></i>`
+    : `<i style="left:0;width:${pc(f)}%;background:${fondoH}"></i><i style="left:${pc(f)}%;width:${h0 - pc(f)}%;background:${c.p}"></i>`;
+  const dw = (cls) => [1, 2, 3, 4].map((d) => `<i class="${d < st.down ? 'ya' : d === st.down ? 'ahora' : ''}"></i>`).join('');
+  return `<div class="arriba${finas ? ' finas' : ''}"><div class="tr" style="height:${finas ? Math.min(cfg.arriba, 4) : cfg.arriba}px">${capa}</div><span class="dw">${cfg.primera === 'segmentos' ? '' : dw()}</span></div>${cfg.primera === 'segmentos' ? `<div class="seg4">${dw()}</div>` : ''}`;
+}
+
+// ---------- zonas de anotación ----------
+// Hablan el idioma de las marcas: el mismo alto, grosor y radio, y todo cae en la retícula de una yarda.
+// La zona va de la yarda 1 a la 9 detrás de la meta, así su centro (la 5) es una marca más.
+// Lo visible de cada logo dentro de su PNG de 256 (sin el aire transparente), para acomodarlos parejos.
+const CAJA = { belugas: [12, 54, 244, 204], 'only-fins': [11, 39, 244, 216], 'triple-t': [10, 45, 245, 212], bucaneros: [9, 38, 247, 218], destroyers: [9, 12, 247, 246], kickass: [12, 24, 244, 231], bulldogs: [12, 46, 244, 210], 'lobos-its': [11, 34, 245, 223], kaffies: [11, 38, 245, 218], 'ultimos-aztecas': [11, 28, 244, 228], 'los-fantasmas': [8, 49, 247, 208], panini: [12, 51, 244, 210] };
+const NARANJA = '#f97316', MARINO = '#0d2347', HIELO = '#5aaeff';
+const ZONAS = [['rayado', 'Rayado'], ['apretadas', 'Barras que se aprietan'], ['bloque', 'Bloque con borde'], ['pilon', 'Tope tipo pilón'], ['marcas', 'Marcas del equipo'], ['sin', 'Sin forma']];
+function zonas(base, X) {
+  const s = cfg.sep, w = cfg.marcaAncho, H = cfg.marcaAlto, chica = Math.round(H * .55), top = base - H, cy = top + H / 2, mono = cfg.zonaColor === 'mono';
+  const fondoPant = cfg.modo === 'abierta' ? '#f3f5f8' : '#fff', filtros = {};
+  const rect = (x, y, ww, hh, extra) => `<rect x="${x}" y="${y}" width="${ww}" height="${hh}" rx="3" ${extra}/>`;
+  const par = (v) => 2 * Math.floor(v / 2 + 1e-6);
+  // el logo se acomoda por lo que se ve de él: cabe en su caja, queda centrado en el eje y todos pesan parecido a la vista
+  // chico: una etiqueta del color de la pantalla, 3 px más grande que el logo, lo separa del rayado
+  const etiqueta = (cx, W, Hh, y) => rect(cx - W / 2 - 3, y - 3, W + 6, Hh + 6, `fill="${fondoPant}"`);
+  const logo = (id, cx, [BW, BH], abajo, chip) => {
+    const [x0, y0, x1, y1] = CAJA[id] || [0, 0, 256, 256], bw = x1 - x0, bh = y1 - y0;
+    const k = Math.min(BW / bw, BH / bh, Math.sqrt((.8 * BH * Math.min(BW, 1.6 * BH)) / (bw * bh)));
+    const W = par(bw * k), Hh = par(bh * k), y = abajo != null ? abajo - Hh : cy - Hh / 2;
+    if (mono) filtros.m = 1;
+    return `${chip ? etiqueta(cx, W, Hh, y) : ''}<svg x="${cx - W / 2}" y="${y}" width="${W}" height="${Hh}" viewBox="${x0} ${y0} ${bw} ${bh}" overflow="visible"><image href="${logoDe(id)}" width="256" height="256"${mono ? ' filter="url(#zf-m)"' : ''}/></svg>`;
+  };
+  // monocromo: lo oscuro del logo a marino y lo claro a hielo
+  const defFiltro = () => '<filter id="zf-m" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 .2126 .7152 .0722 0 0 0 0 0 1 0"/><feComponentTransfer><feFuncR type="table" tableValues=".051 .353"/><feFuncG type="table" tableValues=".137 .682"/><feFuncB type="table" tableValues=".278 1"/></feComponentTransfer></filter>';
+  let fondo = '', frente = '';
+  for (const lado of ['tdIzq', 'tdDer']) {
+    if (!cfg[lado]) continue;
+    const izq = lado === 'tdIzq', eq = EQ(cfg[lado + 'Eq']), c = mono ? MARINO : eq[2], forma = cfg.zona;
+    const a = izq ? -9 : CAMPO + 1, b = izq ? -1 : CAMPO + 9, k0 = (a + b) / 2, meta = izq ? 0 : CAMPO;
+    const que = cfg[lado + 'Que'], lugar = que === 'nada' ? 'no' : cfg.zonaLogo;
+    const izqX = (k) => X(k) - w / 2, derX = (k) => X(k) + w / 2;
+    // centrado: el logo abre un hueco de tres yardas y queda separado como una marca de la siguiente
+    const abre = lugar === 'centro' && ['rayado', 'apretadas', 'marcas'].includes(forma), dentro = (k) => abre && Math.abs(k - k0) <= 1;
+    if (forma === 'rayado') {
+      const dir = izq ? 1 : -1, n = Math.ceil(H / s) + 1;
+      (abre ? [[a, k0 - 2], [k0 + 2, b]] : [[a, b]]).forEach(([p, q], i) => {
+        const id = `zc-${lado}-${i}`, x = izqX(p), ancho = derX(q) - x;
+        let rayas = '';
+        // cada raya nace en la marca de su yarda, a 45°, del mismo grosor que las marcas
+        for (let k = p - n; k <= q + n; k++) rayas += `<line x1="${X(k) - dir * w}" y1="${base + w}" x2="${X(k) + dir * (H + w)}" y2="${top - w}"/>`;
+        fondo += `<clipPath id="${id}">${rect(x, top, ancho, H, '')}</clipPath><g clip-path="url(#${id})">${rect(x, top, ancho, H, `fill="${c}" fill-opacity=".1"`)}<g stroke="${c}" stroke-width="${w}">${rayas}</g></g>`;
+      });
+    }
+    if (forma === 'apretadas') for (let k = a; k <= b; k++) {
+      if (dentro(k)) continue;
+      // una por yarda, como las marcas, pero cada vez más gruesas: el hueco entre ellas se cierra al llegar a la meta
+      const t = (9 - (izq ? -k : k - CAMPO)) / 8, ww = w + 2 * Math.round((Math.max(0, s - 6 - w) / 2) * t ** 1.4);
+      fondo += rect(X(k) - ww / 2, top, ww, H, `fill="${c}"`);
+    }
+    if (forma === 'marcas') for (let k = a; k <= b; k++) if (!dentro(k)) { const l = k % 5 === 0 ? H : chica; fondo += rect(izqX(k), base - l, w, l, `fill="${c}"`); }
+    if (forma === 'bloque') { const bd = cfg.borde; fondo += rect(izqX(a) + bd / 2, top + bd / 2, derX(b) - izqX(a) - bd, H - bd, `fill="${c}" fill-opacity=".12"${bd ? ` stroke="${c}" stroke-width="${bd}"` : ''}`); }
+    if (forma === 'pilon') { const pw = 2 * w; fondo += rect(izqX(a), top, derX(b) - izqX(a), H, `fill="${c}" fill-opacity=".1"`); frente += rect(X(meta) - pw / 2, 4, pw, base - 4, `fill="${mono ? HIELO : NARANJA}"`); }
+    if (lugar === 'no') continue;
+    const marco = forma === 'bloque' || forma === 'pilon' ? 4 : 0;
+    const caja = lugar === 'encima' ? [4 * s + w, top - 6] : lugar === 'chico' ? [2 * s + w, chica] : abre ? [2 * s + w, H] : [4 * s + w - 2 * marco, H - 2 * marco];
+    const abajo = lugar === 'encima' ? top - 4 : null;
+    if (que === 'td') {
+      // «TD» con la altura de las mayúsculas igual a la de la caja
+      if (lugar === 'chico') frente += etiqueta(X(k0), par(caja[1] * 1.3), caja[1], cy - caja[1] / 2);
+      frente += `<text x="${X(k0)}" y="${abajo != null ? abajo : cy + caja[1] / 2}" text-anchor="middle" font-family="Barlow Condensed" font-style="italic" font-weight="900" font-size="${(caja[1] / .7).toFixed(1)}" fill="${c}">TD</text>`;
+    } else frente += logo(eq[0], X(k0), caja, abajo, lugar === 'chico');
+  }
+  const capa = (x) => (x ? `<svg class="zs" width="${(FMAX - FMIN) * s}" height="${cfg.barra}">${x}</svg>` : '');
+  return { fondo: capa(fondo), frente: capa((filtros.m ? defFiltro() : '') + frente) };
+}
+// los signos de más y menos se dibujan como trazos para que queden centrados de verdad en el círculo
+const SIGNO = .5;
+function signo(mas) {
+  const L = 2 * Math.round((cfg.sim * SIGNO) / 2), t = cfg.trazo, m = L / 2, e = t / 2;
+  return `<svg width="${L}" height="${L}" viewBox="0 0 ${L} ${L}" aria-hidden="true"><path d="M${e} ${m}H${L - e}${mas ? `M${m} ${e}V${L - e}` : ''}" stroke="currentColor" stroke-width="${t}" stroke-linecap="round" fill="none"/></svg>`;
+}
+
+// ---------- la barra: marcas, zonas de anotación, la primera y lo avanzado ----------
+function barra() {
+  const s = cfg.sep, ancho = (FMAX - FMIN) * s, mitad = `((100% - ${ancho}px) / 2)`, X = (f) => (f - FMIN) * s;
+  const alto = cfg.barra, base = alto - (cfg.numeros ? cfg.etiquetas + 10 : 8), c = col(), z = zonas(base, X);
+  let m = z.fondo, sn = '';
+  // lo ya avanzado: rayado como banda, o la marca rayada donde quedó el balón
+  if (cfg.relleno === 'rayado' && st.spot > st.ini) m += `<div class="banda" id="banda" style="left:${X(st.ini)}px;width:${X(st.spot) - X(st.ini)}px;top:${base - cfg.marcaAlto}px;height:${cfg.marcaAlto}px;background:${rayas(c.h)}"></div>`;
+  if (cfg.relleno === 'marca') m += `<div class="banda" style="left:${X(st.spot) - s * 1.2}px;width:${s * 2.4}px;top:${base - cfg.marcaAlto - 4}px;height:${cfg.marcaAlto + 8}px;background:${rayas(c.h)};box-shadow:inset 0 0 0 1.5px ${c.h}"></div>`;
+  // la primera y 10
+  if (meta() === PRIMERA) {
+    if (cfg.primera === 'linea') m += `<i class="pm-linea" style="left:${X(PRIMERA)}px;top:2px;height:${base - 2}px"></i>`;
+    if (cfg.primera === 'tramo') m += `<i class="pm-tramo" style="left:${X(st.spot)}px;width:${X(PRIMERA) - X(st.spot)}px;top:${base - cfg.marcaAlto - 6}px;height:${cfg.marcaAlto + 12}px"></i>`;
+    if (cfg.primera === 'cadena') m += `<i class="pm-poste" style="left:${X(st.spot)}px;top:6px;height:${base - 6}px"></i><i class="pm-poste" style="left:${X(PRIMERA)}px;top:6px;height:${base - 6}px"></i><i class="pm-cadena" style="left:${X(st.spot)}px;width:${X(PRIMERA) - X(st.spot)}px;top:8px"></i>`;
+    if (cfg.primera === 'segmentos') m += `<i class="pm-linea" style="left:${X(PRIMERA)}px;top:${base - cfg.marcaAlto - 10}px;height:6px;width:6px;margin-left:-3px;border-radius:50%;box-shadow:none"></i>`;
+  }
+  // las marcas, una por yarda
+  for (let f = 0; f <= CAMPO; f++) {
+    const largo = f % 5 === 0 ? cfg.marcaAlto : Math.round(cfg.marcaAlto * .55);
+    m += `<i class="bp" data-f="${f}" style="left:${X(f) - cfg.marcaAncho / 2}px;width:${cfg.marcaAncho}px;top:${base - largo}px;height:${largo}px"></i>`;
+    if (cfg.numeros && (f % 10 === 0 || f === PRIMERA) && f > 0 && f < CAMPO) m += `<span class="lab" style="left:${X(f)}px;top:${base + 4}px;font-size:${cfg.etiquetas}px">${f <= PRIMERA ? f : CAMPO - f}</span>`;
+  }
+  m += z.frente;
+  const cada = paso();
+  if (cfg.pasos !== 'libre') for (let f = FMIN; f <= FMAX; f += cada) sn += `<div class="snap" style="left:calc(${mitad} + ${X(f)}px)"></div>`;
+  return `<div class="env" style="height:${alto}px"><div class="th${cfg.inercia ? '' : ' sininercia'}" id="th" style="height:${alto}px;scroll-snap-type:${cfg.pasos === 'libre' || !cfg.inercia ? 'none' : 'x mandatory'}"><div class="th-p" style="width:calc(100% + ${ancho}px)"><div class="th-m" style="left:calc(${mitad});width:${ancho}px">${m}</div>${sn}</div></div><div class="aguja" id="aguja" style="top:0;height:${base + 4}px;width:${cfg.marcaAncho + 1}px;margin-left:-${(cfg.marcaAncho + 1) / 2}px"></div></div>`;
+}
+function colorear(y) {
+  const c = col(), f = st.spot + y;
+  document.querySelectorAll('.bp').forEach((b) => {
+    const x = +b.dataset.f;
+    let k = '';
+    if (x >= st.ini && x <= Math.min(st.spot, f)) k = cfg.relleno === 'rayado' ? '' : c.h;
+    if (y > 0 && x > st.spot && x <= f) k = c.a;
+    if (y < 0 && x > f && x <= st.spot) k = c.p;
+    b.style.background = k || '';
+  });
+}
+
+// ---------- el número ----------
+function estiloNum() {
+  const fam = cfg.fuente === 'barlow' ? 'var(--disp)' : 'Inter, sans-serif';
+  // alto de renglón par: así el círculo del más y del menos, centrado junto al número, cae en pixel entero
+  return `font-family:${fam};font-size:${cfg.num}px;line-height:${2 * Math.round((cfg.num * .95) / 2)}px;font-weight:${cfg.peso};font-style:${cfg.cursiva ? 'italic' : 'normal'};letter-spacing:${cfg.fuente === 'inter' ? '-.03em' : '0'}`;
+}
+// si el número no cabe entre el menos y el más, se encoge en vez de taparlos
+function caber() { const v = $('#val'); if (!v) return; v.style.scale = ''; const w = v.parentElement.clientWidth; if (v.scrollWidth > w) v.style.scale = String(w / v.scrollWidth); }
+function colorNum(y) { const c = col(); return !cfg.numColor || y === 0 ? 'var(--ink)' : y > 0 ? c.a : c.p; }
+function setYd(y, ms) {
+  const [lo, hi] = rango(); y = Math.max(lo, Math.min(hi, Math.round(y)));
+  if (y !== st.yd) {
+    const antes = st.yd; st.yd = y;
+    const v = $('#val');
+    if (v) {
+      v.innerHTML = `${fmt(y)}<small style="font-size:${cfg.yd}px">yd</small>`; v.style.color = colorNum(y);
+      if (cfg.anim) { v.classList.remove('tic'); void v.offsetWidth; v.classList.add('tic'); }
+      caber();
+    }
+    const a = $('#arr'); if (a) a.innerHTML = arriba(y);
+    colorear(y);
+    if (cfg.vibra && navigator.vibrate) navigator.vibrate(6);
+    anunciar(antes, y);
+  }
+  if (ms != null) programar(ms);
+}
+// cómo se anuncia la primera (o el TD) al cruzarla mientras se mueve
+function anunciar(antes, y) {
+  const m = meta(), f0 = st.spot + antes, f = st.spot + y, cruza = f >= m && f0 < m, td = f >= CAMPO;
+  const dentro = f >= m;
+  const txt = td || m === CAMPO ? '¡Touchdown!' : '¡Primera y 10!';
+  const an = $('#anuncio'), sub = $('#subnum');
+  if (an) { an.textContent = txt; an.classList.toggle('ver', cfg.anuncio === 'pastilla' && dentro); }
+  if (sub) sub.textContent = cfg.anuncio === 'numero' && dentro ? (td || m === CAMPO ? 'TD' : '1ª y 10') : '';
+  if (cruza) {
+    if (cfg.anuncio === 'destello') { const th = $('#th'); if (th) { th.classList.remove('flash'); void th.offsetWidth; th.classList.add('flash'); } }
+    if (cfg.rebote) ['#val', '#aguja'].forEach((s) => { const e = $(s); if (e) { e.classList.remove('rebote'); void e.offsetWidth; e.classList.add('rebote'); } });
+    if (cfg.vibra && navigator.vibrate) navigator.vibrate([25, 40, 25]);
+  }
+}
+function programar(ms) { clearTimeout(tG); tG = setTimeout(() => { terminar(st.yd); pintar(); }, ms); }
+
+// ---------- pantalla ----------
+function bloqueCuanto() {
+  const pmS = `grid-template-columns:${cfg.pm}px minmax(0, 1fr) ${cfg.pm}px`, b = `width:${cfg.pm}px;height:${cfg.pm}px`;
+  return `<div class="tit"><b>¿Cuánto avanzó?</b><small>${st.pend.txt}</small></div>
+    <div class="pm" style="${pmS}"><button class="pmb" data-pm="-1" style="${b}" aria-label="Menos">${signo(false)}</button>
+      <div class="valw"><span class="anuncio" id="anuncio"></span><span class="val num" id="val" style="${estiloNum()};color:${colorNum(st.yd)}">${fmt(st.yd)}<small style="font-size:${cfg.yd}px">yd</small></span><div class="subnum" id="subnum"></div></div>
+      <button class="pmb" data-pm="1" style="${b}" aria-label="Más">${signo(true)}</button></div>
+    ${barra()}
+    <button class="sinyd" data-a="sinyd">Sin yardas</button>`;
+}
+function pintar() {
+  const u = st.ultima ? `<div class="ultima"><span>Última: <b>${st.ultima.txt}</b></span><span class="t num">${st.ultima.s.toFixed(1)} s · ${st.ultima.toques} toques</span></div>` : '';
+  const av = st.aviso ? `<div class="aviso">${st.aviso}</div>` : '';
+  let cuerpo = `<div id="arr">${arriba(st.yd)}</div>${av}`, hoja = '';
+  if (cfg.modo === 'abierta') cuerpo += bloqueCuanto() + u;
+  else {
+    cuerpo += `<div class="tiras">${[['pase', 'Pase completo'], ['corrida', 'Corrida'], ['incompleto', 'Incompleto'], ['parada', 'Nos pararon'], ['td', 'Touchdown']].map(([k, t]) => `<button class="tira${k === 'td' ? ' td' : ''}" data-a="res" data-v="${k}">${t}<small>${k === 'td' ? 'Las yardas salen solas' : k === 'incompleto' ? 'Luego a quién iba' : 'Luego quién y cuánto'}</small></button>`).join('')}</div>${u}`;
+    if (st.paso === 'quien') hoja = `<div class="velo" data-a="cancelar"></div><div class="hoja"><div class="tit" style="margin-top:0"><b>¿Quién?</b></div><div class="pjs">${JUG.map(([id, n]) => `<button class="pj" data-a="quien" data-v="${n}"><span>${n.slice(0, 2).toUpperCase()}</span>${n}</button>`).join('')}<button class="pj" data-a="quien" data-v=""><span>?</span>No sé</button></div></div>`;
+    if (st.paso === 'cuanto') hoja = `<div class="velo" data-a="sinyd"></div><div class="hoja">${bloqueCuanto()}</div>`;
+  }
+  $('#pant').innerHTML = `<div class="mcab"><div class="fila"><div class="marc"><img src="../archivos/marca/logo.webp" alt=""><span class="num">${st.nos}</span></div>
+    <div class="modo"><button data-a="modo" data-v="abierta" class="${cfg.modo === 'abierta' ? 'on' : ''}">Regla abierta</button><button data-a="modo" data-v="completa" class="${cfg.modo === 'completa' ? 'on' : ''}">Jugada completa</button></div>
+    <div class="marc"><span class="num">0</span><img src="${logoDe(cfg.tdDerEq === 'belugas' ? 'bucaneros' : cfg.tdDerEq)}" alt=""></div></div></div>
+    <div class="cuerpo">${cuerpo}${hoja}</div>`;
+  if (st.paso === 'cuanto') { montar(); caber(); }
+}
+function montar() {
+  const th = $('#th'); if (!th) return;
+  const s = cfg.sep; let armado = false;
+  const centrar = (y, suave) => { armado = false; th.scrollTo({ left: (st.spot + y - FMIN) * s, behavior: suave ? 'smooth' : 'auto' }); };
+  centrar(st.yd); colorear(st.yd); anunciar(st.yd, st.yd);
+  const leerTira = () => { let y = Math.round(th.scrollLeft / s) + FMIN - st.spot; if (cfg.pasos === '5') y = Math.round(y / 5) * 5; return y; };
+  const sel = $('.pant .cuerpo');
+  th.addEventListener('pointerdown', () => { st.toques++; clearTimeout(tG); armado = true; });
+  ['wheel', 'touchstart'].forEach((t) => th.addEventListener(t, () => { armado = true; clearTimeout(tG); }, { passive: true }));
+  th.addEventListener('scroll', () => { if (armado) setYd(leerTira(), cfg.inercia ? 700 : null); }, { passive: true });
+  // sin inercia (o con el ratón): se arrastra uno a uno y al soltar se acomoda en la yarda
+  th.addEventListener('pointerdown', (e) => {
+    if (cfg.inercia && e.pointerType !== 'mouse') return;
+    try { th.setPointerCapture(e.pointerId); } catch { /* sin captura */ }
+    const s0 = th.scrollLeft, x0 = e.clientX;
+    const mover = (ev) => { th.scrollLeft = s0 - (ev.clientX - x0); };
+    const soltar = () => { th.removeEventListener('pointermove', mover); th.removeEventListener('pointerup', soltar); th.removeEventListener('pointercancel', soltar); if (!cfg.inercia) { centrar(st.yd, true); } programar(cfg.inercia ? 700 : 500); };
+    th.addEventListener('pointermove', mover); th.addEventListener('pointerup', soltar); th.addEventListener('pointercancel', soltar);
+  });
+  // más y menos: un toque es un paso; dejarlo apretado sigue sumando
+  document.querySelectorAll('.pmb').forEach((b) => {
+    let t1 = null, t2 = null;
+    const uno = () => { setYd(st.yd + +b.dataset.pm * paso()); centrar(st.yd, true); };
+    const parar = () => { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; programar(1000); };
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); st.toques++; clearTimeout(tG); uno(); t1 = setTimeout(() => { t2 = setInterval(uno, 90); }, 380); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => b.addEventListener(t, () => { if (t1 || t2) parar(); }));
+  });
+}
+
+// ---------- la jugada: la primera sale sola de las yardas; el avance se acumula ----------
+function terminar(yd) {
+  if (st.paso !== 'cuanto') return; clearTimeout(tG);
+  const s = (performance.now() - st.t0) / 1000, antes = st.spot;
+  st.ultima = { txt: st.pend.txt + (yd != null ? ` · ${fmt(yd)} yd` : ''), s, toques: st.toques };
+  st.aviso = null;
+  if (yd != null && st.spot + yd >= CAMPO) { st.nos += 6; nuevaSerie(); st.aviso = '¡Touchdown!'; }
+  else {
+    st.spot = Math.max(1, Math.min(CAMPO - 1, st.spot + (yd || 0)));
+    if (yd != null && !st.primera && antes < PRIMERA && st.spot >= PRIMERA) { st.primera = true; st.down = 1; st.aviso = '¡Primera y 10!'; }
+    else { st.down += 1; if (st.down > 4) { nuevaSerie(); st.aviso = 'Cambio de posesión (prueba)'; } }
+  }
+  st.yd = 0;
+  if (cfg.modo === 'abierta') { st.n = (st.n + 1) % JUGADAS.length; const [k, q] = JUGADAS[st.n]; st.pend = { txt: `${k === 'pase' ? 'pase' : k === 'corrida' ? 'corrida' : 'nos pararon'} · ${q}` }; st.paso = 'cuanto'; st.t0 = performance.now(); st.toques = 1; }
+  else st.paso = null;
+}
+function nuevaSerie() { st.spot = 5; st.ini = 5; st.down = 1; st.primera = false; }
+const A = {
+  modo: (v) => { cfg.modo = v; guardarCfg(); st.paso = v === 'abierta' ? 'cuanto' : null; st.yd = 0; st.t0 = performance.now(); st.toques = 1; },
+  res: (v) => {
+    st.sel = v; st.t0 = performance.now(); st.toques = 1; st.aviso = null;
+    if (v === 'td') { st.paso = 'quien'; return; }
+    st.paso = 'quien';
+  },
+  cancelar: () => { st.paso = null; },
+  quien: (n) => {
+    st.toques++;
+    const k = st.sel, txt = `${{ pase: 'pase', corrida: 'corrida', incompleto: 'incompleto', parada: 'nos pararon', td: 'touchdown' }[k]}${n ? ' · ' + n : ''}`;
+    if (k === 'td') { st.nos += 6; nuevaSerie(); st.ultima = { txt, s: (performance.now() - st.t0) / 1000, toques: st.toques }; st.aviso = '¡Touchdown!'; st.paso = null; return; }
+    if (k === 'incompleto') { st.down += 1; if (st.down > 4) nuevaSerie(); st.ultima = { txt, s: (performance.now() - st.t0) / 1000, toques: st.toques }; st.paso = null; return; }
+    st.pend = { txt }; st.paso = 'cuanto'; st.yd = 0;
+  },
+  sinyd: () => { st.toques++; terminar(null); },
+};
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('#pant [data-a]');
+  if (!b || !A[b.dataset.a]) return;
+  e.preventDefault();
+  A[b.dataset.a](b.dataset.v);
+  pintar();
+});
+
+// ---------- el panel ----------
+const R = (k, t, min, max, pasoR, uni = 'px') => `<div class="ctl"><div class="eti"><span>${t}</span><output data-o="${k}">${cfg[k]}${uni}</output></div><input type="range" data-k="${k}" data-u="${uni}" min="${min}" max="${max}" step="${pasoR}" value="${cfg[k]}"></div>`;
+const S = (k, t, ops) => `<div class="ctl">${t ? `<div class="eti"><span>${t}</span></div>` : ''}<div class="segm">${ops.map(([v, n]) => `<button data-s="${k}" data-v="${v}" class="${String(cfg[k]) === String(v) ? 'on' : ''}">${n}</button>`).join('')}</div></div>`;
+const T = (k, t, sub = '') => `<label class="tog"><span>${t}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" data-t="${k}" ${cfg[k] ? 'checked' : ''}></label>`;
+const C = (k, t, mapa) => `<div class="ctl"><div class="eti"><span>${t}</span></div><div class="swatch">${Object.entries(mapa).map(([v, [n, c]]) => `<button data-s="${k}" data-v="${v}" class="${cfg[k] === v ? 'on' : ''}"><i style="background:${c}"></i>${n}</button>`).join('')}</div></div>`;
+const E = (k, t) => `<div class="ctl"><div class="eti"><span>${t}</span></div><select data-e="${k}">${EQUIPOS.map(([id, n]) => `<option value="${id}" ${cfg[k] === id ? 'selected' : ''}>${n}</option>`).join('')}</select></div>`;
+function panel() {
+  const zona = (lado, nombre) => `${T(lado, `Zona de ${nombre}`)}${cfg[lado] ? `${S(lado + 'Que', '', [['logo', 'Logo'], ['td', 'TD'], ['nada', 'Nada']])}${E(lado + 'Eq', 'Equipo (su color y su logo)')}` : ''}`;
+  $('#panel').innerHTML = `<h1>Editor de yardas</h1>
+    <p class="intro">Todo se aplica al instante en la regla de ${matchMedia('(max-width: 860px)').matches ? 'arriba' : 'la izquierda'}; se guarda en este navegador. Muévela para sentirla: se guarda al soltar y el avance se acumula. <a href="yardas.html">Vuelta 4 ↗</a></p>
+    <div class="acc"><button data-b="copiar">Copiar mi configuración</button><button class="sec" data-b="reset">Restablecer</button><span class="ok" id="ok"></span></div>
+    <textarea class="copia" id="copia" readonly></textarea>
+    <details class="grupo" open><summary>Número de yardas</summary>${R('num', 'Tamaño', 40, 160, 2)}${S('peso', 'Peso', [[500, 'Normal'], [700, 'Negrita'], [800, 'Extra'], [900, 'Negra']])}${S('cursiva', 'Inclinación', [[true, 'Cursiva'], [false, 'Recta']])}${S('fuente', 'Letra', [['barlow', 'Condensada'], ['inter', 'Inter']])}${R('yd', 'Tamaño de «yd»', 0, 30, 1)}</details>
+    <details class="grupo" open><summary>Más y menos</summary>${R('pm', 'Tamaño de los botones', 44, 112, 2)}${R('sim', 'Tamaño de los signos', 18, 64, 1)}${R('trazo', 'Grosor de los signos', 1, 8, 1)}</details>
+    <details class="grupo" open><summary>La barra</summary>${R('barra', 'Alto de la barra', 50, 140, 2)}${R('marcaAlto', 'Alto de las marcas', 12, 80, 1)}${R('marcaAncho', 'Grosor de las marcas', 1, 10, 1)}${R('sep', 'Separación (px por yarda)', 8, 28, 1)}${T('numeros', 'Números de yarda debajo')}${cfg.numeros ? R('etiquetas', 'Tamaño de los números', 8, 24, 1) : ''}</details>
+    <details class="grupo" open><summary>Oportunidad (arriba)</summary>${S('oport', 'Cómo se ve', [['corto', '«2ª y 6»'], ['largo', '«Segunda y 6»'], ['texto-barras', 'Texto y barritas'], ['barras', 'Solo barritas']])}${cfg.oport !== 'barras' ? R('oportTam', 'Tamaño del texto', 14, 44, 1) : ''}${cfg.oport === 'corto' || cfg.oport === 'largo' ? '' : R('arriba', 'Grosor de las barritas', 4, 24, 1)}
+      <p class="nota">En tochito la primera es al cruzar medio campo: «y 6» son las yardas que faltan para medio campo y, ya pasado, «y gol». Se actualiza sola con el avance; al lograrla dice «¡1ª y gol!».</p></details>
+    <details class="grupo"><summary>Color</summary>${C('avance', 'Lo ya avanzado', AVANCE)}${C('jugada', 'Esta jugada (gana)', JUGADA)}${C('perdida', 'Si pierde', PERDIDA)}${T('numColor', 'El número cambia de color', 'Del color de «gana» o de «pierde»')}</details>
+    <details class="grupo"><summary>Dónde quedó</summary>${S('relleno', 'Lo ya avanzado', [['liso', 'Color liso'], ['rayado', 'Rayado'], ['marca', 'Solo la marca rayada']])}${cfg.relleno !== 'liso' ? R('raya', 'Densidad de las rayas (px)', 3, 16, 1) : ''}</details>
+    <details class="grupo" open><summary>Zona de TD</summary>${S('zona', 'Forma', ZONAS)}${S('zonaLogo', 'Logo', [['centro', 'Centrado en la barra'], ['encima', 'Encima, sobre las marcas'], ['chico', 'Chico, dentro'], ['no', 'Sin logo']])}${S('zonaColor', 'Color', [['equipo', 'Del equipo'], ['mono', 'Marino y hielo']])}${cfg.zona === 'bloque' ? R('borde', 'Grosor del contorno (bloque)', 0, 3, 0.25) : ''}
+      <div class="ctl"><div class="eti"><span>Poner el balón junto a</span></div><div class="segm"><button data-b="cerca" data-v="izq">Nuestra zona</button><button data-b="cerca" data-v="der">La zona del rival</button><button data-b="cerca" data-v="ini">Nuestra 5 (inicio)</button></div></div>
+      ${zona('tdIzq', 'la izquierda (la nuestra)')}${zona('tdDer', 'la derecha (la del rival)')}</details>
+    <details class="grupo"><summary>Primera y 10</summary>${S('primera', 'Cómo se marca', [['linea', 'Línea amarilla'], ['cadena', 'Cadena con postes'], ['tramo', 'Tramo sombreado'], ['segmentos', 'Oportunidades arriba']])}${S('anuncio', 'Cómo se anuncia al cruzarla', [['pastilla', 'Pastilla'], ['destello', 'Destello'], ['numero', 'Bajo el número'], ['nada', 'Nada']])}</details>
+    <details class="grupo"><summary>Cómo se siente</summary>${S('pasos', 'Pasos', [['1', 'Cada yarda'], ['5', 'Cada 5'], ['libre', 'Libre']])}${T('inercia', 'Inercia', 'Sigue corriendo un poco al soltar')}${T('rebote', 'Rebote', 'Al llegar a la primera o al TD')}${T('vibra', 'Vibración', 'En Android; Safari del iPhone no la permite')}${T('anim', 'Animación del número')}</details>
+    <p class="nota">Tochito: 50 yardas, cada serie empieza en nuestra 5 y la primera es al cruzar medio campo.</p>`;
+}
+function guardarCfg() { poner('cfg', cfg); }
+function texto() {
+  const sn = (b) => (b ? 'sí' : 'no');
+  return [`número ${cfg.num} ${cfg.peso} ${cfg.cursiva ? 'cursiva' : 'recta'} ${cfg.fuente}`, `yd ${cfg.yd}`, `± ${cfg.pm}/${cfg.sim} trazo ${cfg.trazo}`, `barra ${cfg.barra}`, `marcas ${cfg.marcaAlto}×${cfg.marcaAncho} cada ${cfg.sep}`, `números ${cfg.numeros ? cfg.etiquetas : 'no'}`, `arriba ${cfg.arriba}`, `oportunidad ${cfg.oport} ${cfg.oportTam}`,
+    `colores ${cfg.avance}/${cfg.jugada}/${cfg.perdida}`, `número de color ${sn(cfg.numColor)}`, `quedó ${cfg.relleno}${cfg.relleno !== 'liso' ? ' ' + cfg.raya : ''}`,
+    `zona ${cfg.zona}${cfg.zona === 'bloque' ? ' ' + cfg.borde : ''}, logo ${cfg.zonaLogo}, color ${cfg.zonaColor}`, `TD izq ${cfg.tdIzq ? cfg.tdIzqQue + (cfg.tdIzqQue !== 'nada' ? ' ' + cfg.tdIzqEq : '') : 'no'}`, `TD der ${cfg.tdDer ? cfg.tdDerQue + (cfg.tdDerQue !== 'nada' ? ' ' + cfg.tdDerEq : '') : 'no'}`,
+    `primera ${cfg.primera}, anuncio ${cfg.anuncio}`, `pasos ${cfg.pasos}`, `inercia ${sn(cfg.inercia)}`, `rebote ${sn(cfg.rebote)}`, `vibración ${sn(cfg.vibra)}`, `animación ${sn(cfg.anim)}`].join(' · ');
+}
+function aplicar(k, v) { cfg[k] = v; guardarCfg(); st.yd = st.yd || 0; pintar(); }
+const panelEl = document.getElementById('panel');
+panelEl.addEventListener('input', (e) => {
+  const r = e.target.closest('input[type=range]');
+  if (r) { const k = r.dataset.k; panelEl.querySelector(`[data-o="${k}"]`).textContent = r.value + r.dataset.u; aplicar(k, +r.value); }
+});
+panelEl.addEventListener('change', (e) => {
+  const t = e.target.closest('[data-t]'); if (t) { aplicar(t.dataset.t, t.checked); panel(); return; }
+  const s = e.target.closest('[data-e]'); if (s) aplicar(s.dataset.e, s.value);
+});
+panelEl.addEventListener('click', (e) => {
+  const s = e.target.closest('[data-s]');
+  if (s) { const k = s.dataset.s, v = s.dataset.v; aplicar(k, v === 'true' ? true : v === 'false' ? false : /^\d+$/.test(v) && typeof DEF[k] === 'number' ? +v : v); panel(); return; }
+  const b = e.target.closest('[data-b]'); if (!b) return;
+  if (b.dataset.b === 'cerca') { const v = b.dataset.v; clearTimeout(tG); Object.assign(st, v === 'izq' ? { spot: 2, ini: 2, primera: false } : v === 'der' ? { spot: 48, ini: 5, primera: true } : { spot: 5, ini: 5, primera: false }, { down: 1, yd: 0 }); pintar(); return; }
+  if (b.dataset.b === 'reset') { const modo = cfg.modo; cfg = { ...DEF, modo }; guardarCfg(); panel(); pintar(); return; }
+  if (b.dataset.b === 'copiar') {
+    const t = texto(), area = $('#copia'); area.value = t; area.classList.add('ver');
+    const listo = () => { $('#ok').textContent = 'Copiado'; setTimeout(() => { const o = $('#ok'); if (o) o.textContent = ''; }, 2000); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(listo, () => { area.select(); try { document.execCommand('copy'); listo(); } catch { /* que lo copie a mano */ } });
+    else { area.select(); try { document.execCommand('copy'); listo(); } catch { /* que lo copie a mano */ } }
+  }
+});
+// los <details> recuerdan si estaban abiertos al volver a pintar el panel
+panelEl.addEventListener('toggle', (e) => { const d = e.target; if (d.tagName === 'DETAILS') { const ab = leer('abiertos', {}); ab[d.querySelector('summary').textContent] = d.open; poner('abiertos', ab); } }, true);
+const panelBase = panel;
+panel = function () { panelBase(); const ab = leer('abiertos', {}); panelEl.querySelectorAll('details').forEach((d) => { const k = d.querySelector('summary').textContent; if (k in ab) d.open = ab[k]; }); };
+panel();
+pintar();
+</script>
+</body>
+</html>

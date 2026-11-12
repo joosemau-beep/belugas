@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Prueba de yardas</title>
+<link rel="icon" href="../archivos/marca/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  --bg: #f3f5f8; --card: #fff; --ink: #0b1b33; --navy: #0d2347; --azul: #1d4f8f; --hielo: #5aaeff; --mut: #56647a; --linea: #e4e8ee; --suave: #f3f6f9;
+  --pilon: #f2731d;
+  --sombra: 0 1px 2px rgba(11,27,51,.05), 0 6px 18px rgba(11,27,51,.07);
+  --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; overflow-x: hidden; }
+body { font: 16px/1.35 Inter, -apple-system, system-ui, sans-serif; color: var(--ink); background: #e6eaf0; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* en la laptop: teléfono y notas; en el celular: pantalla completa y las notas abajo */
+.mesa { min-height: 100%; display: flex; align-items: flex-start; justify-content: center; gap: 36px; padding: 24px; }
+.tel { width: 390px; height: 844px; border-radius: 46px; background: var(--bg); box-shadow: 0 0 0 10px #10151d, 0 30px 60px rgba(0,0,0,.25); position: relative; overflow: hidden; flex: none; }
+.notas { width: 500px; font-size: 14px; color: #334; }
+.notas h1 { font: 800 20px/1.2 Inter; margin: 4px 0 6px; }
+.notas h2 { font: 700 12.5px/1 Inter; margin: 18px 0 8px; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
+.notas p { margin: 6px 0; }
+.notas a { color: var(--azul); }
+.notas ol { margin: 6px 0; padding-left: 20px; }
+.notas li { margin: 3px 0; }
+@media (max-width: 520px) {
+  body { background: var(--bg); }
+  .mesa { padding: 0; display: block; }
+  .tel { width: 100%; height: 100dvh; border-radius: 0; box-shadow: none; }
+  .notas { width: auto; padding: 18px 20px 40px; overflow-x: auto; }
+  .tabla { font-size: 12px; }
+}
+
+/* ---------- el teléfono ---------- */
+.pant { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.mcab { background: linear-gradient(135deg, #0d2347 0%, #1d4f8f 70%, #2f6fbf 100%); color: #fff; padding: max(14px, env(safe-area-inset-top)) 16px 12px; border-radius: 0 0 24px 24px; flex: none; position: relative; z-index: 3; }
+.mcab .fila { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 2px; }
+.mcab .marc { font: italic 900 38px/1 var(--disp); display: flex; align-items: center; gap: 10px; }
+.mcab .marc img { width: 32px; height: 32px; object-fit: contain; }
+.mcab .down { font: 700 12.5px/1.3 Inter; text-align: center; padding: 6px 10px; border-radius: 12px; background: rgba(255,255,255,.14); }
+.mcab .down small { display: block; font-weight: 500; opacity: .85; }
+.vrs { display: flex; gap: 6px; margin-top: 12px; align-items: center; }
+.chips { flex: 1; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0; }
+.chips::-webkit-scrollbar { display: none; }
+.chips button { flex: none; height: 32px; padding: 0 11px; border-radius: 999px; background: rgba(255,255,255,.14); font: 700 12px/1 Inter; color: rgba(255,255,255,.9); white-space: nowrap; }
+.chips button b { font-weight: 800; margin-right: 4px; opacity: .7; }
+.chips button.on { background: #fff; color: var(--navy); }
+.dir { flex: none; display: flex; background: rgba(255,255,255,.14); border-radius: 999px; padding: 2px; }
+.dir button { width: 32px; height: 28px; border-radius: 999px; font: 800 14px/1 Inter; color: rgba(255,255,255,.85); }
+.dir button.on { background: #fff; color: var(--navy); }
+.cuerpo { flex: 1; overflow-y: auto; padding: 0 20px 30px; }
+.dictado { margin: 14px 0 0; background: #fff; border-radius: 14px; box-shadow: var(--sombra); padding: 12px 14px; font: 600 14px/1.35 Inter; }
+.dictado b { font-weight: 800; }
+.dictado small { display: block; color: var(--mut); font: 600 12px/1.2 Inter; margin-bottom: 2px; }
+/* la serie, siempre a la vista */
+.serie { margin-top: 14px; background: #fff; border-radius: 16px; box-shadow: var(--sombra); padding: 12px 14px; }
+.serie .t { display: flex; justify-content: space-between; align-items: baseline; font: 700 13px/1.2 Inter; }
+.serie .t small { color: var(--mut); font-weight: 600; }
+.sbar { position: relative; height: 10px; border-radius: 6px; background: #edf1f6; margin-top: 10px; overflow: hidden; }
+.sbar i { position: absolute; top: 0; bottom: 0; }
+.sbar .hecho { background: linear-gradient(90deg, #9cc9f5, var(--hielo)); border-radius: 6px; }
+.sbar .meta { width: 2px; background: var(--navy); }
+.aviso { margin-top: 10px; display: inline-flex; gap: 6px; align-items: center; background: #e6f4ec; color: #14532d; font: 700 12.5px/1 Inter; padding: 8px 10px; border-radius: 999px; }
+.pregunta { font: 800 21px/1.2 Inter; margin: 18px 2px 12px; }
+.tiras { display: grid; gap: 8px; }
+.tira { background: #fff; border-radius: 14px; box-shadow: var(--sombra); min-height: 54px; padding: 10px 16px; display: grid; grid-template-columns: 26px 1fr auto; align-items: center; column-gap: 14px; text-align: left; }
+.tira svg { width: 22px; height: 22px; fill: none; stroke: var(--navy); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tira b { font: 700 16px/1.2 Inter; }
+.tira small { color: var(--mut); font-size: 12.5px; }
+.tira.td { background: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%); color: #fff; }
+.tira.td svg { stroke: #fff; } .tira.td small { color: rgba(255,255,255,.85); }
+.tira:active, .pj:active, .sinyd:active { transform: scale(.98); }
+.ultima { margin-top: 14px; font-size: 13px; color: var(--mut); display: flex; gap: 8px; align-items: center; }
+.ultima b { color: var(--ink); }
+.ultima .t { margin-left: auto; font: 700 12px/1 Inter; color: var(--azul); flex: none; }
+
+/* hojas: «¿Quién?» desde abajo; «¿Cuánto?» sola, desde abajo o desde arriba */
+.velo { position: absolute; inset: 0; background: rgba(8,16,32,.34); z-index: 8; }
+.hoja { position: absolute; left: 0; right: 0; z-index: 9; background: #fff; padding: 10px 18px 16px; box-shadow: 0 -10px 30px rgba(0,0,0,.18); }
+.hoja.abajo { bottom: 0; border-radius: 24px 24px 0 0; padding-bottom: calc(16px + env(safe-area-inset-bottom)); animation: subir .22s cubic-bezier(.2,.8,.3,1); }
+.hoja.arriba { top: 0; border-radius: 0 0 24px 24px; padding-top: calc(14px + env(safe-area-inset-top)); box-shadow: 0 10px 30px rgba(0,0,0,.18); animation: bajar .22s cubic-bezier(.2,.8,.3,1); }
+.hoja.abajo::before { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d6dce5; margin: 0 auto 10px; }
+.hoja.arriba::after { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d6dce5; margin: 10px auto 0; }
+@keyframes subir { from { transform: translateY(100%); } }
+@keyframes bajar { from { transform: translateY(-100%); } }
+@media (prefers-reduced-motion: reduce) { .hoja { animation: none; } }
+.hoja h3 { margin: 0; font: 800 19px/1.2 Inter; display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.hoja h3 small { font: 600 12.5px/1.2 Inter; color: var(--mut); text-align: right; }
+.hoja p { margin: 4px 0 0; color: var(--mut); font-size: 13px; }
+.pjs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+.pj { display: grid; justify-items: center; gap: 6px; padding: 10px 2px 9px; border-radius: 14px; background: var(--suave); font: 600 12.5px/1.1 Inter; }
+.pj .ini { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: #e2eaf5; color: var(--navy); font: 800 14px/1 Inter; box-shadow: inset 0 0 0 2px #fff, 0 0 0 1.5px #c9d6e8; }
+.cerrar { margin-top: 12px; width: 100%; height: 44px; border-radius: 14px; font: 700 14px/1 Inter; color: var(--mut); background: var(--suave); }
+.sinyd { margin-top: 12px; width: 100%; height: 46px; border-radius: 14px; font: 700 15px/1 Inter; color: var(--navy); background: #eef2f8; }
+
+/* el avance de la serie, arriba de cada regla */
+.av { margin-top: 10px; border-radius: 14px; background: var(--suave); padding: 10px 12px; display: grid; gap: 8px; }
+.av-l small, .av-n small { display: block; font: 700 10.5px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; }
+.av-l b { display: flex; gap: 6px; align-items: baseline; font: 700 14px/1.2 Inter; margin-top: 3px; }
+.av-l b span { color: var(--hielo); }
+.av-n { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.av-n b { display: block; font: italic 900 22px/1 var(--disp); margin-top: 3px; }
+.av-n .ok b { color: #16a05a; }
+.val { font: italic 900 44px/1 var(--disp); text-align: center; }
+.val small { font: 700 13px/1 Inter; font-style: normal; color: var(--mut); margin-left: 4px; }
+.pista { text-align: center; font: 600 11.5px/1.2 Inter; color: var(--mut); margin-top: 4px; }
+.sel { margin-top: 10px; user-select: none; -webkit-user-select: none; }
+
+/* tiras con desplazamiento (1, 5, 10) */
+.th { position: relative; overflow-x: scroll; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; -webkit-mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent); mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent); cursor: grab; }
+.th::-webkit-scrollbar { display: none; }
+.th-p { position: relative; height: 100%; }
+.th-m { position: absolute; top: 0; bottom: 0; }
+.snap { position: absolute; top: 0; height: 100%; width: 1px; scroll-snap-align: center; }
+.env { position: relative; }
+.aguja { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--navy); pointer-events: none; z-index: 2; }
+
+/* 1 · Hash */
+.v1 .th { height: 78px; border-radius: 14px; background: var(--suave); }
+.v1 .l { position: absolute; top: 10px; bottom: 26px; width: 1.5px; background: #b9c4d3; }
+.v1 .l.d { background: var(--navy); width: 2px; }
+.v1 .hs { position: absolute; width: 1.5px; height: 7px; background: #c8d1dd; }
+.v1 .hs.a { top: 10px; } .v1 .hs.b { bottom: 26px; }
+.v1 .nst { position: absolute; bottom: 5px; transform: translateX(-50%); font: italic 900 15px/1 var(--disp); color: var(--navy); white-space: nowrap; }
+.v1 .ez { position: absolute; top: 10px; bottom: 26px; width: 60px; background: repeating-linear-gradient(135deg, rgba(29,79,143,.12) 0 6px, transparent 6px 12px); }
+.v1 .bnd { position: absolute; top: 10px; bottom: 26px; background: rgba(90,174,255,.16); }
+.v1 .mt { position: absolute; top: 4px; bottom: 20px; width: 0; border-left: 2px dashed var(--hielo); }
+.v1 .aguja { top: 4px; bottom: 20px; }
+.v1 .aguja::before { content: ''; position: absolute; top: -2px; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--navy); }
+
+/* 2 · Pilón (vertical) */
+.v2 .caja { display: grid; grid-template-columns: 1fr 132px; gap: 10px; align-items: center; }
+.v2 .tv { height: 214px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; touch-action: pan-y; border-radius: 14px; background: var(--suave); -webkit-mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent); cursor: grab; }
+.v2 .tv::-webkit-scrollbar { display: none; }
+.v2 .tv-p { position: relative; width: 100%; }
+.v2 .tv-m { position: absolute; left: 0; right: 0; }
+.v2 .snapv { position: absolute; left: 0; width: 100%; height: 1px; scroll-snap-align: center; }
+.v2 .r { position: absolute; right: 14px; height: 1.5px; background: #c3ccd8; width: 18px; }
+.v2 .r.c { width: 30px; background: #9aa7b8; }
+.v2 .r.d { width: 52px; height: 2px; background: var(--navy); }
+.v2 .rn { position: absolute; left: 14px; transform: translateY(-50%); font: italic 900 17px/1 var(--disp); color: var(--navy); }
+.v2 .mtv { position: absolute; left: 10px; right: 10px; height: 0; border-top: 2px dashed var(--hielo); }
+.v2 .pil { position: absolute; left: 6px; top: 50%; width: 22px; height: 28px; margin-top: -14px; pointer-events: none; z-index: 2; }
+.v2 .ag { position: absolute; left: 30px; right: 8px; top: 50%; height: 2px; margin-top: -1px; background: var(--pilon); pointer-events: none; z-index: 2; }
+.v2 .env { border-radius: 14px; }
+
+/* 3 · Cadena (se arrastra el balón) */
+.v3 .cad { position: relative; height: 112px; border-radius: 14px; background: var(--suave); touch-action: none; cursor: pointer; overflow: hidden; }
+.v3 .cad > * { pointer-events: none; }
+.v3 .k { position: absolute; top: 18px; bottom: 30px; width: 1px; background: #c8d1dd; }
+.v3 .k.d { background: #9aa7b8; }
+.v3 .kn { position: absolute; bottom: 9px; transform: translateX(-50%); font: 700 10.5px/1 Inter; color: var(--mut); }
+.v3 .ez3 { position: absolute; top: 0; bottom: 0; right: 0; background: rgba(29,79,143,.08); }
+.v3 .palo { position: absolute; top: 8px; height: 66px; width: 3px; margin-left: -1.5px; background: var(--navy); border-radius: 2px; }
+.v3 .palo b { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); font: 800 9.5px/1 Inter; color: #fff; background: var(--navy); padding: 3px 4px; border-radius: 4px; white-space: nowrap; }
+.v3 .cad .cadena { position: absolute; top: 50px; height: 0; border-top: 2px dotted var(--navy); opacity: .55; }
+.v3 .hecho3 { position: absolute; top: 46px; height: 8px; border-radius: 4px; background: rgba(90,174,255,.45); }
+.v3 .bal { position: absolute; top: 50px; width: 26px; height: 16px; margin: -8px 0 0 -13px; }
+.v3 .glob { position: absolute; top: 76px; transform: translateX(-50%); font: italic 900 18px/1 var(--disp); color: var(--navy); white-space: nowrap; }
+
+/* 4 · Dial */
+.v4 svg { display: block; width: 100%; height: auto; touch-action: none; cursor: pointer; }
+.v4 .dv { margin-top: -2px; }
+.v4 svg { max-height: 170px; }
+
+/* 5 · Saltos de 5 + fino */
+.v5 .ch5 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.v5 .ch5 button { height: 46px; border-radius: 12px; background: var(--suave); font: italic 900 20px/1 var(--disp); color: var(--navy); position: relative; }
+.v5 .ch5 button.on { background: var(--navy); color: #fff; }
+.v5 .ch5 button i { position: absolute; top: 6px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--hielo); }
+.v5 .th { height: 46px; margin-top: 10px; border-radius: 12px; background: var(--suave); }
+.v5 .f { position: absolute; bottom: 8px; width: 1.5px; height: 14px; background: #b9c4d3; }
+.v5 .f.c { height: 22px; background: var(--navy); }
+.v5 .aguja { top: 6px; bottom: 6px; background: var(--hielo); }
+.v5 .fino { text-align: center; font: 600 11.5px/1 Inter; color: var(--mut); margin-top: 6px; }
+
+/* 6 · Arrastre libre */
+.v6 .scr { position: relative; height: 150px; border-radius: 16px; background: var(--navy); color: #fff; touch-action: none; cursor: ew-resize; overflow: hidden; display: grid; place-items: center; }
+.v6 .scr > * { pointer-events: none; }
+.v6 .scr .val small { color: rgba(220,235,255,.8); }
+.v6 .scr-t { position: absolute; left: 0; right: 0; bottom: 0; height: 34px; background-image: repeating-linear-gradient(90deg, rgba(150,200,255,.35) 0 1.5px, transparent 1.5px 10px), repeating-linear-gradient(90deg, rgba(150,200,255,.7) 0 2px, transparent 2px 50px); background-size: 10px 12px, 50px 22px; background-repeat: repeat-x; background-position-y: bottom; }
+.v6 .scr .ayu { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font: 600 12px/1 Inter; color: rgba(200,225,255,.75); }
+.v6 .flechas { position: absolute; top: 50%; left: 14px; right: 14px; display: flex; justify-content: space-between; font: 800 20px/1 Inter; color: rgba(150,200,255,.5); margin-top: -10px; }
+
+/* 7 · Marca directa */
+.v7 .md { position: relative; height: 96px; border-radius: 14px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); touch-action: none; cursor: pointer; overflow: hidden; }
+.v7 .md > * { pointer-events: none; }
+.v7 .t7 { position: absolute; bottom: 26px; width: 1px; height: 10px; background: #c8d1dd; }
+.v7 .t7.c { height: 18px; background: #9aa7b8; }
+.v7 .t7.d { height: 30px; width: 2px; margin-left: -.5px; background: var(--navy); }
+.v7 .n7 { position: absolute; bottom: 6px; transform: translateX(-50%); font: italic 900 15px/1 var(--disp); color: var(--navy); }
+.v7 .sc7 { position: absolute; top: 10px; bottom: 26px; width: 2px; margin-left: -1px; background: var(--hielo); }
+.v7 .mt7 { position: absolute; top: 10px; bottom: 26px; width: 0; border-left: 2px dashed var(--hielo); opacity: .8; }
+.v7 .ez7 { position: absolute; top: 0; bottom: 0; right: 0; background: repeating-linear-gradient(135deg, rgba(29,79,143,.09) 0 6px, transparent 6px 12px); }
+.v7 .lupa { position: absolute; top: 8px; transform: translateX(-50%); background: var(--navy); color: #fff; font: italic 900 18px/1 var(--disp); padding: 5px 8px; border-radius: 9px; white-space: nowrap; }
+.v7 .lupa::after { content: ''; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--navy); }
+.v7 .pin7 { position: absolute; top: 40px; bottom: 26px; width: 2px; margin-left: -1px; background: var(--navy); }
+
+/* 8 · Perspectiva */
+.v8 .per { position: relative; height: 190px; border-radius: 16px; background: #0d1a33; overflow: hidden; perspective: 340px; touch-action: none; cursor: ns-resize; }
+.v8 .per > * { pointer-events: none; }
+.v8 .car { position: absolute; left: 12%; right: 12%; bottom: 0; height: 320px; transform: rotateX(54deg); transform-origin: 50% 100%; background: linear-gradient(180deg, #0d1a33, #13284d); }
+.v8 .mov { position: absolute; left: 0; right: 0; top: 0; }
+.v8 .y8 { position: absolute; left: 0; right: 0; height: 1px; background: rgba(150,200,255,.25); }
+.v8 .y8.c { height: 2px; background: rgba(150,200,255,.5); }
+.v8 .y8.d { height: 3px; background: rgba(220,235,255,.85); }
+.v8 .n8 { position: absolute; left: 6px; font: italic 900 22px/1 var(--disp); color: rgba(220,235,255,.85); transform: translateY(-110%); }
+.v8 .n8.der { left: auto; right: 6px; }
+.v8 .mt8 { position: absolute; left: 0; right: 0; height: 0; border-top: 3px dashed var(--hielo); }
+.v8 .fija { position: absolute; left: -4px; right: -4px; height: 4px; background: var(--hielo); box-shadow: 0 0 12px rgba(90,174,255,.8); }
+.v8 .dv8 { position: absolute; top: 12px; left: 0; right: 0; }
+.v8 .dv8 .val { color: #fff; }
+.v8 .dv8 .val small { color: rgba(220,235,255,.8); }
+
+/* 9 · Rodillos */
+.v9 .rods { display: grid; grid-template-columns: 72px 1fr 1fr; gap: 8px; position: relative; }
+.v9 .rods::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; margin-top: -22px; border-radius: 12px; background: var(--suave); z-index: 0; }
+.v9 .rueda { position: relative; z-index: 1; height: 132px; overflow-y: scroll; scroll-snap-type: y mandatory; scrollbar-width: none; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent); mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent); cursor: grab; }
+.v9 .rueda::-webkit-scrollbar { display: none; }
+.v9 .rueda div { height: 44px; display: grid; place-items: center; scroll-snap-align: center; font: italic 900 30px/1 var(--disp); color: var(--navy); }
+.v9 .rueda .pad { scroll-snap-align: none; }
+.v9 .et { display: grid; grid-template-columns: 72px 1fr 1fr; gap: 8px; text-align: center; font: 700 10.5px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+
+/* 10 · ± con regla */
+.v10 .pm { display: grid; grid-template-columns: 56px 1fr 56px; align-items: center; gap: 8px; }
+.v10 .pm button { width: 56px; height: 56px; border-radius: 50%; background: var(--suave); font: 300 30px/1 Inter; color: var(--navy); }
+.v10 .th { height: 48px; margin-top: 10px; }
+.v10 .bp { position: absolute; top: 12px; bottom: 12px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #dfe4eb; }
+.v10 .bp.c { top: 6px; bottom: 6px; background: #c8d0db; }
+.v10 .bp.m { background: var(--hielo); }
+.v10 .aguja { top: 2px; bottom: 2px; width: 4px; margin-left: -2px; background: var(--navy); }
+
+/* panel de resultados (en las notas) */
+.tabla { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: var(--sombra); font-size: 13px; }
+.tabla th, .tabla td { padding: 7px 7px; text-align: right; border-top: 1px solid var(--linea); }
+.tabla th { background: var(--suave); font: 700 10.5px/1.15 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; border-top: 0; }
+.tabla td:first-child, .tabla th:first-child { text-align: left; }
+.botones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.botones button { height: 38px; padding: 0 14px; border-radius: 10px; background: var(--navy); color: #fff; font: 700 13px/1 Inter; }
+.botones button.sec { background: #d9dfe8; color: var(--ink); }
+.log { max-height: 220px; overflow-y: auto; background: #fff; border-radius: 12px; box-shadow: var(--sombra); font-size: 12.5px; }
+.log div { display: flex; gap: 8px; padding: 7px 10px; border-top: 1px solid var(--linea); }
+.log div:first-child { border-top: 0; }
+.log span:last-child:not(:first-child) { margin-left: auto; color: var(--mut); white-space: nowrap; }
+.refs a { display: block; margin: 4px 0; }
+</style>
+</head>
+<body>
+<div class="mesa">
+  <div class="tel" id="tel"></div>
+  <div class="notas" id="notas"></div>
+</div>
+<script>
+// Prueba de yardas, vuelta 3: diez reglas distintas. Dos pasos (primero quién, luego cuánto), guardado al soltar,
+// y el avance de la serie siempre a la vista: dónde va el balón, la jugada, la serie y lo que falta.
+// Tochito como NFL Flag: 50 yardas; cada serie empieza en nuestra 5; hay que cruzar medio campo (25) para la primera.
+const LOGO = '../archivos/marca/logo.webp', RIVAL = '../archivos/equipos/bucaneros-256.png?v=9';
+const CAMPO = 50, PRIMERA = 25;
+const JUG = [['sr', 'Santiago', 'SR'], ['eo', 'Emiliano', 'EO'], ['mv', 'Mateo', 'MV'], ['rs', 'Rodrigo', 'RS'], ['me', 'Maximiliano', 'ME'], ['ic', 'Iván', 'IC'], ['lp', 'Leo', 'LP']];
+const NOM = Object.fromEntries(JUG.map(([id, n]) => [id, n]));
+// qué pasó: [clave, texto, pista, pregunta, ¿pregunta yardas?]; el TD calcula las suyas
+const RES = [
+  ['pase', 'Pase completo', 'Luego quién y cuánto', '¿Quién la atrapó?', true],
+  ['corrida', 'Corrida', 'Luego quién y cuánto', '¿Quién corrió?', true],
+  ['incompleto', 'Incompleto', 'Luego a quién iba', '¿A quién iba?', false],
+  ['parada', 'Nos pararon', 'Luego a quién y cuánto', '¿A quién pararon?', true],
+  ['int', 'Intercepción', 'Cambia la posesión', '¿Quién la lanzó?', false],
+  ['castigo', 'Castigo', '5 yardas, a favor o en contra', null, false],
+  ['td', 'Touchdown', 'Las yardas salen solas', '¿Quién anotó?', false],
+];
+const ICO = {
+  pase: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', corrida: '<path d="M4 12h14M13 6l6 6-6 6"/>', incompleto: '<path d="M7 7l10 10M17 7 7 17"/>',
+  parada: '<path d="M3.5 12H13M9.5 8.5 13 12l-3.5 3.5M18 5v14"/>', int: '<path d="M18 5v6a5 5 0 0 1-5 5H6M10 12l-4 4 4 4"/>', castigo: '<path d="M6 21V4h11l-2.5 4L17 12H6"/>', td: '<path d="M12 20v-7M6 13h12M6 13V4.5M18 13V4.5"/>',
+};
+const DICTADO = [['pase', 'eo', 7], ['corrida', 'mv', 3], ['incompleto', 'rs', null], ['pase', 'me', 12], ['parada', 'mv', -2], ['corrida', 'ic', 5], ['pase', 'rs', 18], ['td', 'me', null]];
+const BALON = '<svg viewBox="0 0 26 16" aria-hidden="true"><ellipse cx="13" cy="8" rx="12" ry="7" fill="#0d2347"/><path d="M8 8h10M10 6.5v3M13 6.5v3M16 6.5v3" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></svg>';
+const PILON = '<svg viewBox="0 0 22 28" class="pil" aria-hidden="true"><path d="M4 26h14l-3-22H7z" fill="#f2731d"/><path d="M5.2 17h11.6M6 11h10" stroke="#fff" stroke-width="2"/><rect x="1" y="25" width="20" height="3" rx="1.5" fill="#0d2347"/></svg>';
+
+const leer = (k, d) => { try { const v = localStorage.getItem('yardas3.' + k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const poner = (k, v) => { try { localStorage.setItem('yardas3.' + k, JSON.stringify(v)); } catch { /* sin guardado, no pasa nada */ } };
+let st = { auto: 0, incierto: false, v: leer('v', 1), h: leer('h', 'abajo'), nos: 0, down: 1, spot: 5, ini: 5, sel: null, paso: null, yd: 0, t0: 0, toques: 0, dic: null, ultima: null, pend: null, aviso: null, log: leer('log', []) };
+const $ = (s) => document.querySelector(s);
+const fmt = (y) => (y > 0 ? '+' : '') + y;
+const meta = () => (st.primera || st.spot >= PRIMERA ? CAMPO : PRIMERA); // ya con primera, la meta es el TD aunque un castigo lo regrese
+const lugar = (f) => (f <= 0 ? 'nuestra zona' : f >= CAMPO ? 'zona de anotación' : f === PRIMERA ? 'medio campo' : f < PRIMERA ? `nuestra ${f}` : `su ${CAMPO - f}`);
+const rango = () => [Math.max(-12, -st.spot), CAMPO - st.spot];
+const numCampo = (f) => (f <= PRIMERA ? f : CAMPO - f); // los números de la cancha bajan después de medio campo
+let tG;
+
+// ---------- lo común: avance, valor y guardado al soltar ----------
+function avanceIn(y) {
+  const f = st.spot + y, m = meta(), falta = m - f, serie = f - st.ini;
+  const t = m === CAMPO ? 'Al TD' : 'A la primera', v = falta <= 0 ? (m === CAMPO ? '¡TD!' : '¡Primera!') : `${falta}<small style="display:inline;font-size:11px;margin-left:2px">yd</small>`;
+  return `<div class="av-l"><small>Balón</small><b>${lugar(st.spot)}<span>→</span>${lugar(f)}</b></div>
+    <div class="av-n"><span><small>Esta jugada</small><b class="num">${fmt(y)}</b></span><span><small>La serie</small><b class="num">${fmt(serie)}</b></span><span class="${falta <= 0 ? 'ok' : ''}"><small>${t}</small><b class="num">${v}</b></span></div>`;
+}
+const valIn = (y) => `${fmt(y)}<small>yd</small>`;
+function setYd(y, ms) {
+  const [lo, hi] = rango(); y = Math.max(lo, Math.min(hi, Math.round(y)));
+  if (y !== st.yd) {
+    st.yd = y;
+    const a = $('#av'); if (a) a.innerHTML = avanceIn(y);
+    document.querySelectorAll('[data-val]').forEach((e) => { e.innerHTML = valIn(y); });
+    const V = VARS[st.v - 1]; if (V.upd) V.upd(y);
+  }
+  if (ms != null) programar(ms);
+}
+function programar(ms) { clearTimeout(tG); tG = setTimeout(() => { terminar(st.yd); pintar(); }, ms); }
+// arrastrar con el ratón una tira con desplazamiento (en el celular ya se desliza con el dedo)
+function conRaton(el, eje) {
+  el.addEventListener('pointerdown', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const s0 = eje === 'x' ? el.scrollLeft : el.scrollTop, p0 = eje === 'x' ? e.clientX : e.clientY;
+    const mover = (ev) => { const d = (eje === 'x' ? ev.clientX : ev.clientY) - p0; if (eje === 'x') el.scrollLeft = s0 - d; else el.scrollTop = s0 - d; };
+    const soltar = () => { window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', soltar); };
+    window.addEventListener('pointermove', mover); window.addEventListener('pointerup', soltar);
+  });
+}
+// tira horizontal en coordenadas de la cancha, con la yarda elegida al centro
+function tiraH(px, marcar) {
+  const f0 = Math.max(0, st.spot - 12), f1 = CAMPO, ancho = (f1 - f0) * px, mitad = `((100% - ${ancho}px) / 2)`;
+  let m = '', s = '';
+  for (let f = f0; f <= f1; f++) { const x = (f - f0) * px; m += marcar(f, x); s += `<div class="snap" style="left:calc(${mitad} + ${x}px)"></div>`; }
+  return `<div class="env"><div class="th" data-f0="${f0}" data-px="${px}"><div class="th-p" style="width:calc(100% + ${ancho}px)"><div class="th-m" style="left:calc(${mitad});width:${ancho}px">${m}</div>${s}</div></div><div class="aguja"></div></div>`;
+}
+function montarTiraH(el, ms) {
+  const f0 = +el.dataset.f0, px = +el.dataset.px; let armado = false;
+  const centrar = (y) => { armado = false; el.scrollLeft = (st.spot + y - f0) * px; };
+  centrar(st.yd);
+  ['pointerdown', 'wheel', 'touchstart'].forEach((t) => el.addEventListener(t, () => { armado = true; }, { passive: true }));
+  el.addEventListener('scroll', () => { if (armado) setYd(Math.round(el.scrollLeft / px) + f0 - st.spot, ms); }, { passive: true });
+  conRaton(el, 'x');
+  return centrar;
+}
+// arrastre con el dedo sobre un elemento: avisa la posición y, al soltar, guarda
+function arrastre(el, alMover, alSoltar) {
+  el.addEventListener('pointerdown', (e) => {
+    try { el.setPointerCapture(e.pointerId); } catch { /* sin captura, sigue igual */ }
+    alMover(e, true);
+    const mover = (ev) => alMover(ev, false);
+    const soltar = () => { el.removeEventListener('pointermove', mover); el.removeEventListener('pointerup', soltar); el.removeEventListener('pointercancel', soltar); alSoltar(); };
+    el.addEventListener('pointermove', mover); el.addEventListener('pointerup', soltar); el.addEventListener('pointercancel', soltar);
+  });
+}
+
+// ---------- las diez ----------
+const VARS = [
+  { n: 'Hash', nota: 'Tira que se desliza, con marcas tipo hash y números de estadio con su flecha; la serie va sombreada y la primera, punteada.',
+    html: () => `<div class="val num" data-val>${valIn(st.yd)}</div><div class="pista">Desliza · se guarda al soltar</div>` + tiraH(14, (f, x) => {
+      let h = '';
+      if (f === st.ini && st.spot > st.ini) h += `<div class="bnd" style="left:${x}px;width:${(st.spot - st.ini) * 14}px"></div>`;
+      if (f === CAMPO) h += `<div class="ez" style="left:${x}px"></div>`;
+      if (f % 10 === 0 && f > 0 && f < CAMPO) h += `<i class="l d" style="left:${x}px"></i><span class="nst" style="left:${x}px">${f < PRIMERA ? '◂' : ''}${numCampo(f)}${f > PRIMERA ? '▸' : ''}</span>`;
+      else if (f % 5 === 0) h += `<i class="l" style="left:${x}px"></i>`;
+      else h += `<i class="hs a" style="left:${x}px"></i><i class="hs b" style="left:${x}px"></i>`;
+      if (f === meta()) h += `<i class="mt" style="left:${x}px"></i>`;
+      return h;
+    }),
+    mount: (el) => { VARS[0].centrar = montarTiraH(el.querySelector('.th'), 650); } },
+
+  { n: 'Pilón', nota: 'Regla vertical: hacia arriba es avanzar. La aguja es un pilón; los números de yarda a la izquierda.',
+    html: () => {
+      const f0 = Math.max(0, st.spot - 12), f1 = CAMPO, px = 13, alto = (f1 - f0) * px, mitad = `((100% - ${alto}px) / 2)`;
+      let m = '', s = '';
+      for (let f = f0; f <= f1; f++) {
+        const y = (f1 - f) * px;
+        m += `<i class="r${f % 10 === 0 ? ' d' : f % 5 === 0 ? ' c' : ''}" style="top:${y}px"></i>`;
+        if (f % 10 === 0 && f > 0 && f < CAMPO) m += `<span class="rn" style="top:${y}px">${numCampo(f)}</span>`;
+        if (f === meta()) m += `<i class="mtv" style="top:${y}px"></i>`;
+        s += `<div class="snapv" style="top:calc(${mitad} + ${y}px)"></div>`;
+      }
+      return `<div class="caja"><div><div class="val num" data-val>${valIn(st.yd)}</div><div class="pista">Desliza hacia arriba para avanzar · se guarda al soltar</div></div>
+        <div class="env"><div class="tv" data-f0="${f0}" data-px="${px}"><div class="tv-p" style="height:calc(100% + ${alto}px)"><div class="tv-m" style="top:calc(${mitad});height:${alto}px">${m}</div>${s}</div></div>${PILON}<i class="ag"></i></div></div>`;
+    },
+    mount: (el) => {
+      const tv = el.querySelector('.tv'), f0 = +tv.dataset.f0, px = +tv.dataset.px; let armado = false;
+      tv.scrollTop = (CAMPO - (st.spot + st.yd)) * px;
+      ['pointerdown', 'wheel', 'touchstart'].forEach((t) => tv.addEventListener(t, () => { armado = true; }, { passive: true }));
+      tv.addEventListener('scroll', () => { if (armado) setYd(CAMPO - Math.round(tv.scrollTop / px) - st.spot, 650); }, { passive: true });
+      conRaton(tv, 'y');
+    } },
+
+  { n: 'Cadena', nota: 'Se arrastra el balón sobre la cancha completa; la cadena va de donde está el balón a la línea de la primera (o a la zona de anotación).',
+    html: () => {
+      const f0 = Math.max(0, st.spot - 10), span = CAMPO + 3 - f0, pc = (f) => ((f - f0) / span) * 100;
+      let h = `<div class="ez3" style="left:${pc(CAMPO)}%"></div>`;
+      for (let f = Math.ceil(f0 / 5) * 5; f <= CAMPO; f += 5) { h += `<i class="k${f % 10 === 0 ? ' d' : ''}" style="left:${pc(f)}%"></i>`; if (f % 10 === 0 && f > 0 && f < CAMPO) h += `<span class="kn" style="left:${pc(f)}%">${numCampo(f)}</span>`; }
+      if (st.spot > st.ini) h += `<i class="hecho3" style="left:${pc(st.ini)}%;width:${pc(st.spot) - pc(st.ini)}%"></i>`;
+      h += `<i class="cadena" style="left:${pc(st.spot)}%;width:${pc(meta()) - pc(st.spot)}%"></i>`;
+      h += `<i class="palo" style="left:${pc(st.spot)}%"><b>${st.down}ª</b></i><i class="palo" style="left:${pc(meta())}%"><b>${meta() === CAMPO ? 'TD' : '1ª'}</b></i>`;
+      h += `<span class="bal" id="bal3" style="left:${pc(st.spot + st.yd)}%">${BALON}</span><span class="glob num" id="glob3" style="left:${Math.max(8, Math.min(92, pc(st.spot + st.yd)))}%">${fmt(st.yd)}</span>`;
+      return `<div class="cad" data-f0="${f0}" data-span="${span}">${h}</div><div class="pista">Arrastra el balón hasta donde quedó · se guarda al soltar</div>`;
+    },
+    mount: (el) => {
+      const c = el.querySelector('.cad'), f0 = +c.dataset.f0, span = +c.dataset.span;
+      arrastre(c, (e) => { const r = c.getBoundingClientRect(); setYd(Math.round(f0 + ((e.clientX - r.left) / r.width) * span) - st.spot); }, () => programar(450));
+    },
+    upd: (y) => {
+      const c = $('.cad'); if (!c) return; const f0 = +c.dataset.f0, span = +c.dataset.span, p = ((st.spot + y - f0) / span) * 100;
+      $('#bal3').style.left = p + '%'; const g = $('#glob3'); g.style.left = Math.max(8, Math.min(92, p)) + '%'; g.textContent = fmt(y);
+    } },
+
+  { n: 'Dial', nota: 'Medio círculo: se gira con el dedo. El arco hielo es lo que avanzó; los puntos marcan la primera y el TD.',
+    html: () => {
+      const cx = 160, cy = 168, r = 140, pt = (d, rr) => { const a = (180 - ((d + 10) / 50) * 180) * Math.PI / 180; return [cx + rr * Math.cos(a), cy - rr * Math.sin(a)]; };
+      let t = '';
+      for (let d = -10; d <= 40; d++) {
+        const largo = d % 10 === 0 ? 20 : d % 5 === 0 ? 13 : 7, [x1, y1] = pt(d, r), [x2, y2] = pt(d, r - largo), fuera = d > CAMPO - st.spot;
+        t += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${d === 0 ? '#5aaeff' : d % 10 === 0 ? '#0d2347' : '#b9c4d3'}" stroke-width="${d % 10 === 0 || d === 0 ? 2.4 : 1.5}" opacity="${fuera ? .25 : 1}"/>`;
+        if (d % 10 === 0) { const [xn, yn] = pt(d, r - 34); t += `<text x="${xn.toFixed(1)}" y="${(yn + 5).toFixed(1)}" text-anchor="middle" font-family="Barlow Condensed, Arial Narrow, sans-serif" font-style="italic" font-weight="900" font-size="17" fill="#0d2347" opacity="${fuera ? .3 : 1}">${d > 0 ? '+' + d : d}</text>`; }
+      }
+      const marca = (d, txt) => { if (d < -10 || d > 40) return ''; const [x, y] = pt(d, r + 10); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="#5aaeff"/><text x="${x.toFixed(1)}" y="${(y - 8).toFixed(1)}" text-anchor="middle" font-family="Inter" font-weight="800" font-size="9.5" fill="#1d4f8f">${txt}</text>`; };
+      t += marca(meta() - st.spot, meta() === CAMPO ? 'TD' : '1ª');
+      if (meta() !== CAMPO) t += marca(CAMPO - st.spot, 'TD');
+      return `<svg viewBox="0 -14 320 200" id="dial">${t}<path id="arco" fill="none" stroke="#5aaeff" stroke-width="6" stroke-linecap="round" opacity=".55"/><g id="agj"><line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy - r + 24}" stroke="#0d2347" stroke-width="3" stroke-linecap="round"/><circle cx="${cx}" cy="${cy - r + 4}" r="9" fill="#fff" stroke="#0d2347" stroke-width="3"/></g><circle cx="${cx}" cy="${cy}" r="7" fill="#0d2347"/></svg>
+        <div class="dv"><div class="val num" data-val>${valIn(st.yd)}</div><div class="pista">Gira · se guarda al soltar</div></div>`;
+    },
+    mount: (el) => {
+      const s = el.querySelector('#dial');
+      arrastre(s, (e) => { const r = s.getBoundingClientRect(), x = ((e.clientX - r.left) / r.width) * 320, y = ((e.clientY - r.top) / r.height) * 200 - 14; let a = Math.atan2(168 - y, x - 160) * 180 / Math.PI; if (a < -90) a = 180; a = Math.max(0, Math.min(180, a)); setYd(Math.round(((180 - a) / 180) * 50 - 10)); }, () => programar(450));
+      VARS[3].upd(st.yd);
+    },
+    upd: (y) => {
+      const g = $('#agj'); if (!g) return; const d = Math.max(-10, Math.min(40, y)), ang = ((d + 10) / 50) * 180 - 90;
+      g.setAttribute('transform', `rotate(${ang.toFixed(1)} 160 168)`);
+      const pt = (dd) => { const a = (180 - ((dd + 10) / 50) * 180) * Math.PI / 180; return [160 + 140 * Math.cos(a), 168 - 140 * Math.sin(a)]; };
+      const [x0, y0] = pt(0), [x1, y1] = pt(d); $('#arco').setAttribute('d', d === 0 ? '' : `M${x0.toFixed(1)} ${y0.toFixed(1)} A140 140 0 0 ${d > 0 ? 1 : 0} ${x1.toFixed(1)} ${y1.toFixed(1)}`);
+    } },
+
+  { n: 'Saltos de 5', nota: 'Toca un salto de 5 y, si hace falta, afina con la tira de abajo. Un punto hielo marca el salto que da la primera.',
+    html: () => {
+      const [lo, hi] = rango(), m = meta() - st.spot, opc = [-5, 0, 5, 10, 15, 20, 25, 30].filter((c) => c >= lo && c <= hi);
+      const cerca = opc.reduce((a, c) => (Math.abs(c - m) < Math.abs(a - m) ? c : a), opc[0]);
+      return `<div class="val num" data-val>${valIn(st.yd)}</div><div class="ch5">${opc.map((c) => `<button data-ch="${c}" class="${c === st.yd ? 'on' : ''}">${fmt(c)}${c === cerca && c >= m ? '<i></i>' : ''}</button>`).join('')}</div>`
+        + tiraH(18, (f, x) => `<i class="f${f % 5 === 0 ? ' c' : ''}" style="left:${x}px"></i>`) + '<div class="fino">Afinar ±1 · se guarda solo</div>';
+    },
+    mount: (el) => {
+      const centrar = montarTiraH(el.querySelector('.th'), 700);
+      el.querySelector('.ch5').addEventListener('click', (e) => {
+        const b = e.target.closest('[data-ch]'); if (!b) return;
+        el.querySelectorAll('.ch5 button').forEach((x) => x.classList.toggle('on', x === b));
+        setYd(+b.dataset.ch, 1100); centrar(st.yd);
+      });
+    } },
+
+  { n: 'Arrastre libre', nota: 'Sin regla fija: se arrastra en cualquier parte del recuadro, a la derecha para avanzar y a la izquierda si perdió. Las marcas de abajo corren con el dedo.',
+    html: () => `<div class="scr" id="scr"><div class="ayu">Arrastra en cualquier parte</div><div class="flechas"><span>‹</span><span>›</span></div><div class="val num" data-val>${valIn(st.yd)}</div><div class="scr-t" id="scrt"></div></div><div class="pista">Se guarda al soltar</div>`,
+    mount: (el) => {
+      const s = el.querySelector('#scr'); let x0 = 0, y0 = 0;
+      arrastre(s, (e, ini) => { if (ini) { x0 = e.clientX; y0 = st.yd; } setYd(y0 + Math.round((e.clientX - x0) / 10)); }, () => programar(350));
+    },
+    upd: (y) => { const t = $('#scrt'); if (t) t.style.backgroundPositionX = `${-y * 10}px, ${-y * 10}px`; } },
+
+  { n: 'Marca directa', nota: 'Regla fija de 40 yardas desde el balón: un toque justo donde quedó, con lupa; se puede corregir arrastrando.',
+    html: () => {
+      const a = Math.max(0, st.spot - 5), b = Math.min(CAMPO + 3, a + 40), pc = (f) => ((f - a) / (b - a)) * 100;
+      let h = b > CAMPO ? `<div class="ez7" style="left:${pc(CAMPO)}%"></div>` : '';
+      for (let f = Math.ceil(a); f <= Math.min(b, CAMPO); f++) { h += `<i class="t7${f % 10 === 0 ? ' d' : f % 5 === 0 ? ' c' : ''}" style="left:${pc(f)}%"></i>`; if (f % 10 === 0 && f > 0 && f < CAMPO) h += `<span class="n7" style="left:${pc(f)}%">${numCampo(f)}</span>`; }
+      h += `<i class="sc7" style="left:${pc(st.spot)}%"></i>`;
+      if (meta() <= b) h += `<i class="mt7" style="left:${pc(meta())}%"></i>`;
+      h += `<i class="pin7" id="pin7" style="left:${pc(st.spot + st.yd)}%;opacity:${st.yd ? 1 : 0}"></i><span class="lupa num" id="lupa7" style="left:${Math.max(9, Math.min(91, pc(st.spot + st.yd)))}%;opacity:${st.yd ? 1 : 0}">${fmt(st.yd)}</span>`;
+      return `<div class="md" id="md" data-a0="${a}" data-b0="${b}">${h}</div><div class="pista">Toca donde quedó el balón · la línea hielo es donde empezó</div>`;
+    },
+    mount: (el) => {
+      const m = el.querySelector('#md'), a = +m.dataset.a0, b = +m.dataset.b0;
+      arrastre(m, (e) => { const r = m.getBoundingClientRect(); setYd(Math.round(a + ((e.clientX - r.left) / r.width) * (b - a)) - st.spot); VARS[6].upd(st.yd, true); }, () => programar(450));
+    },
+    upd: (y, ver) => {
+      const m = $('#md'); if (!m) return; const a = +m.dataset.a0, b = +m.dataset.b0, p = ((st.spot + y - a) / (b - a)) * 100;
+      const pin = $('#pin7'), l = $('#lupa7'); pin.style.left = p + '%'; l.style.left = Math.max(9, Math.min(91, p)) + '%'; l.textContent = fmt(y);
+      if (ver) { pin.style.opacity = 1; l.style.opacity = 1; }
+    } },
+
+  { n: 'Perspectiva', nota: 'La cancha vista desde atrás del QB: se arrastra hacia arriba y las líneas de yarda corren hacia adentro; la línea hielo es el balón.',
+    html: () => {
+      const f0 = Math.max(0, st.spot - 14), px = 22;
+      let h = '';
+      for (let f = f0; f <= CAMPO; f++) {
+        const y = (CAMPO - f) * px;
+        h += `<i class="y8${f % 10 === 0 ? ' d' : f % 5 === 0 ? ' c' : ''}" style="top:${y}px"></i>`;
+        if (f % 10 === 0 && f > 0 && f < CAMPO) h += `<span class="n8" style="top:${y}px">${numCampo(f)}</span><span class="n8 der" style="top:${y}px">${numCampo(f)}</span>`;
+        if (f === meta()) h += `<i class="mt8" style="top:${y}px"></i>`;
+      }
+      return `<div class="per" id="per" data-px="${px}"><div class="car"><div class="mov" id="mov8">${h}</div><i class="fija" style="top:240px"></i></div><div class="dv8"><div class="val num" data-val>${valIn(st.yd)}</div></div></div><div class="pista">Arrastra hacia arriba para avanzar · se guarda al soltar</div>`;
+    },
+    mount: (el) => {
+      const p = el.querySelector('#per'); let y0 = 0, ini = 0;
+      arrastre(p, (e, empieza) => { if (empieza) { ini = e.clientY; y0 = st.yd; } setYd(y0 + Math.round((ini - e.clientY) / 9)); }, () => programar(450));
+      VARS[7].upd(st.yd);
+    },
+    upd: (y) => { const m = $('#mov8'); if (m) m.style.transform = `translateY(${240 - (CAMPO - (st.spot + y)) * 22}px)`; } },
+
+  { n: 'Rodillos', nota: 'Tres rodillos como el reloj del marcador: ganó o perdió, decenas y unidades.',
+    html: () => {
+      const y = st.yd, s = y < 0 ? 1 : 0, ab = Math.abs(y);
+      const rueda = (id, items, sel) => `<div class="rueda" id="${id}" data-sel="${sel}"><div class="pad"></div>${items.map((t) => `<div>${t}</div>`).join('')}<div class="pad"></div></div>`;
+      return `<div class="et"><span>Ganó / perdió</span><span>Decenas</span><span>Unidades</span></div><div class="rods">${rueda('rs', ['+', '−'], s)}${rueda('rd', [0, 1, 2, 3, 4], Math.floor(ab / 10))}${rueda('ru', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], ab % 10)}</div>
+        <div class="val num" data-val style="margin-top:8px">${valIn(st.yd)}</div><div class="pista">Gira los rodillos · se guarda al soltar</div>`;
+    },
+    mount: (el) => {
+      const ids = ['rs', 'rd', 'ru'], H = 44; let armado = false;
+      const leerR = () => { const [s, d, u] = ids.map((i) => Math.round(el.querySelector('#' + i).scrollTop / H)); return (s ? -1 : 1) * (d * 10 + u); };
+      ids.forEach((i) => {
+        const r = el.querySelector('#' + i); r.scrollTop = +r.dataset.sel * H;
+        ['pointerdown', 'wheel', 'touchstart'].forEach((t) => r.addEventListener(t, () => { armado = true; }, { passive: true }));
+        r.addEventListener('scroll', () => { if (armado) setYd(leerR(), 900); }, { passive: true });
+        conRaton(r, 'y');
+      });
+    } },
+
+  { n: '± con regla', nota: 'La de su referencia (BitePal): menos y más de a una yarda alrededor del número, y la regla abajo para saltos grandes. La marca hielo es la primera.',
+    html: () => `<div class="pm"><button data-pm="-1" aria-label="Menos una">−</button><div class="val num" data-val>${valIn(st.yd)}</div><button data-pm="1" aria-label="Más una">+</button></div>`
+      + tiraH(12, (f, x) => `<i class="bp${f % 5 === 0 ? ' c' : ''}${f === meta() ? ' m' : ''}" style="left:${x}px"></i>`) + '<div class="pista">Toca o desliza · se guarda solo</div>',
+    mount: (el) => {
+      const centrar = montarTiraH(el.querySelector('.th'), 900);
+      el.querySelector('.pm').addEventListener('click', (e) => { const b = e.target.closest('[data-pm]'); if (!b) return; setYd(st.yd + +b.dataset.pm, 1000); centrar(st.yd); });
+    } },
+];
+
+// ---------- pantalla ----------
+function pintar() {
+  const r = RES.find((x) => x[0] === st.sel), V = VARS[st.v - 1];
+  const d = st.dic != null ? DICTADO[st.dic] : null;
+  const dic = d ? `<div class="dictado"><small>Dictado ${st.dic + 1} de ${DICTADO.length} · ${st.v} ${V.n}</small><b>${RES.find((x) => x[0] === d[0])[1]}</b> · ${NOM[d[1]]}${d[2] != null ? ` · <b>${fmt(d[2])} yd</b>` : ''}</div>` : '';
+  const u = st.ultima ? `<div class="ultima"><span>Última: <b>${st.ultima.txt}</b></span><span class="t num">${st.ultima.s.toFixed(1)} s · ${st.ultima.toques} toques</span></div>` : '';
+  const m = meta(), pc = (f) => (f / CAMPO) * 100;
+  const serie = `<div class="serie"><div class="t"><span>Serie: ${lugar(st.ini)} → ${lugar(st.spot)} · <b class="num">${fmt(st.spot - st.ini)}</b></span><small>${st.down}ª · ${m === CAMPO ? 'al TD' : 'a la primera'} ${m - st.spot}</small></div>
+    <div class="sbar"><i class="hecho" style="left:${pc(st.ini)}%;width:${pc(st.spot) - pc(st.ini)}%"></i><i class="meta" style="left:${pc(m)}%"></i></div>${st.aviso ? `<div class="aviso">✓ ${st.aviso}</div>` : ''}</div>`;
+  let hoja = '';
+  if (st.paso === 'quien') hoja = `<div class="velo" data-a="cancelar"></div><div class="hoja abajo"><h3>${r[3]}</h3><p>${r[4] ? 'Luego, cuánto avanzó.' : 'Un toque y se guarda.'}</p>
+    <div class="pjs">${JUG.map(([id, n, i]) => `<button class="pj" data-a="quien" data-v="${id}"><span class="ini">${i}</span>${n}</button>`).join('')}<button class="pj" data-a="quien" data-v=""><span class="ini">?</span>No sé</button></div>
+    <button class="cerrar" data-a="cancelar">Cancelar</button></div>`;
+  if (st.paso === 'castigo') hoja = `<div class="velo" data-a="cancelar"></div><div class="hoja abajo"><h3>Castigo</h3><p>En tochito son 5 yardas: la app mueve el balón sola.</p><div class="pjs" style="grid-template-columns:1fr 1fr"><button class="pj" data-a="castigo" data-v="favor" style="padding:16px 4px"><b style="font:italic 900 26px/1 var(--disp)">+5</b>A favor · se repite</button><button class="pj" data-a="castigo" data-v="contra" style="padding:16px 4px"><b style="font:italic 900 26px/1 var(--disp)">−5</b>En contra · pierde el down</button></div><button class="cerrar" data-a="cancelar">Cancelar</button></div>`;
+  if (st.paso === 'cuanto') hoja = `${st.h === 'abajo' ? '<div class="velo" data-a="sinyd"></div>' : ''}<div class="hoja ${st.h}"><h3>¿Cuánto avanzó?<small>${st.pend.txt}</small></h3>
+    <div class="av" id="av">${avanceIn(st.yd)}</div><div class="sel v${st.v}" id="sel">${V.html()}</div>
+    <button class="sinyd" data-a="sinyd">Sin yardas</button></div>`;
+  $('#tel').innerHTML = `<div class="pant">
+    <div class="mcab"><div class="fila"><div class="marc"><img src="${LOGO}" alt=""><span class="num">${st.nos}</span></div><div class="down">${st.down}ª · ${lugar(st.spot)}<small>vs BUC</small></div><div class="marc"><span class="num">0</span><img src="${RIVAL}" alt=""></div></div>
+      <div class="vrs"><div class="chips" id="chips">${VARS.map((x, i) => `<button data-a="var" data-v="${i + 1}" class="${st.v === i + 1 ? 'on' : ''}"><b>${i + 1}</b>${x.n}</button>`).join('')}</div>
+      <div class="dir"><button data-a="hoja" data-v="abajo" class="${st.h === 'abajo' ? 'on' : ''}" aria-label="¿Cuánto? desde abajo">↥</button><button data-a="hoja" data-v="arriba" class="${st.h === 'arriba' ? 'on' : ''}" aria-label="¿Cuánto? desde arriba">↧</button></div></div></div>
+    <div class="cuerpo">${dic}${serie}
+      <div class="pregunta">¿Qué pasó?</div>
+      <div class="tiras">${RES.map(([k, t, p]) => `<button class="tira${k === 'td' ? ' td' : ''}" data-a="res" data-v="${k}"><svg viewBox="0 0 24 24">${ICO[k]}</svg><b>${t}</b><small>${p}</small></button>`).join('')}</div>
+      ${u}
+    </div>${hoja}
+  </div>`;
+  const cs = $('#chips'), ch = $('#chips .on'); if (cs && ch) cs.scrollLeft = ch.offsetLeft - cs.clientWidth / 2 + ch.offsetWidth / 2; // sin mover el resto de la pantalla
+  if (st.paso === 'cuanto') {
+    const sel = $('#sel');
+    sel.addEventListener('pointerdown', () => { st.toques++; clearTimeout(tG); });
+    sel.addEventListener('wheel', () => { if (!st.rueda) { st.rueda = true; st.toques++; } clearTimeout(tG); }, { passive: true });
+    V.mount(sel);
+  }
+  notas();
+}
+
+// ---------- la jugada ----------
+function avanzar(yd, k, pide) {
+  if (k === 'td') { st.nos += 6; nuevaSerie(); st.aviso = 'Touchdown: nueva serie en nuestra 5'; return; }
+  if (k === 'int') { nuevaSerie(); st.aviso = 'Intercepción: cambio de posesión (prueba: nueva serie en nuestra 5)'; return; }
+  if (pide && yd == null) st.incierto = true; // se saltaron las yardas: ya no se sabe si cruzó medio campo
+  if (k === 'favor') yd = 5;
+  if (k === 'contra') yd = -5;
+  st.spot = Math.max(1, Math.min(CAMPO - 1, st.spot + (yd || 0)));
+  if (!st.incierto && !st.primera && st.spot >= PRIMERA) { st.primera = true; st.down = 1; st.auto += 1; st.aviso = '¡Primera! Salió sola de las yardas; ahora, al TD'; return; }
+  if (k === 'favor') { st.aviso = 'Castigo a favor: +5 y se repite el down'; return; }
+  st.down += 1;
+  if (k === 'contra') st.aviso = 'Castigo en contra: −5 y pierde el down';
+  if (st.incierto) st.aviso = 'Sin yardas: no sé dónde va el balón ni si ya es primera';
+  if (st.down > 4) { nuevaSerie(); st.aviso = 'Se acabaron los downs: cambio de posesión (prueba: nueva serie)'; }
+}
+function nuevaSerie() { st.spot = 5; st.ini = 5; st.down = 1; st.incierto = false; st.primera = false; }
+function terminar(yd) {
+  const p = st.pend; if (!p) return; clearTimeout(tG);
+  const s = (performance.now() - st.t0) / 1000;
+  p.e.s = +s.toFixed(2); p.e.toques = st.toques; p.e.yd = yd; p.e.conYd = yd != null && p.pide;
+  if (p.d) p.e.err = p.d[2] == null || yd == null ? null : Math.abs(yd - p.d[2]);
+  st.ultima = { txt: p.txt + (yd != null && p.pide ? ` · ${fmt(yd)} yd` : ''), s, toques: st.toques };
+  avanzar(yd, p.e.k, p.pide);
+  poner('log', st.log);
+  st.pend = null; st.paso = null; st.yd = 0; st.rueda = false;
+}
+const A = {
+  var: (v) => { st.v = +v; poner('v', st.v); },
+  hoja: (v) => { st.h = v; poner('h', v); },
+  res: (v) => {
+    if (st.paso === 'cuanto') { if (st.yd) terminar(st.yd); else terminar(null); } // tocar la siguiente jugada cierra «¿Cuánto?» sin costar un toque
+    st.sel = v; st.paso = v === 'castigo' ? 'castigo' : 'quien'; st.t0 = performance.now(); st.toques = 1; st.aviso = null;
+  },
+  cancelar: () => { st.paso = null; st.sel = null; },
+  quien: (id) => {
+    st.toques++;
+    const r = RES.find((x) => x[0] === st.sel), d = st.dic != null ? DICTADO[st.dic] : null;
+    const txt = `${r[1].toLowerCase()}${id ? ' · ' + NOM[id] : ''}`;
+    const e = { v: st.v, h: st.h, k: st.sel, yd: null, s: 0, toques: 0, dic: !!d, err: null, conYd: false };
+    st.log.unshift(e); st.log = st.log.slice(0, 600);
+    st.pend = { e, txt, d, pide: r[4] };
+    if (st.dic != null) st.dic = st.dic + 1 < DICTADO.length ? st.dic + 1 : null;
+    if (st.sel === 'td') { terminar(CAMPO - st.spot); return; }
+    if (!r[4]) { terminar(null); return; }
+    st.paso = 'cuanto'; st.yd = 0;
+  },
+  castigo: (v) => {
+    st.toques++;
+    const e = { v: st.v, h: st.h, k: 'castigo', yd: v === 'favor' ? 5 : -5, s: +((performance.now() - st.t0) / 1000).toFixed(2), toques: st.toques, dic: false, err: null, conYd: false };
+    st.log.unshift(e); poner('log', st.log);
+    st.ultima = { txt: `castigo ${v === 'favor' ? 'a favor · +5' : 'en contra · −5'}`, s: e.s, toques: st.toques };
+    avanzar(null, v, false); st.paso = null; st.sel = null;
+  },
+  sinyd: () => { clearTimeout(tG); st.toques++; terminar(null); },
+  dictar: () => { st.dic = 0; st.paso = null; nuevaSerie(); st.aviso = null; },
+  borrar: () => { st.log = []; poner('log', st.log); st.ultima = null; },
+};
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-a]');
+  if (!b || !A[b.dataset.a]) return;
+  e.preventDefault();
+  A[b.dataset.a](b.dataset.v);
+  pintar();
+});
+
+// ---------- números ----------
+const media = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
+function notas() {
+  const pide = (x) => RES.find((r) => r[0] === x.k)[4];
+  const sinT = media(st.log.filter((x) => x.toques && !pide(x)).map((x) => x.s));
+  const filas = VARS.map((V, i) => {
+    const l = st.log.filter((x) => x.v === i + 1 && x.toques), con = l.filter((x) => pide(x) && x.conYd);
+    const tc = media(con.map((x) => x.s)), qc = media(con.map((x) => x.toques)), em = media(l.filter((x) => x.dic && x.err != null).map((x) => x.err));
+    return `<tr><td><b>${i + 1}</b> ${V.n}</td><td class="num">${con.length}</td><td class="num">${tc != null ? tc.toFixed(1) : '—'}</td><td class="num">${qc != null ? qc.toFixed(1) : '—'}</td>
+      <td class="num">${qc != null ? 88 + Math.round((qc - 2) * 11) : '—'}</td><td class="num">${tc != null && sinT != null ? '+' + Math.round(Math.max(0, tc - sinT) * 11) + ' s' : '—'}</td><td class="num">${em != null ? em.toFixed(1) + ' yd' : '—'}</td></tr>`;
+  }).join('');
+  $('#notas').innerHTML = `<h1>Prueba de yardas · las 10 reglas</h1>
+    <p>Iker escogió la regla. Aquí van diez maneras distintas de hacerla, todas en dos pasos (primero <b>¿Quién?</b> y luego, sola, <b>¿Cuánto?</b>) y guardadas al soltar. Cámbialas con los números de arriba del teléfono.</p>
+    <p><b>El avance siempre a la vista</b>: arriba de cada regla dice dónde va el balón, cuánto lleva esta jugada, cuánto la serie y cuánto falta para la primera (medio campo) o el TD; y la regla arranca donde quedó la jugada anterior. Debajo del marcador va la barra de la serie.</p>
+    <ol>${VARS.map((V) => `<li><b>${V.n}</b>: ${V.nota}</li>`).join('')}</ol>
+    <h2>¿Sobra el toque «Primera»?</h2>
+    <p>Con las yardas, la primera sale sola: al cruzar medio campo aparece «¡Primera!», el down vuelve a 1ª y la meta pasa a ser el TD. En esta sesión: <b>${st.auto}</b> primera${st.auto === 1 ? '' : 's'} detectada${st.auto === 1 ? '' : 's'} sin tocar nada.</p>
+    <ul style="margin:6px 0;padding-left:18px"><li><b>Castigos</b>: en tochito son de 5 yardas; con «a favor» o «en contra» (un toque) la app mueve el balón y sigue detectando la primera.</li>
+    <li><b>Cambios de posesión</b>: touchdown, intercepción o se acaban los downs; empieza otra serie en la 5.</li>
+    <li><b>Lo que no puede saber</b>: si se saltan las yardas de una jugada, ya no sabe dónde va el balón (lo avisa) y la primera vuelve a necesitar el toque. Y la del rival: no marcamos sus yardas.</li></ul>
+    <p>En números: el toque «Primera» costaba unos <b>7 toques por partido</b> (los dos equipos). Si se marcan las yardas en cada jugada nuestra, sobran los nuestros: unos <b>3 a 4</b> (las series que cruzan medio campo). Los del rival (unos 3) solo sobran si también marcamos sus yardas, que costaría unos 11 toques más.</p>
+    <h2>Medir</h2>
+    <p>El cronómetro va del primer toque (qué pasó) al guardado. Cada toque o arrastre en la regla cuenta. Para comparar parejo: el dictado, 8 jugadas iguales; hazlo una vez en cada regla.</p>
+    <div class="botones"><button data-a="dictar">Empezar dictado (8 jugadas)</button><button class="sec" data-a="borrar">Borrar mediciones</button></div>
+    <h2>Resultados</h2>
+    <table class="tabla"><tr><th>Regla</th><th>Con yd</th><th>Seg. con yd</th><th>Toques con yd</th><th>Toques partido</th><th>+ seg. partido</th><th>Error dictado</th></tr>${filas}</table>
+    <p style="color:var(--mut);font-size:12.5px">«Partido» = un partido típico (base 88 toques) con yardas en sus 11 jugadas que las piden (pases completos, corridas y nos pararon); los TD las calculan solos. «+ seg.» compara contra las jugadas sin yardas.</p>
+    <h2>Últimas capturas</h2>
+    <div class="log">${st.log.filter((x) => x.toques).slice(0, 30).map((x) => `<div><span>${x.v} ${VARS[x.v - 1].n}</span><span>${RES.find((r) => r[0] === x.k)[1]}${x.yd != null && pide(x) ? ' · ' + fmt(x.yd) + ' yd' : ''}</span><span class="num">${x.s.toFixed(1)} s · ${x.toques} t</span></div>`).join('') || '<div><span>Todavía nada</span></div>'}</div>
+    <h2>Referencias (Mobbin)</h2>
+    <div class="refs">
+    <a href="https://mobbin.com/screens/88b78f24-9b47-445f-b32c-5cc2a33c89d8" target="_blank" rel="noopener">BitePal · Servings ↗ (la de Iker → 10)</a>
+    <a href="https://mobbin.com/screens/674234dd-9f5f-4e98-9ed9-c18811437b15" target="_blank" rel="noopener">Tonal · regla recta y regla en arco ↗ (→ 1 y 4)</a>
+    <a href="https://mobbin.com/screens/97ea5d85-f5ac-44ea-af2b-2fd05232e981" target="_blank" rel="noopener">Bevel · dial de esfuerzo ↗ (→ 4)</a>
+    <a href="https://mobbin.com/screens/c5b41306-528e-4c13-bda4-27da3830f279" target="_blank" rel="noopener">Cash App · dial con atajos ↗ (→ 5)</a>
+    <a href="https://mobbin.com/screens/bf45adeb-62e9-4b14-8f2f-7a85e8ce1d43" target="_blank" rel="noopener">Cal AI · rodillos de estatura ↗ (→ 9)</a>
+    <a href="https://mobbin.com/screens/f1b5178f-d150-4b6d-a2cb-19b10452f99c" target="_blank" rel="noopener">Noom · regla con aguja ↗ (→ 1 y 10)</a>
+    <a href="https://mobbin.com/screens/0b07b985-2ca4-4b34-9d29-c6fc0ae98357" target="_blank" rel="noopener">theScore · tiro sobre la cancha ↗ (→ 3 y 7)</a></div>
+    <p style="margin-top:14px"><a href="yardas-2.html">Vuelta 2 (pizarrón) ↗</a> · <a href="yardas-1.html">Vuelta 1 (cancha con pasto) ↗</a></p>`;
+}
+pintar();
+</script>
+</body>
+</html>
