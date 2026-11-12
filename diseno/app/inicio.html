@@ -1,0 +1,1331 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Inicio Belugas</title>
+<link rel="icon" href="../archivos/marca/icon.png">
+<!-- Prototipo de la pestaña Inicio del teléfono (ronda 5). Todo en este archivo; datos de ejemplo,
+     nada se guarda. Plantel inventado con retratos dibujados aquí mismo (no son de nadie real).
+     Rivales: los 12 logos reales de la liga (archivos/equipos/, mejorados con Higgsfield).
+     El balón y la corona 3D los rendereó Blender (archivos/inicio/). -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  --bg: #f3f5f8; --card: #fff; --ink: #0b1b33; --navy: #0d2347; --azul: #1d4f8f; --hielo: #5aaeff; --mut: #56647a; --tenue: #a3acb9; --linea: #e4e8ee; --ok: #16a05a;
+  --sombra: 0 1px 2px rgba(11, 27, 51, .05), 0 6px 18px rgba(11, 27, 51, .07);
+  --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --oro: linear-gradient(180deg, #ffe38c 0%, #f6b73c 55%, #dd8d16 100%);
+  --plata: linear-gradient(180deg, #f1f4f8 0%, #c6cfda 60%, #9aa7b6 100%);
+  --bronce: linear-gradient(180deg, #ffd9b5 0%, #d99257 60%, #a9602b 100%);
+}
+/* familias de gradiente: el marcador, el botón de Marcar, las tarjetas de jugador y el encabezado */
+.tel[data-g="hielo"] {
+  --grad: radial-gradient(120% 90% at 100% 0%, rgba(120,190,255,.85) 0%, rgba(120,190,255,0) 55%), linear-gradient(135deg, #0d2347 0%, #1d4f8f 62%, #3f8fe6 100%);
+  --boton: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%);
+  --anillo: conic-gradient(from 210deg, #0d2347, #5aaeff, #1d4f8f, #0d2347);
+  --brillo: radial-gradient(70% 55% at 50% -10%, rgba(90,174,255,.20), transparent 70%);
+  --acento: #1d4f8f;
+}
+.tel[data-g="aurora"] {
+  --grad: radial-gradient(95% 90% at 0% 0%, rgba(90,174,255,1) 0%, rgba(90,174,255,0) 62%), radial-gradient(85% 95% at 100% 100%, rgba(20,216,196,.95) 0%, rgba(20,216,196,0) 60%), radial-gradient(75% 75% at 70% 15%, rgba(139,92,246,.95) 0%, rgba(139,92,246,0) 62%), linear-gradient(135deg, #0d2347 0%, #1b2a6b 100%);
+  --boton: linear-gradient(120deg, #3b82f6 0%, #8b5cf6 50%, #14d8c4 100%);
+  --anillo: conic-gradient(from 0deg, #5aaeff, #8b5cf6, #14d8c4, #5aaeff);
+  --brillo: radial-gradient(55% 45% at 15% -5%, rgba(90,174,255,.22), transparent 70%), radial-gradient(50% 40% at 95% 0%, rgba(139,92,246,.16), transparent 70%);
+  --acento: #5b4bd6;
+}
+.tel[data-g="cromo"] {
+  --grad: linear-gradient(115deg, #0b1b33 0%, #17396c 30%, #6ea9e6 47%, #cfe6ff 50%, #6ea9e6 53%, #17396c 70%, #0b1b33 100%);
+  --boton: linear-gradient(115deg, #0b1b33 0%, #1d4f8f 38%, #a9d3ff 50%, #1d4f8f 62%, #0b1b33 100%);
+  --anillo: conic-gradient(from 160deg, #0b1b33, #cfe6ff, #1d4f8f, #9fc8f2, #0b1b33);
+  --brillo: linear-gradient(180deg, rgba(13,35,71,.07), transparent 140px);
+  --acento: #17396c;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; }
+body { font: 16px/1.35 Inter, -apple-system, system-ui, sans-serif; color: var(--ink); background: #e6eaf0; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; }
+.num { font-variant-numeric: tabular-nums; }
+.corta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* en la laptop: el teléfono al centro y las notas al lado; en el celular: pantalla completa */
+.mesa { min-height: 100%; display: flex; align-items: center; justify-content: center; gap: 36px; padding: 24px; }
+.tel { width: 390px; height: 844px; border-radius: 46px; background: var(--bg); box-shadow: 0 0 0 10px #10151d, 0 30px 60px rgba(0,0,0,.25); position: relative; overflow: hidden; flex: none; }
+.tel::before { content: ''; position: absolute; inset: 0 0 auto; height: 260px; background: var(--brillo); pointer-events: none; }
+.notas { width: 380px; font-size: 14px; color: #334; max-height: 100vh; overflow-y: auto; }
+.notas h1 { font: 800 20px/1.2 Inter; margin: 0 0 6px; }
+.notas h4 { font: 700 12.5px/1 Inter; margin: 12px 0 0; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
+.notas p { margin: 6px 0; }
+.notas ul { margin: 6px 0; padding-left: 18px; }
+.notas a { color: var(--azul); }
+.conm { display: inline-flex; flex-wrap: wrap; background: #d9dfe8; border-radius: 10px; padding: 3px; margin: 7px 0 0; }
+.conm button { padding: 8px 12px; border-radius: 8px; font: 600 13px/1 Inter; }
+.conm button.on { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.toques { background: #fff; border-radius: 12px; padding: 12px 14px; margin: 12px 0 8px; box-shadow: var(--sombra); }
+.toques b { color: var(--navy); }
+.dev { display: none; }
+@media (max-width: 520px) {
+  body { background: var(--bg); }
+  .mesa { padding: 0; display: block; }
+  .tel { width: 100%; height: 100dvh; border-radius: 0; box-shadow: none; }
+  .notas { display: none; }
+  .dev { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 0 2px; }
+  .dev button { height: 34px; min-width: 34px; border-radius: 999px; background: rgba(11,27,51,.07); padding: 0 11px; font: 700 12px/1 Inter; color: var(--ink); }
+  .dev button.on { background: var(--ink); color: #fff; }
+  .dev .sep { flex: 1; }
+  .dev .fila2 { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+}
+
+/* ---------- piezas de la app ---------- */
+.pant { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.cuerpo { flex: 1; overflow-y: auto; padding: 0 20px 124px; position: relative; }
+.estado { height: 50px; flex: none; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 28px 8px 34px; font: 600 16px/1 Inter; position: relative; }
+@media (max-width: 520px) { .estado { visibility: hidden; height: max(14px, env(safe-area-inset-top)); } }
+.cab { display: flex; align-items: center; gap: 10px; padding: 8px 2px 20px; }
+.cab img { width: 38px; height: 38px; object-fit: contain; }
+.cab b { font: 800 20px/1 Inter; }
+.cab small { display: block; color: var(--mut); font: 500 13px/1.2 Inter; margin-top: 3px; }
+h2 { font: 800 15px/1.2 Inter; margin: 32px 2px 12px; color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
+h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
+.card { background: var(--card); border-radius: 16px; box-shadow: var(--sombra); }
+
+/* retratos: siempre en círculo, con anillo de la familia de gradiente */
+.foto { position: relative; flex: none; display: block; border-radius: 50%; padding: 2px; background: var(--anillo); }
+.foto > span { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #fff; }
+.foto svg, .foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.foto .ini { display: grid; place-items: center; height: 100%; background: #e8eef7; color: var(--navy); font: 800 13px/1 Inter; }
+.pila { display: flex; align-items: center; }
+.pila .foto { width: 34px; height: 34px; margin-left: -9px; box-shadow: 0 0 0 2px rgba(255,255,255,.9); }
+.pila .foto:first-child { margin-left: 0; }
+.pila .mas { margin-left: -9px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.92); color: var(--navy); display: grid; place-items: center; font: 800 12px/1 Inter; box-shadow: 0 0 0 2px rgba(255,255,255,.9); text-shadow: none; }
+
+/* logos de los rivales: el que nos manden, o sus letras si todavía no hay logo */
+.rlogo { display: inline-block; flex: none; position: relative; }
+.rlogo svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 2px 3px rgba(0,0,0,.18)); }
+.rlogo { width: 40px; height: 40px; }
+.rlogo img { position: absolute; left: 50%; top: 50%; width: calc(100% * var(--k, 1)); height: calc(100% * var(--k, 1)); transform: translate(-50%, -50%); object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.2)); }
+.heroe .eq .rlogo img, .mscore .rlogo img, .gigante .marc .rlogo img { width: calc(100% * var(--kv, 1)); height: calc(100% * var(--kv, 1)); }
+
+/* ICONOS-CSS-INICIO: un ícono por tipo de jugada, en dos estilos */
+.ic { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; }
+.ic svg { width: 26px; height: 26px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.ic.linea { background: color-mix(in srgb, var(--c) 12%, #fff); }
+.ic.linea svg { stroke: var(--c); stroke-width: 1.9; }
+.ic.relleno { background: var(--c); box-shadow: inset 0 -4px 0 rgba(0,0,0,.2), 0 2px 0 rgba(0,0,0,.06); }
+.ic.relleno svg { stroke: #fff; stroke-width: 2.7; }
+.ic.relleno svg .f { fill: rgba(255,255,255,.95); stroke: none; }
+.ic.linea svg .f { fill: color-mix(in srgb, var(--c) 30%, transparent); stroke: none; }
+.ic.chico { width: 30px; height: 30px; border-radius: 9px; }
+.ic.chico svg { width: 19px; height: 19px; }
+.res.td .ic.linea, .res.tdr .ic.linea { background: rgba(255,255,255,.18); }
+.res.td .ic.linea svg, .res.tdr .ic.linea svg { stroke: #fff; }
+.res.td .ic.relleno, .res.tdr .ic.relleno { background: #fff; }
+.res.td .ic.relleno svg { stroke: #1d4f8f; } .res.tdr .ic.relleno svg { stroke: #4b5563; }
+.res.td .ic.relleno svg .f { fill: #1d4f8f; } .res.tdr .ic.relleno svg .f { fill: #4b5563; }
+.jlista { margin-top: 20px; background: #fff; border-radius: 16px; box-shadow: var(--sombra); }
+.jlista h4 { margin: 0; padding: 12px 14px 4px; font: 800 13px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; display: flex; justify-content: space-between; }
+.jlista h4 button { font: 700 13px/1 Inter; color: var(--acento); text-transform: none; letter-spacing: 0; }
+.jfila { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-top: 1px solid var(--linea); font-size: 14px; }
+.jfila:first-of-type { border-top: 0; }
+.jfila > .corta { flex: 1; min-width: 0; }
+.jfila .ic { flex: none; }
+.jfila small { color: var(--mut); font: 600 12px/1 Inter; flex: none; }
+.convs .op { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.convs .op .ic.relleno { background: #fff; } .convs .op .ic.relleno svg { stroke: var(--c); } .convs .op .ic.relleno svg .f { fill: var(--c); }
+.convs .op .ic.linea { background: rgba(255,255,255,.2); } .convs .op .ic.linea svg { stroke: #fff; }
+/* ICONOS-CSS-FIN */
+
+/* ANIM-INICIO: confirmación al marcar (no bloquea: nada atrapa el dedo) */
+.tel.anim .toast.nuevo { animation: toastIn .22s cubic-bezier(.3,1.4,.5,1); }
+.tel.anim .toast.nuevo .ic { animation: icPop .32s cubic-bezier(.3,1.7,.5,1); }
+.tel.anim .toast.nuevo .ic::after { content: ''; position: absolute; inset: -4px; border-radius: 14px; border: 2px solid var(--c); animation: anillo .4s ease-out forwards; }
+.toast .ic { position: relative; }
+.tel.anim .mscore strong.sube { animation: bump .38s cubic-bezier(.3,1.6,.5,1); display: inline-block; }
+.confeti { position: absolute; left: 50%; top: 150px; width: 0; height: 0; z-index: 20; pointer-events: none; }
+.confeti i { position: absolute; width: 9px; height: 14px; border-radius: 2px; background: var(--k); opacity: 0; animation: chispa .75s cubic-bezier(.2,.7,.4,1) forwards; animation-delay: var(--d); }
+.tdflash { position: absolute; inset: 0; z-index: 19; pointer-events: none; background: radial-gradient(60% 40% at 50% 22%, rgba(90,174,255,.32), transparent 70%); opacity: 0; animation: destello .6s ease-out; }
+@keyframes toastIn { from { transform: translateY(14px) scale(.96); opacity: 0; } }
+@keyframes icPop { from { transform: scale(.5) rotate(-12deg); } }
+@keyframes anillo { from { transform: scale(.8); opacity: .9; } to { transform: scale(1.35); opacity: 0; } }
+@keyframes bump { 40% { transform: scale(1.28); } }
+@keyframes chispa { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)); } }
+@keyframes destello { 30% { opacity: 1; } }
+/* ANIM-FIN */
+.rlogo.sin { border-radius: 50%; background: linear-gradient(135deg, #4b5563, #9ca3af); color: #fff; display: grid; place-items: center; font: 800 12px/1 Inter; letter-spacing: .02em; box-shadow: inset 0 0 0 2px rgba(255,255,255,.7); }
+
+/* héroe del partido (Inicio 1): se queda como en la ronda 4 */
+.heroe { border-radius: 22px; background: var(--grad); color: #fff; padding: 18px; position: relative; overflow: hidden; box-shadow: 0 12px 28px rgba(13,35,71,.26); }
+.heroe, .gigante, .mcab { text-shadow: 0 1px 3px rgba(5,15,35,.35); }
+.btn-blanco, .gigante .tocar span { text-shadow: none; }
+.heroe .balon { position: absolute; right: -30px; top: -14px; width: 150px; transform: rotate(-12deg); filter: drop-shadow(0 10px 14px rgba(0,0,0,.35)); pointer-events: none; }
+.heroe .eti { font: 700 12px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .9; display: flex; align-items: center; gap: 7px; position: relative; }
+.heroe .eti i { width: 8px; height: 8px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 0 3px rgba(255,90,90,.3); }
+.heroe .vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: 14px 96px 12px 0; position: relative; }
+.heroe .vs .mid strong { white-space: nowrap; }
+.heroe .eq { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 13px/1 Inter; }
+.heroe .eq img, .heroe .eq .rlogo { width: 54px; height: 54px; }
+.heroe .mid { text-align: center; }
+.heroe .mid strong { font: italic 900 48px/1 var(--disp); letter-spacing: -.01em; text-shadow: 0 2px 10px rgba(0,0,0,.2); }
+.heroe .mid small { display: block; font: 600 13px/1.3 Inter; opacity: .9; margin-top: 4px; }
+.heroe .van { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font: 600 13px/1.2 Inter; position: relative; }
+.heroe .van span { opacity: .9; }
+.btn-blanco { width: 100%; height: 60px; border-radius: 14px; background: #fff; color: var(--navy); font: 800 18px/1 Inter; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 0 rgba(0,0,0,.08); position: relative; }
+.btn-blanco:active, .gigante:active, .res:active, .pj:active, .op:active, .cat:active { transform: scale(.98); }
+
+/* Inicio 2: el héroe entero es el botón */
+.gigante { display: block; width: 100%; text-align: left; border-radius: 26px; background: var(--grad); color: #fff; padding: 22px 20px; min-height: 380px; position: relative; overflow: hidden; box-shadow: 0 16px 32px rgba(13,35,71,.3); }
+.gigante .balon { position: absolute; right: -40px; top: 92px; width: 230px; transform: rotate(-18deg); filter: drop-shadow(0 16px 18px rgba(0,0,0,.35)); pointer-events: none; }
+.gigante .eti { font: 700 12px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .9; display: flex; gap: 7px; align-items: center; position: relative; }
+.gigante .eti i { width: 8px; height: 8px; border-radius: 50%; background: #ff5a5a; }
+.gigante .eti .rlogo { width: 26px; height: 26px; }
+.gigante .rival { margin-top: 14px; font: italic 900 38px/.95 var(--disp); text-transform: uppercase; position: relative; max-width: 62%; }
+.gigante .rival small { display: block; font: 600 14px/1.3 Inter; font-style: normal; text-transform: none; opacity: .9; margin-top: 8px; }
+.gigante .marc { margin-top: 14px; display: flex; align-items: center; gap: 12px; font: italic 900 60px/1 var(--disp); position: relative; }
+.gigante .marc img, .gigante .marc .rlogo { width: 48px; height: 48px; }
+.gigante .van { position: absolute; left: 20px; bottom: 108px; display: flex; align-items: center; gap: 10px; font: 600 13px/1 Inter; }
+.gigante .tocar { position: absolute; left: 20px; right: 20px; bottom: 20px; height: 74px; border-radius: 18px; background: rgba(255,255,255,.18); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 20px; font: 800 20px/1 Inter; }
+.gigante .tocar span { width: 52px; height: 52px; border-radius: 50%; background: #fff; color: var(--navy); display: grid; place-items: center; font: 400 30px/1 Inter; }
+
+/* el gradiente se mueve muy despacio en aurora; en cromo brilla el botón */
+.tel[data-g="aurora"] .heroe, .tel[data-g="aurora"] .gigante, .tel[data-g="aurora"] .mcab { background-size: 140% 140%; animation: deriva 14s ease-in-out infinite alternate; }
+@keyframes deriva { from { background-position: 0% 0%; } to { background-position: 100% 60%; } }
+.tel[data-g="cromo"] .btn-gr, .tel[data-g="cromo"] .nav .centro b { background-size: 220% 100%; animation: brilla 5s ease-in-out infinite; }
+@keyframes brilla { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+
+/* último y próximo partido */
+.pmini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pm { display: flex; align-items: center; gap: 10px; padding: 12px; text-align: left; width: 100%; min-width: 0; }
+.pm .rlogo { width: 40px; height: 40px; }
+.pm small { display: block; font: 700 10.5px/1.2 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
+.pm b { display: block; font: 700 14px/1.2 Inter; }
+.pm .sc { font: italic 900 22px/1 var(--disp); color: var(--navy); }
+.pm .g { color: var(--ok); }
+
+/* ---------- líderes ---------- */
+.cats { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 12px; scrollbar-width: none; }
+.cat { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: 700 13px/1 Inter; color: var(--mut); }
+.cat.on { background: var(--boton); color: #fff; box-shadow: 0 3px 0 rgba(13,35,71,.25); }
+.lideres { background: #fff; border-radius: 22px; box-shadow: var(--sombra); overflow: hidden; }
+.corona { position: relative; z-index: 3; display: block; pointer-events: none; filter: drop-shadow(0 4px 5px rgba(160,100,0,.35)); }
+.valor { font: italic 900 24px/1 var(--disp); color: var(--navy); }
+.valor small { font: 700 11px/1 Inter; font-style: normal; color: var(--mut); margin-left: 2px; }
+
+/* versión 1: escalones */
+.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 16px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
+.pcol { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+.pcol .foto { width: 64px; height: 64px; box-shadow: 0 8px 16px rgba(13,35,71,.18); }
+.pcol.p1 .foto { width: 86px; height: 86px; }
+.pcol .corona { width: 62px; margin-bottom: -16px; }
+.pcol b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 7px; }
+.pcol .valor { margin-top: 2px; }
+.escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); box-shadow: inset 0 5px 0 rgba(255,255,255,.35); }
+.p1 .escalon { height: 104px; background: var(--grad); color: #fff; }
+.p2 .escalon { height: 78px; background: var(--plata); color: #5b6676; }
+.p3 .escalon { height: 60px; background: var(--bronce); color: #7a431b; }
+
+/* versión 2: trono */
+.trono { padding: 14px; display: grid; gap: 10px; background: linear-gradient(180deg, #fff8e6, #fff 75%); }
+.rey { position: relative; display: flex; align-items: center; gap: 14px; padding: 36px 14px 14px; border-radius: 20px; background: #fff; box-shadow: 0 5px 0 #f2d58c, 0 10px 24px rgba(221,141,22,.18); overflow: hidden; }
+.rey::after { content: ''; position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 50%; background: repeating-conic-gradient(rgba(246,183,60,.16) 0 10deg, transparent 10deg 20deg); pointer-events: none; }
+.respaldo { position: relative; flex: none; width: 112px; height: 128px; border-radius: 56px 56px 18px 18px; background: var(--oro); box-shadow: inset 0 -6px 0 rgba(0,0,0,.12), inset 0 4px 0 rgba(255,255,255,.4); display: grid; place-items: end center; padding-bottom: 12px; }
+.respaldo .foto { width: 84px; height: 84px; box-shadow: 0 0 0 4px #fff; }
+.respaldo .corona { position: absolute; top: -26px; left: 50%; width: 74px; margin-left: -37px; }
+.rey .txt { min-width: 0; position: relative; z-index: 1; }
+.rey .txt small { display: block; font: 800 11px/1.2 Inter; letter-spacing: .07em; color: #b7700f; text-transform: uppercase; }
+.rey .txt b { display: block; font: italic 900 30px/.95 var(--disp); text-transform: uppercase; margin: 4px 0 6px; }
+.rey .txt .valor { font-size: 34px; }
+.dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.sub { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 18px; background: #fff; box-shadow: 0 4px 0 #e3e8ef, 0 6px 14px rgba(11,27,51,.06); min-width: 0; }
+.sub .foto { width: 46px; height: 46px; }
+.sub b { display: block; font: 800 13.5px/1.2 Inter; }
+.sub .valor { font-size: 20px; }
+.medalla-n { position: absolute; right: -4px; bottom: -4px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font: 900 12px/1 Inter; color: #fff; box-shadow: 0 0 0 2px #fff; }
+.medalla-n.n2 { background: var(--plata); color: #4b5563; }
+.medalla-n.n3 { background: var(--bronce); }
+.medalla-n.n1 { background: var(--oro); color: #7a4a00; }
+
+/* versión 3: medallas */
+.medallas { display: grid; grid-template-columns: 1fr 1.2fr 1fr; align-items: end; gap: 6px; padding: 26px 12px 16px; background: radial-gradient(80% 70% at 50% 0%, #eef5ff, #fff 70%); }
+.med { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+.med.m1 { transform: translateY(-12px); }
+.aro { position: relative; z-index: 2; padding: 5px; border-radius: 50%; box-shadow: 0 8px 18px rgba(13,35,71,.16); }
+.m1 .aro { background: conic-gradient(#fff3b0, #f5b301, #ffe27a, #e09b00, #fff3b0); }
+.m2 .aro { background: conic-gradient(#ffffff, #b8c2cf, #eef2f6, #98a4b3, #ffffff); }
+.m3 .aro { background: conic-gradient(#ffe0c2, #c97b3e, #f5c193, #a85f2a, #ffe0c2); }
+.aro .foto { width: 62px; height: 62px; background: #fff; padding: 2px; }
+.m1 .aro .foto { width: 84px; height: 84px; }
+.cinta { width: 44px; height: 24px; margin-top: -8px; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 68%, 0 100%); }
+.m1 .cinta { background: var(--boton); width: 52px; height: 30px; }
+.m2 .cinta { background: linear-gradient(90deg, #8b98a8, #c6cfda); }
+.m3 .cinta { background: linear-gradient(90deg, #a9602b, #d99257); }
+.med .corona { width: 54px; margin-bottom: -12px; }
+.med b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 6px; }
+.lugar { position: absolute; left: 50%; bottom: -10px; margin-left: -13px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 900 12.5px/1 Inter; background: #fff; color: var(--navy); box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+
+/* la tabla de abajo, compacta */
+.tabla { border-top: 1px solid var(--linea); }
+.tfila { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--linea); }
+.tfila:last-child { border-bottom: 0; }
+.tfila .rk { width: 20px; flex: none; text-align: center; font: 800 14px/1 Inter; color: var(--mut); }
+.tfila .foto { width: 34px; height: 34px; }
+.tfila > div { flex: 1; min-width: 0; }
+.tfila b { display: block; font: 700 14px/1.2 Inter; }
+.tfila small { color: var(--mut); font-size: 12px; }
+.tfila .valor { font-size: 20px; flex: none; }
+.vertodos { width: 100%; height: 48px; font: 700 14px/1 Inter; color: var(--acento); border-top: 1px solid var(--linea); }
+
+/* entrada juguetona (no corre si el teléfono pide menos movimiento) */
+.entra .escalon { transform-origin: bottom; animation: crece .55s cubic-bezier(.3,1.35,.5,1) both; }
+.entra .p3 .escalon { animation-delay: .05s; } .entra .p2 .escalon { animation-delay: .15s; } .entra .p1 .escalon { animation-delay: .28s; }
+.entra .pcol .foto, .entra .med .aro, .entra .sub, .entra .respaldo { animation: pop .5s cubic-bezier(.3,1.6,.5,1) both; }
+.entra .p3 .foto, .entra .m3 .aro { animation-delay: .35s; } .entra .p2 .foto, .entra .m2 .aro { animation-delay: .45s; } .entra .p1 .foto, .entra .m1 .aro, .entra .respaldo { animation-delay: .55s; }
+.entra .dos .sub:first-child { animation-delay: .7s; } .entra .dos .sub:last-child { animation-delay: .8s; }
+.entra .corona { animation: cae .7s cubic-bezier(.3,1.5,.5,1) .85s both; }
+.entra .tfila { animation: sube .35s ease-out both; }
+.entra .tfila:nth-child(2) { animation-delay: .05s; } .entra .tfila:nth-child(3) { animation-delay: .1s; } .entra .tfila:nth-child(4) { animation-delay: .15s; }
+@keyframes crece { from { transform: scaleY(0); } }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
+@keyframes cae { from { transform: translateY(-46px) rotate(-24deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+
+.fila-j { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.fila-j .foto { width: 44px; height: 44px; }
+.fila-j > div { flex: 1; }
+.fila-j b { display: block; font: 700 15px/1.2 Inter; }
+.fila-j small { color: var(--mut); font-size: 12.5px; }
+.fila-j .dato { margin-left: auto; text-align: right; font: 600 12.5px/1.3 Inter; color: var(--mut); flex: none; }
+.fila-j .dato strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
+
+/* barra de abajo */
+.nav { position: absolute; left: 0; right: 0; bottom: 0; height: calc(78px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: #fff; border-top: 1px solid var(--linea); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 9px; z-index: 5; }
+.nav button { width: 64px; display: grid; justify-items: center; gap: 4px; font: 600 10.5px/1 Inter; color: #667185; }
+.nav button.on { color: var(--navy); }
+.nav svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav .centro { width: 74px; height: 74px; margin-top: -30px; border-radius: 50%; background: #fff; border: 1.5px solid var(--linea); display: grid; place-items: center; }
+.nav .centro b { width: 58px; height: 58px; border-radius: 50%; background: var(--boton); color: #fff; display: grid; place-items: center; font: 300 32px/1 Inter; box-shadow: 0 6px 14px rgba(13,35,71,.3); }
+
+/* pantalla de marcar */
+.mcab { background: var(--grad); color: #fff; padding: 0 14px 16px; border-radius: 0 0 24px 24px; flex: none; position: relative; }
+.mbar { display: flex; align-items: center; justify-content: space-between; height: 44px; }
+.mbar button { height: 38px; min-width: 38px; padding: 0 13px; border-radius: 999px; background: rgba(6,18,40,.3); font: 700 13px/1 Inter; color: #fff; }
+.mscore { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 6px; }
+.mscore .eq { display: flex; align-items: center; gap: 10px; }
+.mscore .eq.r2 { justify-content: flex-end; }
+.mscore img, .mscore .rlogo { width: 40px; height: 40px; }
+.mscore strong { font: italic 900 52px/1 var(--disp); }
+.mscore .down { text-align: center; font: 700 13px/1.3 Inter; color: #fff; padding: 6px 10px; border-radius: 12px; background: rgba(255,255,255,.14); }
+.mscore .down small { display: block; opacity: .85; font-weight: 500; }
+.lado { display: grid; grid-template-columns: 1fr 1fr; background: #e3e8ef; border-radius: 12px; padding: 4px; margin: 14px 0 4px; }
+.lado button { height: 46px; border-radius: 9px; font: 700 15px/1 Inter; color: var(--mut); }
+.lado button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.pregunta { font: 800 22px/1.2 Inter; margin: 22px 2px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pregunta .vista { display: inline-flex; background: #e3e8ef; border-radius: 9px; padding: 3px; flex: none; }
+.pregunta .vista button { font: 700 11.5px/1 Inter; color: var(--mut); padding: 7px 9px; border-radius: 7px; }
+.pregunta .vista button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.res { background: #fff; border-radius: 16px; box-shadow: var(--sombra); min-height: 76px; padding: 12px; text-align: left; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; align-content: center; }
+.res .ic { grid-row: span 2; }
+.res b { font: 800 16px/1.15 Inter; }
+.res small { color: var(--mut); font-size: 12px; margin-top: 3px; }
+.res.td { grid-column: span 2; background: var(--boton); color: #fff; min-height: 76px; }
+.res.td small { color: rgba(255,255,255,.88); }
+.res.tdr { grid-column: span 2; background: linear-gradient(135deg, #374151, #6b7280 60%, #a3acb9); color: #fff; min-height: 76px; }
+.res.tdr small { color: rgba(255,255,255,.88); }
+.res.sec { grid-column: span 2; min-height: 54px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--linea); grid-template-columns: auto 1fr auto; }
+.res.sec .ic { grid-row: auto; }
+.res.sec small { margin-top: 0; }
+/* tiras: una opción por renglón, a todo el ancho */
+.grid.tiras { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.grid.tiras .res { min-height: 58px; padding: 10px 16px; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 14px; border-radius: 14px; }
+.grid.tiras .res .ic { grid-row: auto; }
+.grid.tiras .res b { font: 700 16px/1.2 Inter; }
+.grid.tiras .res small { margin-top: 0; text-align: right; font-size: 12.5px; }
+.grid.tiras .res.td, .grid.tiras .res.tdr { grid-column: auto; min-height: 62px; }
+.grid.tiras .res.sec { min-height: 58px; grid-column: auto; }
+/* la jugada en la lista: qué pasó y quién, y el marcador a la derecha */
+.jfila .mk { flex: none; font: italic 900 17px/1 var(--disp); color: var(--navy); min-width: 44px; text-align: right; }
+.ultima { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--mut); padding: 0 2px; }
+.ultima b { color: var(--ink); font-weight: 600; }
+.ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; padding: 8px 0 8px 8px; flex: none; }
+.ultima button + button { margin-left: 0; padding-left: 14px; border-left: 1px solid var(--linea); }
+
+/* hojas de abajo */
+.velo { position: absolute; inset: 0; background: rgba(11,27,51,.38); z-index: 10; animation: ap .15s ease-out; }
+.hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 10px 16px calc(22px + env(safe-area-inset-bottom)); z-index: 11; animation: sube .2s ease-out; max-height: 88%; overflow-y: auto; }
+.hoja::before { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d3d9e2; margin: 0 auto 12px; }
+/* «¿Cuánto avanzó?» baja desde arriba, sin velo: la lista sigue a la vista y tocar la siguiente jugada la cierra */
+.hoja.arriba { top: 0; bottom: auto; border-radius: 0 0 24px 24px; padding: calc(14px + env(safe-area-inset-top)) 16px 14px; box-shadow: 0 10px 30px rgba(11,27,51,.22); animation: baja .2s ease-out; }
+.hoja.arriba::before { display: none; }
+.hoja.arriba::after { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d3d9e2; margin: 12px auto 0; }
+.hoja.arriba h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.hoja.arriba h3 small { font: 600 12.5px/1.2 Inter; color: var(--mut); text-align: right; }
+.hoja .sinyd { width: 100%; margin-top: 12px; }
+@keyframes baja { from { transform: translateY(-100%); } }
+.pz { margin-top: 10px; height: 150px; border-radius: 16px; background: #0f2142; position: relative; overflow: hidden; cursor: crosshair; touch-action: manipulation; }
+.pz > * { pointer-events: none; }
+.pz-zona { position: absolute; top: 0; bottom: 0; background: rgba(90,174,255,.10); }
+.pz-l { position: absolute; top: 12px; bottom: 24px; width: 1px; background: rgba(150,200,255,.22); }
+.pz-l.d { background: rgba(150,200,255,.42); }
+.pz-h { position: absolute; width: 1px; height: 5px; background: rgba(150,200,255,.22); }
+.pz-n { position: absolute; bottom: 7px; transform: translateX(-50%); font: 700 10.5px/1 Inter; color: rgba(170,210,255,.6); }
+.pz-scrim { position: absolute; top: 8px; bottom: 20px; width: 2px; margin-left: -1px; background: #5aaeff; }
+.pz-scrim i { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 8px; height: 8px; border-radius: 50%; background: #5aaeff; }
+.pz-ruta { position: absolute; top: 74px; height: 2px; background: linear-gradient(90deg, rgba(90,174,255,.2), #5aaeff); }
+.pz-punto { position: absolute; top: 75px; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(90,174,255,.35); }
+.pz-eti { position: absolute; top: 30px; transform: translateX(-50%); font: italic 900 24px/1 var(--disp); color: #fff; white-space: nowrap; }
+.pz-eti small { font: 700 11px/1 Inter; font-style: normal; color: rgba(200,225,255,.8); margin-left: 3px; }
+.pz-ayuda { position: absolute; left: 0; right: 0; top: 64px; text-align: center; font: 600 12.5px/1 Inter; color: rgba(200,225,255,.75); }
+.hoja h3 { font: 800 21px/1.2 Inter; margin: 4px 2px 4px; }
+.hoja p { margin: 0 2px 14px; color: var(--mut); font-size: 14px; }
+.hoja ul { margin: 0 2px 14px; padding-left: 18px; color: var(--ink); font-size: 14px; }
+.hoja li { margin-bottom: 6px; }
+.pjs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pj { background: var(--bg); border-radius: 16px; min-height: 104px; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 8px 4px; font: 700 13px/1.1 Inter; min-width: 0; }
+.pj .foto { width: 50px; height: 50px; }
+.pj .corta { max-width: 100%; }
+.pj small { color: var(--mut); font: 600 11px/1 Inter; }
+.pj.cancha { background: #eaf2fd; }
+.ops { display: grid; gap: 10px; }
+.ops.dos { grid-template-columns: 1fr 1fr; }
+.op { height: 64px; border-radius: 16px; background: var(--bg); font: 800 17px/1 Inter; }
+.op.prim, .btn-gr { background: var(--boton); color: #fff; }
+.op.sec { background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); color: var(--mut); font-weight: 700; }
+.ops.fijo { position: sticky; bottom: 0; background: #fff; padding: 10px 0 calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 12px -8px rgba(11,27,51,.08); }
+.campo { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; background: var(--bg); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 15px; }
+.campo .izq { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.campo .izq .rlogo { width: 34px; height: 34px; }
+.campo span.l { color: var(--mut); font-size: 12.5px; display: block; margin-bottom: 4px; }
+.campo b { font-weight: 700; }
+.campo u { text-decoration: none; color: var(--acento); font: 700 13.5px/1 Inter; flex: none; }
+.lista-van { display: grid; gap: 6px; margin-bottom: 12px; }
+.van-f { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 10px; border-radius: 14px; background: var(--bg); }
+.van-f .foto { width: 40px; height: 40px; }
+.van-f > div { flex: 1; min-width: 0; }
+.van-f b { display: block; font: 700 14.5px/1.2 Inter; }
+.van-f small { color: var(--mut); font-size: 12px; }
+.van-f .ck { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--linea); display: grid; place-items: center; flex: none; color: #fff; font: 800 14px/1 Inter; }
+.van-f.si .ck { background: var(--boton); border-color: transparent; }
+.van-f.no { opacity: .55; }
+.toast { position: absolute; left: 14px; right: 14px; bottom: calc(96px + env(safe-area-inset-bottom)); background: var(--ink); color: #fff; border-radius: 14px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; font-size: 14.5px; z-index: 8; animation: sube .2s ease-out; }
+.toast .foto { width: 30px; height: 30px; }
+.toast button { margin-left: auto; color: #9fd0ff; font: 800 14.5px/1 Inter; padding: 6px 0 6px 10px; flex: none; }
+.lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.fila { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.fila .rlogo { width: 40px; height: 40px; }
+.fila > div { flex: 1; min-width: 0; }
+.fila b { font-weight: 700; display: block; }
+.fila small { color: var(--mut); font-size: 13px; }
+.fila .sc { margin-left: auto; text-align: right; font: italic 900 24px/1 var(--disp); color: var(--navy); flex: none; }
+.fila .sc small { display: block; font: 800 11px/1.2 Inter; font-style: normal; }
+.fila .sc small.g { color: var(--ok); } .fila .sc small.p { color: #d6453d; }
+.info a { display: block; padding: 11px 2px; border-bottom: 1px solid var(--linea); color: var(--azul); text-decoration: none; font-size: 14.5px; }
+.info a small { display: block; color: var(--mut); font-size: 12.5px; }
+@keyframes sube { from { transform: translateY(24px); opacity: 0; } }
+@keyframes ap { from { opacity: 0; } }
+.ej { text-align: center; font: 600 10px/1 Inter; letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); margin-top: 22px; }
+
+
+/* R6-INICIO: íconos simples, fichas, métricas, entrada */
+.ic.simple { width: 34px; height: 34px; border-radius: 0; background: transparent; }
+.ic.simple svg { width: 26px; height: 26px; stroke: var(--navy); stroke-width: 2; fill: none; }
+.ic.simple.chico { width: 24px; height: 24px; } .ic.simple.chico svg { width: 20px; height: 20px; }
+.res.td .ic.simple svg, .res.tdr .ic.simple svg, .convs .op .ic.simple svg { stroke: #fff; }
+.toast .ic.simple svg { stroke: #fff; }
+.volver { display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 8px; border-radius: 999px; background: rgba(11,27,51,.07); font: 700 13.5px/1 Inter; color: var(--ink); margin: 4px 0 8px; }
+.fj-cab { border-radius: 22px; background: var(--grad); color: #fff; padding: 18px; display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; box-shadow: 0 12px 26px rgba(13,35,71,.24); }
+.fj-cab .foto { width: 84px; height: 84px; box-shadow: 0 0 0 3px rgba(255,255,255,.85); }
+.fj-cab b { display: block; font: italic 900 30px/.95 var(--disp); text-transform: uppercase; }
+.fj-cab small { display: block; font: 600 13px/1.3 Inter; opacity: .9; margin-top: 6px; }
+.fj-cab .pts { margin-left: auto; text-align: right; flex: none; }
+.fj-cab .pts strong { display: block; font: italic 900 40px/1 var(--disp); }
+.fj-cab .pts span { font: 700 11px/1 Inter; opacity: .85; text-transform: uppercase; letter-spacing: .05em; }
+/* tarjeta del jugador: logo arriba, nombre grande, medio cuerpo a la derecha, su número principal y tres más abajo */
+.tj { position: relative; height: 468px; border-radius: 24px; overflow: hidden; background: linear-gradient(180deg, #101d38 0%, #0d1730 100%); color: #fff; box-shadow: 0 14px 30px rgba(13,35,71,.28); margin-top: 2px; }
+.tj-trazos { display: none; }
+.tj-logo { position: absolute; top: 16px; left: 16px; width: 62px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.25)); z-index: 2; }
+.tj-nom { position: absolute; left: 18px; top: 92px; z-index: 3; font-family: var(--disp); font-style: italic; font-weight: 900; line-height: .9; text-transform: uppercase; letter-spacing: .005em; text-shadow: 0 2px 10px rgba(5,14,30,.35); }
+.tj-nom span { display: block; }
+.tj-nom em { display: block; font-style: italic; color: rgba(214,228,247,.72); margin-top: .08em; }
+.tj-foto { position: absolute; right: 4px; bottom: 92px; width: 244px; z-index: 1; }
+.tj.real .tj-foto { right: 0; bottom: 92px; width: 240px; height: 300px; }
+.tj.real .tj-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; filter: none; -webkit-mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.35) 18%, #000 46%), linear-gradient(to bottom, transparent 0, rgba(0,0,0,.75) 4%, #000 9%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.35) 18%, #000 46%), linear-gradient(to bottom, transparent 0, rgba(0,0,0,.75) 4%, #000 9%); mask-composite: intersect; }
+.tj-foto svg, .tj-foto img { display: block; width: 100%; filter: drop-shadow(-6px 0 18px rgba(5,14,30,.35)); }
+.tj.sinfoto .tj-foto { right: 26px; bottom: 150px; width: 128px; height: 128px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center; }
+.tj .ini { font: italic 900 46px/1 var(--disp); color: #fff; }
+.tj-main { position: absolute; left: 18px; bottom: 104px; z-index: 3; text-shadow: 0 2px 10px rgba(5,14,30,.35); }
+.tj-main small { display: block; font: 700 12.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .95; }
+.tj-main strong { display: block; font: italic 900 74px/.9 var(--disp); margin-top: 4px; }
+.tj-tira { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; text-align: center; background: #0a1226; box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
+.tj-tira small { display: block; font: 700 11.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .85; }
+.tj-tira strong { display: block; font: italic 900 38px/1 var(--disp); margin-top: 5px; }
+.tj-info { display: flex; justify-content: space-between; gap: 8px; margin: 10px 2px 0; font: 600 13px/1.2 Inter; color: var(--mut); }
+.tj-info b { color: var(--ink); font-weight: 800; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+/* rival de la liga, con su logo */
+.rivales { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
+.rv { display: grid; justify-items: center; gap: 6px; padding: 10px 4px 9px; border-radius: 14px; background: #f3f5f8; font: 600 12px/1.15 Inter; color: var(--ink); text-align: center; min-height: 104px; }
+.rv .rlogo { width: 56px; height: 56px; }
+.rv.on { background: #e6efff; box-shadow: inset 0 0 0 2px var(--acento); }
+/* Métricas: el prototipo de métricas dentro del teléfono */
+.met { flex: 1; width: 100%; border: 0; margin-bottom: calc(78px + env(safe-area-inset-bottom)); background: #fff; }
+.met-bar { flex: none; display: flex; align-items: center; justify-content: space-between; padding: 6px 16px 8px; border-bottom: 1px solid var(--linea); }
+.met-bar b { font: 800 17px/1 Inter; }
+.met-bar a { font: 700 13px/1 Inter; color: var(--acento); text-decoration: none; padding: 8px 0 8px 12px; }
+.tile { background: #fff; border-radius: 14px; box-shadow: var(--sombra); padding: 11px 10px; min-width: 0; }
+.tile strong { display: block; font: italic 900 28px/1 var(--disp); color: var(--navy); }
+.tile span { display: block; font: 700 11px/1.25 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .03em; margin-top: 4px; }
+.tile em { display: block; font: 600 11.5px/1.2 Inter; font-style: normal; color: var(--mut); margin-top: 2px; }
+.tiles.dos { grid-template-columns: repeat(2, 1fr); }
+.pp { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-top: 1px solid var(--linea); width: 100%; text-align: left; }
+.pp:first-child { border-top: 0; }
+.pp .rlogo { width: 34px; height: 34px; }
+.pp .foto { width: 42px; height: 42px; }
+.res.cast { grid-column: auto; }
+.pp > div { flex: 1; min-width: 0; }
+.pp b { display: block; font: 700 14px/1.2 Inter; }
+.pp small { color: var(--mut); font-size: 12.5px; }
+.pp .der { flex: none; text-align: right; }
+.pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
+.pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: #d6453d; font-weight: 700; }
+.barra { height: 6px; border-radius: 3px; background: #e6ebf2; margin-top: 6px; overflow: hidden; }
+.barra i { display: block; height: 100%; background: var(--boton); border-radius: 3px; }
+.grafica { background: #fff; border-radius: 16px; box-shadow: var(--sombra); padding: 14px 12px 8px; }
+.grafica svg { display: block; width: 100%; height: auto; }
+.leyenda { display: flex; gap: 14px; font: 600 12px/1 Inter; color: var(--mut); margin: 0 2px 10px; }
+.leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.tm { width: 100%; border-collapse: collapse; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: var(--sombra); font-size: 13.5px; }
+.tm th { text-align: right; font: 700 11px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; padding: 10px 8px; border-bottom: 1px solid var(--linea); }
+.tm td { text-align: right; padding: 8px; border-bottom: 1px solid var(--linea); font-variant-numeric: tabular-nums; }
+.tm th:first-child, .tm td:first-child { text-align: left; }
+.tm td:first-child { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.tm td:first-child .foto { width: 28px; height: 28px; }
+.tm tr:last-child td { border-bottom: 0; }
+.tm td.f { font-weight: 800; color: var(--navy); }
+.lider1 { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-top: 1px solid var(--linea); width: 100%; text-align: left; }
+.lider1:first-child { border-top: 0; }
+.lider1 .foto { width: 34px; height: 34px; }
+.lider1 > div { flex: 1; min-width: 0; }
+.lider1 small { display: block; font: 700 10.5px/1.2 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
+.lider1 b { font: 700 14px/1.2 Inter; }
+.lider1 strong { font: italic 900 24px/1 var(--disp); color: var(--navy); }
+.ajustes h4 { margin: 14px 2px 6px; font: 700 12px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
+.ajustes .conm { margin: 0; }
+.ajustes .conm button { padding: 9px 12px; }
+/* entrada al abrir Inicio: el balón entra girando; el botón se puede tocar desde el primer momento */
+.tel.entrada .heroe .balon, .tel.entrada .gigante .balon { animation: balonEntra .75s cubic-bezier(.2,.85,.3,1.12) both; }
+.tel.entrada .heroe .mid strong, .tel.entrada .gigante .rival { animation: vsEntra .4s .2s cubic-bezier(.3,1.4,.5,1) both; }
+@keyframes balonEntra { 0% { transform: translate(210px, -30px) rotate(-620deg) scale(.5); opacity: 0; } 35% { opacity: 1; } }
+@keyframes vsEntra { from { transform: scale(.6); opacity: 0; } }
+/* R6-FIN */
+
+/* GLASS-INICIO: estilo «Liquid glass» (vidrio líquido de iOS 26). Solo aplica con .tel.glass.
+   --blur y la opacidad del vidrio cambian en el respaldo «ligero» (sin desenfoque). */
+.tel.glass {
+  --blur: blur(20px) saturate(185%);
+  --va: .40;            /* vidrio claro */
+  --ta: .88;            /* vidrio teñido (marcador, botón de TD) */
+  --borde-v: rgba(255,255,255,.75);
+  --sombra-v: inset 0 1px 0 rgba(255,255,255,.95), inset 0 -12px 22px -16px rgba(13,35,71,.12), 0 8px 24px rgba(13,35,71,.12);
+  --reflejo: linear-gradient(160deg, rgba(255,255,255,.55) 0%, rgba(255,255,255,.08) 38%, rgba(255,255,255,0) 60%, rgba(255,255,255,.22) 100%);
+  background: #eef3fb;
+}
+.tel.glass.ligero { --blur: none; --va: .86; --ta: .97; }
+@media (prefers-reduced-transparency: reduce) { .tel.glass { --blur: none; --va: .9; --ta: 1; } }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .tel.glass { --va: .88; --ta: .98; } }
+/* el fondo: manchas de color quietas para que el vidrio tenga qué refractar */
+.tel.glass::before { height: auto; inset: 0; background:
+  radial-gradient(48% 28% at 12% 14%, rgba(90,174,255,.30), transparent 72%),
+  radial-gradient(44% 26% at 88% 72%, rgba(29,79,143,.14), transparent 72%),
+  linear-gradient(180deg, #f6f8fb, #eef2f7); }
+/* vidrio claro */
+/* :where para que las excepciones de abajo (encabezado, TD, castigo) sí ganen */
+.tel.glass :where(.card, .lideres, .res:not(.td):not(.tdr), .cat:not(.on), .lado, .jlista, .campo, .van-f, .pj, .dev button:not(.on), .rey, .sub, .lid) {
+  background: var(--reflejo), rgba(255,255,255,var(--va));
+  -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border: 1px solid var(--borde-v); border-bottom-color: rgba(255,255,255,.35);
+  box-shadow: var(--sombra-v);
+}
+.tel.glass .res.sec { background: var(--reflejo), rgba(255,255,255,calc(var(--va) - .12)); }
+.tel.glass .lado button.on { background: rgba(255,255,255,.92); box-shadow: 0 2px 8px rgba(13,35,71,.12), inset 0 1px 0 #fff; }
+.tel.glass .mbar button { color: #fff; background: rgba(6,18,40,.34); border-color: rgba(255,255,255,.45); box-shadow: inset 0 1px 0 rgba(255,255,255,.5); }
+.tel.glass .podio, .tel.glass .trono, .tel.glass .medallas { background: transparent; }
+.tel.glass .tabla, .tel.glass .tfila, .tel.glass .vertodos, .tel.glass .jfila { border-color: rgba(255,255,255,.55); }
+.tel.glass :is(.tfila .rk, .tfila small, .pm small, h2 small, .cab small, .cat:not(.on), .res small, .lado button:not(.on), .hoja p, .pj small, .jfila small, .fila small, .fila-j small) { color: #434f61; }
+.tel.glass .pj.cancha { background: var(--reflejo), rgba(214,233,255,calc(var(--va) + .25)); }
+/* vidrio teñido: el degradado de la familia, translúcido, con desenfoque detrás */
+.tel.glass :is(.heroe, .gigante, .mcab, .res.td) { background: transparent; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.55); border-bottom-color: rgba(255,255,255,.2); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 14px 30px rgba(13,35,71,.22); isolation: isolate; }
+.tel.glass .mcab { border-top: 0; border-radius: 0 0 26px 26px; }
+.tel.glass :is(.heroe, .gigante, .mcab, .res.td)::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(rgba(6,18,40,.24), rgba(6,18,40,.24)), var(--grad); opacity: var(--ta); }
+.tel.glass .res.td { position: relative; }
+.tel.glass .res.td::before { background: linear-gradient(rgba(6,18,40,.18), rgba(6,18,40,.18)), var(--boton); }
+.tel.glass :is(.heroe, .gigante, .mcab)::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(165deg, rgba(255,255,255,.35) 0%, rgba(255,255,255,0) 30%); pointer-events: none; }
+.tel.glass .btn-blanco { background: rgba(255,255,255,.82); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); box-shadow: inset 0 1px 0 #fff, 0 6px 16px rgba(5,15,35,.22); }
+.tel.glass .gigante .tocar { background: rgba(6,18,40,.28); border: 1px solid rgba(255,255,255,.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.6); }
+/* podio de vidrio */
+.tel.glass .p1 .escalon { background: linear-gradient(180deg, rgba(29,79,143,.80), rgba(13,35,71,.90)); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.6); }
+.tel.glass .p2 .escalon { background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(190,201,215,.7)); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.75); color: #4b5563; }
+.tel.glass .p3 .escalon { background: linear-gradient(180deg, rgba(255,228,204,.8), rgba(217,146,87,.75)); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.7); color: #6b3a14; }
+/* barra de abajo flotante, como en iOS 26 */
+.tel.glass .nav { left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); height: 66px; padding: 8px 4px 0; border-radius: 33px;
+  background: var(--reflejo), rgba(255,255,255,calc(var(--va) + .32)); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border: 1px solid rgba(255,255,255,.8); box-shadow: inset 0 1px 0 #fff, 0 10px 30px rgba(13,35,71,.18); }
+.tel.glass .nav button { color: #4b5563; }
+.tel.glass .nav button.on { color: var(--navy); }
+.tel.glass .nav .centro { width: 66px; height: 66px; margin-top: -20px; background: rgba(255,255,255,.55); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.85); box-shadow: inset 0 1px 0 #fff, 0 8px 20px rgba(13,35,71,.18); }
+.tel.glass .cuerpo { padding-bottom: 120px; }
+/* hojas, aviso y barra de prueba */
+.tel.glass .velo { background: rgba(11,27,51,.22); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.tel.glass.ligero .velo { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(11,27,51,.38); }
+.tel.glass .hoja { background: var(--reflejo), rgba(255,255,255,calc(var(--va) + .38)); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.85); border-bottom: 0; box-shadow: inset 0 1px 0 #fff, 0 -10px 30px rgba(13,35,71,.14); }
+.tel.glass .hoja .op:not(.prim) { background: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.85); }
+.tel.glass .hoja .ops.fijo { background: transparent; box-shadow: none; }
+.tel.glass .toast { background: rgba(11,27,51,calc(var(--ta) + .02)); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.22); box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 10px 26px rgba(5,15,35,.3); }
+.tel.glass .dev button.on { background: rgba(11,27,51,.88); }
+.tel.glass .aviso-v { position: absolute; left: 14px; right: 14px; top: calc(56px + env(safe-area-inset-top)); z-index: 30; background: rgba(11,27,51,.9); color: #fff; border-radius: 14px; padding: 10px 14px; font: 600 13px/1.35 Inter; }
+/* GLASS-FIN */
+</style>
+</head>
+<body>
+<div class="mesa">
+  <div class="tel" id="tel" data-g="hielo"></div>
+  <aside class="notas">
+    <h1>Inicio en el teléfono</h1>
+    <p>Prototipo para tocar. Plantel, rivales y números de ejemplo; nada se guarda.</p>
+    <h4>Estilo</h4>
+    <div class="conm" id="conme"><button data-a="est" data-v="actual">Actual</button><button data-a="est" data-v="glass">Liquid glass</button><button data-a="est" data-v="ligero">Glass ligero (sin desenfoque)</button></div>
+    <h4>Variante</h4>
+    <div class="conm" id="conm"><button data-a="var" data-v="1">Inicio 1 · Partido primero</button><button data-a="var" data-v="2">Inicio 2 · Un botón</button></div>
+    <h4>Pestañas</h4>
+    <div class="conm" id="conmn"><button data-a="nav" data-v="a">Inicio · Partidos · Jugadores · Métricas</button><button data-a="nav" data-v="b">Partidos · Jugadores · Métricas</button><button data-a="nav" data-v="c">Inicio · Jugadores · Métricas</button></div>
+    <h4>Número y posición</h4>
+    <div class="conm" id="conmd"><button data-a="det" data-v="sin">Sin</button><button data-a="det" data-v="con">Con</button></div>
+    <h4>Entrada al abrir</h4>
+    <div class="conm" id="conment"><button data-a="ent" data-v="si">Sí</button><button data-a="ent" data-v="no">No</button></div>
+    <h4>Gradiente</h4>
+    <div class="conm" id="conmg"><button data-a="grad" data-v="hielo">Hielo</button><button data-a="grad" data-v="aurora">Aurora</button><button data-a="grad" data-v="cromo">Cromo</button></div>
+    <h4>Retratos</h4>
+    <div class="conm" id="conmr"><button data-a="ret" data-v="ilustrados">Ilustrados</button><button data-a="ret" data-v="iniciales">Solo iniciales</button></div>
+    <h4>Íconos de jugada</h4>
+    <div class="conm" id="conmi"><button data-a="ico" data-v="simple">Simple (una tinta)</button><button data-a="ico" data-v="hoy">Los de hoy (a color)</button></div>
+    <h4>Animaciones al marcar</h4>
+    <div class="conm" id="conma"><button data-a="anim" data-v="si">Sí</button><button data-a="anim" data-v="no">No</button></div>
+    <div class="toques" id="toques"></div>
+    <h4>Rivales</h4>
+    <ul id="necesito"></ul>
+    <h4>Basado en (Mobbin)</h4>
+    <div class="info" id="bases"></div>
+  </aside>
+</div>
+<script>
+'use strict';
+const LOGO = '../archivos/marca/logo.webp', BALON = '../archivos/inicio/balon-3d.png', CORONA = '../archivos/inicio/corona-3d.png';
+const BASES = [
+  ['NFL · Game Center', 'Hoja blanca, marcador en tarjeta y botón redondo al centro de la barra', 'https://mobbin.com/screens/fd55c78a-caab-49a1-a31a-2a2d9da2f881'],
+  ['X · Partido con marcador sobre gradiente', 'Marcador grande y estado del partido arriba', 'https://mobbin.com/screens/c72de95b-041d-4fe7-a562-ca4e2c6e1a2c'],
+  ['Duolingo · Ligas (flujo)', 'Copas arriba, medallas 1-2-3 y la tabla de la liga', 'https://mobbin.com/flows/65833d62-a2fd-40f7-a094-df3d006bce2c'],
+  ['Duolingo · Ligas (otro flujo)', 'Liga de plata y de diamante con su ranking', 'https://mobbin.com/flows/990acbb1-ab1e-4e4d-bd99-828224e7dd41'],
+  ['Duolingo · Copa de la liga', 'El trofeo grande sobre su base: idea del trono', 'https://mobbin.com/screens/e615e66f-1abe-4fcc-b279-ec97188f61cb'],
+  ['Duolingo · Logro', 'Medalla de primer lugar y tres datos en cajitas', 'https://mobbin.com/screens/fe966528-929c-475b-b917-9b342e3868a5'],
+  ['Phantom · Top Traders', 'Medallas 1, 2 y 3 pegadas al avatar', 'https://mobbin.com/screens/6c1b951b-2580-4c6c-af7b-dbc8deeb6e0f'],
+  ['X · NFL Top 100', 'Número del lugar sobre la foto del jugador', 'https://mobbin.com/screens/4962bf05-784d-4f98-91f1-6a676abd545e'],
+  ['NFL · Líderes del equipo', 'Líderes con número grande y foto', 'https://mobbin.com/screens/e79b6ee9-f49e-43b5-876a-c3ac4b9e17ec'],
+  ['BitePal · hoja de abajo', 'Hoja que sube con una sola acción', 'https://mobbin.com/screens/4082c6c2-5331-4d70-bd8f-0cb17b56eab7'],
+  ['Apple Sports · stats del partido (iOS 26)', 'Tarjetas de vidrio sobre el degradado de los dos equipos', 'https://mobbin.com/screens/f22c0688-fc14-4d38-af6c-3e7d52a17a8a'],
+  ['Apple Sports · jugada por jugada', 'Lista de jugadas en vidrio y pastillas translúcidas', 'https://mobbin.com/screens/f06290af-809e-48d6-a612-c197092f4edf'],
+  ['Apple Sports · hoja del partido', 'Marcador grande y botones flotantes de vidrio', 'https://mobbin.com/screens/e6815890-e221-47c0-9708-e00107140c5e'],
+  ['Reddit · barra flotante', 'Barra de abajo de vidrio que flota sobre el contenido', 'https://mobbin.com/screens/1be9aa41-f5bb-42ae-b26e-059b1530b800'],
+  ['Shopify · barra partida', 'Barra flotante en pastilla con botones redondos aparte', 'https://mobbin.com/screens/904d082d-43f9-44c5-b3ed-97d26af9bad2'],
+];
+const NECESITO = [
+  'Ya tengo los 12 logos y nombres de la liga, sacados de tus capturas.',
+  'Confirma el nombre corto de 3 letras de cada equipo (propuse ONF, TTT, BUC, DES, KCK, BUL, LOB, KAF, AZT, FAN, PAN).',
+  'Si algún color no es el del equipo, dime cuál es (lo saqué del logo; Lobos, Fantasmas y Kickass salen gris o negro porque así son sus logos).',
+  'Opcional: en qué cancha juega cada quien y el calendario del torneo.',
+];
+const TOQUES = {
+  1: '<b>Inicio 1 · Partido primero:</b> empezar a marcar un partido nuevo cuesta <b>2 toques</b> (Empezar a marcar y Empezar). Si el partido ya va, <b>1 toque</b>.',
+  2: '<b>Inicio 2 · Un botón:</b> empezar a marcar cuesta <b>1 toque</b> siempre; rival y quiénes van se corrigen con «vs BUC ✎» en el marcador.',
+};
+const GRADS = [['hielo', 'Hielo'], ['aurora', 'Aurora'], ['cromo', 'Cromo']];
+const PODS = [['escalones', 'Escalones'], ['trono', 'Trono'], ['medallas', 'Medallas']];
+const RETS = [['ilustrados', 'Ilustrados'], ['iniciales', 'Iniciales']];
+const ICOS = [['simple', 'Simple'], ['hoy', 'Los de hoy']];
+const DETS = [['sin', 'Sin número ni posición'], ['con', 'Con número y posición']];
+const NAVS = [['a', 'Inicio · Partidos · Jugadores · Métricas'], ['b', 'Partidos · Jugadores · Métricas'], ['c', 'Inicio · Jugadores · Métricas']];
+const ENTS = [['si', 'Sí'], ['no', 'No']];
+const OPS = [['tiras', 'Tiras'], ['botones', 'Botones']];
+const YDS = [['si', 'Pizarrón desde arriba'], ['no', 'Sin yardas']];
+const ANIMS = [['si', 'Sí'], ['no', 'No']];
+const ESTS = [['actual', 'Actual'], ['glass', 'Liquid glass'], ['ligero', 'Glass ligero']];
+
+// los 12 de la liga (archivos/equipos/equipos.json); los logos son los reales, mejorados con Higgsfield
+const EQUIPOS = [
+  ['only-fins', 'ONF', 'Only Fins', '#10a6b3'], ['triple-t', 'TTT', 'Triple T', '#c5353e'], ['bucaneros', 'BUC', 'Bucaneros', '#bd3e44'],
+  ['destroyers', 'DES', 'Destroyers', '#3c6f34'], ['kickass', 'KCK', 'Kickass', '#141723'], ['bulldogs', 'BUL', 'Bulldogs', '#714246'],
+  ['lobos-its', 'LOB', 'Lobos ITS', '#767577'], ['kaffies', 'KAF', 'Kaffies', '#d1a050'], ['ultimos-aztecas', 'AZT', 'Últimos Aztecas', '#d3a45a'],
+  ['los-fantasmas', 'FAN', 'Los Fantasmas', '#3a3a3b'], ['panini', 'PAN', 'Panini', '#dba466'],
+];
+// tamaño visible de cada logo en su caja (raíz del área pintada y ancho), medido en los PNG de 256:
+// en listas se igualan entre ellos; frente al logo de Belugas (marcador y partido) pesan como él
+const VISIBLE = {'only-fins': [.659, .910], 'triple-t': [.658, .914], bucaneros: [.698, .922], destroyers: [.743, .922], kickass: [.722, .906], bulldogs: [.613, .906], 'lobos-its': [.643, .910], kaffies: [.645, .910], 'ultimos-aztecas': [.705, .906], 'los-fantasmas': [.616, .934], panini: [.622, .906]};
+const escala = (id, meta, tope) => { const [a, w] = VISIBLE[id] || [.66, .91]; return Math.min(meta / a, tope / w).toFixed(3); };
+const RIVALES = EQUIPOS.map(([id, corto, largo, color]) => ({id, corto, largo, color, logo: `../archivos/equipos/${id}-256.png?v=9`, k: escala(id, .66, 1.0), kv: escala(id, .78, 1.1)}));
+const R = (id) => RIVALES.find((x) => x.id === id);
+// hoy y el próximo son de ejemplo; los 3 resultados son los reales que trae la app (index.html:487)
+let HOY = 'bucaneros'; // el rival del partido de hoy; se cambia al empezar
+const PROXIMO = {rival: 'triple-t', fecha: 'Sáb 16 nov', hora: '4:00 pm'};
+// los resultados salen de JUEGOS (abajo); se llenan después de declararlos
+let RESULTADOS = [];
+let RECORD = '2–1'; // 3 partidos reales: Kaffies 13–20, Only Fins 14–8, Últimos Aztecas 21–20
+function rlogo(r) {
+  if (!r.logo) return `<span class="rlogo sin">${r.corto}</span>`;
+  return `<span class="rlogo" style="--k:${r.k};--kv:${r.kv}"><img src="${r.logo}" alt="${r.largo}" loading="lazy"></span>`;
+}
+
+// ICONOS-INICIO: glifos de 24 × 24; la clase f es la parte que se rellena
+const ICONOS = {
+  pase: ['#16a05a', '<path d="M3 18c4-8 9-11 15-12" stroke-dasharray="2 2.8"/><circle class="f" cx="18" cy="6" r="2.4"/><path d="M11 16l3 3 6-7"/>'],
+  incompleto: ['#8a97a8', '<path d="M3 18c4-8 9-11 15-12" stroke-dasharray="2 2.8"/><path d="M13 12l7 7M20 12l-7 7"/>'],
+  corrida: ['#2f7fd1', '<ellipse class="f" cx="15.5" cy="12" rx="5.8" ry="3.8" transform="rotate(-30 15.5 12)"/><ellipse cx="15.5" cy="12" rx="5.8" ry="3.8" transform="rotate(-30 15.5 12)"/><path d="M2.5 8.5h5M2 12.5h4M2.5 16.5h5"/>'],
+  int: ['#e0483e', '<ellipse class="f" cx="14" cy="13" rx="6" ry="3.9" transform="rotate(-30 14 13)"/><ellipse cx="14" cy="13" rx="6" ry="3.9" transform="rotate(-30 14 13)"/><path d="M9 5H3M3 5l2.6-2.6M3 5l2.6 2.6"/>'],
+  parada: ['#f59e0b', '<path d="M8 11V5.5a1.5 1.5 0 0 1 3 0V11M11 10V4.5a1.5 1.5 0 0 1 3 0V10M14 10.5V6a1.5 1.5 0 0 1 3 0v7.5c0 4-2.6 6.5-6.3 6.5-3 0-4.7-1.6-5.8-4l-1.6-3.6a1.4 1.4 0 0 1 2.4-1.4L8 13"/>'],
+  td: ['#1d4f8f', '<path d="M12 21v-8M5.5 13h13M5.5 13V3.5M18.5 13V3.5"/><path class="f" d="M12 3.2l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2L8.8 5.5l2.2-.3z"/>'],
+  conv1: ['#5aaeff', '<circle cx="12" cy="12" r="9"/><path d="M7.5 12h4.5M9.75 9.75v4.5M15 9.5l1.5-1.3v7.6"/>'],
+  conv2: ['#1d4f8f', '<circle cx="12" cy="12" r="9"/><path d="M6.5 12h4.5M8.75 9.75v4.5M13.6 9.6c.4-.9 1.2-1.4 2.1-1.4 1.2 0 2.1.9 2.1 2 0 1.6-2.3 2.9-4.3 5.6h4.4"/>'],
+  buena: ['#8b5cf6', '<path class="f" d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>'],
+  castigo: ['#e5b100', '<path d="M6 21V3.5"/><path class="f" d="M6 4c3-1.6 5.2 1.6 8.2 0s4-.9 4-.9v8.4s-1-.7-4 .9-5.2-1.6-8.2 0z"/><path d="M6 4c3-1.6 5.2 1.6 8.2 0s4-.9 4-.9v8.4s-1-.7-4 .9-5.2-1.6-8.2 0"/>'],
+  bandera: ['#16a05a', '<path d="M4 8.5h16"/><path class="f" d="M9.5 8.5h5l-.8 11-1.7-2-1.7 2z"/><path d="M9.5 8.5h5l-.8 11-1.7-2-1.7 2z"/><path d="M17.5 4.5l2 2M19.5 4.5l-2 2"/>'],
+  tapado: ['#14b8a6', '<ellipse cx="13" cy="12" rx="6" ry="3.9" transform="rotate(-30 13 12)"/><path d="M4 20 20 4"/>'],
+  sack: ['#e0483e', '<path class="f" d="M12 2.5l1.8 5.2 5.3-1.6-3.3 4.4 4.6 3.1-5.5.4.6 5.5-3.5-4.2-3.5 4.2.6-5.5-5.5-.4 4.6-3.1-3.3-4.4 5.3 1.6z"/><path d="M12 2.5l1.8 5.2 5.3-1.6-3.3 4.4 4.6 3.1-5.5.4.6 5.5-3.5-4.2-3.5 4.2.6-5.5-5.5-.4 4.6-3.1-3.3-4.4 5.3 1.6z"/>'],
+  tdr: ['#6b7280', '<path d="M12 21v-8M5.5 13h13M5.5 13V3.5M18.5 13V3.5"/>'],
+};
+// el juego simple: una sola tinta, mismo tamaño, pocos trazos
+const ICONOS_S = {
+  pase: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  incompleto: '<path d="M7 7l10 10M17 7 7 17"/>',
+  corrida: '<path d="M4 12h14M13 6l6 6-6 6"/>',
+  parada: '<path d="M3.5 12H13M9.5 8.5 13 12l-3.5 3.5M18 5v14"/>',
+  int: '<path d="M18 5v6a5 5 0 0 1-5 5H6M10 12l-4 4 4 4"/>',
+  td: '<path d="M12 20v-7M6 13h12M6 13V4.5M18 13V4.5"/>',
+  tdr: '<path d="M12 20v-7M6 13h12M6 13V4.5M18 13V4.5"/>',
+  conv1: '<path d="M4.5 12h6M7.5 9v6M15 9.5 17 8v9"/>',
+  conv2: '<path d="M4.5 12h6M7.5 9v6M14 9.6c.4-.9 1.2-1.6 2.3-1.6 1.3 0 2.2.9 2.2 2.1 0 1.8-2.5 3.1-4.5 5.9h4.7"/>',
+  castigo: '<path d="M6 21V4h11l-2.5 4L17 12H6"/>',
+  bandera: '<path d="M9 4h6v14l-3-2.5L9 18z"/>',
+  tapado: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
+  sack: '<path d="M12 3v4.5M12 16.5V21M3 12h4.5M16.5 12H21M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M5.6 18.4l3.2-3.2M15.2 8.8l3.2-3.2"/>',
+};
+const ic = (k, chico = false) => {
+  if (st.ico === 'simple') { const g = ICONOS_S[k] || ICONOS_S.parada; return `<span class="ic simple${chico ? ' chico' : ''}"><svg viewBox="0 0 24 24" aria-hidden="true">${g}</svg></span>`; }
+  const [c, g] = ICONOS[k] || ICONOS.parada; return `<span class="ic relleno${chico ? ' chico' : ''}" style="--c:${c}"><svg viewBox="0 0 24 24" aria-hidden="true">${g}</svg></span>`; };
+// ICONOS-FIN
+
+// plantel inventado; retrato: [tono de piel, pelo, color de pelo, barba, extra, fondo]
+const PIEL = ['#f3cfb3', '#e5b18c', '#cf9268', '#ad7249', '#8b5636', '#f7d9c4'];
+const PELO = ['#1c1917', '#3b2a20', '#5a3b26', '#2b2b2b', '#8a5a2b'];
+const FONDO = ['#dbeafe', '#e0f2fe', '#ede9fe', '#dcfce7', '#fee2e2', '#fef3c7', '#e2e8f0', '#fae8ff', '#ccfbf1'];
+const PLANTEL = [
+  {id: 'sr', nombre: 'Santiago Ruiz', corto: 'Santiago', num: 7, pos: 'QB', r: [1, 'corto', 0, '', '', 0]},
+  {id: 'eo', nombre: 'Emiliano Ortega', corto: 'Emiliano', num: 11, pos: 'X', r: [2, 'chino', 1, '', '', 3]},
+  {id: 'mv', nombre: 'Mateo Villalobos', corto: 'Mateo', num: 23, pos: 'C', r: [3, 'rapado', 0, 'barba', '', 5]},
+  {id: 'rs', nombre: 'Rodrigo Salinas', corto: 'Rodrigo', num: 4, pos: 'Y', r: [0, 'raya', 2, '', 'lentes', 2]},
+  {id: 'me', nombre: 'Maximiliano Echeverría Santibáñez', corto: 'Maximiliano', num: 88, pos: 'Z', r: [2, 'largo', 0, '', '', 7]},
+  {id: 'ic', nombre: 'Iván Cárdenas', corto: 'Iván', num: 2, pos: 'R', r: [4, 'calvo', 0, 'barba', '', 4]},
+  {id: 'jm', nombre: 'Jesús Morales', corto: 'Jesús', num: 15, pos: 'S', r: [3, 'gorra', 3, 'bigote', '', 1]},
+  {id: 'bt', nombre: 'Bruno Tapia', corto: 'Bruno', num: 101, pos: 'CB', r: [5, 'corto', 4, '', '', 8]},
+  {id: 'lp', nombre: 'Leo Pineda', corto: 'Leo', num: 9, pos: 'LB', r: [1, 'chino', 0, 'candado', '', 6]},
+  {id: 'jg', nombre: 'Joaquín de la Garza', corto: 'Joaquín', num: 30, pos: 'CB', r: null},
+];
+// amigos con retrato generado (el que escogió Iker); solo nombre de pila; número y posición los pone Iker; sin partidos marcados todavía
+PLANTEL.push(...[['nico', 'Nico'], ['rodrigo', 'Rodrigo F.'], ['mau', 'Maú']].map(([id, corto]) => ({id, nombre: corto, corto, num: null, pos: '', r: null, img: `../archivos/jugadores/${id}.jpg`, cara: `../archivos/jugadores/${id}.jpg`})));
+const ATAQUE = ['sr', 'mv', 'eo', 'rs', 'me'], DEFENSA = ['ic', 'jm', 'bt', 'lp', 'jg'];
+const P = (id) => PLANTEL.find((x) => x.id === id);
+// estadísticas por partido: los 3 marcadores son los reales que trae la app (index.html:487);
+// quién hizo qué es de ejemplo. att/comp/tdp = pases del QB; rec, car = recepciones y corridas; td;
+// conv = puntos de conversión; band = banderas quitadas; intn = intercepciones; sack; tap = pases tapados
+const JUEGOS = [
+  {id: 'g1', rival: 'kaffies', fecha: '5 oct', nos: 13, ellos: 20, jugadas: 31, funcion: 15, perdidas: 2, convs: [1, 2],
+   tds: [['rs', 'pase', 'sr'], ['me', 'pase', 'sr']], conv: [['eo', 1]],
+   st: {sr: {att: 20, comp: 13, tdp: 2}, me: {rec: 5, td: 1}, rs: {rec: 4, td: 1}, eo: {rec: 3, conv: 1}, mv: {rec: 1, car: 3}, jg: {rec: 1, band: 2}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
+  {id: 'g2', rival: 'only-fins', fecha: '12 oct', nos: 14, ellos: 8, jugadas: 29, funcion: 17, perdidas: 1, convs: [2, 2],
+   tds: [['me', 'pase', 'sr'], ['eo', 'pase', 'sr']], conv: [['rs', 1], ['mv', 1]],
+   st: {sr: {att: 18, comp: 12, tdp: 2}, me: {rec: 4, td: 1}, eo: {rec: 3, td: 1}, rs: {rec: 3, conv: 1}, mv: {rec: 1, car: 2, conv: 1}, bt: {band: 7, intn: 1, tap: 2}, lp: {band: 4, sack: 1}, jm: {band: 3}, ic: {band: 3, sack: 2}, jg: {band: 3, intn: 1, tap: 1}}},
+  {id: 'g3', rival: 'ultimos-aztecas', fecha: '19 oct', nos: 21, ellos: 20, jugadas: 34, funcion: 21, perdidas: 0, convs: [3, 3],
+   tds: [['me', 'pase', 'sr'], ['rs', 'pase', 'sr'], ['mv', 'corrida', null]], conv: [['me', 1], ['rs', 1], ['eo', 1]],
+   st: {sr: {att: 20, comp: 15, tdp: 2, car: 3}, me: {rec: 5, td: 1, conv: 1}, rs: {rec: 4, td: 1, conv: 1}, eo: {rec: 3, conv: 1}, mv: {rec: 2, car: 3, td: 1}, jg: {rec: 1, band: 3, intn: 1, tap: 2}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
+];
+const CAMPOS = ['att', 'comp', 'tdp', 'rec', 'car', 'td', 'conv', 'band', 'intn', 'sack', 'tap'];
+// puntos de cada jugador: TD 6, TD de pase 4, intercepción 4, sack 2, recepción, bandera, tapado y punto de conversión 1, pase completo y corrida 0.5
+const PESOS = {td: 6, tdp: 4, intn: 4, sack: 2, rec: 1, band: 1, tap: 1, conv: 1, comp: .5, car: .5};
+const puntosDe = (x) => Math.round(Object.entries(PESOS).reduce((a, [k, w]) => a + ((x && x[k]) || 0) * w, 0) * 10) / 10;
+const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); return [p.id, t]; }));
+const TEMP = calcTemp();
+const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, k === 'pts' ? TEMP[p.id].pts : TEMP[p.id][k]]));
+RESULTADOS = JUEGOS.slice().reverse().map((g) => [g.rival, g.fecha, g.nos, g.ellos, g.id]);
+const CATS = [['puntos', 'Puntos', 'pts', porCampo('pts')], ['td', 'TD', 'TD', porCampo('td')], ['rec', 'Recepciones', 'rec', porCampo('rec')], ['band', 'Banderas', 'band.', porCampo('band')]];
+// cómo se resume a cada quien en una línea
+const lineaDe = (x) => { if (!x) return 'No jugó'; const o = [];
+  if (x.att) o.push(`${x.comp}/${x.att} pases`); if (x.tdp) o.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`);
+  if (x.band) o.push(`${x.band} bandera${x.band > 1 ? 's' : ''}`); if (x.intn) o.push(`${x.intn} INT`); if (x.sack) o.push(`${x.sack} sack${x.sack > 1 ? 's' : ''}`); if (x.tap) o.push(`${x.tap} tapado${x.tap > 1 ? 's' : ''}`); if (x.conv) o.push(`conv. +${x.conv}`);
+  return o.slice(0, 3).join(' · ') || 'Sin jugadas'; };
+
+function retrato(p) {
+  const [piel, pelo, cp, barba, extra, fondo] = p.r, sk = PIEL[piel], hc = PELO[cp], bg = FONDO[fondo];
+  let atras = '', arriba = '', cara = '';
+  if (pelo === 'largo') atras = `<path d="M27 44 C25 24 36 14 48 14 C61 14 71 24 69 44 L71 70 C64 74 32 74 25 70 Z" fill="${hc}"/>`;
+  if (pelo === 'corto') arriba = `<path d="M30.5 40 C29 23 38 15 48.5 15 C60 15 68 23 65.5 40 C63 31 57 26.5 48 26.5 C39.5 26.5 33 31 30.5 40 Z" fill="${hc}"/>`;
+  if (pelo === 'rapado') arriba = `<path d="M31.5 38 C31 24 39 18 48 18 C57 18 65 24 64.5 38 C62 31 56 28 48 28 C40 28 34 31 31.5 38 Z" fill="${hc}" opacity=".78"/>`;
+  if (pelo === 'raya') arriba = `<path d="M30.5 41 C28 22 40 14 50 15 C61 16 68 24 65.5 40 C64 32 60 28 54 27 C50 30 42 31 33 33 C31.5 35.5 31 38 30.5 41 Z" fill="${hc}"/>`;
+  if (pelo === 'chino') arriba = [[34, 30, 7], [41, 23, 7.5], [49, 20, 8], [57, 23, 7.5], [63, 30, 7], [31, 37, 5], [65, 37, 5], [45, 26, 6], [53, 26, 6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${hc}"/>`).join('');
+  if (pelo === 'largo') arriba = `<path d="M30.5 40 C29 22 38 15 48.5 15 C60 15 68 22 65.5 40 C62 30 56 25 48 25 C40 25 34 30 30.5 40 Z" fill="${hc}"/>`;
+  if (pelo === 'gorra') arriba = `<path d="M29.5 36 C29 22 38 16 48 16 C58 16 67 22 66.5 36 Z" fill="#0d2347"/><path d="M60 33 C66 32 72 34 76 37 C71 38 65 37.5 61 37 Z" fill="#0d2347"/><circle cx="48" cy="17.5" r="2" fill="#5aaeff"/>`;
+  if (barba === 'barba') cara += `<path d="M32 46 C33 60 40 64 48 64 C56 64 63 60 64 46 C61 54 57 56 48 56 C39 56 35 54 32 46 Z" fill="${hc}" opacity=".92"/>`;
+  if (barba === 'candado') cara += `<path d="M41 53.5 C43 52 53 52 55 53.5 C55 58.5 52 61 48 61 C44 61 41 58.5 41 53.5 Z M43.5 55.5 C45 57.5 51 57.5 52.5 55.5 C51 54.8 45 54.8 43.5 55.5 Z" fill="${hc}" fill-rule="evenodd" opacity=".95"/>`;
+  if (barba === 'bigote') cara += `<path d="M41.5 51.5 C44 49.5 52 49.5 54.5 51.5 C52 52.5 44 52.5 41.5 51.5 Z" fill="${hc}"/>`;
+  if (extra === 'lentes') cara += '<g fill="none" stroke="#1f2937" stroke-width="1.6"><rect x="36" y="38.5" width="10" height="7.5" rx="3"/><rect x="50" y="38.5" width="10" height="7.5" rx="3"/><path d="M46 41.5 h4"/></g>';
+  return `<svg viewBox="0 0 96 96" aria-hidden="true"><rect width="96" height="96" fill="${bg}"/>
+  ${atras}
+  <path d="M10 98 C13 78 29 69 48 69 C67 69 83 78 86 98 Z" fill="#0d2347"/><path d="M38 69 L48 79 L58 69" fill="none" stroke="#5aaeff" stroke-width="3"/>
+  <text x="48" y="92" text-anchor="middle" font-family="Inter, sans-serif" font-weight="800" font-size="11" fill="#fff">${st.det === 'con' ? p.num : ''}</text>
+  <rect x="41" y="56" width="14" height="15" rx="5" fill="${sk}"/><rect x="41" y="56" width="14" height="6" fill="rgba(0,0,0,.08)"/>
+  <ellipse cx="31.5" cy="43" rx="3.4" ry="4.6" fill="${sk}"/><ellipse cx="64.5" cy="43" rx="3.4" ry="4.6" fill="${sk}"/>
+  <ellipse cx="48" cy="41" rx="17" ry="20" fill="${sk}"/>
+  ${arriba}
+  <path d="M38.5 36.5 q3.5 -2 7 0 M50.5 36.5 q3.5 -2 7 0" fill="none" stroke="${hc}" stroke-width="1.9" stroke-linecap="round"/>
+  <circle cx="42" cy="42.2" r="1.9" fill="#1b1b1b"/><circle cx="54" cy="42.2" r="1.9" fill="#1b1b1b"/>
+  <path d="M48.5 43 q-2.2 4.8 .6 5.4" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M43 52.3 q5 3.6 10 0" fill="none" stroke="#7a3b2a" stroke-width="1.8" stroke-linecap="round"/>
+  ${cara}</svg>`;
+}
+// medio cuerpo para la tarjeta: la misma cara del retrato, con jersey y gorra de Belugas (logo y letras reales)
+function medioCuerpo(p) {
+  const [piel, pelo, cp, barba, extra] = p.r, sk = PIEL[piel], hc = PELO[cp];
+  let atras = '', lados = '', cara = '';
+  if (pelo === 'largo') atras = `<path d="M27 44 C25 26 36 20 48 20 C61 20 71 26 69 44 L72 76 C64 80 32 80 24 76 Z" fill="${hc}"/>`;
+  if (pelo === 'chino') lados = [[31.5, 40, 4.2], [32.5, 46, 3.6], [64.5, 40, 4.2], [63.5, 46, 3.6]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${hc}"/>`).join('');
+  else if (!['calvo', 'rapado', 'largo'].includes(pelo)) lados = `<path d="M31 35 C31 40 31.5 44 32.5 47 L35 46 C34.5 42 34.5 38 35 35 Z M65 35 C65 40 64.5 44 63.5 47 L61 46 C61.5 42 61.5 38 61 35 Z" fill="${hc}"/>`;
+  if (barba === 'barba') cara += `<path d="M32 46 C33 60 40 64 48 64 C56 64 63 60 64 46 C61 54 57 56 48 56 C39 56 35 54 32 46 Z" fill="${hc}" opacity=".92"/>`;
+  if (barba === 'candado') cara += `<path d="M41 53.5 C43 52 53 52 55 53.5 C55 58.5 52 61 48 61 C44 61 41 58.5 41 53.5 Z M43.5 55.5 C45 57.5 51 57.5 52.5 55.5 C51 54.8 45 54.8 43.5 55.5 Z" fill="${hc}" fill-rule="evenodd" opacity=".95"/>`;
+  if (barba === 'bigote') cara += `<path d="M41.5 51.5 C44 49.5 52 49.5 54.5 51.5 C52 52.5 44 52.5 41.5 51.5 Z" fill="${hc}"/>`;
+  if (extra === 'lentes') cara += '<g fill="none" stroke="#1f2937" stroke-width="1.6"><rect x="36" y="38.5" width="10" height="7.5" rx="3"/><rect x="50" y="38.5" width="10" height="7.5" rx="3"/><path d="M46 41.5 h4"/></g>';
+  return `<svg viewBox="0 0 120 150" aria-hidden="true"><g transform="translate(12 8)">${atras}</g>
+  <path d="M8 124 C8 110 12 100 22 95 L22 128 Z M112 124 C112 110 108 100 98 95 L98 128 Z" fill="#0d2347"/>
+  <path d="M8.5 121 L22 123.5 M111.5 121 L98 123.5" stroke="#5aaeff" stroke-width="2.4"/>
+  <path d="M9 123 C8 133 9 143 10 150 L21 150 L22 126 Z M111 123 C112 133 111 143 110 150 L99 150 L98 126 Z" fill="${sk}"/>
+  <path d="M20 150 L20 104 C20 93 30 87 44 83 L53 80.5 Q60 89 67 80.5 L76 83 C90 87 100 93 100 104 L100 150 Z" fill="#0d2347"/>
+  <path d="M20 104 C20 95 26 90 34 87 L36 92 C29 95 25 99 25 106 Z M100 104 C100 95 94 90 86 87 L84 92 C91 95 95 99 95 106 Z" fill="#1d4f8f"/>
+  <rect x="53" y="64" width="14" height="17" rx="5" fill="${sk}"/><rect x="53" y="64" width="14" height="6" fill="rgba(0,0,0,.08)"/>
+  <path d="M51 80.5 L60 91 L69 80.5" fill="none" stroke="#5aaeff" stroke-width="3.2" stroke-linejoin="round"/><path d="M53.5 81 L60 88.5 L66.5 81" fill="none" stroke="#fff" stroke-width="1.2"/>
+  <image href="../archivos/marca/letras.webp" x="34" y="95" width="52" height="18.3"/>
+  <g transform="translate(12 8)">
+    <ellipse cx="31.5" cy="43" rx="3.4" ry="4.6" fill="${sk}"/><ellipse cx="64.5" cy="43" rx="3.4" ry="4.6" fill="${sk}"/>
+    <ellipse cx="48" cy="41" rx="17" ry="20" fill="${sk}"/>${lados}
+    <path d="M38.5 37 q3.5 -2 7 0 M50.5 37 q3.5 -2 7 0" fill="none" stroke="${hc}" stroke-width="1.9" stroke-linecap="round"/>
+    <circle cx="42" cy="42.2" r="1.9" fill="#1b1b1b"/><circle cx="54" cy="42.2" r="1.9" fill="#1b1b1b"/>
+    <path d="M48.5 43 q-2.2 4.8 .6 5.4" fill="none" stroke="rgba(0,0,0,.18)" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M43 52.3 q5 3.6 10 0" fill="none" stroke="#7a3b2a" stroke-width="1.8" stroke-linecap="round"/>${cara}
+    <path d="M30 34.5 C29.5 19 38 12.5 48 12.5 C58 12.5 66.5 19 66 34.5 Z" fill="#0d2347"/>
+    <path d="M30 34.5 C29.8 29 30.5 24.5 32.5 21 C35 24 36 29 36 34.5 Z M66 34.5 C66.2 29 65.5 24.5 63.5 21 C61 24 60 29 60 34.5 Z" fill="#12305c"/>
+    <path d="M28 34 Q48 43.5 68 34 Q48 38.5 28 34 Z" fill="#0a1a36" stroke="#5aaeff" stroke-width="1"/>
+    <circle cx="48" cy="13.5" r="1.7" fill="#5aaeff"/>
+    <image href="../archivos/marca/logo.webp" x="40.5" y="18" width="15" height="13.6"/>
+  </g></svg>`;
+}
+// lo que más hace cada quien manda en la tarjeta: pases, recepciones o corridas, o defensa
+const INT_LANZADAS = JUEGOS.reduce((a, g) => a + g.perdidas, 0);
+function statsTarjeta(p) {
+  const t = TEMP[p.id];
+  if (t.att) return {k: 'Pases completos', v: t.comp, tira: [['% comp.', Math.round(t.comp / t.att * 100)], ['TD de pase', t.tdp], ['INT', INT_LANZADAS]]};
+  if (DEFENSA.includes(p.id)) return {k: 'Banderas', v: t.band, tira: [['INT', t.intn], ['Sacks', t.sack], ['Tapados', t.tap]]};
+  if (t.car > t.rec) return {k: 'Corridas', v: t.car, tira: [['TD', t.td], ['Recepciones', t.rec], ['Puntos', t.pts]]};
+  return {k: 'Recepciones', v: t.rec, tira: [['TD', t.td], ['Conversión', t.conv ? `+${t.conv}` : 0], ['Puntos', t.pts]]};
+}
+// nombre en renglones: el nombre arriba y los apellidos abajo; el tamaño baja si un renglón es largo
+function renglonesNombre(n) {
+  const w = n.split(/\s+/), r = [w[0]], resto = w.slice(1).join(' ');
+  if (resto.length <= 11) r.push(resto); else { const m = w.slice(1); let a = ''; m.forEach((x) => { if ((a + ' ' + x).trim().length > 11 && a) { r.push(a); a = x; } else a = (a + ' ' + x).trim(); }); r.push(a); }
+  return r;
+}
+const fotoTarjeta = (p) => p.img ? `<img src="${p.img}" alt="${p.nombre}">` : (p.r ? medioCuerpo(p) : '');
+function tarjetaJ(p) {
+  const s = statsTarjeta(p), r = renglonesNombre(p.nombre), largo = Math.max(...r.map((x) => x.length), 6);
+  // con foto real el nombre ocupa menos ancho, para no taparle la cara
+  const fs = Math.max(30, Math.min(p.img ? 46 : 54, Math.floor((p.img ? 150 : 196) / (0.47 * largo))));
+  return `<div class="tj${p.img ? ' real' : p.r ? '' : ' sinfoto'}">
+    <svg class="tj-trazos" viewBox="0 0 360 480" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 120 C80 60 200 40 380 10 M-20 200 C120 140 230 120 380 70 M-20 330 C90 280 200 260 380 230 M-20 420 C100 390 240 360 380 330"/></svg>
+    <img class="tj-logo" src="${LOGO}" alt="Belugas">
+    <div class="tj-nom" style="font-size:${fs}px">${r.map((x) => `<span>${x}</span>`).join('')}${p.num != null ? `<em>${p.pos} #${p.num}</em>` : ''}</div>
+    <div class="tj-foto">${p.r || p.img ? fotoTarjeta(p) : `<span class="ini">${iniciales(p.nombre)}</span>`}</div>
+    <div class="tj-main"><small>${s.k}</small><strong class="num">${s.v}</strong></div>
+    <div class="tj-tira">${s.tira.map(([k, v]) => `<div><small>${k}</small><strong class="num">${v}</strong></div>`).join('')}</div>
+  </div>`;
+}
+const iniciales = (n) => n.split(/\s+/).filter((w) => w.length > 2).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+const foto = (p) => `<span class="foto"><span>${p.cara ? `<img src="${p.cara}" alt="">` : p.r && st.ret === 'ilustrados' ? retrato(p) : `<span class="ini">${iniciales(p.nombre)}</span>`}</span></span>`;
+
+const guardadoDe = (k, d) => { try { return sessionStorage.getItem('inicio.' + k) || d; } catch { return d; } };
+try { if (!sessionStorage.getItem('inicio.sobrio')) { ['est', 'g'].forEach((k) => sessionStorage.removeItem('inicio.' + k)); sessionStorage.setItem('inicio.sobrio', '1'); } } catch { /* sin guardado */ }
+let st = {
+  v: +guardadoDe('v', 1), g: guardadoDe('g', 'hielo'), pod: 'escalones', ret: guardadoDe('ret', 'ilustrados'),
+  ico: ['simple', 'hoy'].includes(guardadoDe('ico', 'simple')) ? guardadoDe('ico', 'simple') : 'simple', anim: guardadoDe('anim', 'si'), est: guardadoDe('est', 'actual'), lento: false, flash: null,
+  det: guardadoDe('det', 'sin'), op: guardadoDe('op', 'tiras'), yds: guardadoDe('yds', 'si'), cuanto: null, foto: guardadoDe('foto', 'dibujo'), nav: guardadoDe('nav', 'a'), ent: guardadoDe('ent', 'si'), entrar: true, jug: null, juego: null, desde: 'inicio',
+  cat: 'puntos', animar: true, todos: false,
+  pant: 'inicio', hoja: null, sel: null, toast: null,
+  van: PLANTEL.map((p) => p.id).filter((id) => id !== 'jm'), // los que fueron la última vez: 9 de 10
+  partido: null, // {nos, ellos, down, lado, jugadas: []}
+};
+const guardar = (k, v) => { try { sessionStorage.setItem('inicio.' + k, v); } catch { /* sin guardado, no pasa nada */ } };
+HOY = guardadoDe('rival', HOY); if (!R(HOY)) HOY = 'bucaneros';
+const $ = (s) => document.querySelector(s);
+const pila = (ids, max = 5) => `<span class="pila">${ids.slice(0, max).map((id) => foto(P(id))).join('')}${ids.length > max ? `<span class="mas">+${ids.length - max}</span>` : ''}</span>`;
+const ICO = {
+  inicio: '<path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/>',
+  partidos: '<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>',
+  jug: '<circle cx="9" cy="8" r="3.2"/><path d="M3 19.5c.6-3.3 3-5 6-5s5.4 1.7 6 5"/><circle cx="17" cy="8.8" r="2.6"/><path d="M16.6 14.3c2.3.2 4 1.8 4.5 5"/>',
+  mas: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  met: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+};
+const est = () => '<div class="estado"><span>9:41</span><span>●●● ◔ ▭</span></div>';
+// las pestañas de cada estructura; el botón + de Marcar va siempre al centro
+const TABS = {a: ['inicio', 'partidos', '+', 'jugadores', 'metricas'], b: ['partidos', 'jugadores', '+', 'metricas'], c: ['inicio', 'jugadores', '+', 'metricas']};
+const TAB_NOM = {inicio: 'Inicio', partidos: 'Partidos', jugadores: 'Jugadores', metricas: 'Métricas'};
+const TAB_ICO = {inicio: 'inicio', partidos: 'partidos', jugadores: 'jug', metricas: 'met'};
+// la pestaña encendida: las fichas cuentan como su lista
+const tabDe = (pant) => ({jugador: 'jugadores', partido: st.nav === 'c' ? 'inicio' : 'partidos', resumen: 'partidos'}[pant] || pant);
+const nav = () => `<div class="nav">${TABS[st.nav].map((t) => t === '+' ? '<button class="centro" data-a="marcar" aria-label="Marcar"><b>+</b></button>'
+  : `<button data-a="ir" data-v="${t}" class="${tabDe(st.pant) === t ? 'on' : ''}"><svg viewBox="0 0 24 24">${ICO[TAB_ICO[t]]}</svg>${TAB_NOM[t]}</button>`).join('')}</div>`;
+const nombreDe = (lista, k) => lista.find(([x]) => x === k)[1];
+const dev = () => `<div class="dev"><button data-a="var" data-v="1" class="${st.v === 1 ? 'on' : ''}">Inicio 1</button><button data-a="var" data-v="2" class="${st.v === 2 ? 'on' : ''}">Inicio 2</button><span class="sep"></span><button data-a="ajustes">⚙︎ Prueba</button><button data-a="info">i</button></div>`;
+// sin número ni posición (la decisión que se está probando), o con ellos
+const chico = (p) => st.det === 'con' && p.num != null ? `<small>#${p.num} · ${p.pos}</small>` : '';
+const volver = () => `<button class="volver" data-a="volver">‹ ${TAB_NOM[tabDe(st.desde)] || 'Volver'}</button>`;
+const cab = (titulo, sub) => `<div class="cab"><img src="${LOGO}" alt=""><div><b>${titulo}</b><small>${sub}</small></div></div>`;
+const ultimo = () => RESULTADOS[0];
+
+// último y próximo, lado a lado
+function minis() {
+  const [rid, fecha, a, b, gid] = ultimo(), r = R(rid), pr = R(PROXIMO.rival);
+  return `<div class="pmini"><button class="card pm" data-a="juego" data-v="${gid}">${rlogo(r)}<div style="min-width:0"><small>Último · ${fecha}</small><b class="corta">vs ${r.corto}</b><span class="sc num ${a > b ? 'g' : ''}">${a}–${b}</span></div></button>
+  <button class="card pm" data-a="${st.nav === 'c' ? 'todosp' : 'ir'}" data-v="partidos">${rlogo(pr)}<div style="min-width:0"><small>Próximo</small><b class="corta">vs ${pr.corto}</b><span style="font:600 12.5px/1.3 Inter;color:var(--mut)">${PROXIMO.fecha}</span></div></button></div>`;
+}
+
+// ---------- líderes ----------
+function ranking() {
+  const [, , unidad, vals] = CATS.find(([k]) => k === st.cat);
+  return Object.entries(vals).sort((a, b) => b[1] - a[1]).map(([id, v]) => [P(id), v, unidad]);
+}
+const val = (v, u) => `<span class="valor num">${v}<small>${u}</small></span>`;
+function podio(top) {
+  const [a, b, c] = top;
+  if (st.pod === 'trono') return `<div class="trono">
+    <div class="rey"><div class="respaldo"><img class="corona" src="${CORONA}" alt="">${foto(a[0])}</div><div class="txt"><small>Número 1 · ${nombreDe(CATS, st.cat)}</small><b class="corta">${a[0].corto}</b>${val(a[1], a[2])}</div></div>
+    <div class="dos">${[[b, 2], [c, 3]].map(([x, n]) => `<div class="sub"><span style="position:relative">${foto(x[0])}<span class="medalla-n n${n}">${n}</span></span><div style="min-width:0"><b class="corta">${x[0].corto}</b>${val(x[1], x[2])}</div></div>`).join('')}</div></div>`;
+  if (st.pod === 'medallas') return `<div class="medallas">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="med m${n}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}<div class="aro">${foto(x[0])}<span class="lugar">${n}</span></div><span class="cinta"></span><b class="corta">${x[0].corto}</b>${val(x[1], x[2])}</div>`).join('')}</div>`;
+  return `<div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${foto(x[0])}<b class="corta">${x[0].corto}</b>${val(x[1], x[2])}<div class="escalon">${n}</div></div>`).join('')}</div>`;
+}
+function lideres() {
+  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 3);
+  return `<h2>Líderes <small>Temporada</small></h2>
+  <div class="cats">${CATS.map(([k, t]) => `<button class="cat ${st.cat === k ? 'on' : ''}" data-a="cat" data-v="${k}">${t}</button>`).join('')}</div>
+  <div class="lideres ${st.animar ? 'entra' : ''}">${podio(r)}
+    <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div>${val(v, u)}</div>`).join('')}</div>
+    ${resto.length > 3 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver los ${r.length}`}</button>` : ''}</div>`;
+}
+
+// ---------- pantallas ----------
+function heroeHoy() {
+  const p = st.partido, r = R(HOY);
+  return p ? `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti"><i></i>En vivo · vs ${r.largo}</div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong><small>${p.down}ª · ${p.lado === 'O' ? 'Atacamos' : 'Defendemos'}</small></div><div class="eq">${rlogo(r)}${r.corto}</div></div>
+      <button class="btn-blanco" data-a="marcar">Seguir marcando</button></div>`
+    : st.final ? `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">Final · hoy · ${st.final.nos > st.final.ellos ? 'Ganamos' : st.final.nos < st.final.ellos ? 'Perdimos' : 'Empatamos'}</div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).corto}</div></div>
+      <button class="btn-blanco" data-a="juego" data-v="${st.final.gid}">Ver el partido</button></div>`
+    : `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">Hoy · 4:00 pm · Cancha 3</div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div>
+      <div class="van">${pila(st.van)}<span>Van ${st.van.length} de ${PLANTEL.length}</span></div>
+      <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
+}
+function inicio1() {
+  return `<div class="pant">${est()}<div class="cuerpo">${dev()}
+    ${cab('Belugas', `Temporada 2026 · ${RECORD}`)}
+    ${heroeHoy()}
+    <h2>Partidos${st.nav === 'c' ? ' <small><button data-a="todosp" style="color:var(--acento);font:700 12.5px/1 Inter">Ver todos</button></small>' : ''}</h2>${minis()}
+    ${lideres()}
+    <div class="ej">Prototipo · datos de ejemplo</div>
+  </div>${nav()}</div>`;
+}
+function inicio2() {
+  const p = st.partido, r = R(HOY);
+  return `<div class="pant">${est()}<div class="cuerpo">${dev()}
+    ${cab('Belugas', `Temporada 2026 · ${RECORD}`)}
+    <button class="gigante" data-a="${!p && st.final ? 'juego' : 'marcar'}" data-v="${!p && st.final ? st.final.gid : ''}"><img class="balon" src="${BALON}" alt="">
+      ${p ? `<div class="eti"><i></i>En vivo · ${p.down}ª</div><div class="marc"><img src="${LOGO}" alt=""><span class="num">${p.nos}–${p.ellos}</span>${rlogo(r)}</div><div class="rival" style="font-size:24px">vs ${r.largo}<small>${p.lado === 'O' ? 'Atacamos' : 'Defendemos'}</small></div>`
+        : st.final ? `<div class="eti">Final · hoy</div><div class="marc"><img src="${LOGO}" alt=""><span class="num">${st.final.nos}–${st.final.ellos}</span>${rlogo(R(st.final.rival))}</div><div class="rival" style="font-size:24px">vs ${R(st.final.rival).largo}<small>Toca para ver el partido</small></div>`
+        : `<div class="eti">${rlogo(r)}Hoy · 4:00 pm</div><div class="rival">vs ${r.largo}<small>Cancha 3</small></div>`}
+      <div class="van">${pila(st.van)}<span>Van ${st.van.length}</span></div>
+      ${!p && st.final ? '' : `<div class="tocar">${p ? 'Seguir marcando' : 'Toca para marcar'}<span>+</span></div>`}
+    </button>
+    <h2>Partidos${st.nav === 'c' ? ' <small><button data-a="todosp" style="color:var(--acento);font:700 12.5px/1 Inter">Ver todos</button></small>' : ''}</h2>${minis()}
+    ${lideres()}
+    <div class="ej">Prototipo · datos de ejemplo</div>
+  </div>${nav()}</div>`;
+}
+const RES = {
+  O: [['pase', 'Pase completo', 'Luego quién la atrapó', '¿Quién la atrapó?'], ['corrida', 'Corrida', 'Luego quién corrió', '¿Quién corrió?'], ['incompleto', 'Incompleto', 'Luego a quién iba', '¿A quién iba?'], ['parada', 'Nos pararon', 'Sin avance o sack', '¿A quién pararon?'], ['int', 'Intercepción', 'Nos la quitaron', '¿Quién la lanzó?'], ['castigo', 'Castigo', 'A favor o en contra', null]],
+  D: [['bandera', 'Quitamos la bandera', 'Luego quién', '¿Quién quitó la bandera?'], ['tapado', 'Pase incompleto', 'Lo tapamos o falló', '¿Quién lo tapó?'], ['intn', 'Intercepción', 'La agarramos', '¿Quién la agarró?'], ['sack', 'Sack', 'Al QB detrás de la línea', '¿Quién hizo el sack?'], ['castigo', 'Castigo', 'A favor o en contra', null]],
+};
+// ícono de cada resultado (intercepción nuestra usa el mismo glifo que la de ellos)
+const ICO_DE = {intn: 'int'};
+const jlista = (j, max) => `<div class="jlista"><h4>Este partido <span>${j.length} jugada${j.length === 1 ? '' : 's'}</span></h4>${j.slice(-max).reverse().map((x) => `<div class="jfila">${ic(x.tipo, true)}<span class="corta">${x.txt}</span><small>${x.down}</small>${x.marc ? `<span class="mk num">${x.marc}</span>` : ''}</div>`).join('')}</div>`;
+function marcar() {
+  const p = st.partido, O = p.lado === 'O', u = p.jugadas[p.jugadas.length - 1], r = R(HOY);
+  return `<div class="pant"><div class="mcab">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
+    <div class="mbar"><button data-a="ir" data-v="inicio">‹ Inicio</button><button data-a="terminar">Terminar</button></div>
+    <div class="mscore"><div class="eq"><img src="${LOGO}" alt=""><strong class="num${st.flash && st.flash.nos ? ' sube' : ''}">${p.nos}</strong></div><button class="down" data-a="editar">${p.down}ª<small>${O && p.spot != null ? lugarDe(p.spot) + ' · ' : ''}vs ${r.corto} ✎</small></button><div class="eq r2"><strong class="num${st.flash && st.flash.ellos ? ' sube' : ''}">${p.ellos}</strong>${rlogo(r)}</div></div></div>
+    <div class="cuerpo" style="padding-top:2px">
+      <div class="lado"><button data-a="lado" data-v="O" class="${O ? 'on' : ''}">Atacamos</button><button data-a="lado" data-v="D" class="${O ? '' : 'on'}">Defendemos</button></div>
+      <div class="pregunta">¿Qué pasó?<span class="vista"><button data-a="op" data-v="tiras" class="${st.op === 'tiras' ? 'on' : ''}">Tiras</button><button data-a="op" data-v="botones" class="${st.op === 'botones' ? 'on' : ''}">Botones</button></span></div>
+      <div class="grid${st.op === 'tiras' ? ' tiras' : ''}">${RES[p.lado].filter(([k]) => O || k !== 'castigo').map(([k, t, s]) => `<button class="res" data-a="res" data-v="${k}">${ic(ICO_DE[k] || k)}<b>${t}</b><small>${s}</small></button>`).join('')}
+        ${O ? `<button class="res td" data-a="res" data-v="td">${ic('td')}<b>Touchdown</b><small>+6 y luego la conversión</small></button>` : `<button class="res tdr" data-a="tdr">${ic('tdr')}<b>TD de ${r.corto}</b><small>Suma 6 al tocarlo</small></button>`}
+        ${O ? '' : `<button class="res sec" data-a="res" data-v="castigo">${ic('castigo')}<b>Castigo</b><small>A favor o en contra</small></button>`}</div>
+      ${u ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="corregir">Corregir</button><button data-a="deshacer">Deshacer</button></div>` : ''}
+      ${p.jugadas.length ? jlista(p.jugadas, 4) : ''}
+    </div>${nav()}</div>`;
+}
+// el partido de hoy: en vivo, o por empezar
+function hoyTarjeta() {
+  const r = R(HOY), p = st.partido;
+  return p ? `<button class="card pp" data-a="marcar">${rlogo(r)}<div><b class="corta">${r.largo}</b><small>En vivo · ${p.down}ª · toca para seguir marcando</small></div><div class="der"><strong class="num">${p.nos}–${p.ellos}</strong></div></button>`
+    : st.final ? '' : `<button class="card pp" data-a="marcar">${rlogo(r)}<div><b class="corta">${r.largo}</b><small>Hoy · 4:00 pm · toca para empezar a marcar</small></div><div class="der" style="font:800 20px/1 Inter;color:var(--navy)">+</div></button>`;
+}
+function partidos() {
+  const pr = R(PROXIMO.rival), sinInicio = st.nav === 'b';
+  return `<div class="pant">${est()}<div class="cuerpo">${sinInicio ? dev() : ''}${st.nav === 'c' ? volver() : ''}${cab('Partidos', `Temporada 2026 · ${RECORD}`)}
+  <div class="lista">${sinInicio ? heroeHoy() : hoyTarjeta()}<div class="card pp">${rlogo(pr)}<div><b class="corta">${pr.largo}</b><small>Próximo · ${PROXIMO.fecha} · ${PROXIMO.hora}</small></div></div></div>
+  <h2>Jugados</h2>
+  <div class="card">${RESULTADOS.map(([rid, f, a, b, gid]) => { const x = R(rid); return `<button class="pp" data-a="juego" data-v="${gid}">${rlogo(x)}<div><b class="corta">${x.largo}</b><small>${f}</small></div><div class="der"><strong class="num">${a}–${b}</strong><small class="${a > b ? 'g' : 'p'}">${a > b ? 'Ganamos' : 'Perdimos'}</small></div></button>`; }).join('')}</div>
+  <div class="ej">Marcadores reales · quién hizo qué es de ejemplo</div></div>${nav()}</div>`;
+}
+const rankPts = () => PLANTEL.slice().sort((a, b) => TEMP[b.id].pts - TEMP[a.id].pts);
+function jugadores() {
+  return `<div class="pant">${est()}<div class="cuerpo">${cab('Jugadores', `${PLANTEL.length} en el plantel · temporada`)}
+  <div class="card">${rankPts().map((p, i) => { const t = TEMP[p.id]; return `<button class="pp" data-a="jug" data-v="${p.id}"><span class="rk" style="width:18px;font:800 13px/1 Inter;color:var(--mut);text-align:center">${i + 1}</span>${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(t)}</small></div><div class="der"><strong class="num">${t.pts}</strong><small>pts</small></div></button>`; }).join('')}</div>
+  <div class="ej">Prototipo · datos de ejemplo</div></div>${nav()}</div>`;
+}
+// ficha de un jugador: cómo va y qué ha hecho, partido por partido
+function jugador() {
+  const p = P(st.jug), t = TEMP[p.id], lugar = rankPts().findIndex((x) => x.id === p.id) + 1, max = Math.max(...JUEGOS.map((g) => puntosDe(g.st[p.id])), 1);
+  const tiles = [['TD', t.td], ['Recepciones', t.rec], ['Corridas', t.car], ['Pases', t.att ? `${t.comp}/${t.att}` : 0, t.att ? `${Math.round(t.comp / t.att * 100)}% completos` : ''], ['TD de pase', t.tdp], ['Conversión', t.conv ? `+${t.conv}` : 0, 'puntos'],
+    ['Banderas', t.band], ['Intercepciones', t.intn], ['Sacks', t.sack], ['Tapados', t.tap]].filter((x) => x[1]);
+  return `<div class="pant">${est()}<div class="cuerpo">${volver()}
+  ${tarjetaJ(p)}
+  <div class="tj-info"><span><b class="num">${t.pts}</b> puntos</span><span><b class="num">${lugar}º</b> del equipo</span><span><b class="num">${t.pj}</b> partidos</span></div>
+  <h2>Temporada</h2><div class="tiles">${tiles.map(([k, v, e]) => `<div class="tile"><strong class="num">${v}</strong><span>${k}</span>${e ? `<em>${e}</em>` : ''}</div>`).join('')}</div>
+  <h2>Partido por partido</h2><div class="card">${JUEGOS.slice().reverse().map((g) => { const x = g.st[p.id], r = R(g.rival), pt = puntosDe(x); return `<button class="pp" data-a="juego" data-v="${g.id}">${rlogo(r)}<div><b class="corta">vs ${r.corto} · ${g.fecha}</b><small class="corta" style="display:block">${lineaDe(x)}</small><div class="barra"><i style="width:${Math.round(pt / max * 100)}%"></i></div></div><div class="der"><strong class="num">${pt}</strong><small>pts</small></div></button>`; }).join('')}</div>
+  <div class="ej">Prototipo · datos de ejemplo</div></div>${nav()}</div>`;
+}
+// ficha de un partido jugado
+function partido() {
+  const g = JUEGOS.find((x) => x.id === st.juego), r = R(g.rival), gano = g.nos > g.ellos;
+  const anot = [...g.tds.map(([id, como, qb]) => `<button class="jfila" data-a="jug" data-v="${id}" style="width:100%;text-align:left">${ic('td', true)}<span class="corta">TD de ${P(id).corto}${como === 'pase' ? ` · pase de ${P(qb).corto}` : como === 'corrida' ? ' · corriendo' : ''}</span><small>+6</small></button>`),
+    ...g.conv.map(([id, n]) => `<button class="jfila" data-a="jug" data-v="${id}" style="width:100%;text-align:left">${ic(n === 2 ? 'conv2' : 'conv1', true)}<span class="corta">Conversión de ${n} · ${P(id).corto}</span><small>+${n}</small></button>`)];
+  const top = Object.keys(g.st).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a])).slice(0, 3);
+  const band = Object.values(g.st).reduce((a, x) => a + (x.band || 0), 0), intn = Object.values(g.st).reduce((a, x) => a + (x.intn || 0), 0);
+  return `<div class="pant">${est()}<div class="cuerpo">${volver()}
+  <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${gano ? 'Ganamos' : 'Perdimos'} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
+  <h2>Cómo anotamos</h2><div class="jlista" style="margin-top:0">${anot.join('')}</div>
+  <h2>Del partido</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(g.st[id])}</small></div><div class="der"><strong class="num">${puntosDe(g.st[id])}</strong><small>pts</small></div></button>`; }).join('')}</div>
+  <h2>Equipo</h2><div class="tiles">
+    <div class="tile"><strong class="num">${g.jugadas ? Math.round(g.funcion / g.jugadas * 100) + '%' : '—'}</strong><span>Funcionaron</span><em>${g.funcion} de ${g.jugadas} jugadas</em></div>
+    <div class="tile"><strong class="num">${g.convs[0]}/${g.convs[1]}</strong><span>Conversiones</span></div>
+    <div class="tile"><strong class="num">${g.perdidas}</strong><span>Pérdidas</span><em>INT lanzadas</em></div>
+    <div class="tile"><strong class="num">${band}</strong><span>Banderas</span></div>
+    <div class="tile"><strong class="num">${intn}</strong><span>Intercepciones</span></div>
+    <div class="tile"><strong class="num">${g.tds.length}</strong><span>TD</span></div></div>
+  <div class="ej">${g.nuevo ? 'Marcado en este teléfono' : 'Marcador real · quién hizo qué es de ejemplo'}</div></div>${nav()}</div>`;
+}
+// la pestaña Métricas abre el prototipo de métricas (app/metricas.html, del agente de métricas)
+function metricas() {
+  return `<div class="pant">${est()}<div class="met-bar"><b>Métricas</b><a href="metricas.html" target="_blank" rel="noopener">Pantalla completa ↗</a></div><iframe class="met" src="metricas.html" title="Métricas"></iframe>${nav()}</div>`;
+}
+// todas las métricas de todo (ronda 6; se queda guardada, ya no se muestra)
+function metricasRonda6() {
+  const suma = (k) => JUEGOS.reduce((a, g) => a + Object.values(g.st).reduce((b, x) => b + (x[k] || 0), 0), 0);
+  const pf = JUEGOS.reduce((a, g) => a + g.nos, 0), pc = JUEGOS.reduce((a, g) => a + g.ellos, 0), jug = JUEGOS.reduce((a, g) => a + g.jugadas, 0), fun = JUEGOS.reduce((a, g) => a + g.funcion, 0);
+  const cv = JUEGOS.reduce((a, g) => [a[0] + g.convs[0], a[1] + g.convs[1]], [0, 0]), per = JUEGOS.reduce((a, g) => a + g.perdidas, 0), comp = suma('comp'), att = suma('att');
+  const W = 340, H = 150, M = 24, bw = 26, max = 24;
+  const graf = `<svg viewBox="0 0 ${W} ${H + 40}">${[0, 8, 16, 24].map((v) => `<line x1="24" x2="${W}" y1="${H - v / max * H + 10}" y2="${H - v / max * H + 10}" stroke="#e6ebf2"/><text x="0" y="${H - v / max * H + 14}" font-size="10" fill="#56647a">${v}</text>`).join('')}
+    ${JUEGOS.map((g, i) => { const x = 50 + i * 100; return `<rect x="${x}" y="${H - g.nos / max * H + 10}" width="${bw}" height="${g.nos / max * H}" rx="5" fill="#1d4f8f"/><rect x="${x + bw + 6}" y="${H - g.ellos / max * H + 10}" width="${bw}" height="${g.ellos / max * H}" rx="5" fill="#a3acb9"/>
+      <text x="${x + bw / 2}" y="${H - g.nos / max * H + 4}" font-size="11" font-weight="800" text-anchor="middle" fill="#0d2347">${g.nos}</text><text x="${x + bw * 1.5 + 6}" y="${H - g.ellos / max * H + 4}" font-size="11" font-weight="800" text-anchor="middle" fill="#56647a">${g.ellos}</text>
+      <image href="${R(g.rival).logo}" x="${x + 9}" y="${H + 14}" width="40" height="24"/>`; }).join('')}</svg>`;
+  const L = [['Puntos', 'pts', 'pts'], ['TD', 'td', 'TD'], ['Recepciones', 'rec', 'rec'], ['Banderas', 'band', 'band.'], ['Intercepciones', 'intn', 'INT'], ['Sacks', 'sack', 'sacks']];
+  return `<div class="pant">${est()}<div class="cuerpo">${st.nav === 'b' ? dev() : ''}${cab('Métricas', 'Todo, de toda la temporada')}
+  <div class="tiles"><div class="tile"><strong class="num">${RECORD}</strong><span>Récord</span></div><div class="tile"><strong class="num">${pf}</strong><span>A favor</span><em>${(pf / JUEGOS.length).toFixed(1)} por partido</em></div><div class="tile"><strong class="num">${pc}</strong><span>En contra</span><em>${(pc / JUEGOS.length).toFixed(1)} por partido</em></div></div>
+  <h2>Por partido</h2><div class="grafica"><div class="leyenda"><span><i style="background:#1d4f8f"></i>Belugas</span><span><i style="background:#a3acb9"></i>Rival</span></div>${graf}</div>
+  <h2>Ataque</h2><div class="tiles"><div class="tile"><strong class="num">${suma('td')}</strong><span>TD</span></div><div class="tile"><strong class="num">${Math.round(fun / jug * 100)}%</strong><span>Funcionaron</span><em>${fun} de ${jug}</em></div><div class="tile"><strong class="num">${cv[0]}/${cv[1]}</strong><span>Conversiones</span></div>
+    <div class="tile"><strong class="num">${Math.round(comp / att * 100)}%</strong><span>Pases completos</span><em>${comp} de ${att}</em></div><div class="tile"><strong class="num">${suma('rec')}</strong><span>Recepciones</span></div><div class="tile"><strong class="num">${per}</strong><span>Pérdidas</span></div></div>
+  <h2>Defensa</h2><div class="tiles"><div class="tile"><strong class="num">${suma('band')}</strong><span>Banderas</span></div><div class="tile"><strong class="num">${suma('intn')}</strong><span>INT</span></div><div class="tile"><strong class="num">${suma('sack')}</strong><span>Sacks</span></div></div>
+  <h2>Líderes</h2><div class="card">${L.map(([t, k, u]) => { const id = PLANTEL.slice().sort((a, b) => (k === 'pts' ? TEMP[b.id].pts - TEMP[a.id].pts : TEMP[b.id][k] - TEMP[a.id][k]))[0].id, p = P(id); return `<button class="lider1" data-a="jug" data-v="${id}">${foto(p)}<div><small>${t}</small><b class="corta" style="display:block">${p.nombre}</b></div><strong class="num">${k === 'pts' ? TEMP[id].pts : TEMP[id][k]}</strong></button>`; }).join('')}</div>
+  <h2>Por jugador</h2><table class="tm"><tr><th>Jugador</th><th>Pts</th><th>TD</th><th>Rec</th><th>Band</th></tr>${rankPts().map((p) => { const t = TEMP[p.id]; return `<tr data-a="jug" data-v="${p.id}"><td>${foto(p)}<span class="corta">${p.corto}</span></td><td class="f">${t.pts}</td><td>${t.td}</td><td>${t.rec}</td><td>${t.band}</td></tr>`; }).join('')}</table>
+  <div class="ej">Marcadores reales · quién hizo qué es de ejemplo</div></div>${nav()}</div>`;
+}
+function resumen() {
+  const u = st.final, r = R(u.rival || HOY), g = u.nos > u.ellos, jg = JUEGOS.find((x) => x.id === u.gid);
+  const top = jg ? Object.keys(jg.st).sort((a, b) => puntosDe(jg.st[b]) - puntosDe(jg.st[a])).slice(0, 4) : [];
+  return `<div class="pant">${est()}<div class="cuerpo">${cab('Final', `vs ${r.largo} · hoy`)}
+  <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${g ? 'Ganamos' : u.nos < u.ellos ? 'Perdimos' : 'Empatamos'}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${u.nos} – ${u.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
+  <h2>Del partido</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(jg.st[id])}</small></div><div class="der"><strong class="num">${puntosDe(jg.st[id])}</strong><small>pts</small></div></button>`; }).join('') || '<div class="pp">Sin jugadas con nombre</div>'}</div>
+  ${(u.jugadas || []).length ? jlista(u.jugadas, 12) : ''}
+  <div class="ops dos" style="margin-top:18px"><button class="op" data-a="juego" data-v="${u.gid}">Ver el partido</button><button class="op prim" data-a="ir" data-v="inicio">Listo</button></div>
+  </div>${nav()}</div>`;
+}
+// quién: los que van hoy, primero los del lado que está en la cancha
+function quienes() {
+  const lado = st.partido && st.partido.lado === 'D' ? DEFENSA : ATAQUE;
+  return [...st.van].sort((a, b) => (lado.includes(b) ? 1 : 0) - (lado.includes(a) ? 1 : 0)).map((id) => [id, lado.includes(id)]);
+}
+function hoja() {
+  if (!st.hoja) return '';
+  let h = '';
+  const r = R(HOY);
+  const campos = (accion) => `<button class="campo" data-a="rivalver" data-v="${accion}"><div class="izq">${rlogo(r)}<div style="min-width:0"><span class="l">Rival</span><b class="corta" style="display:block">${r.largo}</b></div></div><u>Cambiar</u></button>
+    <button class="campo" data-a="vanver" data-v="${accion}"><div style="min-width:0"><span class="l">Van hoy · ${st.van.length} de ${PLANTEL.length}</span>${pila(st.van, 6)}</div><u>Cambiar</u></button>`;
+  if (st.hoja === 'empezar') h = `<h3>Empezar partido</h3><p>Revisa y listo.</p>${campos('empezar')}<div class="ops"><button class="op prim" data-a="empezarya">Empezar</button></div>`;
+  if (st.hoja === 'editar') h = `<h3>Partido</h3><p>Cambia el rival o quiénes van.</p>${campos('editar')}<div class="ops"><button class="op prim" data-a="cerrar">Listo</button></div>`;
+  if (st.hoja === 'van') h = `<h3>¿Quiénes van hoy?</h3><p>Toca para quitar o poner.</p><div class="lista-van">${PLANTEL.map((p) => { const si = st.van.includes(p.id); return `<button class="van-f ${si ? 'si' : 'no'}" data-a="vantoggle" data-v="${p.id}">${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div><span class="ck">${si ? '✓' : ''}</span></button>`; }).join('')}</div><div class="ops fijo"><button class="op prim" data-a="vanlisto">Listo · van ${st.van.length}</button></div>`;
+  if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><p>Los equipos de la liga.</p><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.largo}</span></button>`).join('')}</div>`;
+  if (st.hoja === 'quien') {
+    const x = [...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === st.sel);
+    h = `<h3>${x[3]}</h3><p>Un toque y se guarda. En azul, los que están en la cancha.</p><div class="pjs">${quienes().map(([id, cancha]) => { const p = P(id); return `<button class="pj${cancha ? ' cancha' : ''}" data-a="quien" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}<button class="pj" data-a="quien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>`;
+  }
+  if (st.hoja === 'cuanto') return `<div class="hoja arriba"><h3>¿Cuánto avanzó? <small>${st.cuanto.txt}</small></h3>${pizarron()}<button class="op sec sinyd" data-a="sinyd">Sin yardas</button></div>`;
+  if (st.hoja === 'castigo') h = '<h3>Castigo</h3><p>¿Para quién fue?</p><div class="ops dos"><button class="op prim" data-a="castigo" data-v="favor">A favor</button><button class="op" data-a="castigo" data-v="contra">En contra</button></div>';
+  if (st.hoja === 'conv') h = `<h3>Conversión</h3><p>${st.sel === 'tdr' ? `La de ${r.corto}.` : '¿Por cuánto van?'}</p><div class="ops dos convs"><button class="op prim" data-a="conv" data-v="1">${ic('conv1')}1 punto</button><button class="op prim" data-a="conv" data-v="2">${ic('conv2')}2 puntos</button></div><div class="ops" style="margin-top:10px"><button class="op sec" data-a="conv" data-v="0">No la intentaron</button></div>`;
+  if (st.hoja === 'entro') h = `<h3>¿Entró la de ${st.conv}?</h3><p>${st.sel === 'tdr' ? `Conversión de ${r.corto}.` : 'Nuestra conversión.'}</p><div class="ops dos"><button class="op prim" data-a="entro" data-v="1">Entró</button><button class="op" data-a="entro" data-v="0">No entró</button></div>`;
+  if (st.hoja === 'terminar') h = '<h3>¿Terminar el partido?</h3><p>Se guarda el marcador final.</p><div class="ops dos"><button class="op prim" data-a="terminarya">Terminar</button><button class="op" data-a="cerrar">Seguir</button></div>';
+  if (st.hoja === 'ajustes') { const grupo = (t, k, l) => `<h4>${t}</h4><div class="conm">${l.map(([v, n]) => `<button data-a="${k}" data-v="${v}" class="${String(st[k === 'grad' ? 'g' : k]) === v ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+    h = `<h3>Ajustes de la prueba</h3><p>Para comparar; la app de verdad no los tendría.</p><div class="ajustes">${grupo('¿Qué pasó? al marcar', 'op', OPS)}${grupo('Yardas al marcar', 'yds', YDS)}${grupo('Pestañas', 'nav', NAVS)}${grupo('Número y posición', 'det', DETS)}${grupo('Íconos', 'ico', ICOS)}${grupo('Entrada al abrir', 'ent', ENTS)}${grupo('Animación al marcar', 'anim', ANIMS)}${grupo('Estilo', 'est', ESTS)}${grupo('Gradiente', 'grad', GRADS)}${grupo('Retratos', 'ret', RETS)}</div><div class="ops" style="margin-top:16px"><button class="op prim" data-a="cerrar">Listo</button></div>`; }
+  if (st.hoja === 'info') h = `<h3>Sobre este prototipo</h3><p>${TOQUES[st.v].replace(/<[^>]+>/g, '')} Plantel inventado; logos reales de la liga; balón y corona hechos en Blender.</p>
+    <h3 style="font-size:16px;margin-top:6px">Rivales</h3><ul>${NECESITO.map((t) => `<li>${t}</li>`).join('')}</ul>
+    <div class="info">${BASES.map(([t, s, u]) => `<a href="${u}" target="_blank" rel="noopener">${t} ↗<small>${s}</small></a>`).join('')}</div><div class="ops" style="margin-top:14px"><button class="op" data-a="cerrar">Cerrar</button></div>`;
+  return `<div class="velo" data-a="cerrar"></div><div class="hoja">${h}</div>`;
+}
+function pintar() {
+  const t = $('#tel');
+  t.dataset.g = st.g;
+  if (!TABS[st.nav].includes(tabDe(st.pant)) && !['marcar', 'resumen', 'jugador', 'partido', 'partidos'].includes(st.pant)) st.pant = TABS[st.nav][0];
+  if (st.pant === 'inicio' && !TABS[st.nav].includes('inicio')) st.pant = 'partidos';
+  const p = { inicio: st.v === 1 ? inicio1 : inicio2, marcar, partidos, jugadores, resumen, jugador, partido, metricas }[st.pant];
+  const ta = st.toast;
+  const fl = st.anim === 'si' ? st.flash : null;
+  t.classList.toggle('anim', st.anim === 'si');
+  t.classList.toggle('glass', st.est !== 'actual');
+  t.classList.toggle('ligero', st.est === 'ligero' || st.lento);
+  t.classList.toggle('entrada', st.ent === 'si' && st.entrar && ['inicio', 'partidos'].includes(st.pant));
+  st.entrar = false;
+  const confeti = fl && fl.td ? `<div class="tdflash"></div><div class="confeti">${CONFETI}</div>` : '';
+  t.innerHTML = p() + hoja() + (ta ? `<div class="toast${fl ? ' nuevo' : ''}">${ta.tipo ? ic(ta.tipo) : ''}${ta.id ? foto(P(ta.id)) : ''}<span class="corta">${ta.txt}</span><button data-a="deshacer">Deshacer</button></div>` : '') + confeti;
+  st.flash = null;
+  if (st.lento && st.est === 'glass' && !st.avisoLento) { st.avisoLento = true; t.insertAdjacentHTML('beforeend', '<div class="aviso-v" data-a="cerraraviso">Tu teléfono iba lento con el desenfoque: cambié a vidrio ligero.</div>'); setTimeout(() => { const a = document.querySelector('.aviso-v'); if (a) a.remove(); }, 3500); }
+  // la entrada del podio corre una vez (al abrir, o al cambiar de categoría o de versión)
+  st.animar = false;
+  $('#toques').innerHTML = TOQUES[st.v];
+  for (const [sel, k] of [['#conm', 'v'], ['#conmg', 'g'], ['#conmr', 'ret'], ['#conmi', 'ico'], ['#conma', 'anim'], ['#conme', 'est'], ['#conmn', 'nav'], ['#conmd', 'det'], ['#conment', 'ent']]) document.querySelectorAll(sel + ' button').forEach((b) => b.classList.toggle('on', String(st[k]) === b.dataset.v));
+}
+const CAMPO = 50;
+function nuevoPartido() { st.partido = { nos: 0, ellos: 0, down: 1, lado: 'O', spot: 5, jugadas: [] }; }
+let tToast;
+function guarda(txt, extra = {}) {
+  const p = st.partido;
+  const tipo = extra.tipo || 'parada';
+  p.jugadas.push({ txt, id: extra.id || null, tipo, k: extra.k || st.sel, conv: extra.conv || null, lado: p.lado, down: `${p.down}ª`, antes: { nos: p.nos, ellos: p.ellos, down: p.down, lado: p.lado, spot: p.spot } });
+  if (extra.nos) p.nos += extra.nos;
+  if (extra.ellos) p.ellos += extra.ellos;
+  if (extra.cambia) { p.lado = p.lado === 'O' ? 'D' : 'O'; p.down = 1; if (p.lado === 'O') p.spot = 5; } else if (!extra.mismoDown) p.down = p.down % 4 + 1;
+  p.jugadas[p.jugadas.length - 1].marc = `${p.nos}–${p.ellos}`;
+  st.toast = { txt: 'Guardado: ' + txt, id: extra.id || null, tipo };
+  st.flash = { td: !!extra.td, nos: !!extra.nos, ellos: !!extra.ellos };
+  clearTimeout(tToast);
+  tToast = setTimeout(() => { st.toast = null; pintar(); }, 4000);
+}
+const nom = (id) => (id ? P(id).corto : 'sin nombre');
+const lugarDe = (y) => (y <= CAMPO / 2 ? `nuestra ${Math.round(y)}` : `su ${Math.round(CAMPO - y)}`);
+const fmtYd = (y) => (y > 0 ? '+' : '') + y;
+// el pizarrón táctico: 40 yardas alrededor de la línea; se pica dónde quedó el balón
+const ventanaPiz = (spot) => { const a = Math.max(-10, Math.min(CAMPO + 10 - 40, spot - 10)); return [a, a + 40]; };
+function pizarron() {
+  const p = st.partido, [a, b] = ventanaPiz(p.spot), x = (y) => ((y - a) / (b - a)) * 100, yd = st.cuanto.yd;
+  let h = '';
+  if (a < 0) h += `<div class="pz-zona" style="left:0;width:${x(0)}%"></div>`;
+  if (b > CAMPO) h += `<div class="pz-zona" style="left:${x(CAMPO)}%;right:0"></div>`;
+  for (let y = Math.ceil(a / 5) * 5; y <= b; y += 5) {
+    if (y < 0 || y > CAMPO) continue;
+    h += `<div class="pz-l${y % 10 === 0 ? ' d' : ''}" style="left:${x(y)}%"></div>`;
+    if (y % 10 === 0 && y > 0 && y < CAMPO) h += `<span class="pz-n" style="left:${x(y)}%">${y <= CAMPO / 2 ? y : CAMPO - y}</span>`;
+  }
+  for (let y = Math.ceil(a); y <= b; y++) if (y % 5 && y > 0 && y < CAMPO) h += `<i class="pz-h" style="left:${x(y)}%;top:40px"></i><i class="pz-h" style="left:${x(y)}%;top:96px"></i>`;
+  h += `<div class="pz-scrim" style="left:${x(p.spot)}%"><i></i></div>`;
+  if (yd == null) h += '<div class="pz-ayuda">Pica dónde quedó el balón</div>';
+  else { const f = p.spot + yd; h += `<div class="pz-ruta" style="left:${Math.min(x(p.spot), x(f))}%;width:${Math.abs(x(f) - x(p.spot))}%"></div><div class="pz-punto" style="left:${x(f)}%"></div><div class="pz-eti" style="left:${Math.max(12, Math.min(88, x(f)))}%">${fmtYd(yd)}<small>yd</small></div>`; }
+  return `<div class="pz" data-a="piz">${h}</div>`;
+}
+let tYd;
+// del partido marcado a las mismas cuentas que los partidos jugados (JUEGOS)
+// las yardas se le agregan a la jugada que se acaba de guardar
+function ponerYardas(yd) {
+  const p = st.partido; if (!p || !st.cuanto) return;
+  const j = p.jugadas[p.jugadas.length - 1];
+  if (j && yd != null) { j.yd = yd; j.txt += ` · ${fmtYd(yd)} yd`; p.spot = Math.max(1, Math.min(CAMPO - 1, p.spot + yd)); if (st.toast) st.toast.txt = 'Guardado: ' + j.txt; }
+  st.cuanto = null; st.hoja = null;
+}
+function juegoDe(p) {
+  const qb = (st.van.map(P).find((x) => x.pos === 'QB') || {}).id, est_ = {};
+  const s = (id, k, n = 1) => { if (!id) return; est_[id] = est_[id] || {}; est_[id][k] = (est_[id][k] || 0) + n; };
+  let jug = 0, fun = 0, per = 0; const tds = [], convs = [0, 0];
+  p.jugadas.forEach((j) => {
+    if (['pase', 'corrida', 'incompleto', 'parada', 'int', 'td'].includes(j.k)) jug++;
+    if (['pase', 'corrida', 'td'].includes(j.k)) fun++;
+    if (j.k === 'pase') { s(j.id, 'rec'); s(qb, 'comp'); s(qb, 'att'); }
+    if (j.k === 'incompleto') s(qb, 'att');
+    if (j.k === 'int') { per++; s(qb, 'att'); }
+    if (j.k === 'corrida') s(j.id, 'car');
+    if (j.yd != null && j.id) s(j.id, 'yds', j.yd);
+    if (j.k === 'td') { s(j.id, 'td'); tds.push([j.id, null, null]); if (j.conv) { convs[1]++; if (j.conv[1]) convs[0]++; } }
+    if (j.k === 'bandera') s(j.id, 'band');
+    if (j.k === 'tapado') s(j.id, 'tap');
+    if (j.k === 'intn') s(j.id, 'intn');
+    if (j.k === 'sack') s(j.id, 'sack');
+  });
+  return { id: 'g' + (JUEGOS.length + 1), rival: HOY, fecha: 'Hoy', nos: p.nos, ellos: p.ellos, jugadas: jug, funcion: fun, perdidas: per, convs, tds: tds.filter((t) => t[0]), conv: [], st: est_, nuevo: true };
+}
+function recalcular() {
+  Object.assign(TEMP, calcTemp());
+  const k = { puntos: 'pts', td: 'td', rec: 'rec', band: 'band' };
+  CATS.forEach((c) => { c[3] = porCampo(k[c[0]]); });
+  RESULTADOS = JUEGOS.slice().reverse().map((g) => [g.rival, g.fecha, g.nos, g.ellos, g.id]);
+  const gan = JUEGOS.filter((g) => g.nos > g.ellos).length, per = JUEGOS.filter((g) => g.nos < g.ellos).length;
+  RECORD = `${gan}–${per}`;
+}
+// confeti del touchdown: 18 papelitos con dirección y color fijos (se arma una vez)
+const CONFETI = Array.from({length: 18}, (_, i) => { const a = (i / 18) * Math.PI * 2, d = 90 + (i % 3) * 38; return `<i style="--x:${Math.round(Math.cos(a) * d)}px;--y:${Math.round(Math.sin(a) * d * .8 + 40)}px;--r:${(i % 2 ? 1 : -1) * (160 + i * 23)}deg;--d:${(i % 4) * 18}ms;--k:${['#5aaeff', '#1d4f8f', '#ffffff', '#0d2347'][i % 4]}"></i>`; }).join('');
+const LISTAS = { pod: PODS, g: GRADS, ret: RETS, ico: ICOS, anim: ANIMS, est: ESTS, det: DETS, nav: NAVS, ent: ENTS };
+// respaldo para teléfonos lentos: al primer desplazamiento con vidrio se miden los cuadros;
+// si el 75 % de ellos tarda más de 28 ms (menos de ~36 fps), se apaga el desenfoque solo
+let midiendo = false;
+document.addEventListener('scroll', () => {
+  if (midiendo || st.est !== 'glass' || st.lento || st.medido) return;
+  midiendo = true; st.medido = true;
+  const tiempos = []; let antes = performance.now(); const fin = antes + 1200;
+  const paso = (ahora) => { tiempos.push(ahora - antes); antes = ahora; if (ahora < fin) requestAnimationFrame(paso); else {
+    midiendo = false; tiempos.sort((a, b) => a - b); const p75 = tiempos[Math.floor(tiempos.length * .75)] || 0;
+    if (tiempos.length > 10 && p75 > 28) { st.lento = true; pintar(); } } };
+  requestAnimationFrame(paso);
+}, true);
+const A = {
+  cerraraviso: () => {},
+  var: (v) => { st.v = +v; guardar('v', v); st.animar = true; st.entrar = true; },
+  grad: (v) => { st.g = v; guardar('g', v); },
+  pod: (v) => { st.pod = v; guardar('pod', v); st.animar = true; },
+  ret: (v) => { st.ret = v; guardar('ret', v); },
+  ico: (v) => { st.ico = v; guardar('ico', v); },
+  det: (v) => { st.det = v; guardar('det', v); },
+  op: (v) => { st.op = v; guardar('op', v); },
+  yds: (v) => { st.yds = v; guardar('yds', v); },
+  piz: (v, e, el) => {
+    const p = st.partido; if (!p || !st.cuanto || !e) return;
+    const [a, b] = ventanaPiz(p.spot), r = el.getBoundingClientRect();
+    const y = Math.round(a + ((e.clientX - r.left) / r.width) * (b - a));
+    st.cuanto.yd = Math.max(-10, Math.min(CAMPO - 1 - p.spot, y - p.spot));
+    clearTimeout(tYd);
+    tYd = setTimeout(() => { ponerYardas(st.cuanto.yd); pintar(); }, 450); // se ve dónde quedó y se guarda solo
+  },
+  sinyd: () => { clearTimeout(tYd); st.cuanto = null; st.hoja = null; },
+  ent: (v) => { st.ent = v; guardar('ent', v); if (v === 'si') { st.entrar = true; if (!['inicio', 'partidos'].includes(st.pant)) st.pant = TABS[st.nav][0]; st.hoja = null; } },
+  nav: (v) => { st.nav = v; guardar('nav', v); st.pant = TABS[v][0]; st.entrar = true; st.animar = true; },
+  ajustes: () => { st.hoja = 'ajustes'; },
+  jug: (v) => { if (!['jugador', 'partido'].includes(st.pant)) st.desde = st.pant; st.jug = v; st.pant = 'jugador'; st.hoja = null; },
+  juego: (v) => { if (!['jugador', 'partido'].includes(st.pant)) st.desde = st.pant; st.juego = v; st.pant = 'partido'; st.hoja = null; },
+  todosp: () => { st.desde = st.pant; st.pant = 'partidos'; },
+  volver: () => { st.pant = st.desde || TABS[st.nav][0]; if (st.pant === 'inicio') st.animar = true; },
+  anim: (v) => { st.anim = v; guardar('anim', v); },
+  est: (v) => { st.est = v; st.lento = false; guardar('est', v); st.animar = true; },
+  sig: (k) => { const l = LISTAS[k], i = l.findIndex(([x]) => x === st[k]); A[{g: 'grad', ret: 'ret', ico: 'ico', anim: 'anim', est: 'est', det: 'det', nav: 'nav', ent: 'ent'}[k]](l[(i + 1) % l.length][0]); },
+  cat: (v) => { st.cat = v; st.animar = true; },
+  todos: () => { st.todos = !st.todos; },
+  ir: (v) => { if (st.pant !== v && v === TABS[st.nav][0]) st.entrar = true; st.pant = v; st.hoja = null; if (v === 'inicio') st.animar = true; },
+  info: () => { st.hoja = 'info'; },
+  cerrar: () => { if ((st.hoja === 'conv' || st.hoja === 'entro') && st.sel === 'tdr') { st.partido.ellos -= 6; guarda(`TD de ${R(HOY).corto}`, { tipo: 'tdr', ellos: 6, cambia: true }); } st.hoja = null; },
+  empezar: () => { st.hoja = 'empezar'; },
+  rivalver: (v) => { st.vanDe = v; st.hoja = 'rival'; },
+  rival: (v) => { HOY = v; guardar('rival', v); st.hoja = st.vanDe || 'empezar'; },
+  // corregir la última: se quita y se vuelve a preguntar lo mismo
+  corregir: () => {
+    const p = st.partido; if (!p || !p.jugadas.length) return;
+    const u = p.jugadas[p.jugadas.length - 1]; A.deshacer();
+    st.sel = u.k;
+    if (u.k === 'castigo') st.hoja = 'castigo';
+    else if (u.k === 'tdr') { p.ellos += 6; st.hoja = 'conv'; }
+    else st.hoja = 'quien';
+  },
+  editar: () => { st.hoja = 'editar'; },
+  vanver: (v) => { st.vanDe = v; st.hoja = 'van'; },
+  vantoggle: (id) => { st.van = st.van.includes(id) ? st.van.filter((x) => x !== id) : [...st.van, id].sort((a, b) => PLANTEL.findIndex((p) => p.id === a) - PLANTEL.findIndex((p) => p.id === b)); },
+  vanlisto: () => { st.hoja = st.vanDe || 'empezar'; },
+  empezarya: () => { nuevoPartido(); st.final = null; st.hoja = null; st.pant = 'marcar'; },
+  // el botón + y los botones de Inicio: si hay partido se sigue; si no, la variante decide
+  marcar: () => { if (st.partido) { st.pant = 'marcar'; st.hoja = null; } else if (st.v === 2) { nuevoPartido(); st.pant = 'marcar'; } else { st.pant = 'inicio'; st.hoja = 'empezar'; } },
+  lado: (v) => { st.partido.lado = v; st.partido.down = 1; if (v === 'O') st.partido.spot = 5; st.cuanto = null; if (st.hoja === 'cuanto') st.hoja = null; },
+  res: (v) => { st.sel = v; st.hoja = v === 'castigo' ? 'castigo' : 'quien'; },
+  quien: (id) => {
+    const s = st.sel, n = nom(id);
+    st.hoja = null;
+    if (s === 'td') { st.anota = id; st.hoja = 'conv'; return; }
+    const txt = { pase: `pase a ${n}`, corrida: `corrida de ${n}`, incompleto: `incompleto, iba a ${n}`, parada: `pararon a ${n}`, int: `intercepción, lanzó ${n}`, buena: `buena jugada de ${n}`, bandera: `bandera de ${n}`, tapado: `pase tapado por ${n}`, intn: `intercepción de ${n}`, sack: `sack de ${n}` }[s];
+    guarda(txt, { id, tipo: ICO_DE[s] || s, cambia: s === 'int' || s === 'intn', mismoDown: s === 'buena' });
+    if (st.yds === 'si' && ['pase', 'corrida', 'parada'].includes(s)) { st.cuanto = { yd: null, txt }; st.hoja = 'cuanto'; }
+  },
+  castigo: (v) => { st.hoja = null; guarda(`castigo ${v === 'favor' ? 'a favor' : 'en contra'}`, { tipo: 'castigo', mismoDown: true }); },
+  tdr: () => { st.sel = 'tdr'; st.partido.ellos += 6; st.hoja = 'conv'; },
+  conv: (v) => {
+    const rc = R(HOY).corto;
+    if (+v === 0) { st.hoja = null; if (st.sel === 'tdr') { st.partido.ellos -= 6; guarda(`TD de ${rc}`, { tipo: 'tdr', ellos: 6, cambia: true }); } else guarda(`TD de ${nom(st.anota)}`, { tipo: 'td', td: true, id: st.anota, nos: 6, cambia: true }); return; }
+    st.conv = +v; st.hoja = 'entro';
+  },
+  entro: (v) => {
+    st.hoja = null;
+    const pts = +v ? st.conv : 0, rc = R(HOY).corto;
+    if (st.sel === 'tdr') { st.partido.ellos -= 6; guarda(`TD de ${rc}${pts ? ' + ' + pts : ''}`, { tipo: 'tdr', ellos: 6 + pts, cambia: true }); }
+    else guarda(`TD de ${nom(st.anota)}${pts ? ` + ${pts} (conv. de ${pts})` : ` · no entró la de ${st.conv}`}`, { tipo: 'td', td: true, id: st.anota, nos: 6 + pts, cambia: true, conv: [st.conv, +v] });
+  },
+  deshacer: () => {
+    const p = st.partido; if (!p || !p.jugadas.length) return;
+    const u = p.jugadas.pop(); Object.assign(p, u.antes);
+    st.toast = null;
+  },
+  terminar: () => { st.hoja = 'terminar'; },
+  terminarya: () => {
+    const p = st.partido, cuenta = {};
+    p.jugadas.forEach((j) => { if (j.id) cuenta[j.id] = (cuenta[j.id] || 0) + 1; });
+    const top = Object.entries(cuenta).sort((a, b) => b[1] - a[1]);
+    const g = juegoDe(p);
+    JUEGOS.push(g); recalcular();
+    st.final = { nos: p.nos, ellos: p.ellos, jugadas: p.jugadas, gid: g.id, rival: HOY };
+    st.partido = null; st.hoja = null; st.pant = 'resumen'; st.toast = null; clearTimeout(tToast);
+  },
+};
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-a]');
+  if (!b || !A[b.dataset.a]) return;
+  e.preventDefault();
+  if (st.hoja === 'cuanto' && !['piz', 'sinyd'].includes(b.dataset.a)) { clearTimeout(tYd); if (st.cuanto && st.cuanto.yd != null) ponerYardas(st.cuanto.yd); else { st.cuanto = null; st.hoja = null; } }
+  A[b.dataset.a](b.dataset.v, e, b);
+  pintar();
+});
+document.querySelector('#bases').innerHTML = BASES.map(([t, s, u]) => `<a href="${u}" target="_blank" rel="noopener">${t} ↗<small>${s}</small></a>`).join('');
+document.querySelector('#necesito').innerHTML = NECESITO.map((t) => `<li>${t}</li>`).join('');
+pintar();
+</script>
+</body>
+</html>

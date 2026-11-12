@@ -1,0 +1,17 @@
+{
+  "nota": "Logos sacados de las capturas de la tabla de la liga (IMG_1372 e IMG_1373 de Descargas), mejorados con Higgsfield (upscale) y con el fondo quitado. Los nombres se leen completos en cada logo. El nombre corto de 3 letras es una propuesta: cámbienlo si la liga usa otro. El color sale del propio logo (el tono que más pesa); los que salen gris o negro es porque el logo es así.",
+  "equipos": [
+    {"id": "only-fins", "largo": "Only Fins", "corto": "ONF", "color": "#10a6b3", "logo_1024": "only-fins-1024.png", "logo_256": "only-fins-256.png"},
+    {"id": "triple-t", "largo": "Triple T", "corto": "TTT", "color": "#c5353e", "logo_1024": "triple-t-1024.png", "logo_256": "triple-t-256.png"},
+    {"id": "bucaneros", "largo": "Bucaneros", "corto": "BUC", "color": "#bd3e44", "logo_1024": "bucaneros-1024.png", "logo_256": "bucaneros-256.png"},
+    {"id": "destroyers", "largo": "Destroyers", "corto": "DES", "color": "#3c6f34", "logo_1024": "destroyers-1024.png", "logo_256": "destroyers-256.png"},
+    {"id": "kickass", "largo": "Kickass", "corto": "KCK", "color": "#141723", "logo_1024": "kickass-1024.png", "logo_256": "kickass-256.png"},
+    {"id": "bulldogs", "largo": "Bulldogs", "corto": "BUL", "color": "#714246", "logo_1024": "bulldogs-1024.png", "logo_256": "bulldogs-256.png"},
+    {"id": "lobos-its", "largo": "Lobos ITS", "corto": "LOB", "color": "#767577", "logo_1024": "lobos-its-1024.png", "logo_256": "lobos-its-256.png"},
+    {"id": "kaffies", "largo": "Kaffies", "corto": "KAF", "color": "#d1a050", "logo_1024": "kaffies-1024.png", "logo_256": "kaffies-256.png"},
+    {"id": "belugas", "largo": "Belugas", "corto": "BEL", "color": "#102132", "logo_1024": "belugas-1024.png", "logo_256": "belugas-256.png", "nosotros": true},
+    {"id": "ultimos-aztecas", "largo": "Últimos Aztecas", "corto": "AZT", "color": "#d3a45a", "logo_1024": "ultimos-aztecas-1024.png", "logo_256": "ultimos-aztecas-256.png"},
+    {"id": "los-fantasmas", "largo": "Los Fantasmas", "corto": "FAN", "color": "#3a3a3b", "logo_1024": "los-fantasmas-1024.png", "logo_256": "los-fantasmas-256.png"},
+    {"id": "panini", "largo": "Panini", "corto": "PAN", "color": "#dba466", "logo_1024": "panini-1024.png", "logo_256": "panini-256.png"}
+  ]
+}
