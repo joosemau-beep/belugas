@@ -422,6 +422,21 @@ svg .golpe:focus-visible { outline: none; stroke: var(--hielo); stroke-width: 2;
 #globo .r i { width: 12px; height: 3px; border-radius: 2px; flex: none; }
 #globo .r b { display: inline; font-size: 13px; }
 #globo .r span { display: inline; }
+/* quitar ruido (belugas-quitar-ruido, autorizado): tarjeta del partido de alto fijo, números cara a cara, gráfica corta */
+.heroe .eti { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.heroe .titular { height: 41px; }
+.heroe .titular b, .heroe .titular span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cara2 .c2 { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; min-height: 52px; padding: 8px 16px; border-top: 1px solid var(--linea); }
+.cara2 .c2:first-child { border-top: 0; }
+.cara2 .c2.enc { min-height: 0; padding: 12px 16px 6px; }
+.cara2 .c2 > :first-child { justify-self: start; } .cara2 .c2 > :last-child { justify-self: end; }
+.cara2 .c2 .n { font: 600 13.5px/1.2 Inter; color: var(--mut); text-align: center; padding: 0 8px; }
+.cara2 .c2 b { font: italic 800 22px/1 var(--disp); color: var(--mut); white-space: nowrap; }
+.cara2 .c2 b.gana { color: var(--navy); font-weight: 900; }
+.cara2 .c2.sel { background: #eaf1fb; box-shadow: inset 3px 0 0 var(--nos); }
+.graf.corta .pr { grid-template-columns: 96px 1fr 58px; padding: 5px 6px; } .graf.corta .pr > div:first-child { display: flex; align-items: baseline; gap: 6px; } .graf.corta .pr b { min-width: 30px; }
+/* en el teléfono, sin las frases «Toca…» ni los subtítulos de ayuda (en la laptop se quedan) */
+#app:not(.ancho) :is(h2 small, .nota-g, .nota-c, .clave-n, .ult > span, .nivel small, .tfila[data-a="hojaj"]) { display: none; }
 </style>
 </head>
 <body>
@@ -565,7 +580,7 @@ const J = (id, gs) => jugStats([id, ...(Array.isArray(gs) ? gs : [gs])].join(','
 const linea = (x) => { if (!x.pj) return 'No fue'; const o = [];
   if (x.att) o.push(`${x.comp} de ${x.att} pases`); if (x.tdp) o.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} recepci${x.rec > 1 ? 'ones' : 'ón'}`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`);
   if (x.intn) o.push(`${x.intn} intercepci${x.intn > 1 ? 'ones' : 'ón'}`); if (x.sack) o.push(`${x.sack} sack${x.sack > 1 ? 's' : ''}`); if (x.band) o.push(`${x.band} bandera${x.band > 1 ? 's' : ''}`); if (x.tap) o.push(`${x.tap} tapado${x.tap > 1 ? 's' : ''}`); if (x.conv) o.push(`conversión +${x.conv}`);
-  return o.slice(0, 3).join(' · ') || 'Sin jugadas con su nombre'; };
+  return o.filter((x) => !/^\d+ intercepciones? lanzadas?$/.test(x)).slice(0, 2).join(' · ') || 'Sin jugadas con su nombre'; };
 const roles = (x) => [x.att >= 10 && 'Lanza', x.tgt >= 6 && 'Recibe', x.car >= 5 && 'Corre', x.band + x.tap + x.sack + x.intn >= 6 && 'Defiende'].filter(Boolean);
 
 // ---------- muestra chica: cuándo un número todavía no dice nada ----------
@@ -790,27 +805,25 @@ const tabDe = () => st.vista === 'jugador' ? 'jugadores' : st.vista;
 // ---------- piezas ----------
 const pips = (orden, cls = '') => `<span class="pips ${cls}" aria-hidden="true">${orden.map((f) => `<i class="${f === 'td' ? 'si' : ''}"></i>`).join('')}</span>`;
 const pipsN = (si, total, cls = '') => `<span class="pips ${cls}" aria-hidden="true">${Array.from({length: total}, (_, i) => `<i class="${i < si ? 'si' : ''}"></i>`).join('')}</span>`;
-// solo «Mejor» o «Peor»: si fue como siempre no sale nada
-const marcaK = (k) => k && k.cls !== 'igual' ? `<span class="marca-k ${k.cls}" title="${k.eti}"><span aria-hidden="true">${k.sim}</span> ${k.corto}</span>` : '';
 // en el partido la diferencia de puntos ya es el marcador: la gráfica arranca en series anotadas
 const tendP = () => CLAVE.includes(st.tend) ? st.tend : 'serieAnot';
-// los números del partido, un renglón cada uno. acc = 'tend': al tocarlo cambia la gráfica de abajo; acc = 'hoja': abre su explicación
+// los números del partido cara a cara y en corto: nosotros · qué · ellos; en negritas el que lo hizo mejor.
+// acc = 'tend': al tocarlo cambia la gráfica de abajo; acc = 'hoja': abre su explicación
 function numsPartido(g, acc) {
-  const c = C(g), r = rival(g), sel = acc === 'tend' ? tendP() : null;
-  const fila = (id) => { const m = M[id], v = valor(id, c), x = m.tipo === 'fr' ? m.v(c) : null, rv = x && m.riv ? m.riv(c) : null;
-    const dib = m.pips ? pips(c[m.pips].orden.map((f) => m.pips === 'D' ? (f === 'td' ? '' : 'td') : f)) : m.pipsConv ? pipsN(c.A.cOk, c.A.cInt) : '';
-    const sub = !x ? `${c.robos} ${c.robos === 1 ? 'robado' : 'robados'} · ${c.perdidas} ${c.perdidas === 1 ? 'perdido' : 'perdidos'}` : !x.den ? 'sin intentos' : rv ? `${esc(r.largo)}: ${rv.num} de ${rv.den}` : x.den >= 10 ? `${x.num} de ${x.den}` : 'pocos intentos: sin porcentaje';
-    return `<button class="nr${sel === id ? ' sel' : ''}" data-a="${acc}" data-v="${id}"${sel ? ` aria-pressed="${sel === id}"` : ''}><div><b>${id === 'balones' ? 'Balones' : m.n}</b><small>${sub}</small>${id === 'pases' ? `<div class="metro" aria-hidden="true"><i style="width:${pct(x.num, x.den)}%"></i></div>` : ''}</div>${dib}<span class="cf"><span class="val">${v.g}</span>${marcaK(contra(id, g))}</span></button>`; };
-  return `<div class="card nums">${CLAVE.map(fila).join('')}<div class="clave-n"><span>${pipsN(1, 1)}sí se logró</span><span>${pipsN(0, 1)}no se logró</span></div></div>`;
+  const c = C(g), r = rival(g), sel = acc === 'tend' ? tendP() : null, de = (a, b) => b ? `${a} de ${b}` : '—';
+  const filas = [['serieAnot', 'Series con TD', c.A.ser ? c.A.td / c.A.ser : -1, de(c.A.td, c.A.ser), c.D.ser ? c.D.td / c.D.ser : -1, de(c.D.td, c.D.ser)],
+    ['conv', 'Conversiones', c.A.cInt ? c.A.cOk / c.A.cInt : -1, de(c.A.cOk, c.A.cInt), c.D.cInt ? c.D.cOk / c.D.cInt : -1, de(c.D.cOk, c.D.cInt)],
+    ['balones', 'Intercepciones', c.robos, String(c.robos), c.perdidas, String(c.perdidas)]];
+  return `<div class="card nums cara2"><div class="c2 enc">${rlogo('belugas', 30)}<span></span>${rlogo(r.id, 30)}</div>${filas.map(([id, n, va, ta, vb, tb]) => `<button class="c2${sel === id ? ' sel' : ''}" data-a="${acc}" data-v="${id}"><b class="${va > vb ? 'gana' : ''}">${ta}</b><span class="n">${n}</span><b class="${vb > va ? 'gana' : ''}">${tb}</b></button>`).join('')}</div>`;
 }
 // la tira: cada cuadro es una serie, en orden
 const FIN = {td: ['td', 'Touchdown'], int: ['int', 'Intercepción'], downs: [null, 'Se acabaron las oportunidades'], reloj: ['reloj', 'Se acabó el tiempo']};
 const cq = (fin) => `<span class="cq ${fin}">${FIN[fin][0] ? svgIco(FIN[fin][0]) : '4ª'}</span>`;
 function tira(g) {
-  const ss = seriesDe(g), r = rival(g), fila = (l) => { let m = 1, h = ''; for (const s of ss.filter((x) => x.l === l)) { if (s.m !== m) { h += '<span class="sep" title="Medio tiempo"></span>'; m = s.m; } h += `<span class="cq ${s.fin}" title="${FIN[s.fin][1]}">${FIN[s.fin][0] ? svgIco(FIN[s.fin][0]) : '4ª'}</span>`; } return h; };
+  const ss = seriesDe(g), r = rival(g), fila = (l) => { let h = ''; for (const s of ss.filter((x) => x.l === l)) { h += `<span class="cq ${s.fin}" title="${FIN[s.fin][1]}">${FIN[s.fin][0] ? svgIco(FIN[s.fin][0]) : '4ª'}</span>`; } return h; };
   return `<div class="card tira"><div class="fila"><b>Belugas<small>${C(g).A.ser} series</small></b><div class="cuadros">${fila('A')}</div></div>
     <div class="fila riv"><b>${esc(r.corto)}<small>${C(g).D.ser} series</small></b><div class="cuadros">${fila('D')}</div></div>
-    <div class="clave">${Object.keys(FIN).map((f) => `<span>${cq(f)}${FIN[f][1]}</span>`).join('')}<span><span class="sep" style="display:inline-block;width:1px;height:14px;background:var(--eje)"></span>Medio tiempo</span></div></div>`;
+    <div class="clave">${Object.keys(FIN).map((f) => `<span>${cq(f)}${FIN[f][1]}</span>`).join('')}</div></div>`;
 }
 function funciono(g) {
   const L = lectura(g), li = (l) => l.length ? l.slice(0, 3).map(([, id, t]) => `<li><button data-a="hoja" data-v="${id}">${t}</button></li>`).join('') : '<li class="nada">Nada fuera de lo normal.</li>';
@@ -842,11 +855,11 @@ function grafPP(id, an, enTemp) {
   const xs = TODOS.map((g) => m.v(C(g))), vals = xs.map((x) => signo ? x : x.den ? x.num / x.den : null), txt = xs.map((x) => signo ? m.f(x) : x.den ? `${x.num} de ${x.den}` : 'sin intentos');
   const t = signo ? null : m.v(C(TODOS)), prom = t && t.den ? t.num / t.den : null, max = signo ? Math.max(...vals.map(Math.abs), 1) : 1;
   const marc = (g) => { const j = G(g), r = res(j); return `${r === 'I' ? 'inc.' : r} ${j.nos}–${j.ellos}`; };
-  const nombre = id === 'dif' ? 'Diferencia de puntos' : id === 'balones' ? 'Balones' : m.n;
+  const corto = !an, nombre = id === 'serieAnot' ? 'Series con TD' : id === 'balones' ? 'Intercepciones' : id === 'dif' ? 'Diferencia de puntos' : m.n;
   let cuerpo;
-  if (st.forma === 'r') cuerpo = `<div>${TODOS.map((g, i) => { const v = vals[i];
+  if (st.forma === 'r' || corto) cuerpo = `<div>${TODOS.map((g, i) => { const v = vals[i];
       const barra = v === null ? '' : signo ? `<i class="${v < 0 ? 'contra' : ''}" style="left:${v < 0 ? 50 - Math.abs(v) / max * 50 : 50}%;width:${Math.abs(v) / max * 50}%"></i><u class="cero" style="left:50%"></u>` : `<i style="left:0;width:${v * 100}%"></i><u style="left:${prom * 100}%"></u>`;
-      return `<button class="pr${i === sel ? ' este' : ''}" data-a="ir-partido" data-v="${g}"><div><b>${rival(g).corto} · ${fecha(g)}</b><small class="${res(G(g))}">${marc(g)}</small></div><div class="pista">${barra}</div><div class="v${v === null ? ' sin' : ''}">${txt[i]}</div></button>`; }).reverse().join('')}</div>`;
+      return `<button class="pr${i === sel ? ' este' : ''}" data-a="ir-partido" data-v="${g}"><div><b>${corto ? rival(g).corto : `${rival(g).corto} · ${fecha(g)}`}</b><small class="${res(G(g))}">${marc(g)}</small></div><div class="pista">${barra}</div><div class="v${v === null ? ' sin' : ''}">${txt[i]}</div></button>`; }).reverse().join('')}</div>`;
   else { const W0 = an ? 480 : 340, paso = Math.max(46, (W0 - 8) / n), W = Math.max(W0, Math.round(n * paso + 8)), bw = 24, H = signo ? 206 : 176, base = signo ? 92 : 136, alto = signo ? 62 : 104, yEt = H - 18;
     // columna con la punta redonda y la base recta
     const col = (x, y, a, abajo, fill) => { const r = Math.min(4, a); return abajo ? `<path d="M${x} ${y}h${bw}v${a - r}a${r} ${r} 0 0 1 ${-r} ${r}h${2 * r - bw}a${r} ${r} 0 0 1 ${-r} ${-r}z" fill="${fill}"/>` : `<path d="M${x} ${y + a}v${r - a}a${r} ${r} 0 0 1 ${r} ${-r}h${bw - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${a - r}z" fill="${fill}"/>`; };
@@ -858,9 +871,10 @@ function grafPP(id, an, enTemp) {
         <rect class="golpe" tabindex="0" role="img" aria-label="${esc(`vs ${rival(g).largo}: ${txt[i]}`)}" data-a="ir-partido" data-v="${g}" x="${cx - paso / 2}" y="0" width="${paso}" height="${H}" ${tip(`vs ${rival(g).largo} · ${fecha(g)}`, [[abajo ? 'var(--riv)' : 'var(--nos)', txt[i], marc(g)]])}/>`; });
     h += `<line x1="0" x2="${W}" y1="${base}" y2="${base}" stroke="var(--eje)"/>${prom === null ? '' : `<line x1="0" x2="${W}" y1="${base - prom * alto}" y2="${base - prom * alto}" stroke="#0b1b33" stroke-width="1.5" stroke-dasharray="5 4" opacity=".6"/>`}`;
     cuerpo = `<div class="rueda cols-pp"><svg viewBox="0 0 ${W} ${H}"${W > W0 ? ` style="width:${W}px;max-width:none"` : ''} role="img" aria-label="${esc(nombre)} en cada partido">${h}</svg></div>${W > W0 ? '<p class="nota-g">Desliza la gráfica: lo más nuevo está a la derecha.</p>' : ''}`; }
-  const ley = signo ? leyenda([['var(--nos)', 'A favor', 'cuad'], ['var(--contra)', 'En contra', 'cuad']]) : prom === null ? '' : leyenda([['', `Lo de ${n === 1 ? 'este partido' : `estos ${n} partidos`}: ${t.den >= 10 ? pct(t.num, t.den) + '%' : `${t.num} de ${t.den}`}`, 'raya']]);
+  const ley = signo ? leyenda([['var(--nos)', 'A favor', 'cuad'], ['var(--contra)', 'En contra', 'cuad']]) : prom === null ? '' : leyenda([['', `${corto ? 'Promedio' : `Lo de ${n === 1 ? 'este partido' : `estos ${n} partidos`}`}: ${t.den >= 10 ? pct(t.num, t.den) + '%' : `${t.num} de ${t.den}`}`, 'raya']]);
   const tabla = `<table class="tv"><tr><th>Partido</th><th>${nombre}</th><th>Marcador</th></tr>${TODOS.map((g, i) => `<tr><td>${esc(rival(g).largo)} · ${fecha(g)}</td><td class="f">${txt[i]}</td><td>${marc(g)}</td></tr>`).join('')}</table>`;
   const forma = `<div class="conm forma" role="group" aria-label="Forma de la gráfica">${[['r', 'Renglones'], ['c', 'Columnas']].map(([k, tx]) => `<button class="${st.forma === k ? 'on' : ''}" data-a="forma" data-v="${k}" aria-pressed="${st.forma === k}">${tx}</button>`).join('')}</div>`;
+  if (corto) return `<div class="card graf corta"><div class="tit"><b>${nombre} por partido</b></div>${ley}${cuerpo}<button class="que" data-a="hoja" data-v="${id}" data-c="${enTemp ? 't' : 'p'}">¿Qué es? ›</button></div>`;
   return marcoGraf('tend', `${nombre}, partido a partido`, `${forma}${ley}${cuerpo}<button class="que" data-a="hoja" data-v="${id}" data-c="${enTemp ? 't' : 'p'}">Qué es y cuánto creerle ›</button>`, tabla);
 }
 // columnas chicas: una sola serie, el partido que se está viendo resaltado
@@ -879,9 +893,8 @@ function grafCols({W, vals, txt, sel, ymax, ref, H = 132}) {
 // marcador corrido: los puntos de cada equipo conforme pasó el partido (dos líneas, una sola escala)
 function grafMarcador(g, W) {
   const H = 210, mi = 30, md = 34, ms = 16, mb = 30, ss = seriesDe(g), r = rival(g), tmax = Math.max(...FILAS.filter((f) => f.g === g).map((f) => f.t)) + 30, ymax = Math.ceil((Math.max(G(g).nos, G(g).ellos) + 2) / 7) * 7;
-  const x = (t) => mi + (W - mi - md) * t / tmax, y = (v) => ms + (H - ms - mb) * (1 - v / ymax), s2 = ss.find((s) => s.m === 2), medio = s2 ? (ss.filter((s) => s.m === 1).pop().t + s2.todas[0].t) / 2 : null;
+  const x = (t) => mi + (W - mi - md) * t / tmax, y = (v) => ms + (H - ms - mb) * (1 - v / ymax);
   let h = Array.from({length: ymax / 7 + 1}, (_, i) => i * 7).map((v) => `<line x1="${mi}" x2="${W - md}" y1="${y(v)}" y2="${y(v)}" stroke="${v ? 'var(--rejilla)' : 'var(--eje)'}"/><text x="${mi - 8}" y="${y(v) + 4}" font-size="11" text-anchor="end" fill="#56647a">${v}</text>`).join('');
-  if (medio !== null) h += `<line x1="${x(medio)}" x2="${x(medio)}" y1="${ms - 4}" y2="${y(0)}" stroke="var(--eje)"/><text x="${x(medio)}" y="${H - 8}" font-size="10.5" font-weight="600" text-anchor="middle" fill="#56647a">Medio tiempo</text>`;
   h += `<text x="${mi}" y="${H - 8}" font-size="10.5" font-weight="600" fill="#56647a">Inicio</text><text x="${W - md}" y="${H - 8}" font-size="10.5" font-weight="600" text-anchor="end" fill="#56647a">Final</text>`;
   const traza = (k, color) => { let pts = [[0, 0]], v = 0; for (const s of ss) if (s[k] !== v) { pts.push([s.t, v], [s.t, s[k]]); v = s[k]; } pts.push([tmax, v]); return `<polyline points="${pts.map(([t, p]) => `${x(t)},${y(p)}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`; };
   h += traza('ellos', 'var(--riv)') + traza('nos', 'var(--nos)');
@@ -897,18 +910,25 @@ const marcoGraf = (id, titulo, cuerpo, tabla) => `<div class="card graf"><div cl
 // ---------- vista: partido ----------
 function heroe(g) {
   const j = G(g), r = rival(g);
-  return `<div class="heroe"><div class="eti">${RESN[res(j)]} · ${fecha(g)}${j.incompleto ? ' · solo la 1ª mitad' : ''}${j.real ? '' : ' · partido de ejemplo'}</div>
+  return `<div class="heroe"><div class="eti">${RESN[res(j)]} · ${fecha(g)}${j.incompleto ? ' · solo la 1ª mitad' : ''}</div>
     <div class="vs"><div class="eq">${rlogo('belugas')}BEL</div><div class="mid">${j.nos} – ${j.ellos}</div><div class="eq">${rlogo(r.id)}${r.corto}</div></div>
-    <p class="titular">${lectura(g).titular}</p></div>`;
+    <p class="titular">${titularFijo(g)}</p></div>`;
+}
+// la frase de la tarjeta, siempre en dos renglones: el resultado y un solo dato (lo más fuera de lo normal; si no hay, las series con TD)
+function titularFijo(g) {
+  const c = C(g), L = lectura(g), dif = c.pf - c.pc, top = (dif >= 0 ? [...L.si, ...L.no] : [...L.no, ...L.si])[0], bien = top ? L.si.includes(top) : true;
+  const F = {serieAnot: `${bien ? '' : 'Solo '}anotamos en ${c.A.td} de ${c.A.ser} series`, serieFren: bien ? `Los frenamos en ${c.D.fren} de ${c.D.ser} series` : `Nos anotaron en ${c.D.td} de ${c.D.ser} series`,
+    pases: `${bien ? '' : 'Solo '}${c.A.pase} de ${c.A.att} pases completos`, balones: bien ? `Robamos ${c.robos} y perdimos ${c.perdidas} balones` : `Perdimos ${c.perdidas} y robamos ${c.robos} balones`,
+    conv: bien ? `Conversiones: ${c.A.cOk} de ${c.A.cInt}` : `Fallamos ${c.A.cInt - c.A.cOk} de ${c.A.cInt} conversiones`, comoAnot: `La defensa anotó ${c.A.tdDef} TD`};
+  const dos = F[top ? top[1] : 'serieAnot'] || F.serieAnot;
+  return `<b>${dif ? `${dif > 0 ? 'Ganamos' : 'Perdimos'} por ${Math.abs(dif)}` : `Empatamos a ${c.pf}`}</b><span>${dos.charAt(0).toUpperCase() + dos.slice(1)}</span>`;
 }
 const pastPartidos = () => `<div class="pastillas" role="tablist" aria-label="Partidos">${TODOS.slice().reverse().map((g) => { const j = G(g); return `<button class="past ${st.g === g ? 'on' : ''}" data-a="partido" data-v="${g}" role="tab" aria-selected="${st.g === g}"><img src="${LOGOS[j.rival] || ''}" alt="">${rival(g).corto} · ${j.nos}–${j.ellos}</button>`; }).join('')}</div>`;
 const conmRes = (col) => `<div class="conm ${col ? 'col' : ''}" role="tablist" aria-label="Manera de ver el resumen">${RES.map(([k, t, e]) => `<button class="${st.res === k ? 'on' : ''}" data-a="res" data-v="${k}" role="tab" aria-selected="${st.res === k}">${t}${e ? `<small>${e}</small>` : ''}</button>`).join('')}</div>`;
 // A · De un vistazo
 function resA(g, an) {
   const nums = numsPartido(g, 'tend'), gr = grafPP(tendP(), an, false);
-  if (!an) return `<p class="nota-g" style="margin-top:0">Toca un número y cambia la gráfica.</p>${nums}<div style="height:12px"></div>${gr}<h2>Serie por serie <small>cada cuadro, una vez con el balón</small></h2>${tira(g)}
-    <h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}
-    <h2>Quién anotó <small><button data-a="res" data-v="c">Ver la historia ›</button></small></h2>${historia(g, true)}`;
+  if (!an) return `${nums}<div style="height:12px"></div>${gr}<h2>Quién anotó</h2>${historia(g, true)}`;
   const r = rival(g);
   return `<div class="rejilla g21" style="margin-top:0"><div class="col">${nums}<p class="nota-g">Toca un número y cambia la gráfica.</p></div><div class="col">${gr}</div></div><div class="rejilla g3"><div class="col"><h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}</div>
     <div class="col"><h2>Serie por serie</h2>${tira(g)}<div style="height:12px"></div>${marcoGraf('marc', 'El marcador, conforme pasó', leyenda([['var(--nos)', 'Belugas'], ['var(--riv)', r.largo]]) + grafMarcador(g, 380), tablaMarc(g))}</div>
@@ -927,19 +947,18 @@ function filaCara(id, g) {
 }
 function resB(g, an) {
   const r = rival(g), t = `<div class="card cara"><div class="enc"><span><i style="background:var(--nos)"></i>Belugas</span><em></em><span>${esc(r.largo)}<i style="background:var(--riv)"></i></span></div>
-    ${[...CARA, ...(st.primera ? [['Con el toque «Primera»', ['media', 'cerrar', 'cuarta']]] : [])].map(([tit, ids]) => `<h4>${tit}</h4>${ids.map((id) => filaCara(id, g)).join('')}`).join('')}<p class="nota-c">En negritas, quien lo hizo mejor. «Solemos» es nuestro promedio en los otros partidos. Toca un renglón para ver cómo se calcula.</p></div>`;
-  if (!an) return `${t}<h2>Lo bueno y lo malo</h2>${funciono(g)}<h2>Destacados</h2>${dest(g)}`;
+    ${[...CARA, ...(st.primera ? [['Con el toque «Primera»', ['media', 'cerrar', 'cuarta']]] : [])].map(([tit, ids]) => `<h4>${tit}</h4>${ids.filter((id) => id !== 'pases').map((id) => filaCara(id, g)).join('')}`).join('')}<p class="nota-c">En negritas, quien lo hizo mejor. «Solemos» es nuestro promedio en los otros partidos. Toca un renglón para ver cómo se calcula.</p></div>`;
+  if (!an) return t;
   return `<div class="rejilla g2"><div class="col">${t}</div><div class="col"><h2>Lo bueno y lo malo <small>contra lo que solemos hacer</small></h2>${funciono(g)}<h2>Serie por serie</h2>${tira(g)}<h2>Destacados</h2>${dest(g)}</div></div>${detalle(g)}`;
 }
 // C · La historia
 function historia(g, soloPuntos) {
-  const ss = seriesDe(g), r = rival(g); let h = '', m = 0;
+  const ss = seriesDe(g), r = rival(g); let h = '';
   for (const s of ss) {
     const pts = s.ptsNos || s.ptsEllos; if (soloPuntos && !pts) continue;
-    if (s.m !== m && !soloPuntos) { m = s.m; h += `<h4><span>${m}ª mitad</span><span>${C(g).A.mit[m - 1]}–${C(g).D.mit[m - 1]}</span></h4>`; }
     const [a, b] = txtSerie(s, r), ab = st.abre[g + s.s], nos = s.l === 'A' ? s.fin === 'td' : s.tdDef;
     h += `<button class="se ${pts ? '' : 'menor'}" data-a="abre" data-v="${g + s.s}" aria-expanded="${!!ab}"><span class="cq ${s.fin}" style="${s.l === 'D' && s.fin === 'td' ? 'background:var(--riv);color:#fff' : ''}">${FIN[s.fin][0] ? svgIco(FIN[s.fin][0]) : '4ª'}</span>
-      <span class="q"><b>${a}</b><small>${s.l === 'A' ? 'Atacamos' : 'Defendemos'} · ${b}</small></span><span class="m">${pts ? `${s.nos}–${s.ellos}` : ''}<small>min ${minuto(s.t)}</small></span></button>`;
+      <span class="q"><b>${a}</b><small>${b.replace(/ · conversión de (\d) de (.+)$/, ' · +$1 $2').replace(/ · conversión de (\d) buena$/, ' · +$1').replace(/ · conversión de \d (fallada|tapada por .+)$/, ' · sin conversión')}</small></span><span class="m">${pts ? `${s.nos}–${s.ellos}` : ''}</span></button>`;
     if (ab) h += `<div class="jugs">${s.todas.map((f) => `<div><span>${f.d ? f.d + 'ª' : ''}</span><span>${txtJug(f, r)}</span></div>`).join('')}</div>`;
   }
   return `<div class="card linea-t">${h}</div>`;
@@ -978,9 +997,9 @@ const detalle = (g) => `<h2>Los números de cada quien <small>toca una columna p
 function vPartido(an) {
   const g = st.g;
   return `${an ? `<h2 style="margin-top:0">Partido <small>${JUEGOS.length} jugados · toca uno</small></h2>` : ''}${pastPartidos()}${heroe(g)}
-    <div style="margin:12px 0 ${an ? 16 : 12}px;${an ? 'max-width:520px' : ''}">${conmRes()}</div>
-    ${{a: resA, b: resB, c: resC}[st.res](g, an)}${an ? '' : `<h2>Los números de cada quien</h2>${tablaGrupos([g])}`}
-    <div class="ej">${G(g).real ? 'Marcador real · las jugadas son de ejemplo' : 'Partido y jugadas de ejemplo'}</div>`;
+    ${an ? `<div style="margin:12px 0 16px;max-width:520px">${conmRes()}</div>` : '<div style="height:12px"></div>'}
+    ${{a: resA, b: resB, c: resC}[an ? st.res : 'a'](g, an)}${an ? '' : `<h2>Los números de cada quien</h2>${tablaGrupos([g])}`}
+`;
 }
 
 // desglose: partes de un total, cada una con su barra
@@ -988,7 +1007,7 @@ function desglose(id, gs, enTemp) {
   const m = M[id], ps = m.partes(C(gs)), nums = ps.every(([, v]) => typeof v === 'number'), mx = nums ? Math.max(...ps.map(([, v]) => v), 1) : 0;
   return `<button class="card desg" data-a="hoja" data-v="${id}" data-c="${enTemp ? 't' : 'p'}"><b>${m.n}</b>${ps.map(([t, v]) => `<span class="dr"><span>${t}</span><strong>${v}</strong>${nums ? `<i><u style="width:${v / mx * 100}%"></u></i>` : ''}</span>`).join('')}</button>`;
 }
-const PORQUE = ['finSeries', 'comoAnot', 'unoODos', 'mitades'];
+const PORQUE = ['finSeries', 'comoAnot', 'unoODos'];
 // ---------- vista: temporada ----------
 const TEND = ['dif', 'serieAnot', 'serieFren', 'pases', 'balones', 'conv'];
 // los 6 números de la temporada en una rejilla; al tocar uno, la gráfica de al lado cambia a ese número
@@ -1016,22 +1035,21 @@ function vTemporada(an) {
   const nota = `<p class="nota-g">Van ${c.pj} ${c.pj === 1 ? 'partido' : 'partidos'} y ${c.A.ser} series: ${CONF[nivelConf(c.A.ser)][0].toLowerCase()}. Toca un número y cambia la gráfica.</p>`;
   if (!an) return `${rec}<h2>De un vistazo <small>toda la temporada</small></h2>${numsTemp()}${nota}${grafPP(st.tend, false, true)}
     <h2>El porqué <small>toca una para entenderla</small></h2><div class="porque" style="grid-template-columns:1fr">${PORQUE.map((k) => desglose(k, TODOS, true)).join('')}</div>
-    <h2>Partidos</h2>${listaPartidos()}<h2>Líderes</h2>${lideres()}<div class="ej">3 marcadores reales · lo demás es de ejemplo</div>`;
+    <h2>Partidos</h2>${listaPartidos()}<h2>Líderes</h2>${lideres()}`;
   return `<h2 style="margin-top:0">Temporada 2026 <small>${c.pj} partidos jugados</small></h2>${rec}
     <h2>De un vistazo</h2><div class="rejilla g21" style="margin-top:0"><div class="col">${numsTemp()}${nota}</div><div class="col">${grafPP(st.tend, true, true)}</div></div>
     <div class="rejilla g2"><div class="col"><h2>El porqué <small>toca una para entenderla</small></h2><div class="porque">${PORQUE.map((k) => desglose(k, TODOS, true)).join('')}</div></div>
       <div class="col"><h2>Partidos</h2>${listaPartidos()}<h2>Líderes</h2>${lideres()}</div></div>
-    <h2>Todos los jugadores <small>toca una columna para ordenar, o un renglón para ver su ficha</small></h2>${tablaJug(TODOS, true)}
-    <div class="ej">3 marcadores reales · lo demás es de ejemplo</div>`;
+    <h2>Todos los jugadores <small>toca una columna para ordenar, o un renglón para ver su ficha</small></h2>${tablaJug(TODOS, true)}`;
 }
 
 // ---------- vista: jugadores y ficha ----------
 function vJugadores(an) {
   const orden = PLANTEL.slice().sort((a, b) => J(b.id, TODOS).pts - J(a.id, TODOS).pts);
-  if (an) return `<h2 style="margin-top:0">Jugadores <small>${PLANTEL.length} en el plantel</small></h2><div class="rejilla g2" style="margin-top:0"><div class="col">${tablaJug(TODOS, true)}</div><div class="col">${lideres()}</div></div><div class="ej">Plantel inventado · datos de ejemplo</div>`;
+  if (an) return `<h2 style="margin-top:0">Jugadores <small>${PLANTEL.length} en el plantel</small></h2><div class="rejilla g2" style="margin-top:0"><div class="col">${tablaJug(TODOS, true)}</div><div class="col">${lideres()}</div></div>`;
   return `<h2 style="margin-top:4px">Líderes <small>temporada</small></h2>${lideres()}<h2>Todos <small>por Puntos Belugas</small></h2>
     <div class="card">${orden.map((p, i) => filaJug(p.id, J(p.id, TODOS), `<span class="rk">${i + 1}</span>`)).join('')}</div>
-    <h2>Todos los números</h2>${tablaGrupos(TODOS, true)}<div class="ej">Plantel inventado · datos de ejemplo</div>`;
+    <h2>Todos los números</h2>${tablaGrupos(TODOS, true)}`;
 }
 const FJ = {Lanza: ['pComp', 'tdp', 'intl'], Recibe: ['rec', 'atrapa', 'td'], Corre: ['car'], Defiende: ['band', 'intn', 'tap', 'sack']};
 function fichaJ(k, id) {
@@ -1049,7 +1067,7 @@ function vJugador(an) {
   const tabla = `<div class="card rueda"><table class="tv"><tr><th>Partido</th>${COLS.filter(([c]) => TODOS.some((g) => J(id, g)[c])).map(([, t]) => `<th>${t}</th>`).join('')}</tr>${TODOS.slice().reverse().map((g) => { const y = J(id, g); return `<tr data-a="ir-partido" data-v="${g}" tabindex="0"><td><span class="jn">${rlogo(rival(g).id)}<span class="corta">${rival(g).corto} · ${fecha(g)}</span></span></td>${COLS.filter(([c]) => TODOS.some((h) => J(id, h)[c])).map(([c]) => `<td>${!y.pj ? '—' : c === 'comp' ? (y.att ? `${y.comp}/${y.att}` : '·') : y[c] || '·'}</td>`).join('')}</tr>`; }).join('')}</table></div>`;
   const cuerpo = an ? `<div class="rejilla g2" style="margin-top:0"><div class="col">${cab}<h2>Temporada <small>toca un número para entenderlo</small></h2>${fs}</div><div class="col"><h2 style="margin-top:0">Partido por partido</h2>${pp}</div></div><h2>Todos sus números</h2>${tabla}`
     : `${cab}<h2>Temporada <small>toca un número para entenderlo</small></h2>${fs}<h2>Partido por partido</h2>${pp}`;
-  return `<button class="volver" data-a="ir" data-v="${st.desde}">‹ ${st.desde === 'partido' ? 'Partido' : st.desde === 'temporada' ? 'Temporada' : 'Jugadores'}</button>${cuerpo}<div class="ej">Jugador inventado · datos de ejemplo</div>`;
+  return `<button class="volver" data-a="ir" data-v="${st.desde}">‹ ${st.desde === 'partido' ? 'Partido' : st.desde === 'temporada' ? 'Temporada' : 'Jugadores'}</button>${cuerpo}`;
 }
 
 // ---------- vista: guía (todas las métricas, en tres niveles) ----------
@@ -1063,14 +1081,14 @@ function filaGuia(id) {
   return `<button class="gm" data-a="hoja" data-v="${id}" data-c="t"><b>${m.n}</b>${v}<small>${m.que.split('. ')[0].replace(/\.$/, '')}.</small></button>`;
 }
 function vGuia(an) {
-  const bloque = (n, t, s) => { const ids = Object.keys(M).filter((id) => M[id].nivel === n), grupos = [...new Set(ids.map((id) => M[id].grupo))];
+  const bloque = (n, t, s) => { const ids = Object.keys(M).filter((id) => M[id].nivel === n && id !== 'mitades'), grupos = [...new Set(ids.map((id) => M[id].grupo))];
     return `<div><div class="nivel"><i>${n}</i><div><b>${t}</b><small>${s}</small></div></div>${n === 3 ? `<div style="margin:10px 0 0"><div class="conm" role="group" aria-label="Simular el toque Primera"><button class="${st.primera ? '' : 'on'}" data-a="primera" data-v="0">Como se marca hoy</button><button class="${st.primera ? 'on' : ''}" data-a="primera" data-v="1">Con el toque «Primera»</button></div></div>` : ''}
       ${n === 1 ? `<div class="card" style="margin-top:10px">${ids.map(filaGuia).join('')}</div>` : grupos.map((gr) => `<div class="sub">${gr}</div><div class="card">${ids.filter((id) => M[id].grupo === gr).map(filaGuia).join('')}</div>`).join('')}
       ${n === 2 ? `<div class="sub">De cada jugador</div><div class="card">${Object.keys(MJ).map((k) => `<button class="gm" data-a="hojaj" data-v="${k}" data-c="t"><b>${MJ[k].n}</b><span class="v falta" style="max-width:none">${MJ[k].rol}</span><small>${MJ[k].que.split('. ')[0].replace(/\.$/, '')}.</small></button>`).join('')}</div>` : ''}</div>`; };
   const no = `<div><div class="nivel"><i style="background:#e3e8ef;color:var(--mut)">✕</i><div><b>Las de moda que aquí no sirven</b><small>Y por qué. El detalle y las fuentes están en el reporte.</small></div></div>
     <div class="card" style="margin-top:10px">${[['EPA (puntos esperados)', 'Pide la yarda exacta de cada jugada y un modelo hecho con años de jugadas de la NFL.'], ['Rating del pasador y QBR', 'Piden yardas, y dan un número de 0 a 158 que nadie sabe leer.'], ['Yardas por aire y después de atrapar', 'Son 2 o 3 arrastres en el mapa por cada pase.'], ['CPOE y Next Gen Stats', 'Salen de chips en las hombreras y antenas en el estadio.'], ['DVOA', 'Se ajusta contra el promedio de toda una liga, jugada por jugada.'], ['Victorias pitagóricas', 'Con 6 partidos es ruido: la diferencia de puntos dice lo mismo.']].map(([a, b]) => `<div class="gm" style="grid-template-columns:1fr"><b>${a}</b><small>${b}</small></div>`).join('')}</div></div>`;
-  return `${an ? '<h2 style="margin-top:0">Guía de métricas <small>toca cualquiera para ver qué es, cómo se calcula y cuánto creerle</small></h2>' : '<p style="margin:0 2px;font:500 13.5px/1.45 Inter;color:var(--mut)">Toca cualquiera para ver qué es, cómo se calcula y cuánto creerle. Los valores son de toda la temporada.</p>'}
-    <div class="guia">${an ? `<div>${bloque(...NIV[0])}${bloque(...NIV[2])}${no}</div><div>${bloque(...NIV[1])}</div>` : NIV.map(([n, t, s]) => bloque(n, t, s)).join('') + no}</div><div class="ej">Datos de ejemplo</div>`;
+  return `${an ? '<h2 style="margin-top:0">Guía de métricas <small>toca cualquiera para ver qué es, cómo se calcula y cuánto creerle</small></h2>' : ''}
+    <div class="guia">${an ? `<div>${bloque(...NIV[0])}${bloque(...NIV[2])}${no}</div><div>${bloque(...NIV[1])}</div>` : NIV.filter(([n]) => n !== 3).map(([n, t, s]) => bloque(n, t, s)).join('')}</div>`;
 }
 
 // ---------- la hoja: qué es, cómo se calcula, un ejemplo con estos datos y cuánto creerle ----------
@@ -1081,6 +1099,11 @@ function confBloque(n, texto) {
 function hojaEquipo(id, enTemp) {
   const m = M[id], g = st.g, gs = enTemp ? TODOS : [g], c = C(gs), r = rival(g), donde = enTemp ? `Temporada · ${JUEGOS.length} partidos` : `vs ${esc(r.largo)} · ${fecha(g)}`;
   let cab = '', cuerpo = '';
+  if (!ancho()) {
+    const v = m.tipo === 'fr' ? m.v(c) : null, nv = v ? nivelConf(v.den) : NCONF_P(c.pj), hoy = m.tipo !== 'x' && !(m.pide && !st.primera);
+    const top = m.tipo === 'd' ? `<div class="par" style="margin-bottom:6px">${m.partes(c).map(([tt, x]) => `<div><span>${tt}</span><b>${x}</b></div>`).join('')}</div>` : hoy && m.v ? `<div class="grande"><span class="val">${valor(id, c).g}</span></div>` : '';
+    return `<h3>${m.n}</h3><p class="donde">${donde}</p>${top}<p class="q">${m.que}</p>${m.ej && hoy ? `<div class="cuenta">${(enTemp ? 'En la temporada: ' : `Contra ${esc(r.largo)}: `) + m.ej(c).replace(/^[A-ZÁÉÍÓÚ]/, (x) => x.toLowerCase())}</div>` : ''}<h4>¿Cuánto creerle?</h4><div class="conf"><span class="pts" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < nv ? 'si' : ''}"></i>`).join('')}</span><p><b>${CONF[nv][0]}.</b></p></div>`;
+  }
   if (m.tipo === 'x' || (m.pide && !st.primera)) cab = `<div class="grande"><span class="chip gris">Hoy no se puede calcular</span></div>`;
   else if (m.tipo === 'd') cab = `<div class="par" style="margin-bottom:6px">${m.partes(c).map(([t, v]) => `<div><span>${t}</span><b>${v}</b></div>`).join('')}</div>`;
   else { const v = valor(id, c), k = enTemp ? null : contra(id, g); cab = `<div class="grande"><span class="val">${v.g}</span>${v.ch ? `<span class="pie" style="font:600 13px/1.2 Inter;color:var(--mut);padding-bottom:6px">${v.ch}</span>` : ''}${k ? `<span style="padding-bottom:6px">${chip(k, true)}</span>` : ''}</div>`;
@@ -1099,7 +1122,7 @@ function hojaEquipo(id, enTemp) {
   const v = m.v && m.tipo === 'fr' ? m.v(c) : null;
   cuerpo += `<h4>¿Cuánto creerle?</h4>${v ? confBloque(v.den, {wil: [v.num, v.den], unidad: m.unidad, m: m.muestra}) : `<div class="conf"><span class="pts" aria-hidden="true">${[0, 1, 2].map((i) => `<i class="${i < NCONF_P(c.pj) && m.tipo !== 'x' ? 'si' : ''}"></i>`).join('')}</span><p>${m.muestra}</p></div>`}`;
   cuerpo += `<h4>De qué toques sale</h4><p>${m.toques}</p>`;
-  const mas = (MAS[id] || []).filter((k) => !M[k].pide || st.primera);
+  const mas = (MAS[id] || []).filter((k) => (!M[k].pide || st.primera) && k !== 'mitades');
   if (mas.length) cuerpo += `<h4>Para entender el porqué</h4><div class="mas">${mas.map((k) => `<button data-a="hoja" data-v="${k}" data-c="${enTemp ? 't' : 'p'}">${M[k].n} ›</button>`).join('')}</div>`;
   return `<h3>${m.n}</h3><p class="donde">${donde}</p>${cab}${cuerpo}`;
 }
@@ -1150,7 +1173,7 @@ function pintar() {
   const scroll = st.tel && window.innerWidth >= 900 ? app.querySelector('.scroll') : null, y = scroll ? scroll.scrollTop : window.scrollY, misma = vistaAnt === st.vista + st.g + st.jug;
   app.innerHTML = `${lado}<div class="scroll"><main class="cuerpo"><div class="cab">${rlogo('belugas', 38)}<div><b>${{partido: 'Partido', temporada: 'Temporada', jugadores: 'Jugadores', jugador: 'Jugador', guia: 'Guía de métricas'}[st.vista]}</b><small>${sub}</small></div><button class="info" data-a="info" aria-label="Sobre este prototipo">i</button></div>
     <div class="nav" role="tablist" aria-label="Secciones">${TABS.map(([k, t]) => `<button class="${tabDe() === k ? 'on' : ''}" data-a="ir" data-v="${k}" role="tab" aria-selected="${tabDe() === k}">${t}</button>`).join('')}</div>
-    <div class="datos"><span>Datos de ejemplo:</span><div class="conm" role="group" aria-label="Cuántos partidos de ejemplo">${[2, 5, D.juegos.length].map((n) => `<button class="${st.n === n ? 'on' : ''}" data-a="datos" data-v="${n}" aria-pressed="${st.n === n}">${n}</button>`).join('')}</div><span>partidos</span></div>${v}</main></div><div id="hoja"></div>`;
+    ${an ? `<div class="datos"><span>Datos de ejemplo:</span><div class="conm" role="group" aria-label="Cuántos partidos de ejemplo">${[2, 5, D.juegos.length].map((n) => `<button class="${st.n === n ? 'on' : ''}" data-a="datos" data-v="${n}" aria-pressed="${st.n === n}">${n}</button>`).join('')}</div><span>partidos</span></div>` : ''}${v}</main></div><div id="hoja"></div>`;
   app.querySelectorAll('.cols-pp').forEach((e) => { e.scrollLeft = e.scrollWidth; });
   const s2 = app.querySelector('.scroll');
   if (st.tel && window.innerWidth >= 900) s2.scrollTop = misma ? y : 0; else window.scrollTo(0, misma ? y : 0);

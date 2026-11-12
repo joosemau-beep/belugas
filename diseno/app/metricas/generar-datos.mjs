@@ -2,7 +2,7 @@
 // Uso: node generar-datos.mjs  → escribe datos.json junto a este archivo y un resumen en la terminal.
 // Son 10 partidos y 13 jugadores. Los 3 primeros marcadores son los reales que trae la app (index.html:487);
 // los otros 7 y TODAS las jugadas son de ejemplo. g1 a g6 son los de la primera versión, fila por fila;
-// g7 a g10 se agregaron para ver los casos raros: un empate, uno incompleto (solo se marcó la 1ª mitad),
+// g7 a g10 se agregaron para ver los casos raros: un empate, uno de solo 2 series (antes «incompleto»: ya no existe, ruido-24),
 // una paliza en contra y una a favor. Nico, Rodrigo F. y Maú faltan a g1–g6; Rodrigo F. va a un partido y no tiene jugadas.
 // El guion de cada partido (qué pasó en cada serie) está escrito a mano; el relleno de cada serie sale de un
 // azar con semilla fija, así que siempre da lo mismo.
@@ -48,7 +48,7 @@ const PARTIDOS = [
   {id: 'g7', rival: 'triple-t', fecha: '2026-11-16', real: false, falta: ['rodrigo'], qb: 'sr', semilla: 73, mitades: [ // empate
     [T('me', [1, 1, 'nico']), ['D', 't', {c: [1, 1]}], ['A', 'D'], ['D', 'd'], T('nico', [1, 0]), ['D', 't', {c: [1, 0]}], ['A', 'R']],
     [['D', 'd'], ['A', 'I'], ['D', 't', {c: [1, 1], corta: 1}], T('rs', [1, 1, 'me']), ['D', 'd'], ['A', 'D'], ['D', 'r']]]},
-  {id: 'g8', rival: 'bucaneros', fecha: '2026-11-23', real: false, incompleto: true, falta: ['rodrigo', 'ic'], qb: 'sr', semilla: 79, mitades: [ // solo se marcó la 1ª mitad
+  {id: 'g8', rival: 'bucaneros', fecha: '2026-11-23', real: false, falta: ['rodrigo', 'ic'], qb: 'sr', semilla: 79, mitades: [ // solo se marcó la 1ª mitad
     [['D', 't', {c: [1, 0]}], T('eo', [1, 1, 'me']), ['D', 'd'], ['A', 'D'], ['D', 'r']]]},
   {id: 'g9', rival: 'panini', fecha: '2026-11-30', real: false, falta: ['me'], qb: 'sr', semilla: 83, mitades: [ // paliza en contra; Rodrigo F. va y no hace jugadas
     [['A', 'I'], ['D', 't', {c: [1, 1], corta: 1}], ['A', 'D'], ['D', 't', {c: [2, 1]}], ['A', 'D'], ['D', 'd'], ['A', 'R']],
