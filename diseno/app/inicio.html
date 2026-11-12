@@ -290,6 +290,11 @@ table.bs td.v { color: #b8c2cf; }
 .corona { position: relative; z-index: 3; display: block; pointer-events: none; filter: drop-shadow(0 4px 5px rgba(160,100,0,.35)); }
 .valor { font: italic 900 24px/1 var(--disp); color: var(--navy); }
 .valor small { font: 700 11px/1 Inter; font-style: normal; color: var(--mut); margin-left: 2px; }
+.desg { display: block; margin-top: 3px; font: 600 11px/1.35 Inter; color: var(--mut); }
+.desg span { display: block; white-space: nowrap; }
+.desg em { font: 800 11px/1 Inter; font-style: normal; color: var(--navy); }
+.tfila .desg span { display: inline; }
+.tfila .desg span + span::before { content: ' · '; }
 
 /* versión 1: escalones */
 .podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 16px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
@@ -915,27 +920,30 @@ const ATAQUE = ['sr', 'mv', 'eo', 'rs', 'me'], DEFENSA = ['ic', 'jm', 'bt', 'lp'
 const P = (id) => PLANTEL.find((x) => x.id === id);
 // estadísticas por partido: los 3 marcadores son los reales que trae la app (index.html:487);
 // quién hizo qué es de ejemplo. att/comp/tdp = pases del QB; rec, car = recepciones y corridas; td;
+// skyd = yardas perdidas en sacks al QB (negativo), drop = se le cayó; pyd = yardas que lanzó el QB, ryd = yardas atrapadas, ruyd = yardas corridas;
 // conv = puntos de conversión; band = banderas quitadas; intn = intercepciones; sack; tap = pases tapados
 const JUEGOS = [
   {id: 'g1', rival: 'kaffies', fecha: '5 oct', nos: 13, ellos: 20, jugadas: 31, funcion: 15, perdidas: 2, convs: [1, 2],
    tds: [['rs', 'pase', 'sr'], ['me', 'pase', 'sr']], conv: [['eo', 1]],
-   st: {sr: {intl: 2, att: 20, comp: 13, tdp: 2}, me: {rec: 5, td: 1}, rs: {rec: 4, td: 1}, eo: {rec: 3, conv: 1}, mv: {rec: 1, car: 3}, jg: {rec: 1, band: 2}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
+   st: {sr: {intl: 2, att: 20, comp: 13, tdp: 2, pyd: 134}, me: {rec: 5, td: 1, ryd: 52}, rs: {rec: 4, td: 1, ryd: 41}, eo: {rec: 3, conv: 1, ryd: 27, drop: 1}, mv: {rec: 1, car: 3, ryd: 6, ruyd: 14}, jg: {rec: 1, band: 2, ryd: 8}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
   {id: 'g2', rival: 'only-fins', fecha: '12 oct', nos: 14, ellos: 8, jugadas: 29, funcion: 17, perdidas: 1, convs: [2, 2],
    tds: [['me', 'pase', 'sr'], ['eo', 'pase', 'sr']], conv: [['rs', 1], ['mv', 1]],
-   st: {sr: {intl: 1, att: 18, comp: 12, tdp: 2}, me: {rec: 4, td: 1}, eo: {rec: 3, td: 1}, rs: {rec: 3, conv: 1}, mv: {rec: 1, car: 2, conv: 1}, bt: {band: 7, intn: 1, tap: 2}, lp: {band: 4, sack: 1}, jm: {band: 3}, ic: {band: 3, sack: 2}, jg: {band: 3, intn: 1, tap: 1}}},
+   st: {sr: {intl: 1, att: 18, comp: 12, tdp: 2, pyd: 114, skyd: -6}, me: {rec: 4, td: 1, ryd: 47}, eo: {rec: 3, td: 1, ryd: 31}, rs: {rec: 3, conv: 1, ryd: 29, drop: 1}, mv: {rec: 1, car: 2, conv: 1, ryd: 7, ruyd: 11}, bt: {band: 7, intn: 1, tap: 2}, lp: {band: 4, sack: 1}, jm: {band: 3}, ic: {band: 3, sack: 2}, jg: {band: 3, intn: 1, tap: 1}}},
   {id: 'g3', rival: 'ultimos-aztecas', fecha: '19 oct', nos: 21, ellos: 20, jugadas: 34, funcion: 21, perdidas: 0, convs: [3, 3],
    tds: [['me', 'pase', 'sr'], ['rs', 'pase', 'sr'], ['mv', 'corrida', null]], conv: [['me', 1], ['rs', 1], ['eo', 1]],
-   st: {sr: {intl: 0, att: 20, comp: 15, tdp: 2, car: 3}, me: {rec: 5, td: 1, conv: 1}, rs: {rec: 4, td: 1, conv: 1}, eo: {rec: 3, conv: 1}, mv: {rec: 2, car: 3, td: 1}, jg: {rec: 1, band: 3, intn: 1, tap: 2}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
+   st: {sr: {intl: 0, att: 20, comp: 15, tdp: 2, car: 3, pyd: 145, ruyd: 17}, me: {rec: 5, td: 1, conv: 1, ryd: 58}, rs: {rec: 4, td: 1, conv: 1, ryd: 39}, eo: {rec: 3, conv: 1, ryd: 24}, mv: {rec: 2, car: 3, td: 1, ryd: 15, ruyd: 31}, jg: {rec: 1, band: 3, intn: 1, tap: 2, ryd: 9}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
 ];
-const CAMPOS = ['att', 'comp', 'tdp', 'intl', 'rec', 'car', 'td', 'conv', 'band', 'intn', 'sack', 'tap'];
+const CAMPOS = ['att', 'comp', 'tdp', 'intl', 'skyd', 'pyd', 'rec', 'ryd', 'drop', 'car', 'ruyd', 'td', 'conv', 'band', 'intn', 'sack', 'tap'];
 // puntos de cada jugador: TD 6, TD de pase 4, intercepción 4, sack 2, recepción, bandera, tapado y punto de conversión 1, pase completo y corrida 0.5; intercepción lanzada −2 (decidido por Iker)
-const PESOS = {td: 6, tdp: 4, intn: 4, sack: 2, rec: 1, band: 1, tap: 1, conv: 1, comp: .5, car: .5, intl: -2};
+// yardas como en el fantasy de la NFL (Mau, 12-nov): 0.1 por yarda lanzada, atrapada o corrida; la recepción da 0.5 de extra y el pase completo ya no da nada
+// lo que quita en ataque, igual que la app del iPad: intercepción lanzada −2, se le cayó −0.5, sack a nuestro QB −0.1 por yarda perdida (skyd va negativo; Mau, 12-nov)
+const PESOS = {td: 6, tdp: 4, intn: 4, sack: 2, rec: .5, band: 1, tap: 1, conv: 1, car: .5, intl: -2, drop: -.5, skyd: .1, pyd: .1, ryd: .1, ruyd: .1};
 const puntosDe = (x) => Math.round(Object.entries(PESOS).reduce((a, [k, w]) => a + ((x && x[k]) || 0) * w, 0) * 10) / 10;
-const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); return [p.id, t]; }));
+const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
 const TEMP = calcTemp();
-const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, k === 'pts' ? TEMP[p.id].pts : TEMP[p.id][k]]));
+const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][k]]));
 RESULTADOS = JUEGOS.slice().reverse().map((g) => [g.rival, g.fecha, g.nos, g.ellos, g.id]);
-const CATS = [['puntos', 'Puntos', 'pts', porCampo('pts')], ['td', 'TD', 'TD', porCampo('td')], ['rec', 'Recepciones', 'rec', porCampo('rec')], ['band', 'Banderas', 'band.', porCampo('band')]];
+const CATS = [['puntos', 'Puntos', 'pts', porCampo('pts')], ['td', 'TD', 'TD', porCampo('td')], ['yds', 'Yardas', 'yd', porCampo('yds')], ['rec', 'Recepciones', 'rec', porCampo('rec')], ['band', 'Banderas', 'band.', porCampo('band')]];
 // cómo se resume a cada quien en una línea
 const lineaDe = (x) => { if (!x) return 'No jugó'; const o = [];
   if (x.att) o.push(`${x.comp}/${x.att} pases`); if (x.intl) o.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.tdp) o.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`);
@@ -1090,20 +1098,23 @@ function ranking() {
   return Object.entries(vals).sort((a, b) => b[1] - a[1]).map(([id, v]) => [P(id), v, unidad]);
 }
 const val = (v, u) => `<span class="valor num">${v}<small>${u}</small></span>`;
+// solo en Yardas: cuántas fueron de pase (lanzadas o atrapadas) y cuántas de corrida
+const desg = (p) => { if (st.cat !== 'yds') return ''; const t = TEMP[p.id], o = [[t.pyd + t.ryd, 'de pase'], [t.ruyd, 'de corrida']].filter(([v]) => v);
+  return o.length ? `<span class="desg">${o.map(([v, x]) => `<span><em class="num">${v}</em> ${x}</span>`).join('')}</span>` : ''; };
 function podio(top) {
   const [a, b, c] = top;
   if (st.pod === 'trono') return `<div class="trono">
-    <div class="rey"><div class="respaldo"><img class="corona" src="${CORONA}" alt="">${foto(a[0])}</div><div class="txt"><small>Número 1 · ${nombreDe(CATS, st.cat)}</small><b class="corta">${a[0].corto}</b>${val(a[1], a[2])}</div></div>
-    <div class="dos">${[[b, 2], [c, 3]].map(([x, n]) => `<div class="sub"><span style="position:relative">${foto(x[0])}<span class="medalla-n n${n}">${n}</span></span><div style="min-width:0"><b class="corta">${x[0].corto}</b>${val(x[1], x[2])}</div></div>`).join('')}</div></div>`;
-  if (st.pod === 'medallas') return `<div class="medallas">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="med m${n}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}<div class="aro">${foto(x[0])}<span class="lugar">${n}</span></div><span class="cinta"></span><b class="corta">${x[0].corto}</b>${val(x[1], x[2])}</div>`).join('')}</div>`;
-  return `<div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${foto(x[0])}<b class="corta">${x[0].corto}</b>${val(x[1], x[2])}<div class="escalon">${n}</div></div>`).join('')}</div>`;
+    <div class="rey"><div class="respaldo"><img class="corona" src="${CORONA}" alt="">${foto(a[0])}</div><div class="txt"><small>Número 1 · ${nombreDe(CATS, st.cat)}</small><b class="corta">${a[0].corto}</b>${val(a[1], a[2])}${desg(a[0])}</div></div>
+    <div class="dos">${[[b, 2], [c, 3]].map(([x, n]) => `<div class="sub"><span style="position:relative">${foto(x[0])}<span class="medalla-n n${n}">${n}</span></span><div style="min-width:0"><b class="corta">${x[0].corto}</b>${val(x[1], x[2])}${desg(x[0])}</div></div>`).join('')}</div></div>`;
+  if (st.pod === 'medallas') return `<div class="medallas">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="med m${n}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}<div class="aro">${foto(x[0])}<span class="lugar">${n}</span></div><span class="cinta"></span><b class="corta">${x[0].corto}</b>${val(x[1], x[2])}${desg(x[0])}</div>`).join('')}</div>`;
+  return `<div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${foto(x[0])}<b class="corta">${x[0].corto}</b>${val(x[1], x[2])}${desg(x[0])}<div class="escalon">${n}</div></div>`).join('')}</div>`;
 }
 function lideres() {
   const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 3);
   return `<h2>Líderes <small>Temporada</small></h2>
   <div class="cats">${CATS.map(([k, t]) => `<button class="cat ${st.cat === k ? 'on' : ''}" data-a="cat" data-v="${k}">${t}</button>`).join('')}</div>
   <div class="lideres ${st.animar ? 'entra' : ''}">${podio(r)}
-    <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div>${val(v, u)}</div>`).join('')}</div>
+    <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}${desg(p)}</div>${val(v, u)}</div>`).join('')}</div>
     ${resto.length > 3 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver los ${r.length}`}</button>` : ''}</div>`;
 }
 
@@ -1552,9 +1563,9 @@ function juegoDe(p) {
     if (j.k === 'incompleto') { s(qb, 'att'); if (j.drop) s(j.id, 'drop'); }
     if (j.k === 'int' || j.k === 'pick6c') { per++; s(qb, 'att'); s(qb, 'intl'); }
     if (j.k === 'corrida') s(j.id, 'car');
-    if (j.k === 'sackr') s(j.id || qb0, 'sackr');
+    if (j.k === 'sackr') { s(j.id || qb0, 'sackr'); if (y != null) s(j.id || qb0, 'skyd', y); }
     if (j.k === 'safetyc') s(j.id, 'safc');
-    if (['pase', 'corrida', 'td'].includes(j.k) && y != null) s(j.id, 'yds', y);
+    if (['pase', 'corrida', 'td'].includes(j.k) && y != null) s(j.id, j.k === 'pase' || pasTD ? 'ryd' : 'ruyd', y);
     if (j.logro && j.lado === 'O' && j.k !== 'sackr') s(j.id, 'pd');
     if (j.k === 'td' || j.k === 'pick6') { s(j.id, 'td'); if (pasTD) s(j.qb, 'tdp'); if (j.k === 'pick6') s(j.id, 'intn'); tds.push([j.id, pasTD ? 'pase' : j.k === 'td' ? 'corrida' : null, pasTD ? j.qb : null, j.conv && j.conv[1] ? [j.convId, j.conv[0]] : null]);
       if (j.conv) { convs[1]++; if (j.conv[1]) { convs[0]++; s(j.convId, 'conv', j.conv[0]); s(j.convQb || qb0, 'convp', j.conv[0]); } } }
@@ -1743,7 +1754,7 @@ function sinYardas(uid) { const x = porUid(uid); if (!x || st.practicando) retur
 function abrirConv(j) { st.conv = { uid: j.uid, paso: null }; st.lanzo = null; st.hoja = 'conv'; }
 function recalcular() {
   Object.assign(TEMP, calcTemp());
-  const k = { puntos: 'pts', td: 'td', rec: 'rec', band: 'band' };
+  const k = { puntos: 'pts', td: 'td', yds: 'yds', rec: 'rec', band: 'band' };
   CATS.forEach((c) => { c[3] = porCampo(k[c[0]]); });
   RESULTADOS = JUEGOS.slice().reverse().map((g) => [g.rival, g.fecha, g.nos, g.ellos, g.id]);
   const gan = JUEGOS.filter((g) => g.nos > g.ellos).length, per = JUEGOS.filter((g) => g.nos < g.ellos).length, emp = JUEGOS.length - gan - per;
