@@ -399,8 +399,6 @@ table.bs td.v { color: #b8c2cf; }
 /* pantalla de marcar */
 /* encabezado B: marino liso en la orilla de arriba (sigue detrás de la hora) y el brillo abajo a la derecha */
 .mcab { background: radial-gradient(110% 130% at 100% 100%, rgba(120,190,255,.55) 0%, rgba(120,190,255,0) 60%), linear-gradient(180deg, #0d2347 0%, #0d2347 40%, #1d4f8f 100%); color: #fff; padding: 0 14px 16px; border-radius: 0 0 24px 24px; flex: none; position: relative; }
-/* en Marcar no va la barra de abajo: su + es esta misma pantalla y «‹ Inicio» ya está arriba */
-.mcab + .cuerpo { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
 .mbar { display: flex; align-items: center; justify-content: space-between; height: 44px; }
 .mbar button { height: 38px; min-width: 38px; padding: 0 13px; border-radius: 999px; background: rgba(6,18,40,.3); font: 700 13px/1 Inter; color: #fff; }
 .mscore { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 6px; }
@@ -417,6 +415,41 @@ table.bs td.v { color: #b8c2cf; }
 .lado { display: grid; grid-template-columns: 1fr 1fr; background: #e3e8ef; border-radius: 12px; padding: 4px; margin: 14px 0 4px; }
 .lado button { height: 46px; border-radius: 9px; font: 700 15px/1 Inter; color: var(--mut); }
 .lado button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+/* MARCAR (12-nov, ronda 6 opción 2 de Mau): marcador gigante; 4 grandes; los chicos y los castigos en un bloque; el TD hasta abajo.
+   Sin títulos; la defensa no cambia de color. Al abrir se ve justo hasta el TD (en ataque); la última jugada y la lista quedan abajo.
+   Medidas fijas: grande 3:2 (112 de alto), chico 52; 10 entre grandes, 8 entre chicos, 24 entre grupos. */
+.mbar .qbchip { max-width: 40%; }
+.mbar .mk-lado { display: flex; align-items: center; gap: 7px; background: #fff !important; color: var(--navy) !important; text-shadow: none; font-weight: 800; }
+.mbar .mk-lado svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; stroke-linejoin: round; }
+.mk-marc { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 4px; color: #fff; }
+.mk-marc strong { font: italic 900 78px/.95 var(--disp); letter-spacing: -.01em; text-shadow: 0 3px 14px rgba(0,0,0,.25); }
+.mk-marc strong i { font-style: normal; opacity: .55; margin: 0 8px; }
+.mk-marc strong span { display: inline-block; }
+.tel.anim .mk-marc .sube { animation: bump .38s cubic-bezier(.3,1.6,.5,1); }
+.mk-eq { display: grid; justify-items: center; gap: 6px; }
+.mk-eq img, .mk-eq .rlogo { width: 44px; height: 44px; }
+.mk-eq span { display: flex; align-items: center; gap: 5px; font: 800 12.5px/1 Inter; letter-spacing: .05em; text-transform: uppercase; opacity: .92; }
+.mk-bal { width: 18px; height: 18px; flex: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+.mk-cuerpo { padding-top: 18px; display: flex; flex-direction: column; }
+.mk-cuerpo > * { flex-shrink: 0; }
+.mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
+.mk-grandes, .mk-chicos { display: grid; grid-template-columns: 1fr 1fr; }
+.mk-grandes { grid-auto-rows: 112px; gap: 10px; }
+.mk-chicos { grid-auto-rows: 52px; gap: 8px; margin-top: 24px; }
+.mk-grande { background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 14px 14px 13px; text-align: left; }
+.mk-grande b { display: block; font: 800 17px/1.15 Inter; }
+.mk-grande small { display: block; color: var(--mut); font: 500 12.5px/1.25 Inter; margin-top: 3px; }
+.mk-chico { background: #fff; border-radius: 14px; box-shadow: var(--sombra); display: flex; align-items: center; gap: 10px; padding: 0 14px; text-align: left; }
+.mk-chico b { font: 700 14.5px/1.15 Inter; }
+.mk-grande:active, .mk-chico:active, .mk-td:active { transform: scale(.98); }
+.mk-ic { display: grid; place-items: center; flex: none; }
+.mk-ic svg { width: 100%; height: 100%; fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mk-td { width: 100%; margin-top: 24px; height: 74px; border-radius: 18px; background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(13,35,71,.25); }
+.mk-td small { margin-left: auto; font: 600 12.5px/1.2 Inter; opacity: .85; white-space: nowrap; }
+/* en defensa el encabezado y el TD de ellos toman el color del rival (--rc, de EQUIPOS), en degradado como el nuestro */
+.mcab.mk-def, .mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
+.mk-td.riv { box-shadow: 0 8px 18px color-mix(in srgb, var(--rc) 35%, transparent); text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.mcab.mk-def .mbar .mk-lado { color: color-mix(in srgb, var(--rc) 70%, #000) !important; }
 .pregunta { font: 800 22px/1.2 Inter; margin: 14px 2px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
 /* el aviso de cada jugada va en este renglón y con la misma altura: el marcador queda a la vista y ninguna tira se mueve */
 .pregunta.aviso { height: 40px; margin: 14px 0 10px; background: var(--ink); color: #fff; border-radius: 14px; padding: 0 2px 0 10px; font: 600 14px/1.2 Inter; gap: 6px; justify-content: flex-start; }
@@ -430,6 +463,12 @@ table.bs td.v { color: #b8c2cf; }
 .pregunta.aviso .cara .foto { width: 28px; height: 28px; }
 .pregunta.aviso .si { height: 30px; padding: 0 10px; border-radius: 999px; background: rgba(255,255,255,.16); color: #fff; font: 700 12.5px/1 Inter; flex: none; }
 @keyframes avisoIn { from { transform: scale(.97); opacity: 0; } }
+/* abajo del TD: el aviso de la jugada, o «Última · Corregir · Deshacer» si no hay aviso (mismo alto, nada brinca) */
+.ultima { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--mut); padding: 0 2px; min-height: 44px; }
+.ultima b { color: var(--ink); font-weight: 600; }
+.ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; min-height: 44px; padding: 0 0 0 8px; flex: none; }
+.ultima button + button { margin-left: 0; padding-left: 14px; border-left: 1px solid var(--linea); }
+.mk-vista + .pregunta.aviso { margin: 18px 0 0; height: 44px; }
 .pregunta .ult { min-height: 40px; padding: 0 2px 0 10px; font: 700 13.5px/1 Inter; color: var(--acento); flex: none; }
 .pregunta .vista { display: inline-flex; background: #e3e8ef; border-radius: 9px; padding: 3px; flex: none; }
 .pregunta .vista button { font: 700 11.5px/1 Inter; color: var(--mut); padding: 7px 9px; border-radius: 7px; }
@@ -578,6 +617,17 @@ table.bs td.v { color: #b8c2cf; }
 .tj-info { display: flex; justify-content: space-between; gap: 8px; margin: 10px 2px 0; font: 600 13px/1.2 Inter; color: var(--mut); }
 .tj-info b { color: var(--ink); font-weight: 800; }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.reglas { margin-top: 14px; padding: 4px 16px; }
+.reglas summary { padding: 12px 0; font: 700 15px/1.2 Inter; color: var(--acento); cursor: pointer; }
+.reglas h4 { margin: 10px 0 4px; font: 700 12px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
+.reglas .rg { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--linea); font-size: 14px; }
+.reglas .rg b { font-weight: 800; color: var(--navy); flex: none; }
+.reglas .rg b.neg { color: #c2362d; }
+.reglas p { margin: 10px 0 12px; font-size: 13px; color: var(--mut); line-height: 1.4; }
+/* 1ª y 10 a mano: apagado, se prende al tocarlo antes de escoger quién */
+.hoja h3.conpd { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pdt { flex: none; min-height: 40px; padding: 0 14px; border-radius: 20px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); color: var(--mut); font: 700 14px/1 Inter; }
+.pdt.on { background: var(--boton); color: #fff; box-shadow: none; }
 /* rival de la liga, con su logo */
 .rivales { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
 .rv { display: grid; justify-items: center; gap: 6px; padding: 10px 4px 9px; border-radius: 14px; background: #f3f5f8; font: 600 12px/1.15 Inter; color: var(--ink); text-align: center; min-height: 104px; }
@@ -831,11 +881,12 @@ const ESTS = [['actual', 'Actual'], ['glass', 'Liquid glass'], ['ligero', 'Glass
 const YDS = [['si', 'Regla «¿Cuánto avanzó?»'], ['no', 'Sin yardas']];
 
 // los 12 de la liga (archivos/equipos/equipos.json); los logos son los reales, mejorados con Higgsfield
+// los 12 de la liga (archivos/equipos/equipos.json); los logos son los reales, mejorados con Higgsfield
 const EQUIPOS = [
   ['only-fins', 'ONF', 'Only Fins', '#10a6b3'], ['triple-t', 'TTT', 'Triple T', '#c5353e'], ['bucaneros', 'BUC', 'Bucaneros', '#bd3e44'],
   ['destroyers', 'DES', 'Destroyers', '#3c6f34'], ['kickass', 'KCK', 'Kickass', '#141723'], ['bulldogs', 'BUL', 'Bulldogs', '#714246'],
-  ['lobos-its', 'LOB', 'Lobos ITS', '#767577'], ['kaffies', 'KAF', 'Kaffies', '#d1a050'], ['ultimos-aztecas', 'AZT', 'Últimos Aztecas', '#d3a45a'],
-  ['los-fantasmas', 'FAN', 'Los Fantasmas', '#3a3a3b'], ['panini', 'PAN', 'Panini', '#dba466'],
+  ['lobos-its', 'LOB', 'Lobos ITSZ', '#767577'], ['kaffies', 'KAF', 'Kaffies', '#d1a050'], ['ultimos-aztecas', 'AZT', 'Últimos Aztecas', '#d3a45a'],
+  ['los-fantasmas', 'FAN', 'Los Fantas', '#3a3a3b'], ['panini', 'PAN', 'Panini', '#dba466'],
 ];
 // tamaño visible de cada logo en su caja (raíz del área pintada y ancho), medido en los PNG de 256:
 // en listas se igualan entre ellos; frente al logo de Belugas (marcador y partido) pesan como él
@@ -920,7 +971,7 @@ const ATAQUE = ['sr', 'mv', 'eo', 'rs', 'me'], DEFENSA = ['ic', 'jm', 'bt', 'lp'
 const P = (id) => PLANTEL.find((x) => x.id === id);
 // estadísticas por partido: los 3 marcadores son los reales que trae la app (index.html:487);
 // quién hizo qué es de ejemplo. att/comp/tdp = pases del QB; rec, car = recepciones y corridas; td;
-// skyd = yardas perdidas en sacks al QB (negativo), drop = se le cayó; pyd = yardas que lanzó el QB, ryd = yardas atrapadas, ruyd = yardas corridas;
+// pyd = yardas que lanzó el QB, ryd = yardas atrapadas, ruyd = yardas corridas; skyd = yardas perdidas en sacks al QB; drop = se le cayó;
 // conv = puntos de conversión; band = banderas quitadas; intn = intercepciones; sack; tap = pases tapados
 const JUEGOS = [
   {id: 'g1', rival: 'kaffies', fecha: '5 oct', nos: 13, ellos: 20, jugadas: 31, funcion: 15, perdidas: 2, convs: [1, 2],
@@ -928,17 +979,30 @@ const JUEGOS = [
    st: {sr: {intl: 2, att: 20, comp: 13, tdp: 2, pyd: 134}, me: {rec: 5, td: 1, ryd: 52}, rs: {rec: 4, td: 1, ryd: 41}, eo: {rec: 3, conv: 1, ryd: 27, drop: 1}, mv: {rec: 1, car: 3, ryd: 6, ruyd: 14}, jg: {rec: 1, band: 2, ryd: 8}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
   {id: 'g2', rival: 'only-fins', fecha: '12 oct', nos: 14, ellos: 8, jugadas: 29, funcion: 17, perdidas: 1, convs: [2, 2],
    tds: [['me', 'pase', 'sr'], ['eo', 'pase', 'sr']], conv: [['rs', 1], ['mv', 1]],
-   st: {sr: {intl: 1, att: 18, comp: 12, tdp: 2, pyd: 114, skyd: -6}, me: {rec: 4, td: 1, ryd: 47}, eo: {rec: 3, td: 1, ryd: 31}, rs: {rec: 3, conv: 1, ryd: 29, drop: 1}, mv: {rec: 1, car: 2, conv: 1, ryd: 7, ruyd: 11}, bt: {band: 7, intn: 1, tap: 2}, lp: {band: 4, sack: 1}, jm: {band: 3}, ic: {band: 3, sack: 2}, jg: {band: 3, intn: 1, tap: 1}}},
+   st: {sr: {intl: 1, att: 18, comp: 12, tdp: 2, pyd: 114, skyd: 6}, me: {rec: 4, td: 1, ryd: 47}, eo: {rec: 3, td: 1, ryd: 31}, rs: {rec: 3, conv: 1, ryd: 29, drop: 1}, mv: {rec: 1, car: 2, conv: 1, ryd: 7, ruyd: 11}, bt: {band: 7, intn: 1, tap: 2}, lp: {band: 4, sack: 1}, jm: {band: 3}, ic: {band: 3, sack: 2}, jg: {band: 3, intn: 1, tap: 1}}},
   {id: 'g3', rival: 'ultimos-aztecas', fecha: '19 oct', nos: 21, ellos: 20, jugadas: 34, funcion: 21, perdidas: 0, convs: [3, 3],
    tds: [['me', 'pase', 'sr'], ['rs', 'pase', 'sr'], ['mv', 'corrida', null]], conv: [['me', 1], ['rs', 1], ['eo', 1]],
    st: {sr: {intl: 0, att: 20, comp: 15, tdp: 2, car: 3, pyd: 145, ruyd: 17}, me: {rec: 5, td: 1, conv: 1, ryd: 58}, rs: {rec: 4, td: 1, conv: 1, ryd: 39}, eo: {rec: 3, conv: 1, ryd: 24}, mv: {rec: 2, car: 3, td: 1, ryd: 15, ruyd: 31}, jg: {rec: 1, band: 3, intn: 1, tap: 2, ryd: 9}, bt: {band: 6, tap: 1}, lp: {band: 5}, jm: {band: 4, tap: 1}, ic: {band: 3, sack: 1}}},
 ];
-const CAMPOS = ['att', 'comp', 'tdp', 'intl', 'skyd', 'pyd', 'rec', 'ryd', 'drop', 'car', 'ruyd', 'td', 'conv', 'band', 'intn', 'sack', 'tap'];
-// puntos de cada jugador: TD 6, TD de pase 4, intercepción 4, sack 2, recepción, bandera, tapado y punto de conversión 1, pase completo y corrida 0.5; intercepción lanzada −2 (decidido por Iker)
-// yardas como en el fantasy de la NFL (Mau, 12-nov): 0.1 por yarda lanzada, atrapada o corrida; la recepción da 0.5 de extra y el pase completo ya no da nada
-// lo que quita en ataque, igual que la app del iPad: intercepción lanzada −2, se le cayó −0.5, sack a nuestro QB −0.1 por yarda perdida (skyd va negativo; Mau, 12-nov)
-const PESOS = {td: 6, tdp: 4, intn: 4, sack: 2, rec: .5, band: 1, tap: 1, conv: 1, car: .5, intl: -2, drop: -.5, skyd: .1, pyd: .1, ryd: .1, ruyd: .1};
-const puntosDe = (x) => Math.round(Object.entries(PESOS).reduce((a, [k, w]) => a + ((x && x[k]) || 0) * w, 0) * 10) / 10;
+// ejemplo: los partidos de muestra no traen la conversión del QB; se le da la de sus receptores
+JUEGOS.forEach((g) => { const cv = Object.values(g.st).reduce((a, y) => a + (y.conv || 0), 0);
+  Object.values(g.st).forEach((x) => { if (x.att) x.convp = cv; }); });
+// fantasy (tabla de Mau, con lo decidido el 12-nov en la tarde): [campo, cómo se dice, puntos]; los de ataque primero. Pick 6 = intercepción + TD.
+// Yardas como en la NFL: 0.1 por yarda lanzada, atrapada o corrida; la recepción da 0.5 y el pase completo no da nada; el sack quita 0.1 por yarda.
+// No cuentan: fumble (el balón queda muerto) ni "se le fue". Sin bono de defensa por equipo: casi todos juegan de los dos lados.
+const PUNTOS = [
+  ['ryd', 'Yarda atrapada', .1], ['ruyd', 'Yarda corrida', .1], ['pyd', 'Yarda lanzada (pase completo), al QB', .1], ['rec', 'Recepción', .5], ['td', 'Touchdown', 6], ['tdp', 'TD de pase, al QB', 4],
+  ['pd', 'Primero y diez', 1], ['conv', 'Conversión, por punto, al que la atrapa', 1], ['convp', 'Conversión, por punto, al QB', 1],
+  ['intl', 'Intercepción lanzada', -2], ['skyd', 'Sack recibido: por yarda perdida, al QB', -.1], ['drop', 'Se le cayó', -.5], ['safc', 'Safety en contra, al que agarraron', -2],
+  ['band', 'Bandera quitada', 1], ['bandx', 'Extra si no ganaron yardas', 1], ['tap', 'Pase tapado', 2], ['pres', 'Presión que provoca incompleto', 1],
+  ['intn', 'Intercepción', 5], ['sack', 'Sack', 3], ['saf', 'Safety', 3]];
+const PUNTOS_DEF = 13; // desde aquí, defensa
+const CAMPOS = ['att', 'comp', 'car', ...PUNTOS.map(([k]) => k)];
+const puntosDe = (x) => Math.round(PUNTOS.reduce((a, [k, , w]) => a + ((x && x[k]) || 0) * w, 0) * 10) / 10;
+const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
+const tablaPuntos = () => `<details class="card reglas"><summary>Cómo se cuentan los puntos</summary>
+  ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
+  <p>El pase completo no da puntos: el QB gana por las yardas que lanza. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni "se le fue". No hay puntos de defensa por equipo, porque casi todos juegan de los dos lados.</p></details>`;
 const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
 const TEMP = calcTemp();
 const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][k]]));
@@ -946,7 +1010,7 @@ RESULTADOS = JUEGOS.slice().reverse().map((g) => [g.rival, g.fecha, g.nos, g.ell
 const CATS = [['puntos', 'Puntos', 'pts', porCampo('pts')], ['td', 'TD', 'TD', porCampo('td')], ['yds', 'Yardas', 'yd', porCampo('yds')], ['rec', 'Recepciones', 'rec', porCampo('rec')], ['band', 'Banderas', 'band.', porCampo('band')]];
 // cómo se resume a cada quien en una línea
 const lineaDe = (x) => { if (!x) return 'No jugó'; const o = [];
-  if (x.att) o.push(`${x.comp}/${x.att} pases`); if (x.intl) o.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.tdp) o.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`);
+  if (x.att) o.push(`${x.comp}/${x.att} pases`); if (x.intl) o.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.pyd) o.push(`${x.pyd} yd de pase`); if (x.tdp) o.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`); if (!x.att && (x.ryd || x.ruyd)) o.push(`${(x.ryd || 0) + (x.ruyd || 0)} yd`);
   if (x.band) o.push(`${x.band} bandera${x.band > 1 ? 's' : ''}`); if (x.intn) o.push(`${x.intn} INT`); if (x.sack) o.push(`${x.sack} sack${x.sack > 1 ? 's' : ''}`); if (x.tap) o.push(`${x.tap} tapado${x.tap > 1 ? 's' : ''}`); if (x.conv) o.push(`conv. +${x.conv}`);
   return o.filter((s) => !/INT lanzada/.test(s)).slice(0, 2).join(' · ') || 'Sin jugadas'; };
 
@@ -1122,7 +1186,7 @@ function lideres() {
 function heroeHoy() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = (aj && R(aj.rival)) || R(HOY);
   return p ? `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti"><i></i>En vivo · vs ${r.largo}${aj ? ' · lo marca otro celular' : ''}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong><small>${oportunidad(p)} · ${p.lado === 'O' ? 'Atacamos' : 'Defendemos'}</small></div><div class="eq">${rlogo(r)}${r.corto}</div></div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong><small>${oportunidad(p)}</small></div><div class="eq">${rlogo(r)}${r.corto}</div></div>
       <button class="btn-blanco" data-a="marcar">Seguir marcando</button></div>`
     : st.final ? `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">Final · hoy · ${resDe(st.final.nos, st.final.ellos)[2]}</div>
       <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).corto}</div></div>
@@ -1155,15 +1219,23 @@ function inicio2() {
     ${lideres()}
   </div>${nav()}</div>`;
 }
-// «No avanzamos» (antes «Nos pararon») está por confirmar con el amigo: si quiere decir otra cosa, se cambia aquí y en TXT.parada
-const NO_AVANZA = 'No avanzamos';
-// [qué pasó, nombre en la tira, qué quiere decir (solo en las mitades), la pregunta de quién, nombre largo para «Cambiar qué pasó»]
+// [qué pasó, nombre en el botón, lo que dice abajo (solo en los 4 grandes), la pregunta de quién, nombre largo para «Cambiar qué pasó» (opcional)]
 const RES = {
-  O: [['pase', 'Pase completo', '', '¿Quién la atrapó?'], ['corrida', 'Corrida', '', '¿Quién corrió?'], ['incompleto', 'Pase incompleto', '', '¿A quién iba?'], ['parada', NO_AVANZA, 'sin ganar yardas', '¿A quién pararon?'], ['int', 'Intercepción', 'nos la quitaron', '¿Quién la lanzó?'], ['sackr', 'Sack', 'a nuestro QB', '¿A quién le hicieron el sack?', 'Sack a nuestro QB'], ['pick6c', 'Pick 6', 'nos anotaron', '¿Quién la lanzó?', 'Pick 6 en contra'], ['safetyc', 'Safety', '+2 de ellos', '¿A quién agarraron?', 'Safety en contra'], ['castigo', 'Castigo', '', null]],
-  D: [['bandera', 'Quitamos la bandera', '', '¿Quién quitó la bandera?'], ['tapado', 'Lo tapamos', '', '¿Quién lo tapó?'], ['fallo', 'Falló el pase', '', null], ['intn', 'Intercepción', '', '¿Quién la agarró?'], ['sack', 'Sack', '', '¿Quién hizo el sack?'], ['pick6', 'Pick 6', 'la regresamos', '¿Quién la regresó?'], ['safety', 'Safety', '+2 nuestros', '¿Quién lo hizo?', 'Safety a favor'], ['castigo', 'Castigo', '', null]],
+  O: [['pase', 'Pase completo', 'Luego quién la atrapó', '¿Quién la atrapó?'], ['corrida', 'Corrida', 'Luego quién corrió', '¿Quién corrió?'], ['incompleto', 'Incompleto', 'Se le cayó o mal pase', '¿A quién iba?'], ['parada', 'Nos pararon', 'Se guarda al tocarlo', '¿A quién pararon?'], ['int', 'Intercepción', 'Nos la quitaron', '¿Quién la lanzó?'], ['pick6c', 'Pick 6 en contra', 'Nos la quitaron y anotaron', '¿Quién la lanzó?'], ['castigo', 'Castigo', 'A favor o en contra', null], ['sackr', 'Sack a nuestro QB', 'Se guarda al tocarlo', '¿A quién le hicieron el sack?'], ['safetyc', 'Safety en contra', '+2 de ellos', '¿A quién agarraron?']],
+  D: [['bandera', 'Quitamos la bandera', 'Luego quién', '¿Quién quitó la bandera?'], ['tapado', 'Pase incompleto', 'La bloqueamos o no la atraparon', '¿Quién lo tapó?'], ['intn', 'Intercepción', 'La agarramos', '¿Quién la agarró?'], ['sack', 'Sack', 'Al QB detrás de la línea', '¿Quién hizo el sack?'], ['pick6', 'Pick 6', 'La regresamos a TD', '¿Quién la regresó?'], ['safety', 'Safety a favor', '+2 nuestros', '¿Quién lo hizo?'], ['castigo', 'Castigo', 'A favor o en contra', null]],
 };
 // ícono de cada resultado (intercepción nuestra usa el mismo glifo que la de ellos)
-const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', fallo: 'incompleto'};
+const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', presion: 'tapado', fallo: 'tapado'};
+// MARCAR (12-nov, la que escogió Mau en la ronda 6): íconos sueltos, sin cuadro de fondo; el color dice qué es
+// (verde lo que suma, rojo lo que nos sale mal, amarillo el castigo, azul lo demás). Ver el CSS «MARCAR».
+const mkGlifo = (k) => ICONOS_S[{intn: 'int', sackr: 'sack', pick6c: 'int'}[k] || k] || ICONOS_S.parada;
+const mkIc = (k, px, c) => `<span class="mk-ic" style="--c:${c};width:${px}px;height:${px}px"><svg viewBox="0 0 24 24" aria-hidden="true">${mkGlifo(k)}</svg></span>`;
+const mkColor = (k) => (['pase', 'corrida', 'pick6', 'safety'].includes(k) ? '#16a05a' : ['int', 'pick6c', 'sackr', 'safetyc'].includes(k) ? '#e0483e' : k === 'castigo' ? '#c99400' : '#1d4f8f');
+// sin títulos de grupo, lo malo lleva el nombre completo para no confundirse con lo de la defensa
+const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase incompleto'};
+const MK_SUB = {tapado: 'Tapado o se les cayó'};
+const MK_LADO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>';
+const MK_BALON = '<svg class="mk-bal" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9.5" ry="5.6" transform="rotate(-32 12 12)" fill="#fff"/><path d="M9.6 14.2l4.8-4.4M10.6 11.6l1.3 1.3M12.1 10.2l1.3 1.3" stroke="#0d2347" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
 // ---------- la lista «Este partido», por series ----------
 // cada serie: de quién era el balón, sus jugadas y cómo acabó (las series las numera rehacer)
 function seriesDe(js) {
@@ -1173,9 +1245,9 @@ function seriesDe(js) {
 }
 const FIN_SERIE = { td: 'TD', pick6: 'Pick 6', safety: 'Safety', intn: 'La agarramos', int: 'Nos la quitaron', safetyc: 'Safety de ellos' };
 const finDeSerie = (s, enJuego, r) => { const u = s.js[s.js.length - 1];
-  return u.k === 'tdr' ? `TD de ${r.corto}` : u.k === 'pick6c' ? `Pick 6 de ${r.corto}` : FIN_SERIE[u.k] || (enJuego ? 'En juego' : s.lado === 'O' ? 'Sin downs' : 'Los paramos'); };
+  return u.k === 'tdr' ? `TD de ${r.corto}` : u.k === 'pick6c' ? `Pick 6 de ${r.corto}` : FIN_SERIE[u.k] || (enJuego ? 'En juego' : s.lado === 'O' ? 'Nos pararon' : 'Los paramos'); };
 // el renglón de una jugada: en marcar se toca para corregirla; la que marcaron los dos celulares se pinta y trae «Quitar la repetida»
-const filaJ = (x, i, tocable) => `<${tocable ? `button class="jfila en${x.repe ? ' repe' : ''}" data-a="fila" data-v="${i}"` : 'div class="jfila en"'}>${ic(x.tipo, true)}<span class="corta">${x.txt}</span><small>${x.down}${x.por && x.por !== APARATO ? ' · <span class="otro">otro cel.</span>' : ''}</small>${x.antes && x.marc !== `${x.antes.nos}–${x.antes.ellos}` ? `<span class="mk num">${x.marc}</span>` : ''}</${tocable ? 'button' : 'div'}>`
+const filaJ = (x, i, tocable) => `<${tocable ? `button class="jfila en${x.repe ? ' repe' : ''}" data-a="fila" data-v="${i}"` : 'div class="jfila en"'}>${ic(x.tipo, true)}<span class="corta">${x.txt}</span>${x.por && x.por !== APARATO ? '<small><span class="otro">otro cel.</span></small>' : ''}${x.antes && x.marc !== `${x.antes.nos}–${x.antes.ellos}` ? `<span class="mk num">${x.marc}</span>` : ''}</${tocable ? 'button' : 'div'}>`
   + (tocable && x.repe ? `<div class="repe-av"><span>La marcaron los dos celulares</span><button data-a="quitarrep" data-v="${x.uid}">Quitar la repetida</button></div>` : '');
 // un renglón por serie; la que va en juego, abierta; las demás se abren con un toque
 function jlista(p, tocable) {
@@ -1194,20 +1266,11 @@ function loQueMarcamos(p) {
   const col = (tit, filas) => `<div><h5>${tit}</h5>${filas.map(([k, v]) => `<div class="f"><span>${k}</span><b class="num">${v}</b></div>`).join('')}</div>`;
   return `<h2>Lo que marcamos</h2><div class="lqm">${col('Ataque', [['Series con TD', `${conTD} de ${nuestras.length}`], ['Pases', `${comp} de ${att}`], ['Corridas', n(['corrida'])], ['Balones perdidos', n(['int', 'pick6c'])]])}${col('Defensa', [['Series frenadas', `${frenadas} de ${suyas.length}`], ['Banderas', n(['bandera'])], ['Pases tapados', n(['tapado'])], ['Balones robados', n(['intn', 'pick6'])]])}</div>`;
 }
-// ---------- las tiras: el mismo esqueleto en ataque y defensa, 7 renglones, con Castigo y TD en el mismo lugar ----------
-const resDeLado = (lado, k) => RES[lado].find((x) => x[0] === k);
-const tiraRes = (lado, k) => `<button class="res" data-a="res" data-v="${k}">${ic(ICO_DE[k] || k)}<b>${resDeLado(lado, k)[1]}</b></button>`;
-const mitadRes = (lado, k) => { const [, n, s] = resDeLado(lado, k); return `<button class="res mitad" data-a="res" data-v="${k}"><b>${n}</b>${s ? `<small>${s}</small>` : ''}</button>`; };
-const par = (a, b) => `<div class="castigo2">${a}${b}</div>`;
-// el castigo dice quién lo cometió («a ellos» es a favor nuestro)
-const castigo2 = par('<button class="res mitad" data-a="castigo" data-v="favor"><small>Castigo</small><b>a ellos</b></button>', '<button class="res mitad" data-a="castigo" data-v="contra"><small>Castigo</small><b>a nosotros</b></button>');
-const tiras = (O) => O
-  ? tiraRes('O', 'pase') + tiraRes('O', 'corrida') + par(mitadRes('O', 'incompleto'), mitadRes('O', 'parada')) + par(mitadRes('O', 'int'), mitadRes('O', 'sackr')) + par(mitadRes('O', 'pick6c'), mitadRes('O', 'safetyc')) + castigo2 + `<button class="res td" data-a="res" data-v="td">${ic('td')}<b>Touchdown</b></button>`
-  : tiraRes('D', 'bandera') + par(mitadRes('D', 'tapado'), mitadRes('D', 'fallo')) + tiraRes('D', 'intn') + tiraRes('D', 'sack') + par(mitadRes('D', 'pick6'), mitadRes('D', 'safety')) + castigo2 + `<button class="res tdr" data-a="tdr">${ic('tdr')}<b>TD de ${R(HOY).corto}</b></button>`;
-// el renglón de «¿Qué pasó?»: con aviso, dice la jugada (tocarla la corrige) y trae Deshacer u otra acción; sin aviso, «Corregir la última»
+// el renglón de abajo del TD: con aviso, dice la jugada (tocarla la corrige) y trae Deshacer u otra acción; sin aviso, «Última · Corregir · Deshacer»
 function filaPregunta() {
   const p = st.partido, ta = st.toast;
-  if (!ta) return `<div class="pregunta">¿Qué pasó?${p.jugadas.length ? `<button class="ult" data-a="fila" data-v="${p.jugadas.length - 1}">Corregir la última</button>` : ''}</div>`;
+  const u = p.jugadas[p.jugadas.length - 1];
+  if (!ta) return u ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer">Deshacer</button></div>` : '';
   const fila = ta.uid ? p.jugadas.findIndex((j) => j.uid === ta.uid) : -1, btn = ta.accion !== undefined ? ta.accion : fila >= 0 || ta.snap ? ['deshacer', 'Deshacer'] : null;
   const txt = ta.txt.charAt(0).toUpperCase() + ta.txt.slice(1);
   // las caras opcionales (a quién iba, a quién le hicieron el sack) caben en el renglón sin el ícono: 4 de 30 px
@@ -1217,15 +1280,23 @@ function filaPregunta() {
 }
 function marcar() {
   const p = st.partido, O = p.lado === 'O', r = R(HOY);
-  return `<div class="pant"><div class="mcab">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
-    <div class="mbar"><button data-a="ir" data-v="inicio">‹ Inicio</button><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button><button data-a="terminar">Terminar</button></div>
-    <div class="mscore"><div class="eq"><img src="${LOGO}" alt=""><strong class="num${st.flash && st.flash.nos ? ' sube' : ''}">${p.nos}</strong></div><button class="down" data-a="editar"><span class="op1">${oportunidad(p)}</span><small>${O && p.sabe ? lugarDe(p.spot) + ' ' : ''}✎</small></button><div class="eq r2"><strong class="num${st.flash && st.flash.ellos ? ' sube' : ''}">${p.ellos}</strong>${rlogo(r)}</div></div></div>
-    <div class="cuerpo" style="padding-top:2px">
-      <div class="lado"><button data-a="lado" data-v="O" class="${O ? 'on' : ''}">Atacamos</button><button data-a="lado" data-v="D" class="${O ? '' : 'on'}">Defendemos</button></div>
+  const de = (k) => RES[p.lado].find((x) => x[0] === k);
+  const grande = (k) => `<button class="mk-grande" data-a="res" data-v="${k}">${mkIc(k, 30, mkColor(k))}<span><b>${MK_NOMBRE[k] || de(k)[1]}</b><small>${MK_SUB[k] || de(k)[2]}</small></span></button>`;
+  const chico = (k) => `<button class="mk-chico" data-a="res" data-v="${k}">${mkIc(k, 20, mkColor(k))}<b>${MK_NOMBRE[k] || de(k)[1]}</b></button>`;
+  const castigo = (v) => `<button class="mk-chico" data-a="castigo" data-v="${v}">${mkIc('castigo', 20, mkColor('castigo'))}<b>Castigo ${v === 'favor' ? 'a favor' : 'en contra'}</b></button>`;
+  const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIc('td', 30, '#fff')}Touchdown<small>+6 y la conversión</small></button>`
+    : `<button class="mk-td riv" data-a="tdr">${mkIc('tdr', 30, '#fff')}TD de ${r.corto}<small>Suma 6 al tocarlo</small></button>`;
+  const eq = (img, n, conBalon) => `<div class="mk-eq">${img}<span>${conBalon ? MK_BALON : ''}${n}</span></div>`;
+  const sube = (k) => (st.flash && st.flash[k] ? ' class="sube"' : '');
+  return `<div class="pant" style="--rc:${r.color}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
+    <div class="mbar"><button class="mk-lado" data-a="lado" data-v="${O ? 'D' : 'O'}">${MK_LADO}${O ? 'Ataque' : 'Defensa'}</button><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button><button data-a="terminar">Terminar</button></div>
+    <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas', O)}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto, !O)}</button></div>
+    <div class="cuerpo mk-cuerpo">
+      <div class="mk-vista"><div class="mk-grandes">${(O ? ['pase', 'corrida', 'incompleto', 'parada'] : ['bandera', 'tapado', 'intn', 'sack']).map(grande).join('')}</div>
+        <div class="mk-chicos">${(O ? ['int', 'pick6c', 'sackr', 'safetyc'] : ['pick6', 'safety']).map(chico).join('')}${castigo('favor')}${castigo('contra')}</div>${td}</div>
       ${filaPregunta()}
-      <div class="grid tiras">${tiras(O)}</div>
       ${p.jugadas.length ? jlista(p, true) : ''}
-    </div></div>`;
+    </div>${nav()}</div>`;
 }
 // ganamos, perdimos o empatamos (un 0–0 es empate, no «Perdimos»)
 const resDe = (a, b) => (a > b ? ['g', 'G', 'Ganamos'] : a < b ? ['p', 'P', 'Perdimos'] : ['e', 'E', 'Empatamos']);
@@ -1247,13 +1318,15 @@ const rankPts = () => PLANTEL.slice().sort((a, b) => TEMP[b.id].pts - TEMP[a.id]
 function jugadores() {
   return `<div class="pant">${est()}<div class="cuerpo">${cab('Jugadores', 'Temporada 2026')}
   <div class="card">${rankPts().map((p, i) => { const t = TEMP[p.id]; return `<button class="pp" data-a="jug" data-v="${p.id}"><span class="rk" style="width:18px;font:800 13px/1 Inter;color:var(--mut);text-align:center">${i + 1}</span>${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(t)}</small></div><div class="der"><strong class="num">${t.pts}</strong><small>pts</small></div></button>`; }).join('')}</div>
+  ${tablaPuntos()}
   </div>${nav()}</div>`;
 }
 // ficha de un jugador: cómo va y qué ha hecho, partido por partido
 function jugador() {
   const p = P(st.jug), t = TEMP[p.id], lugar = rankPts().findIndex((x) => x.id === p.id) + 1, max = Math.max(...JUEGOS.map((g) => puntosDe(g.st[p.id])), 1);
   const tiles = [['TD', t.td], ['Recepciones', t.rec], ['Corridas', t.car], ['Pases', t.att ? `${t.comp}/${t.att}` : 0, t.att ? `${Math.round(t.comp / t.att * 100)}% completos` : ''], ['TD de pase', t.tdp], ['Conversión', t.conv ? `+${t.conv}` : 0, 'puntos'],
-    ['Banderas', t.band], ['Intercepciones', t.intn], ['Sacks', t.sack], ['Tapados', t.tap]].filter((x) => x[1]);
+    ['Yardas atrapadas', t.ryd], ['Yardas corridas', t.ruyd], ['Yardas de pase', t.pyd], ['Primeros y diez', t.pd],
+    ['Banderas', t.band], ['Intercepciones', t.intn], ['Sacks', t.sack], ['Tapados', t.tap], ['Presiones', t.pres]].filter((x) => x[1]);
   return `<div class="pant">${est()}<div class="cuerpo">${volver()}
   ${tarjetaJ(p)}
   <div class="tj-info"><span><b class="num">${t.pts}</b> puntos</span><span><b class="num">${lugar}º</b> del equipo</span><span><b class="num">${t.pj}</b> partidos</span></div>
@@ -1278,6 +1351,7 @@ function partido() {
     <details class="mas"><summary>Ver todos los números</summary>
       <div class="mrow"><div><b>Jugadas buenas</b><small>${g.funcion} de ${g.jugadas}</small></div><strong class="num">${g.jugadas ? Math.round(g.funcion / g.jugadas * 100) : '—'}<i>%</i></strong></div>
       <div class="mrow"><div><b>Balones perdidos</b><small>pases que nos interceptaron</small></div><strong class="num">${g.perdidas}</strong></div>
+      ${g.primeras != null ? `<div class="mrow"><div><b>1ª y 10</b><small>las que logramos</small></div><strong class="num">${g.primeras}</strong></div><div class="mrow"><div><b>1ª y 10 de ellos</b><small>las que les dejamos</small></div><strong class="num">${g.primerasEllos}</strong></div>` : ''}
       <div class="mrow"><div><b>Balones robados</b><small>${robaron.length ? `de ${robaron.map(nom).join(' y ')}` : 'intercepciones nuestras'}</small></div><strong class="num">${intn}</strong></div>
     </details></div>
   <h2>Los números de cada quien</h2>${tablaPartido(g)}
@@ -1353,10 +1427,21 @@ function hoja() {
   if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.largo}</span></button>`).join('')}</div>`;
   if (st.hoja === 'quien') {
     const x = [...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === st.sel);
-    const td = st.sel === 'td', pasa = st.sel === 'pase' || (td && !st.corre), q = lanzo();
-    const lz = pasa ? campoLanzo(q, 'jugada') : td ? '<button class="campo" data-a="lanzover" data-v="jugada"><div class="izq"><div style="min-width:0"><span class="l">Cómo fue</span><b class="corta" style="display:block">Corriendo, sin pase</b></div></div><u>Cambiar</u></button>' : '';
-    h = `<h3>${x[3]}</h3>${lz}<div class="pjs">${grupos(quienes().filter(([id]) => !pasa || id !== q), 'quien')}<button class="pj" data-a="quien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>`;
+    const td = st.sel === 'td', pasa = st.sel === 'pase' || (td && !st.corre), q = lanzo(), tp = st.sel === 'tapado';
+    // TD: ya se escogió pase o corrida en «¿Cómo fue el TD?»; el de pase deja cambiar quién lanzó
+    const lz = pasa ? campoLanzo(q, 'jugada') : '';
+    // pase incompleto en defensa: lo tapamos o presión (o falló solo, abajo)
+    const tpo = tp ? `<div class="conm" style="margin:0 0 12px"><button data-a="tapo" data-v="tapado" class="${st.tapo !== 'presion' ? 'on' : ''}">Lo tapamos</button><button data-a="tapo" data-v="presion" class="${st.tapo === 'presion' ? 'on' : ''}">Presión</button></div>` : '';
+    // 1ª y 10 a mano (las jugadas se anotan sueltas, sin orden, sin downs): pase completo y corrida nuestra; en la bandera, si ellos la lograron
+    const pd = PD_EN.includes(st.sel) ? `<button class="pdt${st.pd ? ' on' : ''}" data-a="pdt" aria-pressed="${!!st.pd}">${st.sel === 'bandera' ? 'Lograron 1ª y 10' : '1ª y 10'}</button>` : '';
+    const tit = st.sel === 'incompleto' ? '¿A quién se le cayó?' : td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : tp && st.tapo === 'presion' ? '¿Quién hizo la presión?' : x[3];
+    h = `<h3${pd ? ' class="conpd"' : ''}><span>${tit}</span>${pd}</h3>${tpo}${lz}<div class="pjs">${grupos(quienes().filter(([id]) => !pasa || id !== q), 'quien')}<button class="pj" data-a="quien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>`;
   }
+  // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
+  if (st.hoja === 'inc') h = st.partido.lado === 'O'
+    ? '<h3>¿Qué pasó con el pase?</h3><p>Solo «se le cayó» resta, al que la soltó.</p><div class="ops"><button class="op prim" data-a="inc" data-v="cayo">Se le cayó, no la atrapó</button><button class="op" data-a="inc" data-v="mal">Mal pase o no se podía agarrar</button></div>'
+    : '<h3>¿Qué pasó con el pase?</h3><p>«No la atraparon» no suma a nadie.</p><div class="ops"><button class="op prim" data-a="inc" data-v="tapo">La bloqueamos</button><button class="op" data-a="inc" data-v="fallo">No la atraparon</button></div>';
+  if (st.hoja === 'como') h = '<h3>¿Cómo fue el TD?</h3><p>El de pase le da puntos también al QB.</p><div class="ops dos"><button class="op prim" data-a="como" data-v="pase">Pase</button><button class="op prim" data-a="como" data-v="corrida">Corrida</button></div>';
   if (st.hoja === 'qb') { const deJugada = st.qbDe !== 'partido', cur = st.qbDe === 'corrige' ? (st.partido.jugadas[st.edita] || {}).qb : deJugada ? lanzo() : st.partido.qb;
     h = `<h3>${deJugada ? '¿Quién lanzó?' : '¿Quién es el QB?'}</h3><p>${deJugada ? 'Solo esta jugada' : 'Todo el partido'}</p><div class="pjs">${st.van.map((id) => { const p = P(id); return `<button class="pj${id === cur ? ' actual' : ''}" data-a="qb" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}</div>
       ${(st.qbDe === 'jugada' && st.sel === 'td') || (st.qbDe === 'corrige' && (st.partido.jugadas[st.edita] || {}).k === 'td') ? '<div class="ops" style="margin-top:12px"><button class="op sec" data-a="qb" data-v="corre">Nadie: fue corriendo</button></div>' : ''}`; }
@@ -1365,10 +1450,11 @@ function hoja() {
     const j = st.partido.jugadas[st.edita];
     if (j) {
       const cuantos = j.k === 'int' ? null : CON_NOMBRE.includes(j.k) ? quienes(j.lado) : null;
-      h = `<h3>Corregir</h3><p>${j.down} · ${j.txt}</p>
+      h = `<h3>Corregir</h3><p>${j.txt}</p>
         ${j.repe ? '<div class="repe-av" style="margin:0 0 12px;padding:8px 8px 8px 12px;border-radius:12px"><span>La marcaron los dos celulares</span><button data-a="unica">No es repetida</button></div>' : ''}
         <div class="ops dos acc"><button class="op" data-a="cqp">Cambiar qué pasó</button><button class="op borrar" data-a="borrar">Borrar</button></div>
         ${['pase', 'incompleto', 'int', 'pick6c'].includes(j.k) || (j.k === 'td' && j.qb) ? `<div style="margin-top:12px">${campoLanzo(j.qb || st.partido.qb, 'corrige')}</div>` : j.k === 'td' ? '<button class="campo" data-a="lanzover" data-v="corrige" style="margin-top:12px"><div><span class="l">Cómo fue</span><b>Corriendo, sin pase</b></div><u>Cambiar</u></button>' : ''}
+        ${PD_EN.includes(j.k) ? `<button class="campo" data-a="cpd" style="margin-top:12px"><div><span class="l">${j.k === 'bandera' ? '¿Lograron 1ª y 10?' : '1ª y 10'}</span><b>${j.pd ? 'Sí' : 'No'}</b></div><u>Cambiar</u></button>` : ''}
         ${j.k === 'incompleto' && j.id ? `<button class="campo" data-a="ccayo" style="margin-top:12px"><div><span class="l">¿Se le cayó?</span><b>${j.drop ? 'Sí, se le cayó' : 'No'}</b></div><u>Cambiar</u></button>` : ''}
         ${conYardas(j) ? `<button class="campo" data-a="cyd" style="margin-top:12px"><div><span class="l">Yardas</span><b>${j.yd == null ? 'Sin yardas' : fmtYd(j.yd) + ' yd'}</b></div><u>Cambiar</u></button>` : ''}
         ${['td', 'pick6', 'tdr', 'pick6c'].includes(j.k) ? `<button class="campo" data-a="cconv" style="margin-top:12px"><div><span class="l">Conversión</span><b>${!j.conv ? 'No la intentaron' : `De ${j.conv[0]} · ${j.conv[1] ? 'entró' + (!['tdr', 'pick6c'].includes(j.k) ? `, atrapó ${nom(j.convId)}` : '') : 'no entró'}`}</b></div><u>Cambiar</u></button>` : ''}
@@ -1378,7 +1464,7 @@ function hoja() {
   }
   if (st.hoja === 'cqp') {
     const j = st.partido.jugadas[st.edita], O = j.lado === 'O';
-    const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n, , , l]) => [k, l || n]), ['castigo:favor', 'Castigo a ellos'], ['castigo:contra', 'Castigo a nosotros'], O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
+    const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n, , , l]) => [k, l || n]), ...(O ? [] : [['presion', 'Presión, incompleto'], ['fallo', 'Incompleto, no la atraparon']]), ['castigo:favor', 'Castigo a favor'], ['castigo:contra', 'Castigo en contra'], O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
     h = `<h3>¿Qué pasó?</h3><p>Antes: ${j.txt}.</p><div class="ops dos acc">${ops.map(([k, n]) => `<button class="op${j.k === k || `${j.k}:${j.v}` === k ? ' prim' : ''}" data-a="cqpya" data-v="${k}">${n}</button>`).join('')}</div>`;
   }
   if (st.hoja === 'conv') {
@@ -1416,7 +1502,11 @@ function pintar() {
   t.classList.toggle('entrada', st.ent === 'si' && st.entrar && ['inicio', 'partidos'].includes(st.pant));
   st.entrar = false;
   const confeti = fl && fl.td ? `<div class="tdflash"></div><div class="confeti">${CONFETI}</div>` : '';
-  t.innerHTML = p() + hoja() + confeti;
+  const cu0 = st.pant === 'marcar' && t.dataset.pant === 'marcar' ? (t.querySelector('.cuerpo') || {}).scrollTop || 0 : 0;
+  t.innerHTML = p() + hoja() + confeti; t.dataset.pant = st.pant;
+  if (st.pant === 'marcar') { const cu = t.querySelector('.cuerpo'), av = t.querySelector('.mk-vista + .pregunta.aviso'), nv = t.querySelector('.nav');
+    if (cu) cu.scrollTop = cu0;
+    if (cu && av && nv && st.toast && st.toast.nuevo) { const d = av.getBoundingClientRect().bottom + 8 - nv.getBoundingClientRect().top; if (d > 0) cu.scrollTo({ top: cu.scrollTop + d, behavior: st.anim === 'si' ? 'smooth' : 'auto' }); } }
   if (st.toast) st.toast.nuevo = false;
   if (st.hoja === 'cuanto') montarCuanto(); else if (tCuanto || tSola) cerrarCuanto();
   st.flash = null;
@@ -1441,30 +1531,38 @@ const qbDeHoy = () => (st.van.map(P).find((x) => x.pos === 'QB') || P(st.van[0])
 function nuevoPartido() { const t = Date.now(); st.partido = { id: nuevoUid(), inicio: t, metaVer: t, qb: qbDeHoy(), nos: 0, ellos: 0, down: 1, lado: 'O', spot: 5, primera: false, sabe: true, jugadas: [], borradas: {}, cambios: [], aparatos: {}, terminado: false, terminadoVer: 0 }; }
 const nom = (id) => (id && P(id) ? P(id).corto : 'sin nombre');
 const lanzo = () => st.lanzo || st.partido.qb; // el que lanzó esta jugada: el QB del partido, salvo que lo cambien
-// pase incompleto, «no avanzamos» e intercepción se guardan al primer toque: el nombre no entra a ninguna cuenta (mapa de toques)
-// sack a nuestro QB y safety en contra también: van al QB del partido y se cambia desde el aviso; en defensa, «Falló el pase»
-const SIN_QUIEN = ['incompleto', 'parada', 'int', 'sackr', 'safetyc', 'fallo'];
-const CON_NOMBRE = ['pase', 'corrida', 'incompleto', 'parada', 'buena', 'bandera', 'tapado', 'intn', 'sack', 'td', 'pick6', 'safety', 'sackr', 'safetyc'];
+// incompleto, «nos pararon» e intercepción se guardan al primer toque: el nombre no entra a ninguna cuenta (mapa de toques)
+// sack a nuestro QB y safety en contra también: van al QB del partido y se cambia desde el aviso
+const SIN_QUIEN = ['incompleto', 'parada', 'int', 'sackr', 'safetyc'];
+const CON_NOMBRE = ['pase', 'corrida', 'incompleto', 'parada', 'buena', 'bandera', 'tapado', 'presion', 'intn', 'sack', 'td', 'pick6', 'safety', 'sackr', 'safetyc'];
 const LANZA = ['pase', 'incompleto', 'int']; // jugadas con lanzador (el QB del partido por omisión)
-const YARDAS = ['pase', 'corrida', 'sackr']; // las que preguntan «¿Cuánto avanzó?» en ataque
-const conYardas = (j) => j.lado === 'O' && YARDAS.includes(j.k);
-const pregunta = (k) => ([...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === k) || [])[3] || '¿Quién?';
+const YARDAS = ['pase', 'corrida', 'sackr', 'td']; // las que preguntan «¿Cuánto avanzó?» en ataque
+// en defensa solo la bandera: cuánto avanzaron ellos (si quedó en 0 o menos, +1 extra al que la quitó)
+const conYardas = (j) => (j.lado === 'O' ? YARDAS.includes(j.k) : j.k === 'bandera');
+const pregunta = (k) => ([...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?'], ['presion', '', '', '¿Quién hizo la presión?']].find((y) => y[0] === k) || [])[3] || '¿Quién?';
 const enCancha = (lado) => (lado === 'D' ? DEFENSA : ATAQUE).filter((id) => st.van.includes(id));
 const lugarDe = (y) => (y <= CAMPO / 2 ? `nuestra ${Math.round(y)}` : `su ${Math.round(CAMPO - y)}`);
+// en defensa el balón es de ellos: su spot se cuenta desde su zona
+const lugarEllos = (y) => (y <= CAMPO / 2 ? `su ${Math.round(y)}` : `nuestra ${Math.round(CAMPO - y)}`);
 const fmtYd = (y) => (y > 0 ? '+' : '') + y;
-const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `pase incompleto, iba a ${n}` : 'pase incompleto'), parada: (n) => (n ? `no avanzó ${n}` : 'no avanzamos'), fallo: () => 'falló el pase', buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera de ${n}`, tapado: (n) => (n ? `pase tapado por ${n}` : 'pase tapado'), intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
+const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `incompleto, iba a ${n}` : 'incompleto, mal pase'), parada: (n) => (n ? `pararon a ${n}` : 'nos pararon'), buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera de ${n}`, tapado: (n) => `pase tapado por ${n}`, presion: (n) => `presión de ${n}, incompleto`, fallo: () => 'pase incompleto, no la atraparon', intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
 function textoDe(j) {
   const cv = !j.conv ? '' : !j.conv[1] ? ` · no entró la de ${j.conv[0]}` : ['tdr', 'pick6c'].includes(j.k) ? ` + ${j.conv[0]}` : ` + ${j.conv[0]} (atrapó ${nom(j.convId)})`;
-  if (j.k === 'castigo') return `castigo ${j.v === 'favor' ? 'a ellos' : 'a nosotros'}`;
-  if (j.k === 'td') return `TD de ${nom(j.id)}${j.qb ? `, pase de ${nom(j.qb)}` : ''}${cv}`;
+  if (j.k === 'castigo') return `castigo ${j.v === 'favor' ? 'a favor' : 'en contra'}`;
+  if (j.k === 'td') return `TD de ${nom(j.id)}${j.qb ? `, pase de ${nom(j.qb)}` : ', corriendo'}${j.yd != null ? ` · ${j.yd} yd` : ''}${cv}`;
   if (j.k === 'sackr') return `sack a ${nom(j.id)}` + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '');
   if (j.k === 'pick6') return `Pick 6 de ${nom(j.id)}${cv}`;
   if (j.k === 'tdr') return `TD de ${R(HOY).corto}${cv}`;
   if (j.k === 'pick6c') return `pick 6 de ${R(HOY).corto}, lanzó ${nom(j.qb)}${cv}`;
   if (j.k === 'safetyc') return j.id ? `safety en contra, agarraron a ${nom(j.id)}` : 'safety en contra';
   if (j.k === 'int') return `intercepción, lanzó ${nom(j.qb)}`;
-  return TXT[j.k](SIN_QUIEN.includes(j.k) || j.k === 'tapado' ? (j.id && P(j.id) ? P(j.id).corto : '') : nom(j.id)) + (j.drop ? ' · se le cayó' : '') + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '');
+  if (j.k === 'incompleto' && j.drop) return `incompleto, se le cayó a ${nom(j.id)}`;
+  return TXT[j.k](SIN_QUIEN.includes(j.k) ? (j.id && P(j.id) ? P(j.id).corto : '') : nom(j.id)) + (j.drop ? ' · se le cayó' : '') + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '') + (pdDe(j) ? ' · 1ª y 10' : pdEllos(j) ? ' · lograron 1ª y 10' : '');
 }
+// 1ª y 10: se marca a mano en pase completo o corrida nuestra (las jugadas se anotan sueltas, sin orden)
+const PD_EN = ['pase', 'corrida', 'bandera'];
+const pdDe = (j) => !!j.pd && j.lado === 'O' && ['pase', 'corrida'].includes(j.k);
+const pdEllos = (j) => !!j.pd && j.lado === 'D' && j.k === 'bandera'; // 1ª y 10 que ellos lograron (estadística del equipo, sin puntos)
 // puntos de cada jugada y si cambia de lado (pick 6: después de nuestra conversión ellos reciben, seguimos en defensa)
 function efecto(j) {
   const c = j.conv && j.conv[1] ? j.conv[0] : 0;
@@ -1493,38 +1591,33 @@ function rehacer(p) {
     const igual = j.unica ? null : p.jugadas.slice(0, i).find((y) => y.por !== j.por && y.k === j.k && (y.id || null) === (j.id || null) && y.v === j.v && y.lado === j.lado && j.t - y.t < 10000);
     j.repe = igual ? igual.uid : null;
     const f = efecto(j); nos += f.nos || 0; ellos += f.ellos || 0;
-    j.logro = false;
-    // la primera de Belugas sale sola de las yardas; si se saltaron las yardas ya no se sabe dónde va el balón
-    if (lado === 'O' && !f.cambia) {
-      const dy = j.k === 'castigo' ? (j.v === 'favor' ? 5 : -5) : conYardas(j) ? j.yd : 0;
+    // dónde va el balón (el nuestro en ataque, el de ellos en defensa); si se saltaron las yardas ya no se sabe
+    // la 1ª y 10 ya no sale sola al cruzar medio campo: se marca a mano en la jugada (pd)
+    if (!f.cambia) {
+      const cs = lado === 'O' ? 5 : -5, dy = j.k === 'castigo' ? (j.v === 'favor' ? cs : -cs) : conYardas(j) ? j.yd : lado === 'D' && j.k === 'sack' ? null : 0;
       if (dy == null) sabe = false; else spot = Math.max(1, Math.min(CAMPO - 1, spot + dy));
-      if (sabe && !primera && spot >= PRIMERA) { primera = true; j.logro = true; }
     }
-    j.txt = textoDe(j) + (j.logro ? ' · ¡primera!' : '');
-    // la 4ª sin TD ni primera: en ataque, si se sabe que no hubo primera (o ya era «y gol»), el balón pasa a ellos;
-    // si se saltaron yardas, y en defensa (su primera no se marca), se pregunta en el aviso
-    j.fin4 = down === 4 && !f.cambia && !f.serie && !f.reinicia && !f.mismoDown && !j.logro ? (lado === 'O' && (sabe || primera) ? 'cambia' : 'pregunta') : null;
-    if (f.cambia || j.fin4 === 'cambia') serie(lado === 'O' ? 'D' : 'O');
-    else if (f.serie || f.reinicia) serie(lado);
-    else if (j.logro) down = 1;
+    const pd = pdDe(j); if (pd) primera = true;
+    j.txt = textoDe(j);
+    if (f.cambia) serie(lado === 'O' ? 'D' : 'O');
+    else if (f.serie || f.reinicia) serie(lado); // pick 6 (nuestro o de ellos): después de la conversión patean y el mismo lado empieza en su 5
+    else if (pd) down = 1;
     else if (!f.mismoDown) down = (down % 4) + 1;
     j.marc = `${nos}–${ellos}`;
   });
   while (e < ev.length) serie(ev[e++].lado);
   Object.assign(p, { nos, ellos, down, lado, spot, primera, sabe, ns, nsUsada: usada });
 }
-// la oportunidad como en la transmisión: «2ª y 6» (yardas a medio campo), «1ª y gol» ya pasado medio campo y «2ª y ?» si se
-// saltaron yardas; del rival, solo el down
-const oportunidad = (p) => (p.lado !== 'O' ? `${p.down}ª` : `${p.down}ª y ${p.primera ? 'gol' : p.sabe ? PRIMERA - p.spot : '?'}`);
+// la oportunidad como en la transmisión: «2ª y 6» (yardas a medio campo), «1ª y gol» ya pasado medio campo; del rival, solo el down
+// sin downs: las jugadas se anotan sueltas; lo único que se marca es si logramos 1ª y 10
+const oportunidad = (p) => (p.lado === 'O' ? 'Atacamos' : 'Defendemos');
 let tToast;
 // el aviso vive en el renglón de «¿Qué pasó?»; si vence con la regla abierta solo se cambia ese renglón (no se quita nada de bajo el dedo)
 function avisar(toast, ms = 4000) { st.toast = { ...toast, nuevo: true }; clearTimeout(tToast); tToast = setTimeout(() => { st.toast = null; if (st.hoja === 'cuanto') { const e = document.querySelector('#tel .pregunta'); if (e && st.partido) e.outerHTML = filaPregunta(); } else pintar(); }, ms); }
 const conMarcador = (j) => { const f = efecto(j); return f.nos || f.ellos ? ` · ${st.partido.nos}–${st.partido.ellos}` : ''; };
 const porUid = (uid) => (st.partido ? st.partido.jugadas.find((x) => x.uid === uid) : null);
-// el aviso de una jugada: la jugada y su cambio en el marcador; la 4ª fallada lo dice, o pregunta si ya toca el otro lado
+// el aviso de una jugada: la jugada y su cambio en el marcador
 function avisoDe(x, opc) {
-  if (x.fin4 === 'cambia' && !st.practicando) return { txt: '4ª fallada: ahora defendemos', tipo: x.tipo, uid: x.uid };
-  if (x.fin4 === 'pregunta' && !st.practicando) return x.lado === 'O' ? { txt: '4ª sin yardas: ¿ya defendemos?', tipo: x.tipo, uid: x.uid, accion: ['ladoya', 'Defendemos', 'D'] } : { txt: 'Su 4ª: ¿ya nos toca?', tipo: x.tipo, uid: x.uid, accion: ['ladoya', 'Atacamos', 'O'] };
   return { txt: x.txt + conMarcador(x), id: x.id, tipo: x.tipo, uid: x.uid, opc };
 }
 function guarda(j) {
@@ -1532,8 +1625,7 @@ function guarda(j) {
   j = { uid: nuevoUid(), t, ver: t, lado: p.lado, por: APARATO, id: null, ...j };
   p.jugadas.push(j); rehacer(p);
   const x = porUid(j.uid), opc = (['incompleto', 'parada'].includes(j.k) && !j.id) || ['sackr', 'safetyc'].includes(j.k) ? { pregunta: pregunta(j.k), ids: enCancha(j.lado).filter((id) => j.k !== 'incompleto' || id !== j.qb) } : null;
-  // si va a salir la regla, la 4ª se dice al poner las yardas: sin ellas todavía no se sabe si hubo primera
-  const a = conYardas(x) && st.yds === 'si' ? avisoDe({ ...x, fin4: null }, opc) : avisoDe(x, opc);
+  const a = avisoDe(x, opc);
   avisar(a, a.accion ? 6000 : opc ? 5000 : 4000);
   st.flash = { td: ['td', 'pick6'].includes(j.k), nos: p.nos > x.antes.nos, ellos: p.ellos > x.antes.ellos };
   subir();
@@ -1553,7 +1645,7 @@ function restaurar(p, snap) { const t = Date.now() + 1; p.jugadas = snap.map((j)
 function juegoDe(p) {
   const qb0 = p.qb || qbDeHoy(), est_ = {};
   const s = (id, k, n = 1) => { if (!id) return; est_[id] = est_[id] || {}; est_[id][k] = (est_[id][k] || 0) + n; };
-  let jug = 0, fun = 0, per = 0; const tds = [], convs = [0, 0];
+  let jug = 0, fun = 0, per = 0, prim = 0, primEllos = 0; const tds = [], convs = [0, 0];
   p.jugadas.forEach((j) => {
     const qb = j.qb || qb0, pasTD = j.k === 'td' && j.qb; // TD de pase: también es recepción y pase completo
     const y = j.k === 'td' ? (j.yd != null ? j.yd : j.antes && j.antes.sabe ? CAMPO - j.antes.spot : null) : j.yd; // el TD avanzó lo que faltaba
@@ -1563,19 +1655,21 @@ function juegoDe(p) {
     if (j.k === 'incompleto') { s(qb, 'att'); if (j.drop) s(j.id, 'drop'); }
     if (j.k === 'int' || j.k === 'pick6c') { per++; s(qb, 'att'); s(qb, 'intl'); }
     if (j.k === 'corrida') s(j.id, 'car');
-    if (j.k === 'sackr') { s(j.id || qb0, 'sackr'); if (y != null) s(j.id || qb0, 'skyd', y); }
+    if (j.k === 'sackr') { s(j.id || qb0, 'sackr'); if (y != null && y < 0) s(j.id || qb0, 'skyd', -y); } // el sack resta sus yardas
     if (j.k === 'safetyc') s(j.id, 'safc');
     if (['pase', 'corrida', 'td'].includes(j.k) && y != null) s(j.id, j.k === 'pase' || pasTD ? 'ryd' : 'ruyd', y);
-    if (j.logro && j.lado === 'O' && j.k !== 'sackr') s(j.id, 'pd');
+    if (pdDe(j)) { prim++; s(j.id, 'pd'); } // +1 al que llevaba el balón
+    if (pdEllos(j)) primEllos++;
     if (j.k === 'td' || j.k === 'pick6') { s(j.id, 'td'); if (pasTD) s(j.qb, 'tdp'); if (j.k === 'pick6') s(j.id, 'intn'); tds.push([j.id, pasTD ? 'pase' : j.k === 'td' ? 'corrida' : null, pasTD ? j.qb : null, j.conv && j.conv[1] ? [j.convId, j.conv[0]] : null]);
       if (j.conv) { convs[1]++; if (j.conv[1]) { convs[0]++; s(j.convId, 'conv', j.conv[0]); s(j.convQb || qb0, 'convp', j.conv[0]); } } }
     if (j.k === 'bandera') { s(j.id, 'band'); if (j.yd != null && j.yd <= 0) s(j.id, 'bandx'); }
     if (j.k === 'tapado') s(j.id, 'tap');
+    if (j.k === 'presion') s(j.id, 'pres');
     if (j.k === 'intn') s(j.id, 'intn');
     if (j.k === 'sack') s(j.id, 'sack');
     if (j.k === 'safety') s(j.id, 'saf');
   });
-  return { id: 'g' + (JUEGOS.length + 1), rival: HOY, fecha: 'Hoy', nos: p.nos, ellos: p.ellos, jugadas: jug, funcion: fun, perdidas: per, convs, tds: tds.filter((x) => x[0]), conv: tds.filter((x) => x[0] && x[3]).map((x) => x[3]), st: est_, nuevo: true };
+  return { id: 'g' + (JUEGOS.length + 1), rival: HOY, fecha: 'Hoy', nos: p.nos, ellos: p.ellos, jugadas: jug, funcion: fun, perdidas: per, primeras: prim, primerasEllos: primEllos, convs, tds: tds.filter((x) => x[0]), conv: tds.filter((x) => x[0] && x[3]).map((x) => x[3]), st: est_, nuevo: true };
 }
 function empezar() {
   if (unirseSiHay()) return;
@@ -1597,7 +1691,7 @@ const sync = { ok: true, srv: null, firma: '' }, avisadas = new Set();
 // en diseno/ no hay servidor del tablero: el relevo no conecta y no se pide nada a la red (lo demás funciona igual)
 const vivo = () => Promise.reject(new Error('sin servidor del tablero'));
 const aEnviar = (p) => ({ id: p.id, inicio: p.inicio, rival: HOY, van: st.van, qb: p.qb, metaVer: p.metaVer, cambios: p.cambios, borradas: p.borradas, terminado: p.terminado, terminadoVer: p.terminadoVer,
-  aparatos: { ...p.aparatos, [APARATO]: Date.now() }, jugadas: p.jugadas.map(({ uid, t, ver, k, id, v, conv, convId, convQb, qb, yd, drop, unica, lado, por }) => ({ uid, t, ver, k, id, v, conv, convId, convQb, qb, yd, drop, unica, lado, por })) });
+  aparatos: { ...p.aparatos, [APARATO]: Date.now() }, jugadas: p.jugadas.map(({ uid, t, ver, k, id, v, conv, convId, convQb, qb, yd, drop, pd, unica, lado, por }) => ({ uid, t, ver, k, id, v, conv, convId, convQb, qb, yd, drop, pd, unica, lado, por })) });
 function juntar(a, b) {
   if (!a || !b || a.id !== b.id) return !a ? b : !b ? a : (b.inicio || 0) > (a.inicio || 0) ? b : a;
   const borradas = { ...a.borradas };
@@ -1685,11 +1779,11 @@ function regla(c) {
   return `<div class="rg-env"><div class="rg-th" id="rgth"><div class="rg-p" style="width:calc(100% + ${ancho}px)"><div class="rg-mm" style="left:calc(${mitad});width:${ancho}px">${m}</div>${sn}</div></div><div class="rg-ag" style="height:${base + 4}px"></div></div>`;
 }
 // el balón antes de la jugada: si no se sabe (se saltaron yardas), la regla mide solo cuánto, sin cancha
-const antesDe = (j) => (j.antes.sabe ? j.antes : { ...j.antes, spot: 25, primera: true });
+const antesDe = (j) => (j.k === 'td' ? { ...j.antes, spot: 0, primera: true, sabe: false } : j.antes.sabe ? j.antes : { ...j.antes, spot: 25, primera: true });
 function hojaCuanto() {
   const c = st.cuanto, j = porUid(c.uid); if (!j) return '';
-  const a = antesDe(j), op = j.antes.sabe ? `${j.down} y ${j.antes.primera ? 'gol' : PRIMERA - j.antes.spot}` : j.down;
-  const lugar = j.antes.sabe ? lugarDe(a.spot) : 'sin saber dónde iba el balón';
+  const O = j.lado === 'O', a = antesDe(j), op = O ? 'Nuestro balón' : 'Su balón';
+  const lugar = j.k === 'td' ? 'lo que avanzó la jugada del TD' : j.antes.sabe ? (O ? lugarDe : lugarEllos)(a.spot) : 'sin saber dónde iba el balón';
   return `<div class="hoja cuanto"><div class="rg-tit"><b>¿Cuánto avanzó?</b><small class="corta">${textoDe({ ...j, yd: null })}</small></div>
     <div class="rg-op"><span class="op1">${op}</span><span class="rg-lugar">${lugar}</span></div>
     <div class="rg-pmf"><button class="rg-b" data-pm="-1" aria-label="Menos">${signo(false)}</button><div class="rg-vw"><span class="rg-anuncio" id="rganuncio"></span><span class="rg-v num" id="rgv">${fmtYd(c.yd)}<small>yd</small></span></div><button class="rg-b" data-pm="1" aria-label="Más">${signo(true)}</button></div>
@@ -1704,52 +1798,57 @@ function ponerYardas(yd) {
   const j = c && porUid(c.uid); if (!j) return;
   const a = j.antes;
   // si llegó a la zona, fue touchdown: la jugada pasa a TD y sigue la conversión
-  if (a.sabe && a.spot + yd >= CAMPO && j.k !== 'sackr') { corrige(j, (x) => { const corrio = x.k === 'corrida'; x.k = 'td'; if (corrio) x.qb = null; x.yd = yd; }, 'Touchdown'); st.flash = { td: true, nos: true }; abrirConv(j); return; }
+  if (j.lado === 'O' && a.sabe && a.spot + yd >= CAMPO && !['sackr', 'td'].includes(j.k)) { corrige(j, (x) => { const corrio = x.k === 'corrida'; x.k = 'td'; if (corrio) x.qb = null; x.yd = yd; }, 'Touchdown'); st.flash = { td: true, nos: true }; abrirConv(j); return; }
   corrige(j, (x) => { x.yd = yd; }, 'Guardado');
+  trasYardas(j);
 }
+// la regla de un TD recién marcado se cerró (con o sin yardas): sigue su conversión
+function trasYardas(j) { if (j && st.convLuego === j.uid) { st.convLuego = null; abrirConv(j); } }
 function montarCuanto() {
   const th = $('#rgth'); if (!th || !st.cuanto) return;
-  const c = st.cuanto, j = porUid(c.uid), a = antesDe(j), s = RG.sep, lo = a === j.antes ? Math.max(-12, -a.spot) : -20, hi = a === j.antes ? CAMPO - a.spot - (j.k === 'sackr' ? 1 : 0) : 35;
+  const c = st.cuanto, j = porUid(c.uid), a = antesDe(j), s = RG.sep, lo = j.k === 'td' ? 1 : a === j.antes ? Math.max(-12, -a.spot) : -20, hi = j.k === 'td' ? CAMPO : j.k === 'sackr' ? 0 : a === j.antes ? CAMPO - a.spot - (j.lado === 'D' ? 1 : 0) : 35;
+  // en defensa la regla va volteada: ellos avanzan hacia nuestra zona (a la izquierda) desde su balón
+  const inv = j.lado === 'D', enRegla = (f) => (inv ? CAMPO - f : f);
   let armado = false;
-  const centrar = (y, suave) => { armado = false; th.scrollTo({ left: (a.spot + y - FMIN) * s, behavior: suave ? 'smooth' : 'auto' }); };
+  const centrar = (y, suave) => { armado = false; th.scrollTo({ left: (enRegla(a.spot + y) - FMIN) * s, behavior: suave ? 'smooth' : 'auto' }); };
   const programar = (ms) => { clearTimeout(tSola); clearTimeout(tCuanto); tCuanto = setTimeout(() => { ponerYardas(st.cuanto ? st.cuanto.yd : 0); pintar(); }, ms); };
-  const colorear = (y) => { const f = a.spot + y; document.querySelectorAll('.rg-m').forEach((b) => { const x = +b.dataset.f; let k = ''; if (j.antes.sabe && x >= 5 && x <= Math.min(a.spot, f)) k = RG.hecho; if (y > 0 && x > a.spot && x <= f) k = RG.gana; if (y < 0 && x > f && x <= a.spot) k = RG.pierde; b.style.background = k; }); };
+  const colorear = (y) => { const f = a.spot + y; document.querySelectorAll('.rg-m').forEach((b) => { const x = enRegla(+b.dataset.f); let k = ''; if (j.antes.sabe && x >= 5 && x <= Math.min(a.spot, f)) k = RG.hecho; if (y > 0 && x > a.spot && x <= f) k = RG.gana; if (y < 0 && x > f && x <= a.spot) k = RG.pierde; b.style.background = k; }); };
   const poner = (y) => {
     y = Math.max(lo, Math.min(hi, Math.round(y))); if (y === c.yd) return;
     const antes = c.yd; c.yd = y;
     const v = $('#rgv'); if (v) { v.innerHTML = `${fmtYd(y)}<small>yd</small>`; v.style.color = y > 0 ? RG.gana : y < 0 ? RG.pierde : ''; v.classList.remove('tic'); void v.offsetWidth; v.classList.add('tic'); }
     colorear(y);
     if (navigator.vibrate) navigator.vibrate(6);
-    // al cruzar medio campo o la meta: pastilla, rebote y vibración
-    const meta = j.antes.sabe ? (a.primera ? CAMPO : PRIMERA) : null, dentro = meta != null && a.spot + y >= meta, cruza = dentro && a.spot + antes < meta;
-    const an = $('#rganuncio'); if (an) { an.textContent = a.spot + y >= CAMPO ? '¡Touchdown!' : '¡Primera y gol!'; an.classList.toggle('ver', dentro); }
+    // al llegar a la zona: pastilla, rebote y vibración (la 1ª y 10 ya no sale sola: se marca a mano)
+    const meta = j.antes.sabe && !inv ? CAMPO : null, dentro = meta != null && a.spot + y >= meta, cruza = dentro && a.spot + antes < meta;
+    const an = $('#rganuncio'); if (an) { an.textContent = '¡Touchdown!'; an.classList.toggle('ver', dentro); }
     if (cruza) { ['#rgv', '.rg-ag'].forEach((q) => { const e = $(q); if (e) { e.classList.remove('rebote'); void e.offsetWidth; e.classList.add('rebote'); } }); if (navigator.vibrate) navigator.vibrate([25, 40, 25]); }
   };
   centrar(c.yd); colorear(c.yd);
-  const leer = () => Math.round(th.scrollLeft / s) + FMIN - a.spot;
+  const leer = () => enRegla(Math.round(th.scrollLeft / s) + FMIN) - a.spot;
   ['pointerdown', 'touchstart', 'wheel'].forEach((t) => th.addEventListener(t, () => { armado = true; clearTimeout(tCuanto); clearTimeout(tSola); }, { passive: true }));
-  th.addEventListener('scroll', () => { if (armado) { poner(leer()); programar(700); } }, { passive: true });
+  th.addEventListener('scroll', () => { if (armado) { poner(leer()); programar(3000); } }, { passive: true });
   // con el ratón se arrastra (en el teléfono es el desplazamiento nativo, con inercia)
   th.addEventListener('pointerdown', (e) => {
     if (e.pointerType !== 'mouse') return;
     const s0 = th.scrollLeft, x0 = e.clientX; try { th.setPointerCapture(e.pointerId); } catch { /* sin captura */ }
     const mover = (ev) => { th.scrollLeft = s0 - (ev.clientX - x0); };
-    const soltar = () => { th.removeEventListener('pointermove', mover); th.removeEventListener('pointerup', soltar); programar(700); };
+    const soltar = () => { th.removeEventListener('pointermove', mover); th.removeEventListener('pointerup', soltar); programar(3000); };
     th.addEventListener('pointermove', mover); th.addEventListener('pointerup', soltar);
   });
   // más y menos: un toque es una yarda; dejarlo apretado sigue sumando
   document.querySelectorAll('.rg-b').forEach((b) => {
     let t1 = null, t2 = null;
     const uno = () => { poner(c.yd + +b.dataset.pm); centrar(c.yd, true); };
-    const parar = () => { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; programar(1000); };
+    const parar = () => { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; programar(3000); };
     b.addEventListener('pointerdown', (e) => { e.preventDefault(); clearTimeout(tCuanto); clearTimeout(tSola); uno(); t1 = setTimeout(() => { t2 = setInterval(uno, 90); }, 380); });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => b.addEventListener(t, () => { if (t1 || t2) parar(); }));
   });
   // nadie la tocó: se cierra sola y la jugada queda sin yardas
-  if (!tSola && !tCuanto) tSola = setTimeout(() => { if (st.hoja === 'cuanto') { const uid = st.cuanto.uid; st.cuanto = null; st.hoja = null; tSola = null; sinYardas(uid); pintar(); } }, 10000);
+  if (!tSola && !tCuanto) tSola = setTimeout(() => { if (st.hoja === 'cuanto') { const j = porUid(st.cuanto.uid); st.cuanto = null; st.hoja = null; tSola = null; if (j && st.convLuego === j.uid) trasYardas(j); else if (j) sinYardas(j.uid); pintar(); } }, 10000);
 }
-// la regla se cerró sola: el aviso lo dice y las yardas se ponen con un toque (si era la 4ª, manda la 4ª)
-function sinYardas(uid) { const x = porUid(uid); if (!x || st.practicando) return; avisar(x.fin4 ? avisoDe(x) : { txt: `${x.txt} · sin yardas`, id: x.id, tipo: x.tipo, uid, accion: ['ponerlas', 'Ponerlas', uid] }, 6000); }
+// la regla se cerró sola: el aviso lo dice y las yardas se ponen con un toque
+function sinYardas(uid) { const x = porUid(uid); if (!x || st.practicando) return; avisar({ txt: `${x.txt} · sin yardas`, id: x.id, tipo: x.tipo, uid, accion: ['ponerlas', 'Ponerlas', uid] }, 6000); }
 // la conversión, en una sola hoja; si entró, en la misma hoja se escoge quién la atrapó
 function abrirConv(j) { st.conv = { uid: j.uid, paso: null }; st.lanzo = null; st.hoja = 'conv'; }
 function recalcular() {
@@ -1802,7 +1901,7 @@ const A = {
     if (st.hoja === 'qb' && st.qbDe !== 'partido') { st.hoja = { jugada: 'quien', conv: 'conv', corrige: 'corrige' }[st.qbDe]; return; }
     if (st.hoja === 'conv' && st.conv && st.conv.paso) { st.conv.paso = null; return; }
     if (st.hoja === 'conv' && st.conv) { const j = porUid(st.conv.uid); if (j && j.conv === undefined) avisar({ txt: `${j.txt} · sin conversión`, id: j.id, tipo: j.tipo, uid: j.uid, accion: ['ponerconv', 'Ponerla', j.uid] }, 6000); }
-    if (st.hoja === 'cuanto') cerrarCuanto();
+    if (st.hoja === 'cuanto') { const c = st.cuanto; cerrarCuanto(); st.cuanto = null; st.hoja = null; st.lanzo = null; trasYardas(c && porUid(c.uid)); return; }
     st.lanzo = null; st.hoja = null;
   },
   empezar: () => empezar(),
@@ -1816,8 +1915,6 @@ const A = {
   marcar: () => { if (st.partido) { st.pant = 'marcar'; st.hoja = null; } else empezar(); },
   unirse: () => { unirseSiHay(); },
   lado: (v) => { const p = st.partido; p.cambios.push({ uid: nuevoUid(), t: Date.now(), lado: v }); rehacer(p); subir(); },
-  // desde el aviso de la 4ª: «Defendemos» o «Atacamos»
-  ladoya: (v) => { st.toast = null; clearTimeout(tToast); A.lado(v); },
   // desde el aviso: poner las yardas que se saltaron, o la conversión que se cerró tocando fuera
   ponerlas: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); const y = st.yds; st.yds = 'si'; abrirCuanto(j); st.yds = y; },
   ponerconv: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); abrirConv(j); },
@@ -1827,11 +1924,27 @@ const A = {
   // abrir o cerrar una serie de la lista
   serie: (v) => { const p = st.partido || (st.final && st.final.partido); if (!p) return; const k = `${p.id}:${v}`, enJuego = p === st.partido && +v === p.ns && p.nsUsada; st.abre[k] = !(st.abre[k] ?? enJuego); },
   res: (v) => {
-    st.sel = v; st.lanzo = null; st.corre = false;
+    st.sel = v; st.lanzo = null; st.corre = false; st.pd = false; st.tapo = 'tapado';
+    if (v === 'td') { st.hoja = 'como'; return; }
+    if (v === 'incompleto' || v === 'tapado') { st.cayo = false; st.hoja = 'inc'; return; }
     if (v === 'pick6c') { const j = guarda({ k: 'pick6c', qb: st.partido.qb }); st.hoja = null; abrirConv(j); return; }
     if (SIN_QUIEN.includes(v)) { const q = st.partido.qb, j = guarda({ k: v, qb: ['incompleto', 'int'].includes(v) ? q : null, id: ['sackr', 'safetyc'].includes(v) ? q : null }); st.hoja = null; if (conYardas(j)) abrirCuanto(j); return; }
     st.hoja = 'quien';
   },
+  // TD: primero cómo fue; el de pase da TD de pase al QB
+  como: (v) => { st.corre = v === 'corrida'; st.hoja = 'quien'; },
+  tapo: (v) => { st.tapo = v; },
+  pdt: () => { st.pd = !st.pd; },
+  // pase incompleto que falló solo: sin nombre, no da puntos
+  fallo: () => { st.hoja = null; guarda({ k: 'fallo' }); },
+  inc: (v) => {
+    if (v === 'fallo') { A.fallo(); return; }
+    if (v === 'tapo') { st.sel = 'tapado'; st.hoja = 'quien'; return; }
+    if (v === 'cayo') { st.sel = 'incompleto'; st.cayo = true; st.hoja = 'quien'; return; }
+    // mal pase: se guarda ya; a quién iba se puede poner desde el aviso (no resta)
+    st.hoja = null; guarda({ k: 'incompleto', qb: st.partido.qb });
+  },
+  cpd: () => { const j = st.partido.jugadas[st.edita]; st.hoja = null; corrige(j, (x) => { x.pd = !x.pd; }); },
   // «¿se le cayó?», desde el aviso del incompleto ya con nombre (o desde Corregir)
   cayo: () => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; corrige(j, (x) => { x.drop = !x.drop; }, 'Guardado'); },
   ccayo: () => { const j = st.partido.jugadas[st.edita]; st.hoja = null; corrige(j, (x) => { x.drop = !x.drop; }); },
@@ -1845,13 +1958,18 @@ const A = {
   },
   quien: (id) => {
     const s = st.sel; st.hoja = null; id = id || null;
-    if (s === 'td' || s === 'pick6') { const j = guarda({ k: s, id, qb: s === 'td' && !st.corre ? lanzo() : null }); st.corre = false; st.lanzo = null; abrirConv(j); return; }
-    const j = guarda({ k: s, id, qb: s === 'pase' ? lanzo() : null });
-    st.lanzo = null;
+    if (s === 'td' || s === 'pick6') { const j = guarda({ k: s, id, qb: s === 'td' && !st.corre ? lanzo() : null }); st.corre = false; st.lanzo = null;
+      // TD nuestro: primero cuántas yardas fue la jugada; al cerrar la regla sigue la conversión
+      if (s === 'td' && st.yds === 'si') { abrirCuanto(j); st.cuanto.yd = j.antes.sabe ? CAMPO - j.antes.spot : 10; st.convLuego = j.uid; } else abrirConv(j);
+      return; }
+    const k = s === 'tapado' && st.tapo === 'presion' ? 'presion' : s;
+    const j = guarda({ k, id, qb: ['pase', 'incompleto'].includes(s) ? lanzo() : null, ...(st.pd && PD_EN.includes(s) ? { pd: true } : {}), ...(s === 'incompleto' && st.cayo && id ? { drop: true } : {}) });
+    st.cayo = false;
+    st.lanzo = null; st.pd = false;
     if (conYardas(j)) abrirCuanto(j);
   },
   // el nombre opcional desde el aviso (incompleto: a quién iba; nos pararon: a quién)
-  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = Date.now(); rehacer(st.partido); avisar({ ...ta, txt: j.txt + conMarcador(j), id, opc: j.k === 'incompleto' ? { cayo: true } : null }, 5000); subir(); },
+  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = Date.now(); rehacer(st.partido); avisar({ ...ta, txt: j.txt + conMarcador(j), id, opc: null }, 5000); subir(); },
   castigo: (v) => { st.hoja = null; guarda({ k: 'castigo', v }); },
   tdr: () => { st.sel = 'tdr'; st.lanzo = null; const j = guarda({ k: 'tdr' }); abrirConv(j); },
   conv: (v) => {
@@ -1863,7 +1981,7 @@ const A = {
     st.hoja = null; corrige(j, (x) => { x.conv = [n, entro]; x.convId = null; }, 'Guardado');
   },
   convq: (id) => { const c = st.conv, j = c && porUid(c.uid); st.hoja = null; if (!j) return; const n = c.paso; corrige(j, (x) => { x.conv = [n, 1]; x.convId = id || null; x.convQb = lanzo(); }, 'Guardado'); st.lanzo = null; },
-  sinyd: () => { const uid = st.cuanto && st.cuanto.uid; cerrarCuanto(); st.cuanto = null; st.hoja = null; const x = uid && porUid(uid); if (x && x.fin4) avisar(avisoDe(x), 6000); },
+  sinyd: () => { const c = st.cuanto; cerrarCuanto(); st.cuanto = null; st.hoja = null; trasYardas(c && porUid(c.uid)); },
   // corregir cualquier jugada tocando su renglón: no se borra nada hasta escoger qué cambia
   fila: (i) => { st.edita = +i; st.hoja = 'corrige'; st.lanzo = null; },
   cquien: (id) => { const j = st.partido.jugadas[st.edita]; st.hoja = null; corrige(j, (x) => { if (x.k === 'int') x.qb = id || null; else x.id = id || null; }); },
@@ -1873,7 +1991,7 @@ const A = {
   cqp: () => { st.hoja = 'cqp'; },
   cqpya: (v) => {
     const j = st.partido.jugadas[st.edita], [k, cv] = v.split(':');
-    corrige(j, (x) => { x.k = k; if (k === 'castigo') x.v = cv; if (!['td', 'pick6', 'tdr', 'pick6c'].includes(k)) { x.conv = null; x.convId = null; x.convQb = null; } if (!CON_NOMBRE.includes(k)) x.id = null; if (!conYardas(x)) x.yd = null; if (k !== 'incompleto') x.drop = false; if (['int', 'pick6c', 'pase', 'incompleto', 'td'].includes(k)) x.qb = x.qb || st.partido.qb; else x.qb = null; });
+    corrige(j, (x) => { x.k = k; if (k === 'castigo') x.v = cv; if (!['td', 'pick6', 'tdr', 'pick6c'].includes(k)) { x.conv = null; x.convId = null; x.convQb = null; } if (!CON_NOMBRE.includes(k)) x.id = null; if (!conYardas(x)) x.yd = null; if (k !== 'incompleto') x.drop = false; if (!PD_EN.includes(k)) x.pd = false; if (['int', 'pick6c', 'pase', 'incompleto', 'td'].includes(k)) x.qb = x.qb || st.partido.qb; else x.qb = null; });
     st.hoja = ['td', 'pick6'].includes(k) ? null : CON_NOMBRE.includes(k) && !SIN_QUIEN.includes(k) && !j.id ? 'corrige' : null;
     if (['td', 'pick6', 'tdr', 'pick6c'].includes(k)) abrirConv(j);
   },
