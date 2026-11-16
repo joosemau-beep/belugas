@@ -1,8 +1,13 @@
-// guarda la app en el iPad para que abra en la cancha sin señal.
+// guarda la app en el teléfono para que abra en la cancha sin señal.
 // La página: primero internet, preguntándole al servidor si cambió (así los arreglos llegan a la primera); si en 3 s no contesta, la guardada.
 // Logo e imágenes: la guardada, y se actualiza por detrás. version.txt nunca se guarda: con él la app sabe si hay versión nueva.
 const C = 'belugas';
-self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(['./', 'logo.webp', 'letras.webp', 'icon.png']))); self.skipWaiting() });
+// lo que la app del teléfono necesita para abrir sin señal: la página, las fuentes, los logos y los retratos. ipad.html es la app de antes (respaldo)
+const EQUIPOS = ['belugas', 'only-fins', 'triple-t', 'bucaneros', 'destroyers', 'kickass', 'bulldogs', 'lobos-its', 'kaffies', 'ultimos-aztecas', 'los-fantasmas', 'panini'];
+const FIJOS = ['./', 'logo.webp', 'letras.webp', 'icon.png', 'archivos/balon-3d.png', 'archivos/corona-3d.png',
+  'archivos/fuentes/inter-var.woff2', 'archivos/fuentes/barlowcondensed-800.woff2', 'archivos/fuentes/barlowcondensed-900.woff2',
+  ...EQUIPOS.map(x => `archivos/equipos/${x}-256.png`), ...['nico', 'rodrigo', 'mau'].map(x => `archivos/jugadores/${x}.jpg`), 'ipad.html'];
+self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(FIJOS))); self.skipWaiting() });
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url), nav = e.request.mode === 'navigate';
