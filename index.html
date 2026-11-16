@@ -789,8 +789,8 @@ function armarPlantel() {
   ATAQUE = (l.O || []).filter((id) => P(id)); DEFENSA = (l.D || []).filter((id) => P(id));
 }
 // los partidos jugados antes de marcar en la app del teléfono: de ellos solo se sabe el marcador (los pasó Mau el 15-nov: van 5–1).
-// El del 26 de octubre tocaba contra Panini pero se jugó otra vez contra Kaffies. La fecha del de Bucaneros sale de la app de antes (10 nov)
-const PASADOS = [['p1', 'kaffies', '5 oct', 13, 20], ['p2', 'only-fins', '12 oct', 14, 8], ['p3', 'ultimos-aztecas', '19 oct', 21, 20], ['p4', 'kaffies', '26 oct', 14, 13], ['p5', 'lobos-its', '2 nov', 33, 12], ['p6', 'bucaneros', '10 nov', 16, 14]]
+// El del 26 de octubre tocaba contra Panini pero se jugó otra vez contra Kaffies. El de Bucaneros fue el lunes 9 de noviembre
+const PASADOS = [['p1', 'kaffies', '5 oct', 13, 20], ['p2', 'only-fins', '12 oct', 14, 8], ['p3', 'ultimos-aztecas', '19 oct', 21, 20], ['p4', 'kaffies', '26 oct', 14, 13], ['p5', 'lobos-its', '2 nov', 33, 12], ['p6', 'bucaneros', '9 nov', 16, 14]]
   .map(([id, rival, fecha, nos, ellos]) => ({ id, rival, fecha, nos, ellos, solo: true, jugadas: 0, funcion: 0, perdidas: 0, convs: [0, 0], tds: [], conv: [], st: {} }));
 let JUEGOS = PASADOS.slice();
 // fantasy (tabla de Mau, con lo decidido el 12-nov en la tarde): [campo, cómo se dice, puntos]; los de ataque primero. Pick 6 = intercepción + TD.
@@ -1621,7 +1621,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261115180409';
+const VERSION = '20261115180939';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
