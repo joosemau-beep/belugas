@@ -113,11 +113,16 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
   .tel .nav { position: fixed; }
 }
 
-/* abierta desde el ícono del iPhone (iOS 26): la pantalla de la app termina unos 60 puntos antes del borde y lo de abajo lo pinta
-   el fondo de la página. La rayita ya queda fuera, así que no se suma su margen, y ese fondo va blanco: la barra llega hasta abajo */
-html.app { --abajo: 0px; }
-html.app, html.app body { background: #fff; }
-html.app .nav { height: 64px; }
+/* abierta desde el ícono del iPhone (iOS 26), dos estados (Mau, 16-nov):
+   - pantalla completa: iOS pinta la orilla de la hora con el fondo de la página, así que va marino (blanco = blur claro sobre el título);
+     la barra lleva aire abajo para que los nombres no queden pegados a la rayita.
+   - cortada (clase corte): la app termina ~62 puntos antes del borde y lo de abajo lo pinta el fondo de la página: va blanco para que
+     la barra llegue hasta abajo, y sin el margen de la rayita, que ya queda fuera. */
+html.app .tel { --abajo: 20px; }
+html.app, html.app body { background: #0d2347; }
+html.app .nav { height: calc(64px + var(--abajo)); }
+html.app.corte .tel { --abajo: 0px; }
+html.app.corte, html.app.corte body { background: #fff; }
 /* arriba (Mau, 15-nov): el título va en blanco sobre el marino de la hora; así no se deslava bajo la hora y el contenido sube */
 .cab + h2 { margin-top: 10px; }
 
@@ -875,7 +880,11 @@ let st = {
 };
 let vanTodos = true;
 const $ = (s) => document.querySelector(s);
-if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) document.documentElement.classList.add('app');
+if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+  // iOS 26 a veces deja la app 62 puntos más corta que la pantalla (corte) y a veces no; se revisa al abrir y cada que cambia
+  const corte = () => document.documentElement.classList.toggle('corte', innerHeight > innerWidth && screen.height - innerHeight > 40);
+  document.documentElement.classList.add('app'); corte(); addEventListener('resize', corte);
+}
 const pila = (ids, max = 5) => `<span class="pila">${ids.slice(0, max).map((id) => foto(P(id))).join('')}${ids.length > max ? `<span class="mas">+${ids.length - max}</span>` : ''}</span>`;
 const ICO = {
   inicio: '<path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/>',
@@ -1785,7 +1794,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261115224928';
+const VERSION = '20261115234522';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
