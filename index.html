@@ -88,6 +88,7 @@
   --grad: radial-gradient(120% 90% at 100% 0%, rgba(120,190,255,.85) 0%, rgba(120,190,255,0) 55%), linear-gradient(135deg, #0d2347 0%, #1d4f8f 62%, #3f8fe6 100%);
   --boton: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%);
   --anillo: conic-gradient(from 210deg, #0d2347, #5aaeff, #1d4f8f, #0d2347);
+  --abajo: env(safe-area-inset-bottom, 0px);
   --brillo: radial-gradient(70% 55% at 50% -10%, rgba(90,174,255,.20), transparent 70%);
   --acento: #1d4f8f;
 }
@@ -112,16 +113,24 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
   .tel .nav { position: fixed; }
 }
 
+/* abierta desde el ícono del iPhone (iOS 26): la pantalla de la app termina unos 60 puntos antes del borde y lo de abajo lo pinta
+   el fondo de la página. La rayita ya queda fuera, así que no se suma su margen, y ese fondo va blanco: la barra llega hasta abajo */
+html.app { --abajo: 0px; }
+html.app, html.app body { background: #fff; }
+html.app .nav { height: 64px; }
+/* arriba (Mau, 15-nov): el título va en blanco sobre el marino de la hora; así no se deslava bajo la hora y el contenido sube */
+.cab + h2 { margin-top: 10px; }
+
 /* ---------- piezas de la app ---------- */
 .pant { position: absolute; inset: 0; display: flex; flex-direction: column; }
 .cuerpo { flex: 1; overflow-y: auto; padding: 0 20px 124px; position: relative; }
 /* la franja marina detrás de la hora de verdad (con black-translucent mide lo que la zona segura de arriba; en Safari, 14 px) */
 .estado { height: max(14px, env(safe-area-inset-top)); flex: none; position: relative; }
 .pant > .estado { background: #0d2347; }
-.cab { display: flex; align-items: center; gap: 10px; padding: 8px 2px 20px; }
+.cab { display: flex; align-items: center; gap: 10px; margin: 0 -20px 14px; padding: 2px 22px 14px; background: #0d2347; color: #fff; }
 .cab img { width: 38px; height: 38px; object-fit: contain; }
 .cab b { font: 800 20px/1 Inter; }
-.cab small { display: block; color: var(--mut); font: 500 13px/1.2 Inter; margin-top: 3px; }
+.cab small { display: block; color: rgba(255,255,255,.72); font: 500 13px/1.2 Inter; margin-top: 3px; }
 h2 { font: 800 15px/1.2 Inter; margin: 32px 2px 12px; color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
 h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
 .card { background: var(--card); border-radius: 16px; box-shadow: var(--sombra); }
@@ -190,7 +199,7 @@ input.nombre:focus { border-color: var(--acento); }
 .pj.actual, .op.actual { box-shadow: inset 0 0 0 2.5px var(--acento); }
 .mbar .qbchip { margin: 0; height: 38px; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* «¿Cuánto avanzó?»: la regla que escogió Iker en el editor; sin velo, las tiras de arriba siguen tocables */
-.hoja.cuanto { padding: 8px 16px calc(14px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 30px rgba(11,27,51,.18); }
+.hoja.cuanto { padding: 8px 16px calc(14px + var(--abajo)); box-shadow: 0 -10px 30px rgba(11,27,51,.18); }
 .rg-tit { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; height: 24px; }
 .rg-tit b { font: 800 18px/1.2 Inter; flex: none; }
 .rg-tit small { font: 600 12.5px/1.2 Inter; color: var(--mut); min-width: 0; text-align: right; }
@@ -359,7 +368,7 @@ table.bs td.v { color: #b8c2cf; }
 .fila-j .dato strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
 
 /* barra de abajo */
-.nav { position: absolute; left: 0; right: 0; bottom: 0; height: calc(78px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: #fff; border-top: 1px solid var(--linea); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 9px; z-index: 5; }
+.nav { position: absolute; left: 0; right: 0; bottom: 0; height: calc(78px + var(--abajo)); padding-bottom: var(--abajo); background: #fff; border-top: 1px solid var(--linea); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 9px; z-index: 5; }
 .nav button { width: 64px; display: grid; justify-items: center; gap: 4px; font: 600 10.5px/1 Inter; color: #667185; }
 .nav button.on { color: var(--navy); }
 .nav svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -505,7 +514,7 @@ table.bs td.v { color: #b8c2cf; }
 
 /* hojas de abajo */
 .velo { position: absolute; inset: 0; background: rgba(11,27,51,.38); z-index: 10; animation: ap .15s ease-out; }
-.hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 10px 16px calc(22px + env(safe-area-inset-bottom)); z-index: 11; animation: sube .2s ease-out; max-height: 88%; overflow-y: auto; }
+.hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 10px 16px calc(22px + var(--abajo)); z-index: 11; animation: sube .2s ease-out; max-height: 88%; overflow-y: auto; }
 .hoja::before { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d3d9e2; margin: 0 auto 12px; }
 .hoja h3 { font: 800 21px/1.2 Inter; margin: 4px 2px 14px; }
 .hoja h3 + p { margin-top: -10px; }
@@ -527,7 +536,7 @@ table.bs td.v { color: #b8c2cf; }
 .op { height: 64px; border-radius: 16px; background: var(--bg); font: 800 17px/1 Inter; }
 .op.prim, .btn-gr { background: var(--boton); color: #fff; }
 .op.sec { background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); color: var(--mut); font-weight: 700; }
-.ops.fijo { position: sticky; bottom: 0; background: #fff; padding: 10px 0 calc(12px + env(safe-area-inset-bottom)); box-shadow: 0 -10px 12px -8px rgba(11,27,51,.08); }
+.ops.fijo { position: sticky; bottom: 0; background: #fff; padding: 10px 0 calc(12px + var(--abajo)); box-shadow: 0 -10px 12px -8px rgba(11,27,51,.08); }
 .campo { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; background: var(--bg); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 15px; }
 .campo .izq { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .campo .izq .rlogo { width: 34px; height: 34px; }
@@ -702,7 +711,7 @@ table.bs td.v { color: #b8c2cf; }
 .onb-acc { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .onb-acc .saltar { color: var(--mut); font: 700 14px/1 Inter; min-height: 44px; padding: 0 6px; margin-right: auto; }
 .onb-acc .sig { min-height: 44px; padding: 0 20px; border-radius: 22px; background: var(--navy); color: #fff; font: 700 15px/1 Inter; margin-left: auto; }
-.onb-hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 26px 26px 0 0; padding: 22px 20px calc(18px + env(safe-area-inset-bottom)); pointer-events: auto; animation: sube .26s cubic-bezier(.3,1.1,.5,1); }
+.onb-hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 26px 26px 0 0; padding: 22px 20px calc(18px + var(--abajo)); pointer-events: auto; animation: sube .26s cubic-bezier(.3,1.1,.5,1); }
 .onb-hoja .marca { display: flex; align-items: center; gap: 12px; }
 .onb-hoja .marca img { width: 46px; height: 46px; object-fit: contain; }
 .onb-hoja .marca b { font: 800 22px/1.15 Inter; }
@@ -716,7 +725,7 @@ table.bs td.v { color: #b8c2cf; }
 @keyframes onbIn { from { opacity: 0; } }
 @keyframes onbCard { from { opacity: 0; transform: translateY(6px) scale(.98); } }
 @keyframes onbPulso { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); } }
-.cab .engrane { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--mut); }
+.cab .engrane { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: rgba(255,255,255,.85); }
 .cab .engrane svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .aj-fila { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 4px; border-top: 1px solid var(--linea); text-align: left; font: 600 15.5px/1.2 Inter; color: var(--ink); }
 .aj-fila:first-of-type { border-top: 0; }
@@ -866,6 +875,7 @@ let st = {
 };
 let vanTodos = true;
 const $ = (s) => document.querySelector(s);
+if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) document.documentElement.classList.add('app');
 const pila = (ids, max = 5) => `<span class="pila">${ids.slice(0, max).map((id) => foto(P(id))).join('')}${ids.length > max ? `<span class="mas">+${ids.length - max}</span>` : ''}</span>`;
 const ICO = {
   inicio: '<path d="M4 11 12 4l8 7v9h-5v-6H9v6H4z"/>',
@@ -1775,7 +1785,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261115222424';
+const VERSION = '20261115224928';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
