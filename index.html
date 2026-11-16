@@ -294,8 +294,6 @@ table.bs td.v { color: #b8c2cf; }
 .heroe .mid { text-align: center; }
 .heroe .mid strong { font: italic 900 48px/1 var(--disp); letter-spacing: -.01em; text-shadow: 0 2px 10px rgba(0,0,0,.2); }
 .heroe .mid small { display: block; font: 600 13px/1.3 Inter; opacity: .9; margin-top: 4px; }
-.heroe .van { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font: 600 13px/1.2 Inter; position: relative; }
-.heroe .van span { opacity: .9; }
 .btn-blanco { width: 100%; height: 60px; border-radius: 14px; background: #fff; color: var(--navy); font: 800 18px/1 Inter; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 0 rgba(0,0,0,.08); position: relative; }
 .btn-blanco:active, .gigante:active, .res:active, .pj:active, .op:active, .cat:active { transform: scale(.98); }
 
@@ -530,11 +528,6 @@ table.bs td.v { color: #b8c2cf; }
 .pj .foto { width: 50px; height: 50px; }
 .pj .corta { max-width: 100%; }
 .pj small { color: var(--mut); font: 600 11px/1 Inter; }
-/* los de la cancha, con borde (el azul de antes casi no se veía: 1.03 a 1) y aparte de la banca */
-.pj.cancha { background: #fff; box-shadow: inset 0 0 0 2px #cfe0f7; }
-.pjs .grupo { grid-column: 1 / -1; margin: 2px 2px 0; font: 800 12px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
-.pjs .grupo ~ .grupo { margin-top: 8px; }
-.pjs .grupo ~ .pj { min-height: 98px; } /* con los dos títulos, «No sé» sigue sin desplazar a 390 × 844 */
 .ops { display: grid; gap: 10px; }
 .ops.dos { grid-template-columns: 1fr 1fr; }
 .op { height: 64px; border-radius: 16px; background: var(--bg); font: 800 17px/1 Inter; }
@@ -556,6 +549,7 @@ table.bs td.v { color: #b8c2cf; }
 .van-f small { color: var(--mut); font-size: 12px; }
 .van-f .ck { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--linea); display: grid; place-items: center; flex: none; color: #fff; font: 800 14px/1 Inter; }
 .van-f.si .ck { background: var(--boton); border-color: transparent; }
+.op.prim:disabled { opacity: .4; }
 .van-f.no { opacity: .55; }
 .lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .fila { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
@@ -798,7 +792,7 @@ const ic = (k, chico = false) => { const g = ICONOS_S[k] || ICONOS_S.parada, ton
 // ---------- el plantel y la temporada: viven en los datos de la app (aparato y nube), no en el código ----------
 // T es la temporada: el plantel (sembrado una vez con los nombres de la app de antes), quiénes salen de inicio y los partidos marcados.
 const tempVacia = () => ({ v: 1, plantel: [], linea: { O: [], D: [], qb: null, ver: 0 }, juegos: {}, sembrado: 0 });
-let T = tempVacia(), PLANTEL = [], ATAQUE = [], DEFENSA = [];
+let T = tempVacia(), PLANTEL = [];
 // retratos aprobados para publicarse (archivos/jugadores); los demás van con sus iniciales
 const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau' };
 const P = (id) => PLANTEL.find((x) => x.id === id);
@@ -806,7 +800,6 @@ function armarPlantel() {
   const l = T.linea || {};
   PLANTEL = (T.plantel || []).filter((x) => !x.baja).sort((a, b) => (a.n ?? 999) - (b.n ?? 999) || (a.id < b.id ? -1 : 1)).map((x) => { const f = RETRATOS[x.id] ? `archivos/jugadores/${RETRATOS[x.id]}.jpg` : null, n = esc(x.nombre);
     return { id: x.id, nombre: n, corto: n, num: null, pos: x.id === l.qb ? 'QB' : '', img: f, cara: f }; });
-  ATAQUE = (l.O || []).filter((id) => P(id)); DEFENSA = (l.D || []).filter((id) => P(id));
 }
 // los partidos jugados antes de marcar en la app del teléfono: de ellos solo se sabe el marcador (los pasó Mau el 15-nov: van 5–1).
 // El del 26 de octubre tocaba contra Panini pero se jugó otra vez contra Kaffies. El de Bucaneros fue el lunes 9 de noviembre
@@ -957,7 +950,6 @@ function heroeHoy() {
       <button class="btn-blanco" data-a="juego" data-v="${st.final.gid}">Ver el partido</button></div>`
     : `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">Siguiente partido</div>
       <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div>
-      <div class="van">${pila(st.van)}<span>Van ${st.van.length} de ${PLANTEL.length}</span></div>
       <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
 }
 function inicio1() {
@@ -1284,24 +1276,21 @@ function compartir(gid) {
   let sale; try { sale = lista ? manda(IMG.blob) : preparaImagen(g).then(manda); } catch (e) { sale = Promise.reject(e); }
   Promise.resolve(sale).catch((e) => { if (!e || e.name !== 'AbortError') return copiaTexto(txt, gid); }); // AbortError = cerró el menú sin mandar
 }
-// quién: los que van hoy, primero los del lado que está en la cancha
-function quienes(de) {
-  const lado = (de || (st.partido && st.partido.lado)) === 'D' ? DEFENSA : ATAQUE;
-  return [...st.van].sort((a, b) => (lado.includes(b) ? 1 : 0) - (lado.includes(a) ? 1 : 0)).map((id) => [id, lado.includes(id)]);
-}
+// quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
+const botonPj = (id, accion, actual) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
 function hoja() {
   if (!st.hoja) return '';
   let h = '';
   const r = R(HOY);
   const campos = (accion) => `<button class="campo" data-a="rivalver" data-v="${accion}"><div class="izq">${rlogo(r)}<div style="min-width:0"><span class="l">Rival</span><b class="corta" style="display:block">${r.largo}</b></div></div><u>Cambiar</u></button>
-    <button class="campo" data-a="vanver" data-v="${accion}"><div style="min-width:0"><span class="l">Van hoy · ${st.van.length} de ${PLANTEL.length}</span>${pila(st.van, 6)}</div><u>Cambiar</u></button>`;
+    <button class="campo" data-a="vanver" data-v="${accion}"><div style="min-width:0"><span class="l">Vinieron · ${st.van.length} de ${PLANTEL.length}</span>${pila(st.van, 6)}</div><u>Cambiar</u></button>`;
   if (st.hoja === 'editar') {
     const otros = st.partido ? Object.keys(st.partido.aparatos || {}).filter((a) => a !== APARATO).length : 0;
     h = `<h3>Partido</h3>${campos('editar')}
       <div class="relevo">${!clave ? 'Sin el link del equipo: se guarda solo en este celular.' : !sync.ok ? 'Sin señal: se sube al volver.' : otros ? `Lo marcan ${otros + 1} celulares.` : '¿Otro celular? Que abra la app y toque «Seguir marcando».'}</div>
       <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   }
-  if (st.hoja === 'van') h = `<h3>¿Quiénes van hoy?</h3><div class="lista-van">${PLANTEL.map((p) => { const si = st.van.includes(p.id); return `<button class="van-f ${si ? 'si' : 'no'}" data-a="vantoggle" data-v="${p.id}">${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div><span class="ck">${si ? '✓' : ''}</span></button>`; }).join('')}</div><div class="ops fijo"><button class="op prim" data-a="vanlisto">Listo · van ${st.van.length}</button></div>`;
+  if (st.hoja === 'van') h = `<h3>¿Quiénes vinieron hoy?</h3><div class="lista-van">${PLANTEL.map((p) => { const si = st.van.includes(p.id); return `<button class="van-f ${si ? 'si' : 'no'}" data-a="vantoggle" data-v="${p.id}">${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div><span class="ck">${si ? '✓' : ''}</span></button>`; }).join('')}</div><div class="ops fijo"><button class="op prim" data-a="vanlisto"${st.van.length ? '' : ' disabled'}>${!st.van.length ? 'Marca quién vino' : st.vanDe === 'empezar' ? `Empezar · vinieron ${st.van.length}` : `Listo · vinieron ${st.van.length}`}</button></div>`;
   if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.largo}</span></button>`).join('')}</div>`;
   if (st.hoja === 'quien') {
     const x = [...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === st.sel);
@@ -1313,7 +1302,7 @@ function hoja() {
     // 1ª y 10 a mano (las jugadas se anotan sueltas, sin orden, sin downs): pase completo y corrida nuestra; en la bandera, si ellos la lograron
     const pd = PD_EN.includes(st.sel) ? `<button class="pdt${st.pd ? ' on' : ''}" data-a="pdt" aria-pressed="${!!st.pd}">${st.sel === 'bandera' ? 'Lograron 1ª y 10' : '1ª y 10'}</button>` : '';
     const tit = st.sel === 'incompleto' ? '¿A quién se le cayó?' : td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : tp && st.tapo === 'presion' ? '¿Quién hizo la presión?' : x[3];
-    h = `<h3${pd ? ' class="conpd"' : ''}><span>${tit}</span>${pd}</h3>${tpo}${lz}<div class="pjs">${grupos(quienes().filter(([id]) => !pasa || id !== q), 'quien')}<button class="pj" data-a="quien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>`;
+    h = `<h3${pd ? ' class="conpd"' : ''}><span>${tit}</span>${pd}</h3>${tpo}${lz}<div class="pjs">${st.van.filter((id) => !pasa || id !== q).map((id) => botonPj(id, 'quien')).join('')}<button class="pj" data-a="quien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>`;
   }
   // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
   if (st.hoja === 'inc') h = st.partido.lado === 'O'
@@ -1327,7 +1316,7 @@ function hoja() {
   if (st.hoja === 'corrige') {
     const j = st.partido.jugadas[st.edita];
     if (j) {
-      const cuantos = j.k === 'int' ? null : CON_NOMBRE.includes(j.k) ? quienes(j.lado) : null;
+      const cuantos = j.k === 'int' ? null : CON_NOMBRE.includes(j.k) ? st.van : null;
       h = `<h3>Corregir</h3><p>${j.txt}</p>
         ${j.repe ? '<div class="repe-av" style="margin:0 0 12px;padding:8px 8px 8px 12px;border-radius:12px"><span>La marcaron los dos celulares</span><button data-a="unica">No es repetida</button></div>' : ''}
         <div class="ops dos acc"><button class="op" data-a="cqp">Cambiar qué pasó</button><button class="op borrar" data-a="borrar">Borrar</button></div>
@@ -1337,7 +1326,7 @@ function hoja() {
         ${conYardas(j) ? `<button class="campo" data-a="cyd" style="margin-top:12px"><div><span class="l">Yardas</span><b>${j.yd == null ? 'Sin yardas' : fmtYd(j.yd) + ' yd'}</b></div><u>Cambiar</u></button>` : ''}
         ${['td', 'pick6', 'tdr', 'pick6c'].includes(j.k) ? `<button class="campo" data-a="cconv" style="margin-top:12px"><div><span class="l">Conversión</span><b>${!j.conv ? 'No la intentaron' : `De ${j.conv[0]} · ${j.conv[1] ? 'entró' + (!['tdr', 'pick6c'].includes(j.k) ? `, atrapó ${nom(j.convId)}` : '') : 'no entró'}`}</b></div><u>Cambiar</u></button>` : ''}
         ${j.k === 'castigo' ? `<h4 class="sub">Castigo</h4><div class="ops dos acc"><button class="op${j.v === 'favor' ? ' prim' : ''}" data-a="ccast" data-v="favor">A ellos</button><button class="op${j.v === 'contra' ? ' prim' : ''}" data-a="ccast" data-v="contra">A nosotros</button></div>` : ''}
-        ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4><div class="pjs chicos">${cuantos.map(([id, cancha]) => { const p = P(id); return `<button class="pj${cancha ? ' cancha' : ''}${id === j.id ? ' actual' : ''}" data-a="cquien" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}<button class="pj${!j.id ? ' actual' : ''}" data-a="cquien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>` : ''}`;
+        ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4><div class="pjs chicos">${cuantos.map((id) => botonPj(id, 'cquien', id === j.id)).join('')}<button class="pj${!j.id ? ' actual' : ''}" data-a="cquien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>` : ''}`;
     }
   }
   if (st.hoja === 'cqp') {
@@ -1348,7 +1337,7 @@ function hoja() {
   if (st.hoja === 'conv') {
     const c = st.conv, j = c && porUid(c.uid);
     if (j && c.paso) { const q = lanzo();
-      h = `<h3>¿Quién la atrapó?</h3><p>Conversión de ${c.paso}</p>${campoLanzo(q, 'conv')}<div class="pjs">${grupos(quienes('O').filter(([id]) => id !== q), 'convq')}</div>`; }
+      h = `<h3>¿Quién la atrapó?</h3><p>Conversión de ${c.paso}</p>${campoLanzo(q, 'conv')}<div class="pjs">${st.van.filter((id) => id !== q).map((id) => botonPj(id, 'convq')).join('')}</div>`; }
     else if (j) h = `<h3>Conversión</h3><p>${['tdr', 'pick6c'].includes(j.k) ? `La de ${r.corto}` : textoDe({ ...j, conv: null })}</p>
       <div class="convf">${[1, 2].map((n) => `<div class="cf"><div class="cn">De ${n}<small>desde la ${DESDE[n]}</small></div><button class="op prim" data-a="conv" data-v="${n}-1">Entró</button><button class="op" data-a="conv" data-v="${n}-0">No entró</button></div>`).join('')}</div>
       <div class="ops" style="margin-top:4px"><button class="op sec" data-a="conv" data-v="0">No la intentaron</button></div>`;
@@ -1360,10 +1349,6 @@ function hoja() {
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   return `<div class="velo" data-a="cerrar"></div><div class="hoja">${h}</div>`;
 }
-// los de la cancha arriba, con su título, y el resto en «Banca»; si no se sabe quién sale de inicio, todos juntos y sin títulos
-const grupos = (lista, accion) => { const boton = ([id, cancha]) => { const p = P(id); return `<button class="pj${cancha ? ' cancha' : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
-  const c = lista.filter(([, k]) => k), b = lista.filter(([, k]) => !k);
-  return c.length ? `<h4 class="grupo">En la cancha</h4>${c.map(boton).join('')}` + (b.length ? `<h4 class="grupo">Banca</h4>${b.map(boton).join('')}` : '') : b.map(boton).join(''); };
 // de dónde se tira cada conversión (reglamento IFAF que usa la app); si la liga tira de otro lado, se cambia aquí
 const DESDE = { 1: 5, 2: 10 };
 // quién lanzó (el QB del partido por omisión); se cambia solo para esta jugada
@@ -1423,7 +1408,7 @@ const YARDAS = ['pase', 'corrida', 'sackr', 'td']; // las que preguntan «¿Cuá
 // en defensa solo la bandera: cuánto avanzaron ellos (si quedó en 0 o menos, +1 extra al que la quitó)
 const conYardas = (j) => (j.lado === 'O' ? YARDAS.includes(j.k) : j.k === 'bandera');
 const pregunta = (k) => ([...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?'], ['presion', '', '', '¿Quién hizo la presión?']].find((y) => y[0] === k) || [])[3] || '¿Quién?';
-const enCancha = (lado) => (lado === 'D' ? DEFENSA : ATAQUE).filter((id) => st.van.includes(id));
+const recientes = (lado) => { const v = new Set(); [...st.partido.jugadas].reverse().forEach((j) => { if (j.lado === lado && j.id && st.van.includes(j.id) && !borrada(st.partido, j)) v.add(j.id); }); st.van.forEach((id) => v.add(id)); return [...v]; };
 const lugarDe = (y) => (y <= CAMPO / 2 ? `nuestra ${Math.round(y)}` : `su ${Math.round(CAMPO - y)}`);
 // en defensa el balón es de ellos: su spot se cuenta desde su zona
 const lugarEllos = (y) => (y <= CAMPO / 2 ? `su ${Math.round(y)}` : `nuestra ${Math.round(CAMPO - y)}`);
@@ -1509,7 +1494,7 @@ function guarda(j) {
   const p = st.partido, t = Date.now();
   j = { uid: nuevoUid(), t, ver: t, lado: p.lado, por: APARATO, id: null, ...j };
   p.jugadas.push(j); rehacer(p);
-  const x = porUid(j.uid), opc = (['incompleto', 'parada'].includes(j.k) && !j.id) || ['sackr', 'safetyc'].includes(j.k) ? { pregunta: pregunta(j.k), ids: enCancha(j.lado).filter((id) => j.k !== 'incompleto' || id !== j.qb) } : null;
+  const x = porUid(j.uid), opc = (['incompleto', 'parada'].includes(j.k) && !j.id) || ['sackr', 'safetyc'].includes(j.k) ? { pregunta: pregunta(j.k), ids: recientes(j.lado).filter((id) => j.k !== 'incompleto' || id !== j.qb) } : null;
   const a = avisoDe(x, opc);
   avisar(a, a.accion ? 6000 : opc ? 5000 : 4000);
   st.flash = { td: ['td', 'pick6'].includes(j.k), nos: p.nos > x.antes.nos, ellos: p.ellos > x.antes.ellos };
@@ -1569,12 +1554,13 @@ function juegoDe(p) {
   });
   return { id: p.id, rival: p.rival, fecha: fechaDe(p.inicio), nos: p.nos, ellos: p.ellos, jugadas: jug, funcion: fun, perdidas: per, primeras: prim, primerasEllos: primEllos, convs, tds: tds.filter((x) => x[0]), conv: tds.filter((x) => x[0] && x[3]).map((x) => x[3]), st: est_, nuevo: true };
 }
-function empezar() {
+function empezar(vino) {
   if (unirseSiHay()) return;
   // contra quién: se escoge al empezar (ya no viene de un calendario en el código)
   if (!esRival(HOY)) { st.vanDe = 'empezar'; st.hoja = 'rival'; return; }
+  if (!vino) { vanTodos = false; st.van = []; st.vanDe = 'empezar'; st.hoja = 'van'; return; }
   nuevoPartido(); st.final = null; st.hoja = null; st.pant = 'marcar';
-  avisar({ txt: `Empezó vs ${R(HOY).largo} · van ${st.van.length}`, accion: ['editar', 'Cambiar'] }, 5000);
+  avisar({ txt: `Empezó vs ${R(HOY).largo} · vinieron ${st.van.length}`, accion: ['editar', 'Cambiar'] }, 5000);
   subir();
 }
 let avisoFinal = null; // [partido, «Lo terminó el otro celular.»]
@@ -1791,7 +1777,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261116154729';
+const VERSION = '20261116172138';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -1969,7 +1955,7 @@ const A = {
   editar: () => { st.hoja = 'editar'; },
   vanver: (v) => { st.vanDe = v; st.hoja = 'van'; },
   vantoggle: (id) => { vanTodos = false; st.van = st.van.includes(id) ? st.van.filter((x) => x !== id) : [...st.van, id].sort((a, b) => PLANTEL.findIndex((p) => p.id === a) - PLANTEL.findIndex((p) => p.id === b)); if (st.partido) { st.partido.metaVer = Date.now(); subir(); } },
-  vanlisto: () => { st.hoja = st.vanDe || 'editar'; },
+  vanlisto: () => { if (!st.van.length) return; if (st.vanDe === 'empezar') { st.vanDe = null; empezar(true); return; } st.hoja = st.vanDe || 'editar'; },
   // el botón + y los botones de Inicio: si hay partido se sigue; si lo marca otro celular, se une; si no, empieza con un toque
   marcar: () => { if (st.partido) { st.pant = 'marcar'; st.hoja = null; } else empezar(); },
   unirse: () => { unirseSiHay(); },
