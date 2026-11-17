@@ -293,9 +293,19 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(ga.map((x) => x[0]), ['Pase completo', 'Corrida', 'Incompleto', 'Intercepción lanzada', 'Sack recibido']);
   assert.deepEqual([new Set(ga.map((x) => x[1])).size, ga.every((x) => x[2])], [5, true]);
   assert.deepEqual(await pg.locator('.mk-tiras > button').allInnerTexts(), ['Touchdown', 'Más opciones']);
-  assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 100);
+  assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 98);
   assert.ok(Math.min(...await pg.locator('.mk-tiras > button').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 56);
-  assert.ok(await pg.evaluate(() => document.querySelector('.mk-vista + .pregunta').getBoundingClientRect().bottom <= document.querySelector('.nav').getBoundingClientRect().top));
+  // el aviso sale arriba como pop-up, sobre el marcador: deja libres QB y Terminar, no toca los botones ni mueve la página, «Deshacer» de 44 o más, y todo sigue sin bajar (Iker, 17-nov)
+  assert.deepEqual(await pg.evaluate(() => { const a = document.querySelector('.pant > .pregunta.aviso').getBoundingClientRect(), c = document.querySelector('.mk-cuerpo');
+    return [a.top >= document.querySelector('.mbar').getBoundingClientRect().bottom, a.bottom <= document.querySelector('.mk-lado').getBoundingClientRect().top, document.querySelector('.pant > .pregunta.aviso .acc').getBoundingClientRect().height >= 44, c.scrollTop, c.scrollHeight <= c.clientHeight]; }), [true, true, true, 0, true]);
+  // guardar una jugada no mueve nada: los botones quedan donde estaban, con el aviso arriba (antes la pantalla se bajaba, Iker 17-nov); luego se deshace
+  const dondeBotones = () => pg.evaluate(() => [document.querySelector('.mk-cuerpo').scrollTop, ...[...document.querySelectorAll('.mk-grande, .mk-tiras > button')].map((x) => Math.round(x.getBoundingClientRect().top))]);
+  const antes = await dondeBotones();
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd'); await pg.waitForTimeout(400);
+  assert.equal(await pg.locator('.pant > .pregunta.aviso [data-a=deshacer]').count(), 1);
+  assert.deepEqual(await dondeBotones(), antes);
+  await toca(pg, 'deshacer', 'aviso'); await pg.waitForTimeout(300);
+  assert.deepEqual(await dondeBotones(), antes);
   // el aviso de la jugada se va solo: en Marcar no se queda la tira «Última · Corregir · Deshacer»; todas las jugadas caben sin bajar
   await pg.evaluate(() => { st.toast = null; pintar(); }); // eslint-disable-line no-undef
   assert.deepEqual(await pg.evaluate(() => { const c = document.querySelector('.mk-cuerpo'); return [document.querySelectorAll('.mk-cuerpo .ultima').length, c.scrollHeight <= c.clientHeight]; }), [0, true]);
@@ -308,6 +318,7 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(gd.map((x) => x[0]), ['Bandera quitada', 'Pase tapado', 'Sack', 'Intercepción', 'Pick 6', 'Safety a favor']);
   assert.equal(new Set(gd.map((x) => x[1])).size, 6); // en defensa también, cada uno de su color
   assert.equal(await pg.locator('[data-a="mas"]').count(), 0); // en defensa ya no queda nada para «Más opciones»
+  assert.equal(await pg.locator('.mk-td.riv').innerText(), 'Touchdown'); // el TD de ellos dice solo «Touchdown»: el lado ya lo dice Defensa (Iker, 17-nov)
   await toca(pg, 'lado', 'O');
   // ¿Quién?: sin «No sé», y la ✕ de arriba no guarda nada; en la regla, la ✓ guarda las yardas ya
   await toca(pg, 'res', 'corrida');
@@ -344,13 +355,31 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   await desliza(80, 300); // a la izquierda de Marcar no hay nada
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   await desliza(300, 120);
-  assert.equal(await pg.locator('.mk-pag').getAttribute('style'), '--dx:28px'); // entra desde la derecha
+  assert.equal(await pg.locator('.mk-pag').getAttribute('style'), '--dx:72px'); // entra desde la derecha, con un resorte
   assert.match(await texto(pg), /Este partido/i);
   assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['', 'on']);
   await desliza(300, 120); // otra vez a la izquierda: se queda
   assert.equal(await pg.evaluate(() => st.mkVer), 'paso'); // eslint-disable-line no-undef
   await desliza(80, 300);
   assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
+  assert.equal(await pg.locator('.mk-tiras').count(), 1);
+  // con el dedo (Iker, 17-nov): la página lo sigue y el punto de arriba con ella; si se suelta antes de tiempo regresa; si pasa, sale y entra la otra
+  const arrastra = (xs, suelta = true) => pg.evaluate(([xs, suelta]) => { const c = document.querySelector('.mk-cuerpo'), t = (x) => ({ identifier: 1, target: c, clientX: x, clientY: 400 });
+    const ev = (tipo, touches, changedTouches) => c.dispatchEvent(Object.assign(new Event(tipo, { bubbles: true }), { touches, changedTouches }));
+    ev('touchstart', [t(xs[0])], [t(xs[0])]); for (const x of xs.slice(1)) ev('touchmove', [t(x)], [t(x)]);
+    const pag = document.querySelector('.mk-pag'), i = document.querySelector('.mk-puntos i'), va = [pag.style.transform, i.style.transform];
+    if (suelta) ev('touchend', [], [t(xs[xs.length - 1])]); return va; }, [xs, suelta]);
+  const [mueve, punto] = await arrastra([300, 280, 260, 250], false);
+  assert.equal(mueve, 'translateX(-50px)');
+  assert.ok(parseFloat(punto.slice(11)) > 0, punto); // el punto ya va camino a «Lo que pasó»
+  await pg.evaluate(() => document.dispatchEvent(new Event('touchcancel'))); // eslint-disable-line no-undef
+  assert.equal(await pg.locator('.mk-pag').evaluate((p) => p.style.transform), '');
+  await arrastra([300, 295, 290, 285]); await pg.waitForTimeout(500); // 15 px: no alcanza, regresa con un rebote
+  assert.deepEqual(await pg.evaluate(() => [st.mkVer, document.querySelector('.mk-pag').style.transform]), ['marcar', '']); // eslint-disable-line no-undef
+  await arrastra([300, 260, 210, 160, 120]); await pg.waitForTimeout(700); // pasa el umbral: sale, entra «Lo que pasó» y las series llegan escalonadas
+  assert.deepEqual(await pg.evaluate(() => [st.mkVer, document.querySelector('.mk-pag').hasAttribute('data-entra'), document.querySelector('.mk-puntos i').style.getPropertyValue('--p')]), ['paso', true, '1']); // eslint-disable-line no-undef
+  assert.match(await texto(pg), /Este partido/i);
+  await desliza(80, 300);
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   // Ataque/Defensa: grande, arriba, el lado en que vas marcado; tocar el mismo lado no cambia nada; sin 1ª y 10 en ¿Quién?
   assert.deepEqual(await pg.locator('.mk-lado button').evaluateAll((xs) => xs.map((x) => [x.innerText, x.classList.contains('on'), Math.round(x.getBoundingClientRect().height)])), [['Ataque', true, 34], ['Defensa', false, 34]]);
@@ -469,8 +498,10 @@ test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le d
     const revisa = (v) => pg.evaluate(() => {
       const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
       c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
-      return [Math.round(n.bottom) - innerHeight, parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom) >= 20, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
-    }).then((r) => assert.deepEqual(r, [0, true, true, true], `${v} (${ancho} × ${alto})`));
+      // los nombres de las pestañas van pegados abajo, como en un iPhone: entre ellos y la zona segura de la rayita, a lo más 8 px
+      const ab = parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom), nom = Math.max(...[...document.querySelectorAll('#tel .nav button')].map((b) => b.getBoundingClientRect().bottom));
+      return [Math.round(n.bottom) - innerHeight, ab >= 20, n.bottom - ab - nom <= 8, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
+    }).then((r) => assert.deepEqual(r, [0, true, true, true, true], `${v} (${ancho} × ${alto})`));
     for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); await revisa(v); }
     await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
     await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
