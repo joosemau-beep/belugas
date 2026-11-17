@@ -476,7 +476,8 @@ table.bs td.v { color: #b8c2cf; }
 .jlista h4 + .serie { border-top: 0; }
 .serie.abierta { background: #f6f9fd; }
 .serie .lt { flex: none; font: 800 11px/1 Inter; letter-spacing: .05em; text-transform: uppercase; padding: 5px 7px; border-radius: 7px; background: #e3e8ef; color: #374151; }
-.serie .lt.O { background: var(--ink); color: #fff; }
+/* «Lo que pasó»: Ataque con el color de Belugas y Defensa con el del rival (Iker, 17-nov) */
+.serie .lt.O { background: var(--navy); color: #fff; } .serie .lt.D { background: color-mix(in srgb, var(--rc) 78%, #000); color: #fff; }
 .serie b { flex: 1; font: 700 14px/1.2 Inter; }
 .serie small { flex: none; color: var(--mut); font: 600 12px/1 Inter; }
 .serie .mk { flex: none; font: italic 900 17px/1 var(--disp); color: var(--navy); min-width: 44px; text-align: right; }
@@ -508,20 +509,12 @@ table.bs td.v { color: #b8c2cf; }
 .mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
 .mk-grande { min-height: 104px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
 .mk-tira { gap: 12px; justify-content: flex-start; }
-/* C, D y E: el botón entero del color de su jugada (--c, de ICONOS_C), oscurecido un poco para que el blanco se lea al sol */
-.mk-grandes:not(.ico-color) .mk-grande { color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
-.mk-gi svg { display: block; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
-.ico-lleno .mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; }
-.ico-lleno .mk-gi svg { width: 44px; height: 44px; }
-.ico-fondo .mk-grande { position: relative; overflow: hidden; justify-content: flex-end; }
-.ico-fondo .mk-gi { position: absolute; right: -16px; top: -14px; opacity: .3; } .ico-fondo .mk-gi svg { width: 124px; height: 124px; stroke-width: 2; }
-.ico-fondo .mk-grande > span:last-child { position: relative; }
-.ico-vidrio .mk-grande { position: relative; overflow: hidden; isolation: isolate; align-items: center; justify-content: center; text-align: center; gap: 8px;
-  background: linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,.06) 48%), color-mix(in srgb, var(--c) 76%, #0b1b33); border: 1px solid rgba(255,255,255,.6);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -12px 22px rgba(0,0,0,.2), 0 8px 18px color-mix(in srgb, var(--c) 35%, transparent); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%); }
-.ico-vidrio .mk-grande::before { content: ''; position: absolute; inset: -40% 25% 45% -25%; z-index: -1; background: radial-gradient(closest-side, rgba(255,255,255,.42), transparent); }
-.ico-vidrio .mk-gi { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.6); }
-.ico-vidrio .mk-gi svg { width: 30px; height: 30px; }
+/* los botones grandes (la D de Iker, 17-nov): enteros del color de su jugada (--c, de ICONOS_C), oscurecido para que el blanco se lea
+   al sol, con el glifo enorme y medio transparente de fondo */
+.mk-grande { position: relative; overflow: hidden; justify-content: flex-end; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
+.mk-gi { position: absolute; right: -16px; top: -14px; opacity: .3; }
+.mk-gi svg { display: block; width: 124px; height: 124px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
+.mk-grande > span:last-child { position: relative; }
 .mk-td .ic.relleno { background: #fff; } .mk-td .ic.relleno svg { stroke: var(--navy); } .mk-td .ic.relleno svg .f { fill: var(--navy); }
 .mk-td.riv .ic.relleno svg { stroke: color-mix(in srgb, var(--rc) 70%, #000); } .mk-td.riv .ic.relleno svg .f { fill: color-mix(in srgb, var(--rc) 70%, #000); }
 .mk-td .ic.simple svg { stroke: #fff; }
@@ -537,11 +530,9 @@ table.bs td.v { color: #b8c2cf; }
 .mk-puntos button.on::after { width: 14px; background: var(--navy); }
 .mk-pag[style] { animation: desliza .2s ease-out; }
 @keyframes desliza { from { transform: translateX(var(--dx)); opacity: .3; } }
-/* ✕ y ✓ juntos arriba a la derecha de cada hoja, de 44 px: caben con guantes sin quitar lugar (Iker, 17-nov) */
-.hbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 0 0 12px; }
-.hbar h3 { margin: 0; font-size: 19px; }
-.hbs { display: flex; gap: 8px; }
-.hbar.centro { grid-template-columns: 44px minmax(0, 1fr) 44px; } .hbar.centro h3 { text-align: center; }
+/* ✕ a la izquierda, el título al centro y ✓ a la derecha en cada hoja, de 44 px: caben con guantes sin quitar lugar (Iker, 17-nov) */
+.hbar { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin: 0 0 12px; }
+.hbar h3 { margin: 0; font-size: 19px; text-align: center; }
 .hb { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: #c0392b; }
 .hb.si { background: var(--boton); color: #fff; }
 .hb svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -929,10 +920,8 @@ const iniciales = (n) => { const w = String(n || '?').split(/\s+/).filter(Boolea
 const foto = (p) => `<span class="foto"><span>${p && p.cara ? `<img src="${p.cara}" alt="">` : `<span class="ini">${iniciales(p && p.nombre)}</span>`}</span></span>`;
 
 // lo que se ve en este momento; lo que se guarda (partido, temporada, quiénes van) lo escribe guardaLocal
-// los cuatro estilos de botón que Iker compara en el teléfono (17-nov); se escoge en Ajustes
-const MK_ICO = { color: 'A · Ícono de color', lleno: 'C · Botón de color', fondo: 'D · Ícono de fondo', vidrio: 'E · Vidrio' };
 let st = {
-  anim: 'si', yds: 'si', ico: MK_ICO[lsGet('belugas.ico')] ? lsGet('belugas.ico') : 'color', cuanto: null, conv: null, edita: null, lanzo: null, qbDe: null, entrar: true, jug: null, juego: null, desde: 'inicio',
+  anim: 'si', yds: 'si', cuanto: null, conv: null, edita: null, lanzo: null, qbDe: null, entrar: true, jug: null, juego: null, desde: 'inicio',
   cat: 'puntos', met: 'ataque', animar: true, todos: false, abre: {}, practicando: false,
   pant: 'inicio', hoja: null, sel: null, toast: null, final: null,
   van: [], // los que van hoy; mientras nadie lo cambie, todos (vanTodos)
@@ -1038,17 +1027,19 @@ const RES = {
 const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', presion: 'tapado', fallo: 'tapado'};
 const mkIcono = (k) => { const g = ICO_DE[k] || k; const [c, d] = ICONOS_C[g] || ICONOS_C.parada; return `<span class="ic relleno chico" style="--c:${c}"><svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg></span>`; };
 // sin títulos de grupo, lo malo lleva el nombre completo para no confundirse con lo de la defensa
-const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase incompleto'};
+const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase tapado'};
 // Marcar: las 6 más usadas van grandes (contadas en los 10 partidos de ejemplo: pase 14 por partido, incompleto 7, corrida 3,
 // nos pararon 2.5, intercepción 0.9, castigo a favor 0.8; bandera 13, tapado 11, sack 1.7, castigo a favor 0.8, intercepción 0.7, en contra 0.3); el resto en «Más opciones»
-const MK_GRANDES = { O: ['pase', 'corrida', 'incompleto', 'parada', 'int', 'castigo:favor'], D: ['bandera', 'tapado', 'sack', 'intn', 'castigo:favor', 'castigo:contra'] };
-const MK_MAS = { O: ['castigo:contra', 'sackr', 'pick6c', 'safetyc'], D: ['pick6', 'safety'] };
-const mkBoton = (k, cls) => { const [a, v] = k.startsWith('castigo:') ? ['castigo', k.slice(8)] : ['res', k], g = a === 'castigo' ? 'castigo' : k;
-  const nombre = a === 'castigo' ? `Castigo ${v === 'favor' ? 'a favor' : 'en contra'}` : MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1];
-  // C, D y E: el botón entero del color de su jugada, con el glifo en blanco (grande al centro, de fondo o sobre vidrio)
-  if (cls === 'mk-grande' && st.ico !== 'color') { const [c, d] = ICONOS_C[ICO_DE[g] || g] || ICONOS_C.parada;
-    return `<button class="${cls}" data-a="${a}" data-v="${v}" style="--c:${c}"><span class="mk-gi"><svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg></span><span>${nombre}</span></button>`; }
-  return `<button class="${cls}" data-a="${a}" data-v="${v}">${mkIcono(g)}<span>${nombre}</span></button>`; };
+// Sin castigos (Iker, 17-nov: no dan puntos ni salen en ninguna pantalla); sus lugares los toman sack a nuestro QB, pick 6 y safety a favor
+const MK_GRANDES = { O: ['pase', 'corrida', 'incompleto', 'parada', 'int', 'sackr'], D: ['bandera', 'tapado', 'sack', 'intn', 'pick6', 'safety'] };
+const MK_MAS = { O: ['pick6c', 'safetyc'], D: [] };
+// cada uno de los seis grandes de un color distinto en su lado (Iker, 17-nov); donde el glifo repite color, este manda
+const MK_COLOR = { sackr: '#c026d3', intn: '#7c3aed', pick6: '#2f7fd1', safety: '#f59e0b' };
+// los grandes: el botón entero del color de su jugada con el glifo enorme de fondo (la D que escogió Iker, 17-nov); en «Más opciones», tira con ícono
+const mkBoton = (k, cls) => { const nombre = MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1];
+  if (cls !== 'mk-grande') return `<button class="${cls}" data-a="res" data-v="${k}">${mkIcono(k)}<span>${nombre}</span></button>`;
+  const [c0, d] = ICONOS_C[ICO_DE[k] || k] || ICONOS_C.parada, c = MK_COLOR[k] || c0;
+  return `<button class="${cls}" data-a="res" data-v="${k}" style="--c:${c}"><span class="mk-gi"><svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg></span><span>${nombre}</span></button>`; };
 // ---------- la lista «Este partido», por series ----------
 // cada serie: de quién era el balón, sus jugadas y cómo acabó (las series las numera rehacer)
 function seriesDe(js) {
@@ -1066,14 +1057,14 @@ const filaJ = (x, i, tocable) => `<${tocable ? `button class="jfila en${x.repe ?
 function jlista(p, tocable) {
   const js = p.jugadas, ss = seriesDe(js), r = R(p.rival || HOY), vivo = p === st.partido;
   const filas = ss.slice().reverse().map((s) => { const enJuego = vivo && s.ns === p.ns && p.nsUsada, k = `${p.id}:${s.ns}`, abierta = st.abre[k] ?? enJuego;
-    return `<button class="serie${abierta ? ' abierta' : ''}" data-a="serie" data-v="${s.ns}"><span class="lt ${s.lado}">${s.lado === 'O' ? 'Ataque' : 'Defensa'}</span><b class="corta">${finDeSerie(s, enJuego, r)}</b><small>${s.js.length} jug.</small><span class="mk num">${s.js[s.js.length - 1].marc}</span><i>${abierta ? '▾' : '▸'}</i></button>`
+    return `<button class="serie${abierta ? ' abierta' : ''}" data-a="serie" data-v="${s.ns}"><span class="lt ${s.lado}" style="--rc:${r.color}">${s.lado === 'O' ? 'Ataque' : 'Defensa'}</span><b class="corta">${finDeSerie(s, enJuego, r)}</b><small>${s.js.length} jug.</small><span class="mk num">${s.js[s.js.length - 1].marc}</span><i>${abierta ? '▾' : '▸'}</i></button>`
       + (abierta ? s.js.slice().reverse().map((x) => filaJ(x, js.indexOf(x), tocable)).join('') : ''); });
   return `<div class="jlista"><h4>Este partido <span>${ss.length} serie${ss.length === 1 ? '' : 's'} · ${js.length} jugada${js.length === 1 ? '' : 's'}</span></h4>${filas.join('')}</div>`;
 }
 // ---------- las cuentas del equipo: de uno o de varios partidos marcados, jugada por jugada (ya rehechos) ----------
 // Solo lo que de verdad se marca. Las yardas se promedian entre las jugadas que las traen (ponerlas es opcional).
 function cuentas(ps) {
-  const c = { pj: ps.length, nos: 0, ellos: 0, seriesO: 0, seriesTD: 0, comp: 0, att: 0, ydP: 0, nP: 0, corr: 0, ydC: 0, nC: 0, tdP: 0, tdC: 0, cv: { 1: [0, 0], 2: [0, 0] }, perd: 0, drops: 0, sackr: 0, pd: 0,
+  const c = { pj: ps.length, nos: 0, ellos: 0, seriesO: 0, seriesTD: 0, comp: 0, att: 0, ydP: 0, nP: 0, corr: 0, ydC: 0, nC: 0, tdP: 0, tdC: 0, cv: { 1: [0, 0], 2: [0, 0] }, perd: 0, drops: 0, sackr: 0,
     seriesD: 0, fren: 0, band: 0, tap: 0, rob: 0, sack: 0, saf: 0, con: {} };
   ps.forEach((p) => {
     c.nos += p.nos || 0; c.ellos += p.ellos || 0;
@@ -1165,7 +1156,7 @@ function marcar() {
     <div class="mk-lado" role="group" aria-label="Quién trae el balón">${[['O', 'Ataque'], ['D', 'Defensa']].map(([v, n]) => `<button data-a="lado" data-v="${v}" aria-pressed="${p.lado === v}"${p.lado === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div></div>
     <div class="cuerpo mk-cuerpo">
       ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Va después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
-      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes ico-${st.ico}">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}<button class="mk-tira mas" data-a="mas">Más opciones</button></div>
+      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}${MK_MAS[p.lado].length ? '<button class="mk-tira mas" data-a="mas">Más opciones</button>' : ''}</div>
       ${filaPregunta()}</div>`}
     </div>${nav()}</div>`;
 }
@@ -1350,7 +1341,8 @@ const X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M1
 // «¿Quiénes vinieron?»: el círculo con su palomita (o vacío) dibujado entero en un SVG, para que nunca salga un cuadro
 const CK_SI = '<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="14" fill="#1d4f8f"/><path d="M8.6 14.6l3.7 3.7 7.1-7.9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   CK_NO = '<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="none" stroke="#d3d9e2" stroke-width="2"/></svg>';
-const barra = (tit, no, si, siTxt) => `<div class="hbar">${tit}<div class="hbs"><button class="hb no" data-a="${no}" aria-label="Cerrar">${X_SVG}</button>${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : ''}</div></div>`;
+// el encabezado de cada paso (Iker, 17-nov): ✕ a la izquierda, el título al centro y ✓ a la derecha (si hay algo que confirmar)
+const barra = (tit, no, si, siTxt) => `<div class="hbar"><button class="hb no" data-a="${no}" aria-label="Cerrar">${X_SVG}</button>${tit}${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : '<span></span>'}</div>`;
 // quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
 const botonPj = (id, accion, actual, ult) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${ult ? '<em class="ult">última</em>' : ''}${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
 // ¿Quién?: primero los que han jugado de este lado, el de la última jugada con la marca «última» (marcar-simple, punto 4)
@@ -1379,18 +1371,14 @@ function hoja() {
   if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.largo}</span></button>`).join('')}</div>`;
   if (st.hoja === 'quien') {
     const x = [...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === st.sel);
-    const td = st.sel === 'td', pasa = st.sel === 'pase' || (td && !st.corre), q = lanzo(), tp = st.sel === 'tapado';
+    const td = st.sel === 'td', pasa = st.sel === 'pase' || (td && !st.corre), q = lanzo();
     // TD: ya se escogió pase o corrida en «¿Cómo fue el TD?»; el de pase deja cambiar quién lanzó
     const lz = pasa ? campoLanzo(q, 'jugada') : '';
-    // pase incompleto en defensa: lo tapamos o presión (o falló solo, abajo)
-    const tpo = tp ? `<div class="conm" style="margin:0 0 12px"><button data-a="tapo" data-v="tapado" class="${st.tapo !== 'presion' ? 'on' : ''}">Lo tapamos</button><button data-a="tapo" data-v="presion" class="${st.tapo === 'presion' ? 'on' : ''}">Presión</button></div>` : '';
-    const tit = st.sel === 'incompleto' ? '¿A quién se le cayó?' : td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : tp && st.tapo === 'presion' ? '¿Quién hizo la presión?' : x[3];
-    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${tpo}${lz}<div class="pjs">${pjsRecientes(st.partido.lado, 'quien', pasa ? q : null)}</div>`;
+    const tit = st.sel === 'incompleto' ? '¿A quién se le cayó?' : td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : x[3];
+    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${lz}<div class="pjs">${pjsRecientes(st.partido.lado, 'quien', pasa ? q : null)}</div>`;
   }
   // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
-  if (st.hoja === 'inc') h = st.partido.lado === 'O'
-    ? '<div class="ops"><button class="op prim" data-a="inc" data-v="cayo">Se le cayó, no la atrapó</button><button class="op" data-a="inc" data-v="mal">Mal pase o no se podía agarrar</button></div>'
-    : '<div class="ops"><button class="op prim" data-a="inc" data-v="tapo">La bloqueamos</button><button class="op" data-a="inc" data-v="fallo">No la atraparon</button></div>';
+  if (st.hoja === 'inc') h = '<div class="ops"><button class="op prim" data-a="inc" data-v="cayo">Se le cayó, no la atrapó</button><button class="op" data-a="inc" data-v="mal">Mal pase o no se podía agarrar</button></div>';
   if (st.hoja === 'como') h = '<h3>¿Cómo fue el TD?</h3><div class="ops dos"><button class="op prim" data-a="como" data-v="pase">Pase</button><button class="op prim" data-a="como" data-v="corrida">Corrida</button></div>';
   if (st.hoja === 'qb') { const deJugada = st.qbDe !== 'partido', cur = st.qbDe === 'corrige' ? (st.partido.jugadas[st.edita] || {}).qb : deJugada ? lanzo() : st.partido.qb;
     h = `<h3>${deJugada ? '¿Quién lanzó?' : '¿Quién es el QB?'}</h3><div class="pjs">${st.van.map((id) => { const p = P(id); return `<button class="pj${id === cur ? ' actual' : ''}" data-a="qb" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}</div>
@@ -1415,7 +1403,7 @@ function hoja() {
   if (st.hoja === 'mas') h = `<h3>Más opciones</h3><div class="mk-tiras">${MK_MAS[st.partido.lado].map((k) => mkBoton(k, 'mk-tira')).join('')}</div>`;
   if (st.hoja === 'cqp') {
     const j = st.partido.jugadas[st.edita], O = j.lado === 'O';
-    const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n, , , l]) => [k, l || n]), ...(O ? [] : [['presion', 'Presión, incompleto'], ['fallo', 'Incompleto, no la atraparon']]), ['castigo:favor', 'Castigo a favor'], ['castigo:contra', 'Castigo en contra'], O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
+    const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n, , , l]) => [k, l || n]), O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
     h = `<h3>¿Qué pasó?</h3><p>Antes: ${j.txt}.</p><div class="ops dos acc">${ops.map(([k, n]) => `<button class="op${j.k === k || `${j.k}:${j.v}` === k ? ' prim' : ''}" data-a="cqpya" data-v="${k}">${n}</button>`).join('')}</div>`;
   }
   if (st.hoja === 'conv') {
@@ -1429,7 +1417,6 @@ function hoja() {
   if (st.hoja === 'ayuda') h = `<h3>Ajustes</h3>
     <button class="aj-fila" data-a="onbver"><span><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></span>Ver la bienvenida otra vez<em>›</em></button>
     <button class="aj-fila" data-a="onbmarcar"><span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Ver cómo se marca<em>›</em></button>
-    <button class="aj-fila" data-a="ico"><span>${mkIcono('pase')}</span>Íconos de Marcar<em>${MK_ICO[st.ico]}</em></button>
     <button class="aj-fila" data-a="antes"><span><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg></span>Libro de jugadas y pulsera<em>›</em></button>
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   // la barrita de arrastre no servía en la página: toda hoja lleva su ✕ arriba a la derecha (Iker, 17-nov)
@@ -1588,7 +1575,8 @@ function guarda(j) {
   if (i >= 0 && p.jugadas[i + 1]) { j.t = (p.jugadas[i].t + p.jugadas[i + 1].t) / 2; j.unica = true; }
   st.ins = null;
   p.jugadas.push(j); rehacer(p);
-  const x = porUid(j.uid), opc = (['incompleto', 'parada'].includes(j.k) && !j.id) || ['sackr', 'safetyc'].includes(j.k) ? { pregunta: pregunta(j.k), ids: recientes(j.lado).filter((id) => j.k !== 'incompleto' || id !== j.qb) } : null;
+  // las caras del aviso solo donde el nombre cuenta (a quién le hicieron el sack, a quién agarraron); el mal pase y «Nos pararon» ya no (Iker, 17-nov)
+  const x = porUid(j.uid), opc = ['sackr', 'safetyc'].includes(j.k) ? { pregunta: pregunta(j.k), ids: recientes(j.lado) } : null;
   const a = avisoDe(x, opc);
   avisar(a, a.accion ? 6000 : opc ? 5000 : 4000);
   st.flash = { td: ['td', 'pick6'].includes(j.k), nos: p.nos > x.antes.nos, ellos: p.ellos > x.antes.ellos };
@@ -1927,7 +1915,7 @@ const antesDe = (j) => (j.k === 'td' ? { ...j.antes, spot: 0, primera: true, sab
 function hojaCuanto() {
   const c = st.cuanto, j = porUid(c.uid); if (!j) return '';
   const a = antesDe(j);
-  return `<div class="hoja cuanto"><div class="hbar centro"><button class="hb no" data-a="sinyd" aria-label="Cerrar">${X_SVG}</button><h3>¿Cuánto avanzó?</h3><button class="hb si" data-a="rgok" aria-label="Guardar las yardas">${PALOMITA}</button></div>
+  return `<div class="hoja cuanto">${barra('<h3>¿Cuánto avanzó?</h3>', 'sinyd', 'rgok', 'Guardar las yardas')}
     <div class="rg-pmf"><button class="rg-b" data-pm="-1" aria-label="Menos">${signo(false)}</button><div class="rg-vw"><span class="rg-anuncio" id="rganuncio"></span><span class="rg-v num" id="rgv">${fmtYd(c.yd)}<small>yd</small></span></div><button class="rg-b" data-pm="1" aria-label="Más">${signo(true)}</button></div>
     <div class="rg-saltos">${[-5, 5, 10, 20].map((v) => `<button data-salto="${v}">${fmtYd(v)}</button>`).join('')}</div>
     <div hidden>${regla(a)}</div></div>`; // la regla sigue escondida: así los topes, los colores y el «¡Touchdown!» funcionan igual
@@ -2038,7 +2026,6 @@ const A = {
     recalcular(); subirTemp();
   },
   // la app de antes (campo, libro de jugadas, imprimir pulsera), en su vista completa
-  ico: () => { const ks = Object.keys(MK_ICO); st.ico = ks[(ks.indexOf(st.ico) + 1) % ks.length]; lsSet('belugas.ico', st.ico); },
   antes: () => { lsSet('tochito.completa', '1'); location.href = 'ipad.html?cel=1' + location.hash; },
   ir: (v) => { acabaCorr(); if (st.pant !== v && v === 'inicio') st.entrar = true; st.pant = v; st.hoja = null; if (v === 'inicio') st.animar = true; },
   // tocar fuera de una hoja: de los selectores de QB se regresa a donde se venía; fuera de la conversión, el TD se queda
@@ -2074,23 +2061,19 @@ const A = {
   // abrir o cerrar una serie de la lista
   serie: (v) => { const p = st.partido || (st.final && st.final.partido); if (!p) return; const k = `${p.id}:${v}`, enJuego = p === st.partido && +v === p.ns && p.nsUsada; st.abre[k] = !(st.abre[k] ?? enJuego); },
   res: (v) => {
-    st.sel = v; st.lanzo = null; st.corre = false; st.tapo = 'tapado';
+    st.sel = v; st.lanzo = null; st.corre = false;
     if (v === 'td') { st.hoja = 'como'; return; }
-    if (v === 'incompleto' || v === 'tapado') { st.cayo = false; st.hoja = 'inc'; return; }
+    if (v === 'incompleto') { st.cayo = false; st.hoja = 'inc'; return; }
     if (v === 'pick6c') { const j = guarda({ k: 'pick6c', qb: st.partido.qb }); st.hoja = null; abrirConv(j); return; }
     if (SIN_QUIEN.includes(v)) { const q = st.partido.qb, j = guarda({ k: v, qb: ['incompleto', 'int'].includes(v) ? q : null, id: ['sackr', 'safetyc'].includes(v) ? q : null }); st.hoja = null; if (conYardas(j)) abrirCuanto(j); return; }
     st.hoja = 'quien';
   },
   // TD: primero cómo fue; el de pase da TD de pase al QB
   como: (v) => { st.corre = v === 'corrida'; st.hoja = 'quien'; },
-  tapo: (v) => { st.tapo = v; },
   // pase incompleto que falló solo: sin nombre, no da puntos
-  fallo: () => { st.hoja = null; guarda({ k: 'fallo' }); },
   inc: (v) => {
-    if (v === 'fallo') { A.fallo(); return; }
-    if (v === 'tapo') { st.sel = 'tapado'; st.hoja = 'quien'; return; }
     if (v === 'cayo') { st.sel = 'incompleto'; st.cayo = true; st.hoja = 'quien'; return; }
-    // mal pase: se guarda ya; a quién iba se puede poner desde el aviso (no resta)
+    // mal pase: se guarda ya, sin nombre (no resta a nadie)
     st.hoja = null; guarda({ k: 'incompleto', qb: st.partido.qb });
   },
   // «¿se le cayó?», desde el aviso del incompleto ya con nombre (o desde Corregir)
@@ -2110,15 +2093,13 @@ const A = {
       // TD nuestro: primero cuántas yardas fue la jugada; al cerrar la regla sigue la conversión
       if (s === 'td' && st.yds === 'si') { abrirCuanto(j); st.cuanto.yd = j.antes.sabe ? CAMPO - j.antes.spot : 10; st.convLuego = j.uid; } else abrirConv(j);
       return; }
-    const k = s === 'tapado' && st.tapo === 'presion' ? 'presion' : s;
-    const j = guarda({ k, id, qb: ['pase', 'incompleto'].includes(s) ? lanzo() : null, ...(s === 'incompleto' && st.cayo && id ? { drop: true } : {}) });
+    const j = guarda({ k: s, id, qb: ['pase', 'incompleto'].includes(s) ? lanzo() : null, ...(s === 'incompleto' && st.cayo && id ? { drop: true } : {}) });
     st.cayo = false;
     st.lanzo = null;
     if (conYardas(j)) abrirCuanto(j);
   },
-  // el nombre opcional desde el aviso (incompleto: a quién iba; nos pararon: a quién)
+  // el nombre desde el aviso (sack a nuestro QB, safety en contra)
   ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = sube(j.ver); rehacer(st.partido); avisar({ ...ta, txt: j.txt + conMarcador(j), id, opc: null }, 5000); subir(); },
-  castigo: (v) => { st.hoja = null; guarda({ k: 'castigo', v }); },
   tdr: () => { st.sel = 'tdr'; st.lanzo = null; const j = guarda({ k: 'tdr' }); abrirConv(j); },
   conv: (v) => {
     const c = st.conv, j = c && porUid(c.uid); if (!j) { st.hoja = null; return; }

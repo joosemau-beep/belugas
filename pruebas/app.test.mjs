@@ -40,26 +40,27 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   await toca(pg, 'res', 'incompleto'); await toca(pg, 'inc', 'cayo'); await toca(pg, 'quien', 'pepe');
   await toca(pg, 'res', 'incompleto'); await toca(pg, 'inc', 'mal');
   await toca(pg, 'res', 'parada');
-  await toca(pg, 'castigo', 'favor'); await toca(pg, 'mas'); await toca(pg, 'castigo', 'contra'); // en ataque el castigo a favor va grande; en contra, sack, pick 6 y safety en «Más opciones»
+  // castigos, presión y «no la atraparon» ya no se marcan (Iker, 17-nov), pero los de partidos viejos siguen contando: se ponen como antes
+  const vieja = (j) => pg.evaluate((j) => { guarda(j); pintar(); }, j); // eslint-disable-line no-undef
+  await vieja({ k: 'castigo', v: 'favor' }); await vieja({ k: 'castigo', v: 'contra' });
   await paso('0–0', /Ataque/);
   await toca(pg, 'res', 'td'); await toca(pg, 'como', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd');
   await toca(pg, 'conv', '1-1'); await toca(pg, 'convq', 'rodrigo');
   await paso('7–0', /Defensa/); // el TD pasa el balón
   // defensa
   await toca(pg, 'res', 'bandera'); await toca(pg, 'quien', 'pepe'); await toca(pg, 'sinyd');
-  await toca(pg, 'res', 'tapado'); await toca(pg, 'inc', 'tapo'); await toca(pg, 'quien', 'mau');
-  await toca(pg, 'res', 'tapado'); await toca(pg, 'inc', 'tapo'); await toca(pg, 'tapo', 'presion');
+  await toca(pg, 'res', 'tapado'); // «Pase tapado» va directo a quién lo tapó
   assert.equal(await pg.locator('#tel [data-a="quien"][data-v="luis"]').count(), 0); // Luis no vino: no sale
-  await toca(pg, 'quien', 'nico');
-  await toca(pg, 'res', 'tapado'); await toca(pg, 'inc', 'fallo');
+  await toca(pg, 'quien', 'mau');
+  await vieja({ k: 'presion', id: 'nico' }); await vieja({ k: 'fallo' });
   await toca(pg, 'res', 'sack'); await toca(pg, 'quien', 'rodrigo');
   await toca(pg, 'tdr'); await toca(pg, 'conv', '2-1');
   await paso('7–8', /Ataque/);
   await toca(pg, 'res', 'int');
   await paso('7–8', /Defensa/);
-  await toca(pg, 'mas'); await toca(pg, 'res', 'pick6'); await toca(pg, 'quien', 'mau'); await toca(pg, 'conv', '0');
+  await toca(pg, 'res', 'pick6'); await toca(pg, 'quien', 'mau'); await toca(pg, 'conv', '0');
   await paso('13–8', /Defensa/); // después del pick 6 ellos vuelven a atacar
-  await toca(pg, 'mas'); await toca(pg, 'res', 'safety'); await toca(pg, 'quien', 'nico');
+  await toca(pg, 'res', 'safety'); await toca(pg, 'quien', 'nico');
   await paso('15–8', /Ataque/);
   await toca(pg, 'mas'); await toca(pg, 'res', 'safetyc');
   await paso('15–10', /Defensa/);
@@ -68,7 +69,7 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0');
   await paso('15–16', /Ataque/);
   // sack a nuestro QB con yardas perdidas, y se deshace
-  await toca(pg, 'mas'); await toca(pg, 'res', 'sackr'); await pg.locator('.rg-b[data-pm="-1"]').click(); await pg.locator('.rg-b[data-pm="-1"]').click(); await pg.waitForTimeout(3300);
+  await toca(pg, 'res', 'sackr'); await pg.locator('.rg-b[data-pm="-1"]').click(); await pg.locator('.rg-b[data-pm="-1"]').click(); await pg.waitForTimeout(3300);
   const n = await pg.evaluate(() => st.partido.jugadas.length); // eslint-disable-line no-undef
   await toca(pg, 'deshacer', 'aviso');
   assert.equal(await pg.evaluate(() => st.partido.jugadas.length), n - 1); // eslint-disable-line no-undef
@@ -263,24 +264,20 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
     assert.ok(['span svg circle', 'span svg circle path'].includes(partes.map((x) => x.split(' ')[0]).join(' ')), partes.join(' | '));
     for (const x of partes.slice(0, 2)) assert.equal(x.split(' ').slice(1).join(' '), 'none rgba(0, 0, 0, 0) 0px0px0px0px none none', x);
   }
-  // sin la barrita de arrastre: la hoja se cierra con su ✕, arriba a la derecha junto al título, de 44 px
+  // sin la barrita de arrastre: la hoja se cierra con su ✕ de 44 px, arriba a la izquierda, y el título va al centro (como en todos los pasos)
   assert.equal(await pg.locator('.hoja').evaluate((h) => getComputedStyle(h, '::before').content), 'none');
-  assert.deepEqual(await pg.locator('.hoja .hbar').evaluate((b) => [b.firstElementChild.tagName, b.querySelector('.hb.no').getBoundingClientRect().height, b.querySelector('.hb.no').getBoundingClientRect().right > innerWidth - 40]), ['H3', 44, true]);
+  assert.deepEqual(await pg.locator('.hoja .hbar').evaluate((b) => { const no = b.querySelector('.hb.no').getBoundingClientRect(), t = b.querySelector('h3');
+    return [[...b.children].map((x) => x.className || x.tagName), Math.round(no.height), no.left < 40, getComputedStyle(t).textAlign]; }), [['hb no', 'H3', 'SPAN'], 44, true, 'center']);
   // abajo del botón fijo no se asoman los renglones
   assert.equal(await pg.evaluate(() => Math.round(document.querySelector('.hoja').getBoundingClientRect().bottom - document.querySelector('.ops.fijo').getBoundingClientRect().bottom)), 0);
   for (const id of ['mau', 'nico', 'rodrigo']) await toca(pg, 'vantoggle', id);
   await toca(pg, 'vanlisto');
-  // Marcar: las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; todo cabe sin bajar
-  // cada botón de jugada lleva su ícono, en el estilo que se escoge en Ajustes y se recuerda: A ícono de color, C botón de color,
-  // D ícono de fondo, E vidrio (los tres últimos, el botón entero del color de su jugada)
-  assert.equal(await pg.locator('.mk-grandes.ico-color .mk-grande > .ic.relleno + span').count(), 6);
-  for (const e of ['lleno', 'fondo', 'vidrio']) {
-    await pg.evaluate(() => { A.ico(); pintar(); }); // eslint-disable-line no-undef
-    assert.deepEqual([await pg.locator(`.mk-grandes.ico-${e} .mk-grande[style*="--c"] > .mk-gi svg`).count(), await pg.evaluate(() => localStorage.getItem('belugas.ico'))], [6, e]);
-  }
-  await pg.evaluate(() => { A.ico(); pintar(); }); // eslint-disable-line no-undef
-  assert.equal(await pg.evaluate(() => st.ico), 'color'); // eslint-disable-line no-undef
-  assert.deepEqual(await pg.locator('.mk-grande').allInnerTexts(), ['Pase completo', 'Corrida', 'Incompleto', 'Nos pararon', 'Intercepción', 'Castigo a favor']);
+  // Marcar: las 6 más usadas en botones grandes, cada uno entero de su color y distinto de los demás de su lado, con su glifo de fondo
+  // (la D de Iker); sin castigos; el TD y «Más opciones» con el resto; todo cabe sin bajar
+  const grandes = () => pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => [x.innerText, x.style.getPropertyValue('--c'), !!x.querySelector('.mk-gi svg')]));
+  const ga = await grandes();
+  assert.deepEqual(ga.map((x) => x[0]), ['Pase completo', 'Corrida', 'Incompleto', 'Nos pararon', 'Intercepción', 'Sack a nuestro QB']);
+  assert.deepEqual([new Set(ga.map((x) => x[1])).size, ga.every((x) => x[2])], [6, true]);
   assert.deepEqual(await pg.locator('.mk-tiras > button').allInnerTexts(), ['Touchdown', 'Más opciones']);
   assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 100);
   assert.ok(Math.min(...await pg.locator('.mk-tiras > button').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 56);
@@ -289,14 +286,15 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   await pg.evaluate(() => { st.toast = null; pintar(); }); // eslint-disable-line no-undef
   assert.deepEqual(await pg.evaluate(() => { const c = document.querySelector('.mk-cuerpo'); return [document.querySelectorAll('.mk-cuerpo .ultima').length, c.scrollHeight <= c.clientHeight]; }), [0, true]);
   await toca(pg, 'mas');
-  assert.deepEqual(await pg.locator('.hoja .mk-tira').allInnerTexts(), ['Castigo en contra', 'Sack a nuestro QB', 'Pick 6 en contra', 'Safety en contra']);
+  assert.deepEqual(await pg.locator('.hoja .mk-tira').allInnerTexts(), ['Pick 6 en contra', 'Safety en contra']);
   await pg.locator('.hoja .hb.no').click(); await pg.waitForTimeout(150);
   assert.equal(await pg.evaluate(() => st.hoja), null); // eslint-disable-line no-undef
   await toca(pg, 'lado', 'D');
-  assert.deepEqual(await pg.locator('.mk-grande').allInnerTexts(), ['Quitamos la bandera', 'Pase incompleto', 'Sack', 'Intercepción', 'Castigo a favor', 'Castigo en contra']);
-  await toca(pg, 'mas');
-  assert.deepEqual(await pg.locator('.hoja .mk-tira').allInnerTexts(), ['Pick 6', 'Safety a favor']);
-  await toca(pg, 'cerrar'); await toca(pg, 'lado', 'O');
+  const gd = await grandes();
+  assert.deepEqual(gd.map((x) => x[0]), ['Quitamos la bandera', 'Pase tapado', 'Sack', 'Intercepción', 'Pick 6', 'Safety a favor']);
+  assert.equal(new Set(gd.map((x) => x[1])).size, 6); // en defensa también, cada uno de su color
+  assert.equal(await pg.locator('[data-a="mas"]').count(), 0); // en defensa ya no queda nada para «Más opciones»
+  await toca(pg, 'lado', 'O');
   // ¿Quién?: sin «No sé», y la ✕ de arriba no guarda nada; en la regla, la ✓ guarda las yardas ya
   await toca(pg, 'res', 'corrida');
   assert.doesNotMatch(await texto(pg), /No sé/);
@@ -414,7 +412,13 @@ test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga
   await pg.evaluate(() => { const p = st.partido; p.jugadas.forEach((j) => { j.pd = true; }); rehacer(p); pintar(); }); // eslint-disable-line no-undef
   const sinPd = async (donde) => assert.doesNotMatch(await pg.evaluate(() => document.querySelector('#tel').textContent), /1ª|primeros? y diez/i, donde);
   await sinPd('Marcar');
+  // el mal pase y «Nos pararon» ya no ofrecen las caras de a quién iba / a quién pararon
+  await toca(pg, 'lado', 'O'); await toca(pg, 'res', 'incompleto'); await toca(pg, 'inc', 'mal');
+  assert.equal(await pg.locator('.pregunta.aviso .cara').count(), 0);
+  await toca(pg, 'res', 'parada'); assert.equal(await pg.locator('.pregunta.aviso .cara').count(), 0);
   await pg.evaluate(() => { A.mkver('paso'); pintar(); }); await sinPd('Lo que pasó'); // eslint-disable-line no-undef
+  // «Lo que pasó»: las series de ataque con el marino de Belugas y las de defensa con el color del rival (Kaffies)
+  assert.deepEqual(await pg.evaluate(() => ['O', 'D'].map((l) => getComputedStyle(document.querySelector(`.serie .lt.${l}`)).backgroundColor)), ['rgb(13, 35, 71)', await pg.evaluate(() => { const e = document.createElement('i'); e.style.color = `color-mix(in srgb, ${R('kaffies').color} 78%, #000)`; document.body.append(e); const c = getComputedStyle(e).color; e.remove(); return c; })]); // eslint-disable-line no-undef
   await pg.evaluate(() => { A.fila(0); pintar(); }); await sinPd('Corregir'); await pg.locator('.hoja .hb.no').click(); await pg.waitForTimeout(150); // eslint-disable-line no-undef
   await toca(pg, 'terminar'); await sinPd('el final');
   for (const v of ['inicio', 'partidos', 'jugadores']) { await toca(pg, 'ir', v); await sinPd(v); }
