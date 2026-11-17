@@ -654,3 +654,35 @@ test('abre sin señal', { skip: !srv.url.startsWith('https:') && 'solo con URL=h
   assert.deepEqual(await pg.$$eval('img', (xs) => xs.filter((x) => x.complete && !x.naturalWidth).map((x) => x.src)), []);
   await pg.context().close();
 });
+
+// los 3 errores de la revisión de métricas (Iker, 17-nov): una corrida corregida a TD sigue siendo corrida, los partidos de cada quien
+// son los que vino, y un receptor que lanzó un pase no sale como QB
+test('las métricas: corrida corregida a TD, partidos que vino y quién es QB', async () => {
+  const pg = await telefono(srv.url);
+  await agrega(pg, ['Mau', 'Nico', 'Rodrigo', 'Pepe']);
+  await juega(pg, 'kaffies', ['mau', 'nico', 'rodrigo', 'pepe'], async () => {
+    for (let i = 0; i < 2; i++) { await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd'); }
+    await pg.evaluate(() => { guarda({ k: 'pase', id: 'mau', qb: 'nico', yd: 15 }); pintar(); }); // Nico lanza en una jugada de engaño
+    await toca(pg, 'res', 'corrida'); await toca(pg, 'quien', 'rodrigo'); await toca(pg, 'sinyd');
+    await fila(pg, await idxDe(pg, 'corrida')); await toca(pg, 'cqp'); await toca(pg, 'cqpya', 'td'); await toca(pg, 'conv', '0');
+    assert.equal(await pg.evaluate(() => st.partido.jugadas.find((j) => j.k === 'td').qb), null); // eslint-disable-line no-undef
+  });
+  await juega(pg, 'panini', ['mau', 'nico', 'rodrigo', 'pepe'], async () => { await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd'); });
+  const t = await pg.evaluate(() => TEMP); // eslint-disable-line no-undef
+  // 1. la corrida corregida a TD es TD corriendo, nada para Mau (Rodrigo trae de ANTES 1 TD y 1 corrida)
+  assert.deepEqual([t.rodrigo.td, t.rodrigo.car, t.rodrigo.rec, t.mau.tdp, t.mau.att], [2, 2, 0, 0, 3]);
+  // 2. vino a los dos aunque en uno no hizo nada
+  assert.deepEqual([t.rodrigo.pj, t.pepe.pj, t.nico.pj], [2, 2, 2]);
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'pepe');
+  assert.match(await texto(pg), /2 partidos/);
+  assert.doesNotMatch(await texto(pg), /No jugó/);
+  // 3. Nico lanzó un pase pero es receptor: su tarjeta y su línea van de recepciones
+  await toca(pg, 'ir', 'jugadores');
+  assert.match(await texto(pg), /Nico 3 rec · 1\/1 pases/);
+  await toca(pg, 'jug', 'nico');
+  assert.match(await pg.locator('.tj-main').innerText(), /Recepciones/i);
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'mau');
+  assert.match(await pg.locator('.tj-main').innerText(), /Pases completos/i);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
