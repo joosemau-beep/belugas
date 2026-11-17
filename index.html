@@ -530,6 +530,19 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 /* los botones grandes (la C de Iker, 17-nov: «más fácil de usar y de entender»): enteros del color de su jugada (--c, de ICONOS_C),
    oscurecido para que el blanco se lea al sol, con el glifo grande al centro y el nombre abajo */
 .mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
+/* «Profundo con brillo» (Iker, 17-nov): el mismo color, más profundo y menos saturado, en dos tonos cercanos, con filo de luz arriba
+   y brillo en la esquina; el blanco queda en 4.8:1 o más (el ámbar de safety estaba en 3:1). Sin oklch relativo (iOS 17) queda el plano de arriba */
+.mk-grande { position: relative; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,.22); background: linear-gradient(160deg, oklch(from var(--c) .54 calc(c * .78) h), oklch(from var(--c) .42 calc(c * .72) h));
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.07), 0 8px 16px -4px color-mix(in srgb, var(--c) 45%, transparent); }
+.mk-grande[data-v=incompleto] { background: linear-gradient(160deg, oklch(from var(--c) .53 calc(c * .9) h), oklch(from var(--c) .43 calc(c * .85) h)); }
+.mk-grande::before { content: ''; position: absolute; inset: 0; background: radial-gradient(90% 70% at 15% 0%, rgba(255,255,255,.16), transparent 60%); pointer-events: none; }
+.mk-grande > span { position: relative; }
+/* al tocar: se hunde, rebota y el filo de luz destella (~190 ms); con «reducir movimiento» solo se hunde */
+.mk-grande::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 2px 0 rgba(255,255,255,.85), inset 0 0 0 1.5px rgba(255,255,255,.5); opacity: 0; pointer-events: none; }
+.mk-grande:active { transform: scale(.96); } .mk-grande:active::after { opacity: .6; }
+.tel.anim .mk-grande.toque { animation: toque .19s ease-out; } .tel.anim .mk-grande.toque::after { animation: destello .19s ease-out; }
+@keyframes toque { from { transform: scale(.95); } 55% { transform: scale(1.025); } }
+@keyframes destello { from, 30% { opacity: 1; } to { opacity: 0; } }
 .mk-grandes > .mk-grande:last-child:nth-child(odd) { grid-column: span 2; } /* sin «Nos pararon» quedan 5 en ataque: el último a todo lo ancho */
 .mk-gi svg { display: block; width: 40px; height: 40px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
 .mk-td .ic.relleno { background: #fff; } .mk-td .ic.relleno svg { stroke: var(--navy); } .mk-td .ic.relleno svg .f { fill: var(--navy); }
@@ -540,7 +553,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 .mk-tira.mas { background: transparent; box-shadow: inset 0 0 0 1.5px var(--linea); }
 .hoja .mk-tira { background: var(--bg); box-shadow: none; }
 .mk-tiras .mk-td { margin-top: 0; height: 60px; gap: 12px; }
-.mk-grande:active, .mk-tira:active, .mk-td:active { transform: scale(.98); }
+.mk-tira:active, .mk-td:active { transform: scale(.98); }
 .mk-puntos { display: flex; justify-content: center; margin: -15px 0 -1px; position: relative; }
 .mk-puntos button { width: 26px; height: 16px; display: grid; place-items: center; }
 .mk-puntos button::after { content: ''; width: 6px; height: 6px; border-radius: 3px; background: var(--linea); }
@@ -593,6 +606,9 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 .pj { background: var(--bg); border-radius: 16px; min-height: 104px; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 8px 4px; font: 700 13px/1.1 Inter; min-width: 0; }
 .pj .foto { width: 50px; height: 50px; }
 .pj-sep { grid-column: 1 / -1; height: 1px; background: var(--linea); margin: 4px 6px; }
+/* «¿Quién?»: cada quien con el color de su lado (Iker, 17-nov): Ataque en azul Belugas, Defensa en el color del rival, Los dos sin color */
+.lados .pj.lO { background: linear-gradient(180deg, #eef4fc, #e1ebf8); } .lados .pj.lO .foto { box-shadow: 0 0 0 3px var(--azul); }
+.lados .pj.lD { background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 8%, #fff), color-mix(in srgb, var(--rc) 18%, #fff)); } .lados .pj.lD .foto { box-shadow: 0 0 0 3px color-mix(in srgb, var(--rc) 75%, #000); }
 .pj .corta { max-width: 100%; }
 .pj small { color: var(--mut); font: 600 11px/1 Inter; }
 .ops { display: grid; gap: 10px; }
@@ -1389,7 +1405,7 @@ const CK_SI = '<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="1
 const barra = (tit, no, si, siTxt, der = '<span></span>') => `<div class="hbar"><button class="hb no" data-a="${no}" aria-label="Cerrar">${X_SVG}</button>${tit}${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : der}</div>`;
 const AYUDA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9.2a3 3 0 0 1 5.9.8c0 2-3 2.5-3 4.6"/><path d="M12 18.5h.01"/></svg>';
 // quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
-const botonPj = (id, accion, actual) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
+const botonPj = (id, accion, actual) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}${p.lado ? ' l' + p.lado : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
 // ¿Quién?: primero los que han jugado de este lado (sin la marca «última»: Iker, 17-nov)
 const pjsRecientes = (lado, accion, fuera) => conSep(recientes(lado).filter((id) => id !== fuera), lado, (id) => botonPj(id, accion, false));
 // una rayita entre los de este lado (y los de los dos) y los que solo juegan del otro
@@ -1424,7 +1440,7 @@ function hoja() {
     // TD: ya se escogió pase o corrida en «¿Cómo fue el TD?»; el de pase deja cambiar quién lanzó
     const lz = pasa ? campoLanzo(q, 'jugada') : '';
     const tit = st.sel === 'incompleto' ? '¿Quién soltó el pase?' : td ? (st.corre ? 'TD por corrida: ¿quién anotó?' : 'TD de pase: ¿quién la atrapó?') : x[3];
-    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${lz}<div class="pjs">${pjsRecientes(st.partido.lado, 'quien', pasa ? q : null)}</div>`;
+    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${lz}<div class="pjs lados" style="--rc:${r.color}">${pjsRecientes(st.partido.lado, 'quien', pasa ? q : null)}</div>`;
   }
   // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
   if (st.hoja === 'inc') h = '<div class="ops"><button class="op prim" data-a="inc" data-v="cayo">Pase soltado (era atrapable)</button><button class="op" data-a="inc" data-v="mal">Mal pase o no atrapable</button></div>';
@@ -1511,6 +1527,8 @@ function pintar() {
   if (st.toast) st.toast.nuevo = false;
   if (st.hoja === 'cuanto') montarCuanto();
   st.flash = null;
+  // el botón que se acaba de tocar rebota una vez (al repintar es otro botón: la clase va en el nuevo)
+  if (st.toque) { const b = t.querySelector(`.mk-grande[data-v="${st.toque}"]`); if (b) b.classList.add('toque'); st.toque = null; }
   // la entrada del podio corre una vez (al abrir, o al cambiar de categoría)
   st.animar = st.cambiaCat = false;
   if (st.escribe && st.escribe.que !== 'baja') { const i = $('#escribe'); if (i && document.activeElement !== i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } else if (!i) st.escribe = null; }
@@ -1926,7 +1944,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117165025';
+const VERSION = '20261117170313';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2113,7 +2131,7 @@ const A = {
   // abrir o cerrar una serie de la lista
   serie: (v) => { const p = st.partido || (st.final && st.final.partido); if (!p) return; const k = `${p.id}:${v}`, enJuego = p === st.partido && +v === p.ns && p.nsUsada; st.abre[k] = !(st.abre[k] ?? enJuego); },
   res: (v) => {
-    st.sel = v; st.lanzo = null; st.corre = false;
+    st.toque = v; st.sel = v; st.lanzo = null; st.corre = false;
     if (v === 'td') { st.hoja = 'como'; return; }
     if (v === 'incompleto') { st.cayo = false; st.hoja = 'inc'; return; }
     if (v === 'pick6c') { const j = guarda({ k: 'pick6c', qb: st.partido.qb }); st.hoja = null; abrirConv(j); return; }
