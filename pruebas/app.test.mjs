@@ -289,6 +289,12 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   // Marcar: las 6 más usadas en botones grandes, cada uno entero de su color y distinto de los demás de su lado, con su glifo al centro
   // (la C de Iker); sin castigos; el TD y «Más opciones» con el resto; todo cabe sin bajar
   const grandes = () => pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => [x.innerText, x.style.getPropertyValue('--c'), !!x.querySelector('.mk-gi svg')]));
+  // «Profundo con brillo» (Iker, 17-nov): cada botón en dos tonos de su color, y el blanco se lee al sol (4.5:1 o más) en los dos tonos
+  const contrasteMin = () => pg.locator('.mk-grande').evaluateAll((xs) => { const cv = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const lum = (css) => { cv.fillStyle = '#000'; cv.fillStyle = css; cv.fillRect(0, 0, 1, 1); const d = cv.getImageData(0, 0, 1, 1).data;
+      return [0, 1, 2].map((i) => d[i] / 255).map((v) => (v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4)).reduce((a, v, i) => a + v * [.2126, .7152, .0722][i], 0); };
+    return Math.min(...xs.map((x) => { const cs = getComputedStyle(x).backgroundImage.match(/(oklch|oklab|rgba?|color)\([^)]*\)/g); return cs.length === 2 ? Math.min(...cs.map((c) => 1.05 / (lum(c) + .05))) : 0; })); });
+  assert.ok(await contrasteMin() >= 4.5);
   const ga = await grandes();
   assert.deepEqual(ga.map((x) => x[0]), ['Pase completo', 'Corrida', 'Incompleto', 'Intercepción lanzada', 'Sack recibido']);
   assert.deepEqual([new Set(ga.map((x) => x[1])).size, ga.every((x) => x[2])], [5, true]);
@@ -307,10 +313,13 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   const gd = await grandes();
   assert.deepEqual(gd.map((x) => x[0]), ['Bandera quitada', 'Pase tapado', 'Sack', 'Intercepción', 'Pick 6', 'Safety a favor']);
   assert.equal(new Set(gd.map((x) => x[1])).size, 6); // en defensa también, cada uno de su color
+  assert.ok(await contrasteMin() >= 4.5);
   assert.equal(await pg.locator('[data-a="mas"]').count(), 0); // en defensa ya no queda nada para «Más opciones»
   await toca(pg, 'lado', 'O');
   // ¿Quién?: sin «No sé», y la ✕ de arriba no guarda nada; en la regla, la ✓ guarda las yardas ya
   await toca(pg, 'res', 'corrida');
+  // al tocarlo, el botón rebota una vez con el destello del filo de luz
+  assert.deepEqual(await pg.locator('.mk-grande.toque').evaluateAll((xs) => xs.map((x) => [x.dataset.v, getComputedStyle(x).animationName, getComputedStyle(x, '::after').animationName])), [['corrida', 'toque', 'destello']]);
   assert.doesNotMatch(await texto(pg), /No sé/);
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
   assert.equal(await pg.evaluate(() => st.partido.jugadas.length), 0); // eslint-disable-line no-undef
@@ -630,6 +639,10 @@ test('el lado de cada jugador ordena «¿Quién?» y viaja a la nube y al otro c
   const quien = () => a.locator('.hoja .pjs > *').evaluateAll((xs) => xs.map((x) => (x.classList.contains('pj-sep') ? '|' : x.dataset.v)));
   await toca(a, 'res', 'corrida');
   assert.deepEqual(await quien(), ['mau', 'nico', 'rodrigo', '|', 'pepe']);
+  // cada quien con el color de su lado: Ataque en azul (Nico), Defensa en el color del rival (Pepe, Panini), Los dos sin color (Mau y Rodrigo, que regresó)
+  assert.deepEqual(await a.locator('.hoja .pjs.lados .pj').evaluateAll((xs) => xs.map((x) => [x.dataset.v, getComputedStyle(x).backgroundImage !== 'none', getComputedStyle(x.querySelector('.foto')).boxShadow !== 'none'])),
+    [['mau', false, false], ['nico', true, true], ['rodrigo', false, false], ['pepe', true, true]]);
+  assert.equal(await a.locator('.hoja .pjs.lados').evaluate((x) => x.style.getPropertyValue('--rc')), await a.evaluate(() => R('panini').color)); // eslint-disable-line no-undef
   await toca(a, 'quien', 'nico'); await toca(a, 'sinyd');
   await toca(a, 'lado', 'D'); await toca(a, 'res', 'bandera');
   assert.deepEqual(await quien(), ['mau', 'rodrigo', 'pepe', '|', 'nico']);
