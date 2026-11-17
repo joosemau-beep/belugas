@@ -338,7 +338,8 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   // Ataque/Defensa: grande, arriba, el lado en que vas marcado; tocar el mismo lado no cambia nada; sin 1ª y 10 en ¿Quién?
-  assert.deepEqual(await pg.locator('.mk-lado button').evaluateAll((xs) => xs.map((x) => [x.innerText, x.classList.contains('on'), Math.round(x.getBoundingClientRect().height)])), [['Ataque', true, 38], ['Defensa', false, 38]]);
+  assert.deepEqual(await pg.locator('.mk-lado button').evaluateAll((xs) => xs.map((x) => [x.innerText, x.classList.contains('on'), Math.round(x.getBoundingClientRect().height)])), [['Ataque', true, 34], ['Defensa', false, 34]]);
+  assert.equal(await pg.locator('.mk-eq svg, .mk-eq img + span img').count(), 0); // ni balón ni nada junto a «BELUGAS»: solo el texto
   const cambios = await pg.evaluate(() => st.partido.cambios.length); // eslint-disable-line no-undef
   await toca(pg, 'lado', 'O');
   assert.equal(await pg.evaluate(() => st.partido.cambios.length), cambios); // eslint-disable-line no-undef
