@@ -389,6 +389,37 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
 });
 
 // el service worker solo corre en https: con URL=https://joosemau-beep.github.io/belugas/
+test('las animaciones: Líderes sin recargar fotos, sin barra en Partido por partido, el latido de En vivo y de una hoja a otra', async () => {
+  const pg = await telefono(srv.url);
+  await agrega(pg, ['Mau', 'Nicolas', 'Iker', 'Pepe']);
+  // de una hoja a otra (rival → ¿quiénes vinieron?) el fondo no se aclara ni la hoja vuelve a subir
+  await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies');
+  assert.deepEqual(await pg.evaluate(() => [...document.querySelectorAll('#tel .hoja, #tel .velo')].map((e) => e.getAnimations().length)), [0, 0]);
+  for (const id of ['mau', 'nicolas', 'iker']) await toca(pg, 'vantoggle', id);
+  await toca(pg, 'vanlisto');
+  // el punto de «En vivo» sigue su latido: con cada toque no empieza de nuevo
+  const latido = () => pg.evaluate(() => document.getAnimations().filter((a) => a.animationName === 'latido').map((a) => a.startTime));
+  await toca(pg, 'lado', 'D'); await toca(pg, 'lado', 'O');
+  assert.deepEqual(await latido(), [0]);
+  await td(pg, 'pase', 'nicolas'); await toca(pg, 'lado', 'O'); await td(pg, 'corrida', 'iker');
+  await toca(pg, 'terminar'); await toca(pg, 'ir', 'inicio'); await pg.waitForTimeout(1200);
+  // Líderes: al cambiar de categoría las fotos son las mismas (no se vuelven a cargar) y no se repite la entrada del podio; solo los números aparecen
+  for (const cat of ['td', 'yds', 'rec', 'puntos']) {
+    assert.deepEqual(await pg.evaluate((cat) => {
+      const antes = new Set(document.querySelectorAll('.lideres img'));
+      document.querySelector(`#tel [data-a="cat"][data-v="${cat}"]`).click();
+      const imgs = [...document.querySelectorAll('.lideres img')];
+      return [imgs.length > 0, imgs.every((i) => antes.has(i) && i.complete), [...new Set(document.querySelector('.lideres').getAnimations({ subtree: true }).map((a) => a.animationName))]];
+    }, cat), [true, true, ['ap']], cat);
+  }
+  // la ficha del jugador: Partido por partido sin la barra (repetía los puntos de la derecha)
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nicolas');
+  assert.match(await texto(pg), /Partido por partido/);
+  assert.equal(await pg.locator('#tel .pp .barra').count(), 0);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+
 test('la franja de la hora va del color del encabezado de cada pantalla, también en las fichas', async () => {
   const pg = await telefono(srv.url);
   await agrega(pg, ['Mau', 'Nico']);
