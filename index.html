@@ -354,7 +354,9 @@ table.bs td.v { color: #b8c2cf; }
 @keyframes crece { from { transform: scaleY(0); } }
 @keyframes pop { from { transform: scale(.4); opacity: 0; } }
 @keyframes cae { from { transform: translateY(-46px) rotate(-24deg); opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+/* al cambiar de categoría las fotos no se mueven: solo aparecen los números (Iker, 17-nov: «las imágenes se recargan») */
+.cambia .valor, .cambia .desg { animation: ap .25s ease-out; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
 .fila-j { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .fila-j .foto { width: 44px; height: 44px; }
@@ -977,7 +979,7 @@ function lideres() {
   if (!JUEGOS.some((g) => !g.solo)) return '<h2>Líderes <small>Temporada</small></h2><div class="relevo" style="margin-top:0">Los líderes aparecen al marcar el primer partido.</div>';
   return `<h2>Líderes <small>Temporada</small></h2>
   <div class="cats">${CATS.map(([k, t]) => `<button class="cat ${st.cat === k ? 'on' : ''}" data-a="cat" data-v="${k}">${t}</button>`).join('')}</div>
-  <div class="lideres ${st.animar ? 'entra' : ''}">${podio(r)}
+  <div class="lideres ${st.animar ? 'entra' : st.cambiaCat ? 'cambia' : ''}">${podio(r)}
     <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}${desg(p)}</div>${val(v, u)}</div>`).join('')}</div>
     ${resto.length > 3 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
 }
@@ -1185,7 +1187,7 @@ function jugadores() {
 // ficha de un jugador: cómo va y qué ha hecho, partido por partido
 function jugador() {
   // los partidos de los que solo hay marcador no dicen nada de nadie: no entran en la ficha
-  const p = P(st.jug), t = TEMP[p.id], lugar = rankPts().findIndex((x) => x.id === p.id) + 1, con = JUEGOS.filter((g) => !g.solo), max = Math.max(...con.map((g) => puntosDe(g.st[p.id])), 1);
+  const p = P(st.jug), t = TEMP[p.id], lugar = rankPts().findIndex((x) => x.id === p.id) + 1, con = JUEGOS.filter((g) => !g.solo);
   const lanza = cuentas(con.map((g) => g.partido)).lista.filter((x) => x.qb === p.id || x.id === p.id).slice(0, 4);
   const tiles = [['TD', t.td], ['Recepciones', t.rec], ['Corridas', t.car], ['Pases', t.att ? `${t.comp}/${t.att}` : 0, t.att ? `${Math.round(t.comp / t.att * 100)}% completos` : ''], ['TD de pase', t.tdp], ['Conversión', t.conv ? `+${t.conv}` : 0, 'puntos'],
     ['Yardas atrapadas', t.ryd], ['Yardas corridas', t.ruyd], ['Yardas de pase', t.pyd],
@@ -1195,7 +1197,7 @@ function jugador() {
   <div class="tj-info"><span><b class="num">${t.pts}</b> puntos</span><span><b class="num">${lugar}º</b> del equipo</span><span><b class="num">${t.pj}</b> partidos</span></div>
   ${tiles.length ? `<h2>Temporada</h2><div class="tiles">${tiles.map(([k, v, e]) => `<div class="tile"><strong class="num">${v}</strong><span>${k}</span>${e ? `<em>${e}</em>` : ''}</div>`).join('')}</div>` : ''}
   ${lanza.length ? `<h2>Conexiones</h2><div class="card">${conexiones(lanza, p.id)}</div>` : ''}
-  ${con.length ? `<h2>Partido por partido</h2><div class="card">${con.slice().reverse().map((g) => { const x = g.st[p.id], r = R(g.rival), pt = puntosDe(x); return `<button class="pp" data-a="juego" data-v="${g.id}">${rlogo(r)}<div><b class="corta">vs ${r.corto} · ${g.fecha}</b><small class="corta" style="display:block">${lineaDe(x)}</small><div class="barra"><i style="width:${Math.max(0, Math.round(pt / max * 100))}%"></i></div></div><div class="der"><strong class="num">${pt}</strong><small>pts</small></div></button>`; }).join('')}</div>` : ''}
+  ${con.length ? `<h2>Partido por partido</h2><div class="card">${con.slice().reverse().map((g) => { const x = g.st[p.id], r = R(g.rival), pt = puntosDe(x); return `<button class="pp" data-a="juego" data-v="${g.id}">${rlogo(r)}<div><b class="corta">vs ${r.corto} · ${g.fecha}</b><small class="corta" style="display:block">${lineaDe(x)}</small></div><div class="der"><strong class="num">${pt}</strong><small>pts</small></div></button>`; }).join('')}</div>` : ''}
   ${pieJugador(p)}
   </div>${nav()}</div>`;
 }
@@ -1436,8 +1438,14 @@ function pintar() {
   const vista = [st.pant, st.juego, st.jug].join('|'), cu0 = t.dataset.vista === vista ? (cuA || {}).scrollTop || 0 : st.regresa ? scrollDe[st.pant] || 0 : 0;
   st.regresa = false;
   // la misma hoja sigue abierta: no vuelve a subir ni regresa arriba (tocar a alguien en «¿Quiénes vinieron?» ya no la reinicia)
-  const h0 = st.hoja && t.dataset.hoja === st.hoja ? t.querySelector('.hoja') : null, hs = h0 ? h0.scrollTop : 0;
+  const h0 = st.hoja && t.dataset.hoja === st.hoja ? t.querySelector('.hoja') : null, hs = h0 ? h0.scrollTop : 0, otraHoja = st.hoja && t.dataset.hoja && !h0;
+  // las imágenes que ya estaban se reusan: no se vuelven a cargar ni parpadean al repintar (las fotos de Líderes al cambiar de categoría)
+  const imgs = {}; t.querySelectorAll('img').forEach((i) => (imgs[i.outerHTML] = imgs[i.outerHTML] || []).push(i));
   t.innerHTML = p() + hoja() + confeti; t.dataset.pant = st.pant; t.dataset.vista = vista; t.dataset.hoja = st.hoja || '';
+  t.querySelectorAll('img').forEach((i) => { const v = (imgs[i.outerHTML] || []).shift(); if (v) i.replaceWith(v); });
+  // el latido de «En vivo» sigue su paso en vez de empezar de nuevo con cada toque (y cada 4 s, al sincronizar)
+  document.getAnimations().forEach((a) => { if (a.animationName === 'latido' || a.animationName === 'onbPulso') a.startTime = 0; });
+  if (otraHoja) t.querySelectorAll('.hoja, .velo').forEach((e) => e.classList.add('quieta'));
   if (h0) { t.querySelectorAll('.hoja, .velo').forEach((e) => e.classList.add('quieta')); const h = t.querySelector('.hoja'); if (h) h.scrollTop = hs; }
   st.recien = null;
   const rc = st.pant === 'marcar' && st.partido && st.partido.lado === 'D' ? R(HOY).color : null;
@@ -1450,7 +1458,7 @@ function pintar() {
   if (st.hoja === 'cuanto') montarCuanto(); else if (tCuanto || tSola) cerrarCuanto();
   st.flash = null;
   // la entrada del podio corre una vez (al abrir, o al cambiar de categoría)
-  st.animar = false;
+  st.animar = st.cambiaCat = false;
   if (st.escribe && st.escribe.que !== 'baja') { const i = $('#escribe'); if (i && document.activeElement !== i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); } else if (!i) st.escribe = null; }
   guardaLocal(); // cada toque queda guardado en el teléfono
   onbTras();
@@ -1997,7 +2005,7 @@ const A = {
   jug: (v) => { if (!['jugador', 'partido'].includes(st.pant)) st.desde = st.pant; st.jug = v; st.pant = 'jugador'; st.hoja = null; },
   juego: (v) => { if (!['jugador', 'partido'].includes(st.pant)) st.desde = st.pant; st.juego = v; st.pant = 'partido'; st.hoja = null; },
   volver: () => { st.pant = st.desde || 'inicio'; st.regresa = true; },
-  cat: (v) => { st.cat = v; st.animar = true; },
+  cat: (v) => { st.cat = v; st.cambiaCat = true; },
   met: (v) => { st.met = v; },
   todos: () => { st.todos = !st.todos; },
   // jugadores: agregar (renglón al final de la lista), cambiar nombre y dar de baja (al pie de la ficha)
