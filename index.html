@@ -541,12 +541,22 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 .hoja .mk-tira { background: var(--bg); box-shadow: none; }
 .mk-tiras .mk-td { margin-top: 0; height: 60px; gap: 12px; }
 .mk-grande:active, .mk-tira:active, .mk-td:active { transform: scale(.98); }
-.mk-puntos { display: flex; justify-content: center; margin: -15px 0 -1px; }
+.mk-puntos { display: flex; justify-content: center; margin: -15px 0 -1px; position: relative; }
 .mk-puntos button { width: 26px; height: 16px; display: grid; place-items: center; }
-.mk-puntos button::after { content: ''; width: 6px; height: 6px; border-radius: 3px; background: var(--linea); transition: width .2s; }
-.mk-puntos button.on::after { width: 14px; background: var(--navy); }
-.mk-pag[style] { animation: desliza .2s ease-out; }
-@keyframes desliza { from { transform: translateX(var(--dx)); opacity: .3; } }
+.mk-puntos button::after { content: ''; width: 6px; height: 6px; border-radius: 3px; background: var(--linea); }
+/* el punto de dónde vas se desliza con la página (--p: 0 Marcar, 1 Lo que pasó; --p0: de dónde viene) */
+.mk-puntos i { position: absolute; left: 50%; top: 5px; width: 14px; height: 6px; margin-left: -20px; border-radius: 3px; background: var(--navy); transform: translateX(calc(var(--p) * 26px)); pointer-events: none; }
+.mk-puntos i.mueve { animation: punto .45s cubic-bezier(.3,1.4,.5,1); }
+@keyframes punto { from { transform: translateX(calc(var(--p0) * 26px)); } }
+/* Marcar ↔ Lo que pasó (Iker, 17-nov): la página sigue al dedo, entra con un resorte y las series de Lo que pasó llegan escalonadas */
+.mk-cuerpo { touch-action: pan-y; }
+.mk-pag[data-entra] { animation: desliza .45s cubic-bezier(.22,1.2,.36,1); }
+@keyframes desliza { from { transform: translateX(var(--dx)); opacity: 0; } }
+.mk-pag[data-entra] .jlista > * { animation: jentra .4s cubic-bezier(.2,.9,.3,1) both; animation-delay: 290ms; }
+.mk-pag[data-entra] .jlista > :nth-child(1) { animation-delay: 40ms; } .mk-pag[data-entra] .jlista > :nth-child(2) { animation-delay: 75ms; } .mk-pag[data-entra] .jlista > :nth-child(3) { animation-delay: 110ms; }
+.mk-pag[data-entra] .jlista > :nth-child(4) { animation-delay: 145ms; } .mk-pag[data-entra] .jlista > :nth-child(5) { animation-delay: 180ms; } .mk-pag[data-entra] .jlista > :nth-child(6) { animation-delay: 215ms; }
+.mk-pag[data-entra] .jlista > :nth-child(7) { animation-delay: 250ms; }
+@keyframes jentra { from { transform: translateY(10px); opacity: 0; } }
 /* ✕ a la izquierda, el título al centro y ✓ a la derecha en cada hoja, de 44 px: caben con guantes sin quitar lugar (Iker, 17-nov) */
 .hbar { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin: 0 0 12px; }
 .hbar h3 { margin: 0; font-size: 19px; text-align: center; }
@@ -1181,8 +1191,9 @@ function marcar() {
   const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIcono('td')}Touchdown</button>` : `<button class="mk-td riv" data-a="tdr">${mkIcono('tdr')}Touchdown</button>`;
   const eq = (img, n) => `<div class="mk-eq">${img}<span>${n}</span></div>`; // sin el balón junto al nombre: el lado ya lo dice Ataque/Defensa
   const sube = (k) => (st.flash && st.flash[k] ? ' class="sube"' : '');
-  const ver = st.mkVer === 'paso' && p.jugadas.length ? 'paso' : 'marcar', anim = st.mkDir ? ` style="--dx:${st.mkDir * 28}px"` : ''; st.mkDir = 0;
-  const puntos = p.jugadas.length ? `<div class="mk-puntos">${[['marcar', 'Marcar'], ['paso', 'Jugada por jugada']].map(([v, n]) => `<button data-a="mkver" data-v="${v}" aria-label="${n}"${ver === v ? ' class="on" aria-current="true"' : ''}></button>`).join('')}</div>` : '';
+  const ver = st.mkVer === 'paso' && p.jugadas.length ? 'paso' : 'marcar', anim = st.mkDir ? ` style="--dx:${st.mkDir * 72}px" data-entra` : '', pv = ver === 'paso' ? 1 : 0;
+  const punto = `<i aria-hidden="true"${st.mkDir ? ' class="mueve"' : ''} style="--p:${pv};--p0:${st.mkDir ? st.mkP0 ?? 1 - pv : pv}"></i>`; st.mkDir = 0; st.mkP0 = null;
+  const puntos = p.jugadas.length ? `<div class="mk-puntos">${[['marcar', 'Marcar'], ['paso', 'Jugada por jugada']].map(([v, n]) => `<button data-a="mkver" data-v="${v}" aria-label="${n}"${ver === v ? ' class="on" aria-current="true"' : ''}></button>`).join('')}${punto}</div>` : '';
   return `<div class="pant" style="--rc:${r.color}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
     <div class="mbar"><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button>${p.corrige ? '<button data-a="listocorr">Listo</button>' : '<button data-a="terminar">Terminar</button>'}</div>${p.corrige ? `<div class="mk-corr">Editando · ${fechaDe(p.dia || p.inicio)}</div>` : ''}
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas')}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto)}</button>
@@ -1915,7 +1926,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117163626';
+const VERSION = '20261117164410';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2211,15 +2222,37 @@ const A = {
   },
 };
 // en Marcar, deslizar a la izquierda lleva a «Lo que pasó» (a la derecha de Marcar, Iker 17-nov) y a la derecha regresa a las tiras
+// la página sigue al dedo (del lado donde no hay otra, con resistencia) y al soltar entra la otra con un resorte, o regresa (Iker, 17-nov)
 let toque0 = null;
+const deslizable = () => st.partido && st.partido.jugadas.length && st.pant === 'marcar' && !st.hoja;
 document.addEventListener('touchstart', (e) => { toque0 = !st.hoja && e.touches.length === 1 && e.target.closest('.mk-cuerpo') ? [e.touches[0].clientX, e.touches[0].clientY] : null; }, { passive: true });
-document.addEventListener('touchend', (e) => {
-  const a = toque0, t = e.changedTouches[0]; toque0 = null;
-  if (!a || !st.partido || !st.partido.jugadas.length || st.pant !== 'marcar') return;
+document.addEventListener('touchmove', (e) => {
+  const a = toque0, t = e.touches[0], pag = document.querySelector('#tel .mk-pag');
+  if (!a || !pag || !deslizable() || st.anim !== 'si' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const dx = t.clientX - a[0], dy = t.clientY - a[1];
-  if (Math.abs(dx) < 60 || Math.abs(dy) * 2 > Math.abs(dx) || (dx < 0) === (st.mkVer === 'paso')) return;
-  A.mkver(dx < 0 ? 'paso' : 'marcar'); pintar();
+  if (!a.eje) { if (Math.hypot(dx, dy) < 10) return; a.eje = Math.abs(dy) * 2 > Math.abs(dx) ? 'v' : 'h'; }
+  if (a.eje !== 'h') return;
+  const w = pag.offsetWidth, x = (dx < 0) === (st.mkVer === 'paso') ? dx / 4 : dx, pv = st.mkVer === 'paso' ? 1 : 0, i = document.querySelector('#tel .mk-puntos i');
+  a.x = x; a.v = (x - (a.x0 ?? x)) / Math.max(1, e.timeStamp - (a.t0 ?? e.timeStamp)); a.x0 = x; a.t0 = e.timeStamp;
+  pag.style.transition = 'none'; pag.style.transform = `translateX(${x}px)`; pag.style.opacity = 1 - Math.min(Math.abs(x) / w, 1) * 0.5;
+  a.p = Math.min(1, Math.max(0, pv - x / w)); if (i) { i.className = ''; i.style.transform = `translateX(${a.p * 26}px)`; }
 }, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const a = toque0, t = e.changedTouches[0], pag = document.querySelector('#tel .mk-pag'); toque0 = null;
+  if (!a || !deslizable()) return;
+  const dx = t.clientX - a[0], dy = t.clientY - a[1], hay = (dx < 0) !== (st.mkVer === 'paso');
+  const va = hay && Math.abs(dy) * 2 <= Math.abs(dx) && (Math.abs(dx) >= 60 || (Math.abs(dx) >= 24 && Math.abs(a.v || 0) > 0.45));
+  if (!va) { // regresa a su lugar con un rebote
+    if (a.eje === 'h' && pag) { const i = document.querySelector('#tel .mk-puntos i'); pag.style.transition = 'transform .45s cubic-bezier(.3,1.5,.5,1), opacity .3s'; pag.style.transform = ''; pag.style.opacity = '';
+      if (i) { i.style.transition = 'transform .45s cubic-bezier(.3,1.5,.5,1)'; i.style.transform = ''; } }
+    return;
+  }
+  const cambia = () => { st.mkP0 = a.p; A.mkver(dx < 0 ? 'paso' : 'marcar'); pintar(); };
+  // si la página iba con el dedo, sale hacia su lado y luego entra la otra; si no, cambia ya
+  if (a.eje === 'h' && pag) { pag.style.transition = 'transform .14s ease-in, opacity .14s'; pag.style.transform = `translateX(${Math.sign(dx) * pag.offsetWidth * 0.45}px)`; pag.style.opacity = 0; setTimeout(cambia, 140); } else cambia();
+}, { passive: true });
+document.addEventListener('touchcancel', () => { const a = toque0, pag = document.querySelector('#tel .mk-pag'), i = document.querySelector('#tel .mk-puntos i'); toque0 = null;
+  if (a && a.eje === 'h') { if (pag) { pag.style.transform = ''; pag.style.opacity = ''; } if (i) i.style.transform = ''; } }, { passive: true });
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-a]');
   if (!b || !A[b.dataset.a]) return;
