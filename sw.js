@@ -2,6 +2,7 @@
 // La página: primero internet, preguntándole al servidor si cambió (así los arreglos llegan a la primera); si en 3 s no contesta, la guardada.
 // Logo e imágenes: la guardada, y se actualiza por detrás. version.txt nunca se guarda: con él la app sabe si hay versión nueva.
 const C = 'belugas';
+// retratos reencuadrados el 17-nov: al cambiar este archivo el teléfono vuelve a bajar todo lo de abajo
 // lo que la app del teléfono necesita para abrir sin señal: la página, las fuentes, los logos y los retratos. ipad.html es la app de antes (respaldo)
 const EQUIPOS = ['belugas', 'only-fins', 'triple-t', 'bucaneros', 'destroyers', 'kickass', 'bulldogs', 'lobos-its', 'kaffies', 'ultimos-aztecas', 'los-fantasmas', 'panini'];
 const FIJOS = ['./', 'logo.webp', 'letras.webp', 'icon.png', 'archivos/balon-3d.png', 'archivos/corona-3d.png',

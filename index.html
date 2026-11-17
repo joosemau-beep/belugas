@@ -154,7 +154,8 @@ h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
 .foto { position: relative; flex: none; display: block; border-radius: 50%; }
 .foto > span { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #fff; }
 .foto svg, .foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
-/* los retratos son de 725 × 900 con la cabeza arriba: el círculo toma la parte de arriba para no cortarles el pelo (Iker, 17-nov) */
+/* los retratos son de 725 × 900 con la cabeza arriba: el círculo toma la parte de arriba para no cortarles el pelo (Iker, 17-nov).
+   Todos vienen reencuadrados igual: cara del mismo tamaño y ojos a la misma altura (y 309), para que nadie se vea más grande ni más alto */
 .foto img { object-position: 50% 0; }
 .foto .ini { display: grid; place-items: center; height: 100%; background: #e8eef7; color: var(--navy); font: 800 13px/1 Inter; }
 .pila { display: flex; align-items: center; }
@@ -672,7 +673,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 .tj-nom em { display: block; font-style: italic; color: rgba(214,228,247,.72); margin-top: .08em; }
 .tj-foto { position: absolute; right: 4px; bottom: 92px; width: 244px; z-index: 1; }
 .tj.real .tj-foto { right: 0; bottom: 92px; width: 240px; height: 300px; }
-.tj.real .tj-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; filter: none; -webkit-mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.35) 18%, #000 46%), linear-gradient(to bottom, transparent 0, rgba(0,0,0,.75) 4%, #000 9%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.35) 18%, #000 46%), linear-gradient(to bottom, transparent 0, rgba(0,0,0,.75) 4%, #000 9%); mask-composite: intersect; }
+.tj.real .tj-foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; filter: none; -webkit-mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.35) 18%, #000 46%), linear-gradient(to bottom, transparent 0, rgba(0,0,0,.75) 4%, #000 9%, #000 74%, transparent 100%); -webkit-mask-composite: source-in; mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.35) 18%, #000 46%), linear-gradient(to bottom, transparent 0, rgba(0,0,0,.75) 4%, #000 9%, #000 74%, transparent 100%); mask-composite: intersect; }
 .tj-foto svg, .tj-foto img { display: block; width: 100%; filter: drop-shadow(-6px 0 18px rgba(5,14,30,.35)); }
 .tj.sinfoto .tj-foto { right: 26px; bottom: 150px; width: 128px; height: 128px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center; }
 .tj .ini { font: italic 900 46px/1 var(--disp); color: #fff; }
@@ -897,12 +898,14 @@ const ic = (k, chico = false) => { const g = ICONOS_S[k] || ICONOS_S.parada, ton
 // T es la temporada: el plantel (sembrado una vez con los nombres de la app de antes), quiénes salen de inicio y los partidos marcados.
 const tempVacia = () => ({ v: 1, plantel: [], linea: { O: [], D: [], qb: null, ver: 0 }, juegos: {}, sembrado: 0 });
 let T = tempVacia(), PLANTEL = [];
-// retratos aprobados para publicarse (archivos/jugadores); los demás van con sus iniciales
-const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau', iker: 'iker', mario: 'mario', jaime: 'jaime', uri: 'uri', ian: 'ian', patrick: 'patrick', juanpi: 'juanpi', leo: 'leo', jose: 'jose', juancho: 'juancho' };
+// retratos aprobados para publicarse (archivos/jugadores); los demás van con sus iniciales.
+// Se ligan por id o por el nombre de hoy: el id se queda con el nombre con que entró (Juanpi entró como «Jonpol», Iker 17-nov)
+const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau', iker: 'iker', mario: 'mario', jaime: 'jaime', uri: 'uri', ian: 'ian', patrick: 'patrick', juanpi: 'juanpi', jonpol: 'juanpi', leo: 'leo', jose: 'jose', juancho: 'juancho' };
+const retrato = (x) => RETRATOS[x.id] || RETRATOS[slug(x.nombre).replace(/-/g, '')];
 const P = (id) => PLANTEL.find((x) => x.id === id);
 function armarPlantel() {
   const l = T.linea || {};
-  PLANTEL = (T.plantel || []).filter((x) => !x.baja).sort((a, b) => (a.n ?? 999) - (b.n ?? 999) || (a.id < b.id ? -1 : 1)).map((x) => { const f = RETRATOS[x.id] ? `archivos/jugadores/${RETRATOS[x.id]}.jpg` : null, n = esc(x.nombre);
+  PLANTEL = (T.plantel || []).filter((x) => !x.baja).sort((a, b) => (a.n ?? 999) - (b.n ?? 999) || (a.id < b.id ? -1 : 1)).map((x) => { const r = retrato(x), f = r ? `archivos/jugadores/${r}.jpg` : null, n = esc(x.nombre);
     return { id: x.id, nombre: n, corto: n, num: null, pos: x.id === l.qb ? 'QB' : '', img: f, cara: f, lado: x.lado }; });
 }
 // los partidos jugados antes de marcar en la app del teléfono: de ellos solo se sabe el marcador (los pasó Mau el 15-nov: van 5–1).
@@ -1944,7 +1947,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117170313';
+const VERSION = '20261117171147';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
