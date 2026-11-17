@@ -1,4 +1,4 @@
-// node --test: un partido completo en el teléfono, los puntos, recargar a media partida, dos celulares y sin señal
+// node --test: un partido completo en el teléfono, los puntos, recargar a media partida, dos celulares, corregir y eliminar un partido, las pantallas y sin señal
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { servidor, nubeFalsa, telefono, toca, marcador, lado, texto, cerrarNavegador } from './apoyo.mjs';
@@ -137,6 +137,172 @@ test('dos celulares marcan el mismo partido', async () => {
   assert.equal(Object.keys(nube.db[clave + '-cel'].datos.juegos).length, 1);
   assert.deepEqual([...a.errores, ...b.errores], []);
   await a.context().close(); await b.context().close();
+});
+
+// los ajustes de Iker (17-nov): corregir y eliminar un partido ya jugado, en este celular y en los demás
+const agrega = async (pg, nombres) => { await toca(pg, 'ir', 'jugadores'); for (const n of nombres) { await toca(pg, 'escribe', 'nuevo'); await pg.fill('#escribe', n); await toca(pg, 'escribeya'); } await toca(pg, 'ir', 'inicio'); };
+const juega = async (pg, rival, ids, jugadas) => { await toca(pg, 'marcar'); await toca(pg, 'rival', rival); for (const id of ids) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto'); await jugadas(); await toca(pg, 'terminar'); };
+const gid = (pg, rival) => pg.evaluate((r) => JUEGOS.find((g) => !g.solo && g.rival === r).id, rival); // eslint-disable-line no-undef
+const idxDe = (pg, k) => pg.evaluate((k) => st.partido.jugadas.findIndex((j) => j.k === k), k); // eslint-disable-line no-undef
+const fila = (pg, i) => pg.evaluate((i) => { A.fila(i); pintar(); }, i); // eslint-disable-line no-undef
+const td = async (pg, como, quien) => { await toca(pg, 'res', 'td'); await toca(pg, 'como', como); await toca(pg, 'quien', quien); await toca(pg, 'sinyd'); await toca(pg, 'conv', '0'); };
+
+test('corregir un partido que ya se jugó (borrar, cambiar, agregar en su lugar, rival y fecha) y eliminar otro', async () => {
+  const pg = await telefono(srv.url);
+  await agrega(pg, ['Mau', 'Nico', 'Rodrigo']);
+  await juega(pg, 'kaffies', ['mau', 'nico', 'rodrigo'], async () => {
+    await td(pg, 'pase', 'nico'); await toca(pg, 'lado', 'O');
+    await toca(pg, 'res', 'corrida'); await toca(pg, 'quien', 'rodrigo'); await toca(pg, 'sinyd');
+    await toca(pg, 'lado', 'D'); await toca(pg, 'tdr'); await toca(pg, 'conv', '0');
+  });
+  await juega(pg, 'panini', ['mau', 'nico', 'rodrigo'], () => td(pg, 'corrida', 'rodrigo'));
+  assert.equal(await pg.evaluate(() => RECORD), '6–1–1'); // eslint-disable-line no-undef
+
+  // desde la ficha: Corregir abre Marcar con ese partido, sin que salga «En vivo»
+  const g1 = await gid(pg, 'kaffies');
+  await toca(pg, 'ir', 'partidos'); await toca(pg, 'juego', g1);
+  assert.match(await texto(pg), /¿Algo quedó mal\? Corregir/);
+  await toca(pg, 'corregirp', g1);
+  assert.equal(await marcador(pg), '6–6');
+  assert.match(await texto(pg), /Corrigiendo/i);
+  assert.equal(await pg.locator('.centro2.vivo').count(), 0);
+  // borrar el TD de ellos y cambiar la corrida de Rodrigo por un pase a Nico
+  await fila(pg, await idxDe(pg, 'tdr')); await toca(pg, 'borrar');
+  assert.equal(await marcador(pg), '6–0');
+  await fila(pg, await idxDe(pg, 'corrida')); await toca(pg, 'cqp'); await toca(pg, 'cqpya', 'pase');
+  await fila(pg, await idxDe(pg, 'pase')); await toca(pg, 'cquien', 'nico');
+  // el TD que faltó va después de la primera jugada, no al final
+  await fila(pg, 0); await toca(pg, 'insaqui');
+  assert.match(await texto(pg), /Va después de: TD de Nico/);
+  await td(pg, 'corrida', 'rodrigo');
+  assert.deepEqual(await pg.evaluate(() => st.partido.jugadas.map((j) => j.k + ':' + j.id)), ['td:nico', 'td:rodrigo', 'pase:nico']); // eslint-disable-line no-undef
+  assert.equal(await marcador(pg), '12–0');
+  // rival y fecha, desde el marcador
+  await toca(pg, 'editar'); await toca(pg, 'rivalver', 'editar'); await toca(pg, 'rival', 'bucaneros');
+  await toca(pg, 'fechaver'); await pg.fill('#fecha', '2026-11-09'); await toca(pg, 'fechaya');
+  assert.match(await pg.locator('.hoja').innerText(), /Bucaneros[\s\S]*Fecha\s+9 nov/);
+  await pg.locator('.hoja [data-a="cerrar"]').click();
+  assert.match(await texto(pg), /Corrigiendo · 9 nov/i);
+  await toca(pg, 'listocorr');
+  assert.match(await texto(pg), /Ganamos · 9 nov.*12 – 0/i);
+  assert.equal(await pg.evaluate(() => RECORD), '7–1'); // eslint-disable-line no-undef
+  const pts = await pg.evaluate((id) => { const g = JUEGOS.find((x) => x.id === id); return Object.fromEntries(Object.entries(g.st).map(([k, x]) => [k, puntosDe(x)])); }, g1); // eslint-disable-line no-undef
+  assert.deepEqual([pts.nico, pts.rodrigo], [11.5, 10.5]); // los TD suman las yardas que faltaban (45)
+  await toca(pg, 'ir', 'partidos');
+  assert.match(await texto(pg), /Bucaneros 9 nov G 12–0/);
+  // sigue así al volver a abrir, y no quedó un partido abierto
+  await pg.reload(); await pg.waitForSelector('#tel .nav');
+  assert.equal(await pg.evaluate(() => [RECORD, !!st.partido].join()), '7–1,false'); // eslint-disable-line no-undef
+
+  // eliminar el de Panini: confirmación con rival y fecha, y las cuentas sin él
+  const g2 = await gid(pg, 'panini');
+  await toca(pg, 'ir', 'partidos'); await toca(pg, 'juego', g2); await toca(pg, 'eliminarver', g2);
+  assert.match(await texto(pg), /¿Eliminar el partido\? vs Panini · Hoy · 6–0/);
+  await toca(pg, 'eliminarp', g2);
+  assert.equal(await pg.evaluate(() => RECORD), '6–1'); // eslint-disable-line no-undef
+  assert.equal(await pg.evaluate(() => JUEGOS.some((g) => g.rival === 'panini')), false); // eslint-disable-line no-undef
+  assert.equal(await pg.evaluate(() => TEMP.rodrigo.pts), 10.5); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'jugadores');
+  assert.match(await texto(pg), /Rodrigo 1 TD · 1 corrida 10\.5 pts/);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+
+test('la corrección y el borrado llegan al otro celular, y una copia vieja no lo revive', async () => {
+  const clave = 'prueba-corrige-0123456789ab', nube = nubeFalsa(clave, ['Mau', 'Nico', 'Rodrigo']);
+  const a = await telefono(srv.url, { nube, clave });
+  await a.waitForFunction(() => PLANTEL.length === 3); // eslint-disable-line no-undef
+  await juega(a, 'panini', ['mau', 'nico', 'rodrigo'], async () => { await td(a, 'corrida', 'nico'); await toca(a, 'lado', 'O'); await td(a, 'pase', 'rodrigo'); });
+  const g = await gid(a, 'panini');
+  const enNube = async (ok) => { for (let i = 0; i < 100 && !ok(); i++) await a.waitForTimeout(100); assert.ok(ok()); };
+  await enNube(() => (nube.db[clave + '-cel'].datos.juegos || {})[g]);
+  const b = await telefono(srv.url, { nube, clave });
+  await b.waitForFunction(() => JUEGOS.some((x) => !x.solo), null, { timeout: 10000 }); // eslint-disable-line no-undef
+  const viejo = JSON.parse(JSON.stringify(nube.db[clave + '-cel'].datos.juegos[g]));
+  const vivo = JSON.stringify(nube.db[clave + '-vivo'].datos);
+  // A corrige: borra el TD de Rodrigo
+  await toca(a, 'ir', 'partidos'); await toca(a, 'juego', g); await toca(a, 'corregirp', g);
+  await fila(a, 1); await toca(a, 'borrar'); await toca(a, 'listocorr');
+  await a.waitForTimeout(1500);
+  assert.equal(JSON.stringify(nube.db[clave + '-vivo'].datos), vivo); // la corrección no pasa por el partido en vivo
+  await b.reload(); await b.waitForSelector('#tel .nav');
+  await b.waitForFunction(() => { const x = JUEGOS.find((y) => !y.solo); return x && x.nos === 6; }, null, { timeout: 10000 }); // eslint-disable-line no-undef
+  assert.doesNotMatch(await texto(b), /lo marca otro celular/);
+  // A lo elimina; luego un celular con la app de antes sube su copia sin el borrado: no regresa
+  await toca(a, 'ir', 'partidos'); await toca(a, 'juego', g); await toca(a, 'eliminarver', g); await toca(a, 'eliminarp', g);
+  await a.waitForTimeout(1500);
+  nube.db[clave + '-cel'].datos.juegos[g] = viejo; nube.db[clave + '-cel'].actualizado = 'viejo';
+  await a.evaluate(() => sinc(filas.temp)); await a.waitForTimeout(1500); // eslint-disable-line no-undef
+  assert.equal(await a.evaluate(() => JUEGOS.some((x) => !x.solo)), false); // eslint-disable-line no-undef
+  assert.equal(viejo.jugadas.every((j) => nube.db[clave + '-cel'].datos.juegos[g].borradas[j.uid]), true);
+  await b.reload(); await b.waitForSelector('#tel .nav');
+  await b.waitForFunction(() => !JUEGOS.some((x) => !x.solo), null, { timeout: 10000 }); // eslint-disable-line no-undef
+  assert.deepEqual([...a.errores, ...b.errores], []);
+  await a.context().close(); await b.context().close();
+});
+
+test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y ✕, la franja y los líderes', async () => {
+  const pg = await telefono(srv.url);
+  await agrega(pg, ['Mau', 'Nico', 'Rodrigo', 'Pepe', 'Luis', 'Beto', 'Chuy', 'Dani', 'Emilio', 'Fer', 'Gabo', 'Hugo', 'Iván']);
+  // tocar a alguien no rehace la hoja: no vuelve a subir, no regresa arriba, y la palomita es redonda (SVG)
+  await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await pg.waitForTimeout(300);
+  await pg.locator('.hoja').evaluate((h) => { h.scrollTop = 200; });
+  await toca(pg, 'vantoggle', 'hugo');
+  assert.deepEqual(await pg.locator('.hoja').evaluate((h) => [h.scrollTop, h.classList.contains('quieta')]), [200, true]);
+  assert.equal(await pg.locator('.van-f.si .ck svg').count(), 1);
+  // abajo del botón fijo no se asoman los renglones
+  assert.equal(await pg.evaluate(() => Math.round(document.querySelector('.hoja').getBoundingClientRect().bottom - document.querySelector('.ops.fijo').getBoundingClientRect().bottom)), 0);
+  for (const id of ['mau', 'nico', 'rodrigo']) await toca(pg, 'vantoggle', id);
+  await toca(pg, 'vanlisto');
+  // Marcar sin textos de ayuda y con botones de al menos 56 px
+  assert.equal(await pg.locator('.mk-grande small, .mk-td small').count(), 0);
+  assert.ok(Math.min(...await pg.locator('.mk-grande, .mk-chico, .mk-td').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 56);
+  // ¿Quién?: sin «No sé», y la ✕ de arriba no guarda nada; en la regla, la ✓ guarda las yardas ya
+  await toca(pg, 'res', 'corrida');
+  assert.doesNotMatch(await texto(pg), /No sé/);
+  await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
+  assert.equal(await pg.evaluate(() => st.partido.jugadas.length), 0); // eslint-disable-line no-undef
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico');
+  for (let i = 0; i < 3; i++) await pg.locator('.rg-b[data-pm="1"]').click();
+  await pg.locator('.hoja.cuanto .hb.si').click(); await pg.waitForTimeout(150);
+  assert.deepEqual(await pg.evaluate(() => [st.hoja, st.partido.jugadas[0].id, st.partido.jugadas[0].yd]), [null, 'nico', 3]); // eslint-disable-line no-undef
+  // una jugada vieja sin nombre sigue contando y se le pone el jugador al corregirla (en Corregir ya no hay «No sé»)
+  await pg.evaluate(() => { const p = st.partido; p.jugadas[0].id = null; rehacer(p); A.fila(0); pintar(); }); // eslint-disable-line no-undef
+  assert.match(await texto(pg), /pase a sin nombre/); assert.doesNotMatch(await texto(pg), /No sé/);
+  await toca(pg, 'cquien', 'rodrigo');
+  assert.equal(await pg.evaluate(() => st.partido.jugadas[0].id), 'rodrigo'); // eslint-disable-line no-undef
+  // «Lo que pasó» va aparte: con la pestaña y deslizando de lado
+  await toca(pg, 'mkver', 'paso');
+  assert.match(await texto(pg), /Este partido/i);
+  await pg.evaluate(() => { const c = document.querySelector('.mk-cuerpo'), t = (x) => new Touch({ identifier: 1, target: c, clientX: x, clientY: 400 });
+    c.dispatchEvent(new TouchEvent('touchstart', { touches: [t(300)], changedTouches: [t(300)], bubbles: true }));
+    c.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [t(120)], bubbles: true })); });
+  assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
+  assert.equal(await pg.locator('.mk-grandes').count(), 1);
+  // defendiendo, la franja de la hora toma el color del rival (Kaffies, oscurecido como el encabezado); atacando, el nuestro
+  await toca(pg, 'lado', 'D');
+  assert.equal(await pg.evaluate(() => document.querySelector('meta[name="theme-color"]').content), '#5e4824');
+  await toca(pg, 'lado', 'O');
+  assert.equal(await pg.evaluate(() => document.querySelector('meta[name="theme-color"]').content), '#0d2347');
+  // Inicio: la tarjeta del partido sin balón, con Belugas, el marcador y el nombre del rival
+  await toca(pg, 'ir', 'inicio');
+  assert.equal(await pg.locator('.heroe .balon').count(), 0);
+  assert.match(await pg.locator('.heroe').innerText(), /Belugas[\s\S]*0 – 0[\s\S]*Kaffies/);
+  await toca(pg, 'marcar'); await td(pg, 'corrida', 'nico'); await toca(pg, 'terminar'); await toca(pg, 'ir', 'inicio');
+  // ninguna pantalla rebota (ni arriba ni abajo) ni deja mover la página entera
+  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) {
+    await toca(pg, 'ir', v);
+    assert.deepEqual(await pg.evaluate(() => [[...document.querySelectorAll('*')].filter((e) => getComputedStyle(e).overscrollBehaviorY !== 'none').length, document.scrollingElement.scrollHeight <= innerHeight]), [0, true], v);
+  }
+  // Líderes: cambiar de categoría no regresa la página hasta arriba
+  await toca(pg, 'ir', 'inicio');
+  const cu = pg.locator('#tel .cuerpo');
+  await cu.evaluate((c) => { c.scrollTop = 300; }); const y = await cu.evaluate((c) => c.scrollTop);
+  assert.ok(y > 0);
+  await toca(pg, 'cat', 'yds');
+  assert.equal(await cu.evaluate((c) => c.scrollTop), y);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
 });
 
 // el service worker solo corre en https: con URL=https://joosemau-beep.github.io/belugas/
