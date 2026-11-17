@@ -503,31 +503,41 @@ table.bs td.v { color: #b8c2cf; }
 .van-f.recien .ck { animation: pop .22s cubic-bezier(.3,1.6,.5,1); }
 /* abajo del botón fijo ya no se asoman los renglones */
 .hoja:has(> .ops.fijo) { padding-bottom: 0; }
-/* Marcar (Iker, 17-nov): tiras de solo texto, las de siempre y «Más» con las raras (como datos-07); sin pestañas: «Lo que pasó» está a la izquierda, se llega deslizando a la derecha y los puntos dicen dónde vas */
+/* Marcar (Iker, 17-nov): las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; sin pestañas: «Lo que pasó» está a la izquierda, se llega deslizando a la derecha y los puntos dicen dónde vas */
 .mk-tiras { display: grid; gap: 6px; }
+.mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+.mk-grande { min-height: 92px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; align-items: center; padding: 14px 16px; text-align: left; font: 800 18px/1.15 Inter; }
 .mk-tira { min-height: 56px; background: #fff; border-radius: 14px; box-shadow: var(--sombra); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px; text-align: left; font: 700 17px/1.2 Inter; }
 .mk-tira small { color: var(--mut); font: 600 13px/1.2 Inter; }
 .mk-tira.mas { background: transparent; box-shadow: inset 0 0 0 1.5px var(--linea); }
 .hoja .mk-tira { background: var(--bg); box-shadow: none; }
 .mk-tiras .mk-td { margin-top: 0; height: 62px; }
-.mk-tira:active, .mk-td:active { transform: scale(.98); }
-.mk-puntos { display: flex; justify-content: center; margin: -16px 0 0; }
-.mk-puntos button { width: 32px; height: 28px; display: grid; place-items: center; }
-.mk-puntos button::after { content: ''; width: 8px; height: 8px; border-radius: 4px; background: var(--linea); transition: width .2s; }
-.mk-puntos button.on::after { width: 20px; background: var(--navy); }
+.mk-grande:active, .mk-tira:active, .mk-td:active { transform: scale(.98); }
+.mk-puntos { display: flex; justify-content: center; margin: -15px 0 -1px; }
+.mk-puntos button { width: 26px; height: 16px; display: grid; place-items: center; }
+.mk-puntos button::after { content: ''; width: 6px; height: 6px; border-radius: 3px; background: var(--linea); transition: width .2s; }
+.mk-puntos button.on::after { width: 14px; background: var(--navy); }
 .mk-pag[style] { animation: desliza .2s ease-out; }
 @keyframes desliza { from { transform: translateX(var(--dx)); opacity: .3; } }
-/* ✕ y ✓ arriba de las hojas de llenar, grandes para tocarlos con guantes */
-.hbar { display: grid; grid-template-columns: 56px minmax(0, 1fr) 56px; align-items: center; gap: 10px; margin: 0 0 14px; }
-.hbar h3 { margin: 0; text-align: center; font-size: 19px; }
-.hbt { text-align: center; min-width: 0; } .hbt b { display: block; font: 800 18px/1.2 Inter; } .hbt small { display: block; margin-top: 3px; color: var(--mut); font: 600 12.5px/1.2 Inter; }
-.hb { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: #c0392b; }
+/* ✕ y ✓ juntos arriba a la derecha de cada hoja, de 44 px: caben con guantes sin quitar lugar (Iker, 17-nov) */
+.hbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; margin: 0 0 12px; }
+.hbar h3 { margin: 0; font-size: 19px; }
+.hbs { display: flex; gap: 8px; }
+.hbt { min-width: 0; } .hbt b { display: block; font: 800 18px/1.2 Inter; } .hbt small { display: block; margin-top: 3px; color: var(--mut); font: 600 12.5px/1.2 Inter; }
+.hb { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: #c0392b; }
 .hb.si { background: var(--boton); color: #fff; }
-.hb svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.hb svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
 .hpd { margin: 0 0 12px; }
 .hoja .pjs .pj { min-height: 118px; font-size: 15px; } .hoja .pjs .pj .foto { width: 58px; height: 58px; }
 .hoja .pjs.chicos .pj { min-height: 104px; }
+/* ¿Cuánto avanzó? como la V2 que escogió Iker (17-nov, data/belugas-yardas): + y − grandes y saltos en vez de la regla */
+.hoja.cuanto .rg-pmf { grid-template-columns: 80px minmax(0, 1fr) 80px; margin-top: 4px; }
+.hoja.cuanto .rg-b { width: 80px; height: 76px; border-radius: 20px; background: #e6eaf0; }
 .hoja.cuanto .rg-v { font-size: 76px; line-height: 76px; }
+.hoja.cuanto .rg-anuncio { bottom: -12px; }
+.rg-saltos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 6px; }
+.rg-saltos button { height: 64px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: italic 900 26px/1 var(--disp); color: var(--navy); }
+.hoja.cuanto .rg-b:active, .rg-saltos button:active { transform: scale(.97); }
 /* Inicio: la tarjeta del partido sin balón, centrada */
 .heroe.hoy .vs { margin-right: 0; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
 .op.rojo { background: #c0392b; color: #fff; }
@@ -537,7 +547,6 @@ table.bs td.v { color: #b8c2cf; }
 /* hojas de abajo */
 .velo { position: absolute; inset: 0; background: rgba(11,27,51,.38); z-index: 10; animation: ap .15s ease-out; }
 .hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 10px 16px calc(22px + var(--abajo)); z-index: 11; animation: sube .2s ease-out; max-height: 88%; overflow-y: auto; }
-.hoja::before { content: ''; display: block; width: 38px; height: 5px; border-radius: 3px; background: #d3d9e2; margin: 0 auto 12px; }
 .hoja h3 { font: 800 21px/1.2 Inter; margin: 4px 2px 14px; }
 .hoja h3 + p { margin-top: -10px; }
 .hoja p { margin: 0 2px 14px; color: var(--mut); font-size: 14px; }
@@ -548,6 +557,7 @@ table.bs td.v { color: #b8c2cf; }
 .pj .foto { width: 50px; height: 50px; }
 .pj .corta { max-width: 100%; }
 .pj small { color: var(--mut); font: 600 11px/1 Inter; }
+.pj { position: relative; } .pj .ult { position: absolute; top: 6px; right: 6px; font: 800 10px/1 Inter; font-style: normal; letter-spacing: .03em; color: #fff; background: var(--navy); border-radius: 999px; padding: 3px 6px; }
 .ops { display: grid; gap: 10px; }
 .ops.dos { grid-template-columns: 1fr 1fr; }
 .op { height: 64px; border-radius: 16px; background: var(--bg); font: 800 17px/1 Inter; }
@@ -988,10 +998,12 @@ const RES = {
 const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', presion: 'tapado', fallo: 'tapado'};
 // sin títulos de grupo, lo malo lleva el nombre completo para no confundirse con lo de la defensa
 const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase incompleto'};
-// las tiras de Marcar: las de siempre a la vista; castigos, pick 6 y safety en «Más»
-const MK_TIRAS = { O: ['pase', 'corrida', 'incompleto', 'parada', 'int', 'sackr'], D: ['bandera', 'tapado', 'intn', 'sack'] }, MK_MAS = { O: ['pick6c', 'safetyc'], D: ['pick6', 'safety'] };
-const mkTira = (k) => `<button class="mk-tira" data-a="res" data-v="${k}">${MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1]}</button>`;
-const mkCastigo = (v) => `<button class="mk-tira" data-a="castigo" data-v="${v}">Castigo ${v === 'favor' ? 'a favor' : 'en contra'}</button>`;
+// Marcar: las 6 más usadas van grandes (contadas en los 10 partidos de ejemplo: pase 14 por partido, incompleto 7, corrida 3,
+// nos pararon 2.5, intercepción 0.9, castigo a favor 0.8; bandera 13, tapado 11, sack 1.7, castigo a favor 0.8, intercepción 0.7, en contra 0.3); el resto en «Más opciones»
+const MK_GRANDES = { O: ['pase', 'corrida', 'incompleto', 'parada', 'int', 'castigo:favor'], D: ['bandera', 'tapado', 'sack', 'intn', 'castigo:favor', 'castigo:contra'] };
+const MK_MAS = { O: ['castigo:contra', 'sackr', 'pick6c', 'safetyc'], D: ['pick6', 'safety'] };
+const mkBoton = (k, cls) => { const [a, v] = k.startsWith('castigo:') ? ['castigo', k.slice(8)] : ['res', k];
+  return `<button class="${cls}" data-a="${a}" data-v="${v}">${a === 'castigo' ? `Castigo ${v === 'favor' ? 'a favor' : 'en contra'}` : MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1]}</button>`; };
 const MK_LADO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>';
 const MK_BALON = '<svg class="mk-bal" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9.5" ry="5.6" transform="rotate(-32 12 12)" fill="#fff"/><path d="M9.6 14.2l4.8-4.4M10.6 11.6l1.3 1.3M12.1 10.2l1.3 1.3" stroke="#0d2347" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
 // ---------- la lista «Este partido», por series ----------
@@ -1087,10 +1099,11 @@ function loQueMarcamos(p) {
   return `<h2>Lo que marcamos</h2><div class="lqm">${col('Ataque', [['Series con TD', `${c.seriesTD} de ${c.seriesO}`], ['Pases', `${c.comp} de ${c.att}`], ['Corridas', c.corr], ['Balones perdidos', c.perd]])}${col('Defensa', [['Series frenadas', `${c.fren} de ${c.seriesD}`], ['Banderas', c.band], ['Pases tapados', c.tap], ['Balones robados', c.rob]])}</div>`;
 }
 // el renglón de abajo del TD: con aviso, dice la jugada (tocarla la corrige) y trae Deshacer u otra acción; sin aviso, «Última · Corregir · Deshacer»
-function filaPregunta() {
+// en Marcar el aviso sale un momento al marcar (con Deshacer) y se va solo; la tira «Última» queda solo en «Lo que pasó» (Iker, 17-nov)
+function filaPregunta(conUltima) {
   const p = st.partido, ta = st.toast;
   const u = p.jugadas[p.jugadas.length - 1];
-  if (!ta) return u ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer" data-v="${u.uid}">Deshacer</button></div>` : '';
+  if (!ta) return u && conUltima ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer" data-v="${u.uid}">Deshacer</button></div>` : '';
   const fila = ta.uid ? p.jugadas.findIndex((j) => j.uid === ta.uid) : -1, btn = ta.accion !== undefined ? ta.accion : fila >= 0 || ta.snap ? ['deshacer', 'Deshacer'] : null;
   const txt = ta.txt.charAt(0).toUpperCase() + ta.txt.slice(1);
   // las caras opcionales (a quién iba, a quién le hicieron el sack) caben en el renglón sin el ícono: 4 de 30 px
@@ -1110,7 +1123,7 @@ function marcar() {
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas', O)}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto, !O)}</button></div>
     <div class="cuerpo mk-cuerpo">
       ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Va después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
-      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta()}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras">${MK_TIRAS[p.lado].map(mkTira).join('')}${td}<button class="mk-tira mas" data-a="mas">Más<small>Castigo · Pick 6 · Safety</small></button></div>
+      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}<button class="mk-tira mas" data-a="mas">Más opciones</button></div>
       ${filaPregunta()}</div>`}
     </div>${nav()}</div>`;
 }
@@ -1293,9 +1306,12 @@ function compartir(gid) {
 }
 // arriba de las hojas de llenar: ✕ quita lo que se está poniendo y ✓ lo confirma (en «¿Quién?» tocar a alguien ya guarda: sin «No sé»)
 const X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>', PALOMITA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
-const barra = (tit, no, si, siTxt) => `<div class="hbar"><button class="hb no" data-a="${no}" aria-label="Quitar">${X_SVG}</button>${tit}${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : '<span></span>'}</div>`;
+const barra = (tit, no, si, siTxt) => `<div class="hbar">${tit}<div class="hbs"><button class="hb no" data-a="${no}" aria-label="Cerrar">${X_SVG}</button>${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : ''}</div></div>`;
 // quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
-const botonPj = (id, accion, actual) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
+const botonPj = (id, accion, actual, ult) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${ult ? '<em class="ult">última</em>' : ''}${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
+// ¿Quién?: primero los que han jugado de este lado, el de la última jugada con la marca «última» (marcar-simple, punto 4)
+const pjsRecientes = (lado, accion, fuera) => { const u = [...st.partido.jugadas].reverse().find((j) => j.lado === lado && j.id && !borrada(st.partido, j));
+  return recientes(lado).filter((id) => id !== fuera).map((id) => botonPj(id, accion, false, u && u.id === id)).join(''); };
 function hoja() {
   if (!st.hoja) return '';
   let h = '';
@@ -1327,7 +1343,7 @@ function hoja() {
     // 1ª y 10 a mano (las jugadas se anotan sueltas, sin orden, sin downs): pase completo y corrida nuestra; en la bandera, si ellos la lograron
     const pd = PD_EN.includes(st.sel) ? `<button class="pdt${st.pd ? ' on' : ''}" data-a="pdt" aria-pressed="${!!st.pd}">${st.sel === 'bandera' ? 'Lograron 1ª y 10' : '1ª y 10'}</button>` : '';
     const tit = st.sel === 'incompleto' ? '¿A quién se le cayó?' : td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : tp && st.tapo === 'presion' ? '¿Quién hizo la presión?' : x[3];
-    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${pd ? `<div class="hpd">${pd}</div>` : ''}${tpo}${lz}<div class="pjs">${st.van.filter((id) => !pasa || id !== q).map((id) => botonPj(id, 'quien')).join('')}</div>`;
+    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${pd ? `<div class="hpd">${pd}</div>` : ''}${tpo}${lz}<div class="pjs">${pjsRecientes(st.partido.lado, 'quien', pasa ? q : null)}</div>`;
   }
   // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
   if (st.hoja === 'inc') h = st.partido.lado === 'O'
@@ -1355,7 +1371,7 @@ function hoja() {
         ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4><div class="pjs chicos">${cuantos.map((id) => botonPj(id, 'cquien', id === j.id)).join('')}</div>` : ''}`;
     }
   }
-  if (st.hoja === 'mas') h = `<h3>Más</h3><div class="mk-tiras">${['favor', 'contra'].map(mkCastigo).join('')}${MK_MAS[st.partido.lado].map(mkTira).join('')}</div>`;
+  if (st.hoja === 'mas') h = `<h3>Más opciones</h3><div class="mk-tiras">${MK_MAS[st.partido.lado].map((k) => mkBoton(k, 'mk-tira')).join('')}</div>`;
   if (st.hoja === 'cqp') {
     const j = st.partido.jugadas[st.edita], O = j.lado === 'O';
     const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n, , , l]) => [k, l || n]), ...(O ? [] : [['presion', 'Presión, incompleto'], ['fallo', 'Incompleto, no la atraparon']]), ['castigo:favor', 'Castigo a favor'], ['castigo:contra', 'Castigo en contra'], O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
@@ -1364,7 +1380,7 @@ function hoja() {
   if (st.hoja === 'conv') {
     const c = st.conv, j = c && porUid(c.uid);
     if (j && c.paso) { const q = lanzo();
-      h = `<h3>¿Quién la atrapó?</h3><p>Conversión de ${c.paso}</p>${campoLanzo(q, 'conv')}<div class="pjs">${st.van.filter((id) => id !== q).map((id) => botonPj(id, 'convq')).join('')}</div>`; }
+      h = `<h3>¿Quién la atrapó?</h3><p>Conversión de ${c.paso}</p>${campoLanzo(q, 'conv')}<div class="pjs">${pjsRecientes(j.lado, 'convq', q)}</div>`; }
     else if (j) h = `<h3>Conversión</h3><p>${['tdr', 'pick6c'].includes(j.k) ? `La de ${r.corto}` : textoDe({ ...j, conv: null })}</p>
       <div class="convf">${[1, 2].map((n) => `<div class="cf"><div class="cn">De ${n}<small>desde la ${DESDE[n]}</small></div><button class="op prim" data-a="conv" data-v="${n}-1">Entró</button><button class="op" data-a="conv" data-v="${n}-0">No entró</button></div>`).join('')}</div>
       <div class="ops" style="margin-top:4px"><button class="op sec" data-a="conv" data-v="0">No la intentaron</button></div>`;
@@ -1374,6 +1390,8 @@ function hoja() {
     <button class="aj-fila" data-a="onbmarcar"><span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Ver cómo se marca<em>›</em></button>
     <button class="aj-fila" data-a="antes"><span><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg></span>Libro de jugadas y pulsera<em>›</em></button>
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
+  // la barrita de arrastre no servía en la página: toda hoja lleva su ✕ arriba a la derecha (Iker, 17-nov)
+  if (!h.includes('class="hbar"')) h = h.replace(/^\s*<h3>[\s\S]*?<\/h3>/, (t) => barra(t, 'cerrar'));
   return `<div class="velo" data-a="cerrar"></div><div class="hoja">${h}</div>`;
 }
 // de dónde se tira cada conversión (reglamento IFAF que usa la app); si la liga tira de otro lado, se cambia aquí
@@ -1820,7 +1838,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261116232511';
+const VERSION = '20261116234544';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -1831,7 +1849,7 @@ async function revisarVersion() {
   } catch { /* sin señal: se revisa al volver */ }
 }
 
-// ---------- ¿Cuánto avanzó? La regla que escogió Iker en el editor de yardas ----------
+// ---------- ¿Cuánto avanzó? + y − y saltos (la V2 de Iker, 17-nov); la regla queda escondida y hace las cuentas ----------
 // «número 100 900 cursiva barlow · yd 15 · ± 70/40 trazo 3 · barra 84 · marcas 34×4 cada 15 · números 12 ·
 //  colores marino/hielo/coral · número de color sí · quedó liso · zona bloque, logo centro, color equipo ·
 //  primera linea, anuncio pastilla · pasos 1 · inercia sí · rebote sí · vibración sí · animación sí»
@@ -1870,7 +1888,8 @@ function hojaCuanto() {
   const a = antesDe(j);
   return `<div class="hoja cuanto">${barra(`<div class="hbt"><b>¿Cuánto avanzó?</b><small class="corta">${textoDe({ ...j, yd: null })}</small></div>`, 'sinyd', 'rgok', 'Guardar las yardas')}
     <div class="rg-pmf"><button class="rg-b" data-pm="-1" aria-label="Menos">${signo(false)}</button><div class="rg-vw"><span class="rg-anuncio" id="rganuncio"></span><span class="rg-v num" id="rgv">${fmtYd(c.yd)}<small>yd</small></span></div><button class="rg-b" data-pm="1" aria-label="Más">${signo(true)}</button></div>
-    ${regla(a)}</div>`;
+    <div class="rg-saltos">${[-5, 5, 10, 20].map((v) => `<button data-salto="${v}">${fmtYd(v)}</button>`).join('')}</div>
+    <div hidden>${regla(a)}</div></div>`; // la regla sigue escondida: así los topes, los colores y el «¡Touchdown!» funcionan igual
 }
 let tCuanto = null, tSola = null;
 function cerrarCuanto() { clearTimeout(tCuanto); clearTimeout(tSola); tCuanto = tSola = null; }
@@ -1926,6 +1945,8 @@ function montarCuanto() {
     b.addEventListener('pointerdown', (e) => { e.preventDefault(); clearTimeout(tCuanto); clearTimeout(tSola); uno(); t1 = setTimeout(() => { t2 = setInterval(uno, 90); }, 380); });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => b.addEventListener(t, () => { if (t1 || t2) parar(); }));
   });
+  // los saltos: llegar rápido con guantes; el + y el − afinan de una en una
+  document.querySelectorAll('[data-salto]').forEach((b) => b.addEventListener('click', () => { clearTimeout(tCuanto); clearTimeout(tSola); poner(c.yd + +b.dataset.salto); centrar(c.yd); programar(3000); }));
   // nadie la tocó: se cierra sola y la jugada queda sin yardas
   if (!tSola && !tCuanto) tSola = setTimeout(() => { if (st.hoja === 'cuanto') { const j = porUid(st.cuanto.uid); st.cuanto = null; st.hoja = null; tSola = null; if (j && st.convLuego === j.uid) trasYardas(j); else if (j) sinYardas(j.uid); pintar(); } }, 10000);
 }
