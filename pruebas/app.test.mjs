@@ -721,10 +721,11 @@ test('las métricas: corrida corregida a TD, partidos que vino y quién es QB', 
 // Iker, 17-nov: a Juanpi no le salía la cara. Su id es el nombre con que entró («Jonpol»); el retrato se liga también por el nombre de hoy
 test('el retrato se liga por id o por el nombre de hoy', async () => {
   const clave = 'prueba-retratos-0123456789', nube = nubeFalsa(clave, ['Mau', 'Juan Pi', 'Pepe']);
-  nube.db[clave + '-cel'].datos = { v: 1, plantel: [{ id: 'jonpol', nombre: 'Juanpi', n: 0, ver: 1 }, { id: 'juan-pi', nombre: 'Juan Pi', n: 1, ver: 1 }, { id: 'pepe', nombre: 'Pepe', n: 2, ver: 1 }, { id: 'mau', nombre: 'Maú', n: 3, ver: 1 }], linea: { O: [], D: [], qb: null, ver: 1 }, juegos: {}, sembrado: 1 };
+  nube.db[clave + '-cel'].datos = { v: 1, plantel: [{ id: 'jonpol', nombre: 'Juanpi', n: 0, ver: 1 }, { id: 'juan-pi', nombre: 'Juan Pi', n: 1, ver: 1 }, { id: 'pepe', nombre: 'Pepe', n: 2, ver: 1 }, { id: 'mau', nombre: 'Maú', n: 3, ver: 1 }, { id: 'jc', nombre: 'Juancho', n: 4, ver: 1 }, { id: 'pepe2', nombre: 'José', n: 5, ver: 1 }, { id: 'juan', nombre: 'Juan', n: 6, ver: 1 }], linea: { O: [], D: [], qb: null, ver: 1 }, juegos: {}, sembrado: 1 };
   const pg = await telefono(srv.url, { nube, clave });
-  await pg.waitForFunction(() => PLANTEL.length === 4); // eslint-disable-line no-undef
-  assert.deepEqual(await pg.evaluate(() => PLANTEL.map((p) => p.cara)), ['archivos/jugadores/juanpi.jpg', 'archivos/jugadores/juanpi.jpg', null, 'archivos/jugadores/mau.jpg']); // eslint-disable-line no-undef
+  await pg.waitForFunction(() => PLANTEL.length === 7); // eslint-disable-line no-undef
+  // el nombre tiene que casar entero: Juancho no se lleva la de Juanpi, José la suya y «Juan» ninguna
+  assert.deepEqual(await pg.evaluate(() => PLANTEL.map((p) => p.cara)), ['juanpi', 'juanpi', null, 'mau', 'juancho', 'jose', null].map((x) => x && `archivos/jugadores/${x}.jpg`)); // eslint-disable-line no-undef
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
