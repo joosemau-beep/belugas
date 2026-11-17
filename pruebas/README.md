@@ -5,6 +5,9 @@ Recorren la app del teléfono (`index.html`) en Chromium, en 390 × 844, como en
 - **los puntos de la tabla**: pick 6, TD de pase, yardas, sacks, banderas.
 - **un partido completo**: agregar jugadores, escoger rival, marcar quién vino y luego cada tipo de jugada (pase con yardas y 1ª y 10, corrida, incompletos, nos pararon, castigos, TD con conversión, bandera, tapado, presión, sack, TD de ellos, intercepciones, pick 6 de los dos lados, safeties). Revisa el marcador y el lado después de cada jugada, y además prueba Deshacer, Corregir, Borrar, recargar a media partida, Terminar y Seguir marcando. Al final revisa los puntos de cada jugador, el récord, Métricas, Partidos y Jugadores.
 - **dos celulares**: el segundo se une al partido en vivo, los dos marcan y el que termina cierra el partido en el otro. Usa una nube falsa en memoria: las pruebas nunca tocan la nube del equipo.
+- **corregir y eliminar un partido ya jugado**: desde su ficha se borra una jugada, se cambia otra de tipo y de jugador, se agrega un TD que faltó en su lugar, y se cambian rival y fecha; luego se elimina otro partido. Revisa marcador, puntos, récord y Partidos, y que todo sigue al recargar.
+- **la corrección y el borrado en el otro celular**: llegan por la nube falsa sin pasar por el partido en vivo, y una copia vieja del partido (como la de un celular con la app de antes) no lo revive.
+- **las pantallas**: «¿Quiénes vinieron?» no se reinicia al tocar a alguien, ninguna pantalla rebota, Marcar sin textos de ayuda y con botones grandes, sin «No sé», ✕ y ✓ arriba, «Lo que pasó» aparte (también deslizando), la franja de la hora con el color del rival, la tarjeta de Inicio sin balón y Líderes sin brincar hasta arriba.
 - **abre sin señal**: solo contra la app publicada, porque el service worker necesita https.
 
 ## Cómo correrlas
@@ -23,4 +26,4 @@ npm test                                                  # la app de esta carpe
 URL=https://joosemau-beep.github.io/belugas/ npm test     # la publicada, con la prueba sin señal
 ```
 
-Si el puerto 4710 está ocupado, se cambia con `PORT=4711 npm test`. Tardan unos 40 segundos.
+Si el puerto 4710 está ocupado, se cambia con `PORT=4711 npm test`. Tardan como un minuto y medio.

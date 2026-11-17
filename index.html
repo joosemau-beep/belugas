@@ -108,7 +108,7 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
 @media (max-width: 520px) {
   /* encabezado B: la página es marina, así Safari 26 pinta de marino la franja de la hora en todas las pantallas;
      la barra de abajo va fija para que Safari tome su blanco en la orilla de abajo */
-  html, body { background: #0d2347; }
+  html, body { background: var(--franja, #0d2347); }
   .tel { max-width: none; }
   .tel .nav { position: fixed; }
 }
@@ -118,7 +118,7 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
    Antes se adivinaba si iOS «cortaba» la app por la altura y entonces iba blanco y sin aire, pero en el iPhone de Mau la altura
    engaña con la pantalla completa y salía la niebla (16-nov tarde): ya no se adivina. */
 html.app .tel { --abajo: 20px; }
-html.app, html.app body { background: #0d2347; }
+html.app, html.app body { background: var(--franja, #0d2347); }
 html.app .nav { height: calc(64px + var(--abajo)); }
 /* iOS 26 difumina lo que queda bajo la hora hasta ~90 pt del borde: el encabezado baja 24 pt para que el logo y el título salgan nítidos (Mau, 16-nov) */
 html.app .estado { height: calc(env(safe-area-inset-top) + 24px); }
@@ -144,6 +144,8 @@ h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
 .foto { position: relative; flex: none; display: block; border-radius: 50%; }
 .foto > span { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #fff; }
 .foto svg, .foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* los retratos son de 725 × 900 con la cabeza arriba: el círculo toma la parte de arriba para no cortarles el pelo (Iker, 17-nov) */
+.foto img { object-position: 50% 0; }
 .foto .ini { display: grid; place-items: center; height: 100%; background: #e8eef7; color: var(--navy); font: 800 13px/1 Inter; }
 .pila { display: flex; align-items: center; }
 .pila .foto { width: 34px; height: 34px; margin-left: -9px; box-shadow: 0 0 0 2px rgba(255,255,255,.9); }
@@ -204,13 +206,7 @@ input.nombre:focus { border-color: var(--acento); }
 .mbar .qbchip { margin: 0; height: 38px; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* «¿Cuánto avanzó?»: la regla que escogió Iker en el editor; sin velo, las tiras de arriba siguen tocables */
 .hoja.cuanto { padding: 8px 16px calc(14px + var(--abajo)); box-shadow: 0 -10px 30px rgba(11,27,51,.18); }
-.rg-tit { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; height: 24px; }
-.rg-tit b { font: 800 18px/1.2 Inter; flex: none; }
-.rg-tit small { font: 600 12.5px/1.2 Inter; color: var(--mut); min-width: 0; text-align: right; }
-.rg-op { display: flex; align-items: baseline; gap: 10px; margin-top: 6px; height: 26px; }
-.rg-op .op1, .mscore .down .op1 { font: italic 900 24px/1 var(--disp); }
-.rg-op .op1 { color: var(--navy); }
-.rg-lugar { font: 600 12.5px/1 Inter; color: var(--mut); }
+.mscore .down .op1 { font: italic 900 24px/1 var(--disp); }
 .rg-pmf { display: grid; grid-template-columns: 70px minmax(0, 1fr) 70px; align-items: center; gap: 8px; margin-top: 2px; }
 .rg-b { width: 70px; height: 70px; border-radius: 50%; background: #eceef1; color: var(--navy); display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; }
 .rg-b svg { display: block; }
@@ -232,7 +228,6 @@ input.nombre:focus { border-color: var(--acento); }
 .rg-pm { position: absolute; width: 3px; margin-left: -1.5px; background: #f6c90e; border-radius: 2px; box-shadow: 0 0 6px rgba(246,201,14,.6); }
 .rg-ag { position: absolute; left: 50%; top: 0; width: 5px; margin-left: -2.5px; border-radius: 3px; background: var(--navy); pointer-events: none; z-index: 3; }
 .rg-ag.rebote, .rg-v.rebote { animation: rgRebote .42s cubic-bezier(.3,1.7,.5,1); }
-.hoja .sinyd { width: 100%; margin-top: 12px; height: 48px; }
 @keyframes rgTic { 0% { transform: scale(1.08); } 100% { transform: scale(1); } }
 @keyframes rgRebote { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 100% { transform: scale(1); } }
 /* Equipo al final de un partido: franja de 3 y «Ver todos los números» (la limpieza, aprobada por Iker) */
@@ -422,18 +417,16 @@ table.bs td.v { color: #b8c2cf; }
 .mk-cuerpo > * { flex-shrink: 0; }
 .mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
 .mk-grandes, .mk-chicos { display: grid; grid-template-columns: 1fr 1fr; }
-.mk-grandes { grid-auto-rows: 112px; gap: 10px; }
-.mk-chicos { grid-auto-rows: 52px; gap: 8px; margin-top: 24px; }
+.mk-grandes { grid-auto-rows: 100px; gap: 10px; }
+.mk-chicos { grid-auto-rows: 60px; gap: 10px; margin-top: 12px; }
 .mk-grande { background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 14px 14px 13px; text-align: left; }
 .mk-grande b { display: block; font: 800 17px/1.15 Inter; }
-.mk-grande small { display: block; color: var(--mut); font: 500 12.5px/1.25 Inter; margin-top: 3px; }
 .mk-chico { background: #fff; border-radius: 14px; box-shadow: var(--sombra); display: flex; align-items: center; gap: 10px; padding: 0 14px; text-align: left; }
-.mk-chico b { font: 700 14.5px/1.15 Inter; }
+.mk-chico b { font: 700 16px/1.15 Inter; }
 .mk-grande:active, .mk-chico:active, .mk-td:active { transform: scale(.98); }
 .mk-ic { display: grid; place-items: center; flex: none; }
 .mk-ic svg { width: 100%; height: 100%; fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.mk-td { width: 100%; margin-top: 24px; height: 74px; border-radius: 18px; background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(13,35,71,.25); }
-.mk-td small { margin-left: auto; font: 600 12.5px/1.2 Inter; opacity: .85; white-space: nowrap; }
+.mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: 18px; background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(13,35,71,.25); }
 /* en defensa el encabezado y el TD de ellos toman el color del rival (--rc, de EQUIPOS), en degradado como el nuestro */
 .mcab.mk-def, .mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
 .mk-td.riv { box-shadow: 0 8px 18px color-mix(in srgb, var(--rc) 35%, transparent); text-shadow: 0 1px 3px rgba(0,0,0,.35); }
@@ -512,6 +505,34 @@ table.bs td.v { color: #b8c2cf; }
 /* uso-07: arriba en el final, por si se tocó Terminar sin querer */
 .sinquerer { margin: 12px 0 4px; display: flex; align-items: center; gap: 10px; background: #fff7e6; border-radius: 14px; padding: 6px 6px 6px 14px; font: 600 14px/1.25 Inter; color: #5b3b00; }
 .sinquerer span { flex: 1; }
+/* ajustes de Iker (17-nov): la pantalla no se jala ni rebota; la hoja que sigue abierta no se vuelve a animar */
+* { overscroll-behavior: none; } /* ni arriba ni abajo, en ninguna pantalla: así nunca se asoma el fondo azul */
+.hoja.quieta, .velo.quieta { animation: none; }
+/* la palomita: el degradado desde la orilla (sin el cuadro que dejaba el borde) y la marca en SVG; al tocar, un pop */
+.van-f.si .ck { background-origin: border-box; }
+.van-f .ck svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.van-f.recien .ck { animation: pop .22s cubic-bezier(.3,1.6,.5,1); }
+/* abajo del botón fijo ya no se asoman los renglones */
+.hoja:has(> .ops.fijo) { padding-bottom: 0; }
+/* Marcar: los botones y «Lo que pasó» en dos pestañas */
+.mk-tabs { display: flex; margin: 10px 0 8px; } .mk-tabs button { flex: 1; padding: 9px 8px; }
+.mk-pag[style] { animation: desliza .2s ease-out; }
+@keyframes desliza { from { transform: translateX(var(--dx)); opacity: .3; } }
+/* ✕ y ✓ arriba de las hojas de llenar, grandes para tocarlos con guantes */
+.hbar { display: grid; grid-template-columns: 56px minmax(0, 1fr) 56px; align-items: center; gap: 10px; margin: 0 0 14px; }
+.hbar h3 { margin: 0; text-align: center; font-size: 19px; }
+.hbt { text-align: center; min-width: 0; } .hbt b { display: block; font: 800 18px/1.2 Inter; } .hbt small { display: block; margin-top: 3px; color: var(--mut); font: 600 12.5px/1.2 Inter; }
+.hb { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: #c0392b; }
+.hb.si { background: var(--boton); color: #fff; }
+.hb svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.hpd { margin: 0 0 12px; }
+.hoja .pjs .pj { min-height: 118px; font-size: 15px; } .hoja .pjs .pj .foto { width: 58px; height: 58px; }
+.hoja .pjs.chicos .pj { min-height: 104px; }
+.hoja.cuanto .rg-v { font-size: 76px; line-height: 76px; }
+/* Inicio: la tarjeta del partido sin balón, centrada */
+.heroe.hoy .vs { margin-right: 0; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
+.op.rojo { background: #c0392b; color: #fff; }
+.mk-corr { text-align: center; font: 800 11.5px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin: 2px 0 4px; }
 .sinquerer button { background: var(--ink); color: #fff; border-radius: 10px; height: 40px; padding: 0 14px; font: 800 14px/1 Inter; flex: none; }
 
 /* hojas de abajo */
@@ -609,7 +630,6 @@ table.bs td.v { color: #b8c2cf; }
 .reglas .rg b.neg { color: #c2362d; }
 .reglas p { margin: 10px 0 12px; font-size: 13px; color: var(--mut); line-height: 1.4; }
 /* 1ª y 10 a mano: apagado, se prende al tocarlo antes de escoger quién */
-.hoja h3.conpd { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .pdt { flex: none; min-height: 40px; padding: 0 14px; border-radius: 20px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); color: var(--mut); font: 700 14px/1 Inter; }
 .pdt.on { background: var(--boton); color: #fff; box-shadow: none; }
 /* rival de la liga, con su logo */
@@ -891,7 +911,7 @@ const TAB_ICO = {inicio: 'inicio', partidos: 'partidos', jugadores: 'jug', metri
 // la pestaña encendida: las fichas cuentan como su lista
 const tabDe = (pant) => ({jugador: 'jugadores', partido: 'partidos', resumen: 'partidos'}[pant] || pant);
 // con partido y sin señal, «En vivo» pasa a «Sin señal» y su punto se pone amarillo (lo marcado queda en el teléfono y sube al volver)
-const centro = () => { const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), sin = p && clave && !sync.ok;
+const centro = () => { const aj = !st.partido && vivoAjeno(), p = (st.partido && !st.partido.corrige && st.partido) || (aj && previa(aj)), sin = p && clave && !sync.ok;
   return `<button class="centro2${p ? ' vivo' : ''}${sin ? ' sin' : ''}" data-a="marcar" aria-label="${p ? 'Seguir marcando' : 'Marcar'}">${p ? `<span class="pill num">${p.nos}–${p.ellos}</span>${sin ? 'Sin señal' : 'En vivo'}` : '<span class="pill"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Marcar'}</button>`; };
 const nav = () => `<div class="nav">${TABS.map((t) => t === '+' ? centro()
   : `<button data-a="ir" data-v="${t}" class="${tabDe(st.pant) === t ? 'on' : ''}"><svg viewBox="0 0 24 24">${ICO[TAB_ICO[t]]}</svg>${TAB_NOM[t]}</button>`).join('')}</div>`;
@@ -942,14 +962,14 @@ const avisoNube = () => (!clave ? '<div class="relevo" style="margin:0 0 12px">F
   : guardaMal ? '<div class="relevo" style="margin:0 0 12px">Este teléfono no está guardando lo que marcas (¿ventana privada?). Con señal sí llega a la nube; sin señal se puede perder.</div>' : '');
 function heroeHoy() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = R(aj ? aj.rival : p ? p.rival : HOY);
-  return p ? `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti"><i></i>En vivo · vs ${r.largo}${aj ? ' · lo marca otro celular' : ''}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong><small>${oportunidad(p)}</small></div><div class="eq">${rlogo(r)}${r.corto}</div></div>
+  return p ? `<div class="heroe hoy"><div class="eti"><i></i>En vivo${aj ? ' · lo marca otro celular' : ''}</div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
       <button class="btn-blanco" data-a="marcar">Seguir marcando</button></div>`
-    : st.final ? `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">Final · hoy · ${resDe(st.final.nos, st.final.ellos)[2]}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).corto}</div></div>
+    : st.final ? `<div class="heroe hoy"><div class="eti">Final · hoy · ${resDe(st.final.nos, st.final.ellos)[2]}</div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).largo}</div></div>
       <button class="btn-blanco" data-a="juego" data-v="${st.final.gid}">Ver el partido</button></div>`
-    : `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">Siguiente partido</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div>
+    : `<div class="heroe hoy"><div class="eti">Siguiente partido</div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
       <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
 }
 function inicio1() {
@@ -974,7 +994,6 @@ const mkIc = (k, px, c) => `<span class="mk-ic" style="--c:${c};width:${px}px;he
 const mkColor = (k) => (['pase', 'corrida', 'pick6', 'safety'].includes(k) ? '#16a05a' : ['int', 'pick6c', 'sackr', 'safetyc'].includes(k) ? '#e0483e' : k === 'castigo' ? '#c99400' : '#1d4f8f');
 // sin títulos de grupo, lo malo lleva el nombre completo para no confundirse con lo de la defensa
 const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase incompleto'};
-const MK_SUB = {tapado: 'Tapado o se les cayó'};
 const MK_LADO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>';
 const MK_BALON = '<svg class="mk-bal" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9.5" ry="5.6" transform="rotate(-32 12 12)" fill="#fff"/><path d="M9.6 14.2l4.8-4.4M10.6 11.6l1.3 1.3M12.1 10.2l1.3 1.3" stroke="#0d2347" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
 // ---------- la lista «Este partido», por series ----------
@@ -1084,21 +1103,23 @@ function filaPregunta() {
 function marcar() {
   const p = st.partido, O = p.lado === 'O', r = R(HOY);
   const de = (k) => RES[p.lado].find((x) => x[0] === k);
-  const grande = (k) => `<button class="mk-grande" data-a="res" data-v="${k}">${mkIc(k, 30, mkColor(k))}<span><b>${MK_NOMBRE[k] || de(k)[1]}</b><small>${MK_SUB[k] || de(k)[2]}</small></span></button>`;
+  const grande = (k) => `<button class="mk-grande" data-a="res" data-v="${k}">${mkIc(k, 30, mkColor(k))}<span><b>${MK_NOMBRE[k] || de(k)[1]}</b></span></button>`;
   const chico = (k) => `<button class="mk-chico" data-a="res" data-v="${k}">${mkIc(k, 20, mkColor(k))}<b>${MK_NOMBRE[k] || de(k)[1]}</b></button>`;
   const castigo = (v) => `<button class="mk-chico" data-a="castigo" data-v="${v}">${mkIc('castigo', 20, mkColor('castigo'))}<b>Castigo ${v === 'favor' ? 'a favor' : 'en contra'}</b></button>`;
-  const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIc('td', 30, '#fff')}Touchdown<small>+6 y la conversión</small></button>`
-    : `<button class="mk-td riv" data-a="tdr">${mkIc('tdr', 30, '#fff')}TD de ${r.corto}<small>Suma 6 al tocarlo</small></button>`;
+  const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIc('td', 30, '#fff')}Touchdown</button>`
+    : `<button class="mk-td riv" data-a="tdr">${mkIc('tdr', 30, '#fff')}TD de ${r.corto}</button>`;
   const eq = (img, n, conBalon) => `<div class="mk-eq">${img}<span>${conBalon ? MK_BALON : ''}${n}</span></div>`;
   const sube = (k) => (st.flash && st.flash[k] ? ' class="sube"' : '');
+  const ver = st.mkVer === 'paso' && p.jugadas.length ? 'paso' : 'marcar', anim = st.mkDir ? ` style="--dx:${st.mkDir * 28}px"` : ''; st.mkDir = 0;
+  const tabs = p.jugadas.length ? `<div class="conm mk-tabs"><button data-a="mkver" data-v="marcar" class="${ver === 'marcar' ? 'on' : ''}">Marcar</button><button data-a="mkver" data-v="paso" class="${ver === 'paso' ? 'on' : ''}">Lo que pasó · ${p.jugadas.length}</button></div>` : '';
   return `<div class="pant" style="--rc:${r.color}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
-    <div class="mbar"><button class="mk-lado" data-a="lado" data-v="${O ? 'D' : 'O'}">${MK_LADO}${O ? 'Ataque' : 'Defensa'}</button><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button><button data-a="terminar">Terminar</button></div>
+    <div class="mbar"><button class="mk-lado" data-a="lado" data-v="${O ? 'D' : 'O'}">${MK_LADO}${O ? 'Ataque' : 'Defensa'}</button><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button>${p.corrige ? '<button data-a="listocorr">Listo</button>' : '<button data-a="terminar">Terminar</button>'}</div>${p.corrige ? `<div class="mk-corr">Corrigiendo · ${fechaDe(p.dia || p.inicio)}</div>` : ''}
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas', O)}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto, !O)}</button></div>
     <div class="cuerpo mk-cuerpo">
-      <div class="mk-vista"><div class="mk-grandes">${(O ? ['pase', 'corrida', 'incompleto', 'parada'] : ['bandera', 'tapado', 'intn', 'sack']).map(grande).join('')}</div>
+      ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Va después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
+      ${tabs}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta()}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista"><div class="mk-grandes">${(O ? ['pase', 'corrida', 'incompleto', 'parada'] : ['bandera', 'tapado', 'intn', 'sack']).map(grande).join('')}</div>
         <div class="mk-chicos">${(O ? ['int', 'pick6c', 'sackr', 'safetyc'] : ['pick6', 'safety']).map(chico).join('')}${castigo('favor')}${castigo('contra')}</div>${td}</div>
-      ${filaPregunta()}
-      ${p.jugadas.length ? jlista(p, true) : ''}
+      ${filaPregunta()}</div>`}
     </div>${nav()}</div>`;
 }
 // ganamos, perdimos o empatamos (un 0–0 es empate, no «Perdimos»)
@@ -1166,6 +1187,7 @@ function partido() {
   const band = Object.values(g.st).reduce((a, x) => a + (x.band || 0), 0), intn = Object.values(g.st).reduce((a, x) => a + (x.intn || 0), 0), robaron = Object.keys(g.st).filter((id) => g.st[id].intn && P(id));
   return `<div class="pant">${est()}<div class="cuerpo"><div class="fila-v">${volver()}${btnCompartir(g.id)}</div>
   <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
+  ${st.partido && !st.partido.corrige ? '<div class="sinquerer"><span>Para corregir este partido, primero termina el de hoy.</span></div>' : `<div class="sinquerer"><span>¿Algo quedó mal?</span><button data-a="corregirp" data-v="${g.id}">Corregir</button></div>`}
   <h2>Cómo anotamos</h2><div class="jlista" style="margin-top:0">${anot.join('') || '<div class="jfila">Sin touchdowns</div>'}</div>
   <h2>Del partido</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(g.st[id])}</small></div><div class="der"><strong class="num">${puntosDe(g.st[id])}</strong><small>pts</small></div></button>`; }).join('')}</div>
   <h2>Equipo</h2><div class="card"><div class="franja3"><div><span>Touchdowns</span><strong class="num">${g.tds.length}</strong></div><div><span>Conversiones</span><strong class="num">${g.convs[1] ? `${g.convs[0]} de ${g.convs[1]}` : '—'}</strong></div><div><span>Banderas</span><strong class="num">${band}</strong></div></div>
@@ -1178,6 +1200,7 @@ function partido() {
     </details></div>
   ${c && c.lista.length ? `<h2>Quién le lanzó a quién</h2><div class="card">${conexiones(c.lista.slice(0, 4))}</div>` : ''}
   <h2>Los números de cada quien</h2>${tablaPartido(g)}
+  <div class="ops acc" style="margin-top:22px"><button class="op borrar" data-a="eliminarver" data-v="${g.id}">Eliminar partido</button></div>
   </div>${nav()}</div>`;
 }
 // tres tablas cortas por lo que hizo cada quien, con su rostro a la izquierda (o sus iniciales, sin aro)
@@ -1208,7 +1231,7 @@ function resumen() {
 // Una imagen de 1080 × 1350 hecha aquí mismo (sin servidor) que sale por el menú de compartir del teléfono. Si el teléfono
 // no manda archivos, sale el texto; si no hay menú de compartir (computadora), el texto se copia.
 const sinEsc = (s) => String(s).replace(/&(amp|lt|gt|quot|#39);/g, (m) => ({ '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'" }[m]));
-const fechaLarga = (g) => (g.partido ? new Date(g.partido.inicio).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }).replace('.', '') : g.fecha);
+const fechaLarga = (g) => (g.partido ? new Date(g.partido.dia || g.partido.inicio).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }).replace('.', '') : g.fecha);
 // lo que dice el resultado, en limpio: de aquí salen la imagen y el texto
 function datosFinal(g) {
   const r = R(g.rival), top = Object.keys(g.st).filter((id) => P(id) && puntosDe(g.st[id]) > 0).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a])).slice(0, 3);
@@ -1276,6 +1299,9 @@ function compartir(gid) {
   let sale; try { sale = lista ? manda(IMG.blob) : preparaImagen(g).then(manda); } catch (e) { sale = Promise.reject(e); }
   Promise.resolve(sale).catch((e) => { if (!e || e.name !== 'AbortError') return copiaTexto(txt, gid); }); // AbortError = cerró el menú sin mandar
 }
+// arriba de las hojas de llenar: ✕ quita lo que se está poniendo y ✓ lo confirma (en «¿Quién?» tocar a alguien ya guarda: sin «No sé»)
+const X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>', PALOMITA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const barra = (tit, no, si, siTxt) => `<div class="hbar"><button class="hb no" data-a="${no}" aria-label="Quitar">${X_SVG}</button>${tit}${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : '<span></span>'}</div>`;
 // quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
 const botonPj = (id, accion, actual) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
 function hoja() {
@@ -1286,11 +1312,18 @@ function hoja() {
     <button class="campo" data-a="vanver" data-v="${accion}"><div style="min-width:0"><span class="l">Vinieron · ${st.van.length} de ${PLANTEL.length}</span>${pila(st.van, 6)}</div><u>Cambiar</u></button>`;
   if (st.hoja === 'editar') {
     const otros = st.partido ? Object.keys(st.partido.aparatos || {}).filter((a) => a !== APARATO).length : 0;
+    const pc = st.partido && st.partido.corrige ? st.partido : null;
     h = `<h3>Partido</h3>${campos('editar')}
-      <div class="relevo">${!clave ? 'Sin el link del equipo: se guarda solo en este celular.' : !sync.ok ? 'Sin señal: se sube al volver.' : otros ? `Lo marcan ${otros + 1} celulares.` : '¿Otro celular? Que abra la app y toque «Seguir marcando».'}</div>
+      ${pc ? `<button class="campo" data-a="fechaver"><div><span class="l">Fecha</span><b>${fechaDe(pc.dia || pc.inicio)}</b></div><u>Cambiar</u></button>` : ''}
+      <div class="relevo">${pc ? 'Lo que cambies se guarda solo y les llega a los otros celulares.' : !clave ? 'Sin el link del equipo: se guarda solo en este celular.' : !sync.ok ? 'Sin señal: se sube al volver.' : otros ? `Lo marcan ${otros + 1} celulares.` : '¿Otro celular? Que abra la app y toque «Seguir marcando».'}</div>
       <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   }
-  if (st.hoja === 'van') h = `<h3>¿Quiénes vinieron hoy?</h3><div class="lista-van">${PLANTEL.map((p) => { const si = st.van.includes(p.id); return `<button class="van-f ${si ? 'si' : 'no'}" data-a="vantoggle" data-v="${p.id}">${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div><span class="ck">${si ? '✓' : ''}</span></button>`; }).join('')}</div><div class="ops fijo"><button class="op prim" data-a="vanlisto"${st.van.length ? '' : ' disabled'}>${!st.van.length ? 'Marca quién vino' : st.vanDe === 'empezar' ? `Empezar · vinieron ${st.van.length}` : `Listo · vinieron ${st.van.length}`}</button></div>`;
+  if (st.hoja === 'van') h = `<h3>¿Quiénes vinieron hoy?</h3><div class="lista-van">${PLANTEL.map((p) => { const si = st.van.includes(p.id); return `<button class="van-f ${si ? 'si' : 'no'}${st.recien === p.id ? ' recien' : ''}" data-a="vantoggle" data-v="${p.id}">${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div><span class="ck">${si ? PALOMITA : ''}</span></button>`; }).join('')}</div><div class="ops fijo"><button class="op prim" data-a="vanlisto"${st.van.length ? '' : ' disabled'}>${!st.van.length ? 'Marca quién vino' : st.vanDe === 'empezar' ? `Empezar · vinieron ${st.van.length}` : `Listo · vinieron ${st.van.length}`}</button></div>`;
+  if (st.hoja === 'fecha') h = `<h3>¿Qué día fue?</h3><input class="nombre" type="date" id="fecha" style="width:100%" value="${ymd(st.partido.dia || st.partido.inicio)}" max="${ymd(Date.now())}">
+    <div class="ops" style="margin-top:14px"><button class="op prim" data-a="fechaya">Listo</button></div>`;
+  if (st.hoja === 'eliminar') { const g = JUEGOS.find((x) => x.id === st.juego);
+    if (g) h = `<h3>¿Eliminar el partido?</h3><p>vs ${R(g.rival).largo} · ${g.fecha} · ${g.nos}–${g.ellos}. Se quita de la temporada en todos los celulares, con sus puntos y sus números. No se puede deshacer.</p>
+      <div class="ops dos acc"><button class="op" data-a="cerrar">Cancelar</button><button class="op rojo" data-a="eliminarp" data-v="${g.id}">Eliminar</button></div>`; }
   if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.largo}</span></button>`).join('')}</div>`;
   if (st.hoja === 'quien') {
     const x = [...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === st.sel);
@@ -1302,7 +1335,7 @@ function hoja() {
     // 1ª y 10 a mano (las jugadas se anotan sueltas, sin orden, sin downs): pase completo y corrida nuestra; en la bandera, si ellos la lograron
     const pd = PD_EN.includes(st.sel) ? `<button class="pdt${st.pd ? ' on' : ''}" data-a="pdt" aria-pressed="${!!st.pd}">${st.sel === 'bandera' ? 'Lograron 1ª y 10' : '1ª y 10'}</button>` : '';
     const tit = st.sel === 'incompleto' ? '¿A quién se le cayó?' : td ? (st.corre ? 'TD corriendo: ¿quién corrió?' : 'TD de pase: ¿quién la atrapó?') : tp && st.tapo === 'presion' ? '¿Quién hizo la presión?' : x[3];
-    h = `<h3${pd ? ' class="conpd"' : ''}><span>${tit}</span>${pd}</h3>${tpo}${lz}<div class="pjs">${st.van.filter((id) => !pasa || id !== q).map((id) => botonPj(id, 'quien')).join('')}<button class="pj" data-a="quien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>`;
+    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${pd ? `<div class="hpd">${pd}</div>` : ''}${tpo}${lz}<div class="pjs">${st.van.filter((id) => !pasa || id !== q).map((id) => botonPj(id, 'quien')).join('')}</div>`;
   }
   // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
   if (st.hoja === 'inc') h = st.partido.lado === 'O'
@@ -1320,13 +1353,14 @@ function hoja() {
       h = `<h3>Corregir</h3><p>${j.txt}</p>
         ${j.repe ? '<div class="repe-av" style="margin:0 0 12px;padding:8px 8px 8px 12px;border-radius:12px"><span>La marcaron los dos celulares</span><button data-a="unica">No es repetida</button></div>' : ''}
         <div class="ops dos acc"><button class="op" data-a="cqp">Cambiar qué pasó</button><button class="op borrar" data-a="borrar">Borrar</button></div>
+        ${st.partido.corrige ? '<button class="op sec" data-a="insaqui" style="width:100%;margin-top:10px;height:48px;font-size:15px">Agregar una que faltó, después de esta</button>' : ''}
         ${['pase', 'incompleto', 'int', 'pick6c'].includes(j.k) || (j.k === 'td' && j.qb) ? `<div style="margin-top:12px">${campoLanzo(j.qb || st.partido.qb, 'corrige')}</div>` : j.k === 'td' ? '<button class="campo" data-a="lanzover" data-v="corrige" style="margin-top:12px"><div><span class="l">Cómo fue</span><b>Corriendo, sin pase</b></div><u>Cambiar</u></button>' : ''}
         ${PD_EN.includes(j.k) ? `<button class="campo" data-a="cpd" style="margin-top:12px"><div><span class="l">${j.k === 'bandera' ? '¿Lograron 1ª y 10?' : '1ª y 10'}</span><b>${j.pd ? 'Sí' : 'No'}</b></div><u>Cambiar</u></button>` : ''}
         ${j.k === 'incompleto' && j.id ? `<button class="campo" data-a="ccayo" style="margin-top:12px"><div><span class="l">¿Se le cayó?</span><b>${j.drop ? 'Sí, se le cayó' : 'No'}</b></div><u>Cambiar</u></button>` : ''}
         ${conYardas(j) ? `<button class="campo" data-a="cyd" style="margin-top:12px"><div><span class="l">Yardas</span><b>${j.yd == null ? 'Sin yardas' : fmtYd(j.yd) + ' yd'}</b></div><u>Cambiar</u></button>` : ''}
         ${['td', 'pick6', 'tdr', 'pick6c'].includes(j.k) ? `<button class="campo" data-a="cconv" style="margin-top:12px"><div><span class="l">Conversión</span><b>${!j.conv ? 'No la intentaron' : `De ${j.conv[0]} · ${j.conv[1] ? 'entró' + (!['tdr', 'pick6c'].includes(j.k) ? `, atrapó ${nom(j.convId)}` : '') : 'no entró'}`}</b></div><u>Cambiar</u></button>` : ''}
         ${j.k === 'castigo' ? `<h4 class="sub">Castigo</h4><div class="ops dos acc"><button class="op${j.v === 'favor' ? ' prim' : ''}" data-a="ccast" data-v="favor">A ellos</button><button class="op${j.v === 'contra' ? ' prim' : ''}" data-a="ccast" data-v="contra">A nosotros</button></div>` : ''}
-        ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4><div class="pjs chicos">${cuantos.map((id) => botonPj(id, 'cquien', id === j.id)).join('')}<button class="pj${!j.id ? ' actual' : ''}" data-a="cquien" data-v=""><span class="foto"><span><span class="ini">?</span></span></span>No sé</button></div>` : ''}`;
+        ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4><div class="pjs chicos">${cuantos.map((id) => botonPj(id, 'cquien', id === j.id)).join('')}</div>` : ''}`;
     }
   }
   if (st.hoja === 'cqp') {
@@ -1367,10 +1401,18 @@ function pintar() {
   t.classList.toggle('entrada', st.entrar && ['inicio', 'partidos'].includes(st.pant));
   st.entrar = false;
   const confeti = fl && fl.td ? `<div class="tdflash"></div><div class="confeti">${CONFETI}</div>` : '';
-  const cu0 = st.pant === 'marcar' && t.dataset.pant === 'marcar' ? (t.querySelector('.cuerpo') || {}).scrollTop || 0 : 0;
-  t.innerHTML = p() + hoja() + confeti; t.dataset.pant = st.pant;
-  if (st.pant === 'marcar') { const cu = t.querySelector('.cuerpo'), av = t.querySelector('.mk-vista + .pregunta.aviso'), nv = t.querySelector('.nav');
-    if (cu) cu.scrollTop = cu0;
+  // en la misma pantalla la página se queda donde iba (cambiar la categoría de Líderes no la regresa hasta arriba)
+  const vista = [st.pant, st.juego, st.jug].join('|'), cu0 = t.dataset.vista === vista ? (t.querySelector('.cuerpo') || {}).scrollTop || 0 : 0;
+  // la misma hoja sigue abierta: no vuelve a subir ni regresa arriba (tocar a alguien en «¿Quiénes vinieron?» ya no la reinicia)
+  const h0 = st.hoja && t.dataset.hoja === st.hoja ? t.querySelector('.hoja') : null, hs = h0 ? h0.scrollTop : 0;
+  t.innerHTML = p() + hoja() + confeti; t.dataset.pant = st.pant; t.dataset.vista = vista; t.dataset.hoja = st.hoja || '';
+  if (h0) { t.querySelectorAll('.hoja, .velo').forEach((e) => e.classList.add('quieta')); const h = t.querySelector('.hoja'); if (h) h.scrollTop = hs; }
+  st.recien = null;
+  const rc = st.pant === 'marcar' && st.partido && st.partido.lado === 'D' ? R(HOY).color : null;
+  document.documentElement.style.setProperty('--franja', rc ? oscuro(rc) : '#0d2347');
+  const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.content = rc ? oscuro(rc) : '#0d2347';
+  const cu1 = t.querySelector('.cuerpo'); if (cu1) cu1.scrollTop = cu0;
+  if (st.pant === 'marcar') { const cu = cu1, av = t.querySelector('.mk-vista + .pregunta.aviso'), nv = t.querySelector('.nav');
     if (cu && av && nv && st.toast && st.toast.nuevo) { const d = av.getBoundingClientRect().bottom + 8 - nv.getBoundingClientRect().top; if (d > 0) cu.scrollTo({ top: cu.scrollTop + d, behavior: st.anim === 'si' ? 'smooth' : 'auto' }); } }
   if (st.toast) st.toast.nuevo = false;
   if (st.hoja === 'cuanto') montarCuanto(); else if (tCuanto || tSola) cerrarCuanto();
@@ -1409,9 +1451,6 @@ const YARDAS = ['pase', 'corrida', 'sackr', 'td']; // las que preguntan «¿Cuá
 const conYardas = (j) => (j.lado === 'O' ? YARDAS.includes(j.k) : j.k === 'bandera');
 const pregunta = (k) => ([...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?'], ['presion', '', '', '¿Quién hizo la presión?']].find((y) => y[0] === k) || [])[3] || '¿Quién?';
 const recientes = (lado) => { const v = new Set(); [...st.partido.jugadas].reverse().forEach((j) => { if (j.lado === lado && j.id && st.van.includes(j.id) && !borrada(st.partido, j)) v.add(j.id); }); st.van.forEach((id) => v.add(id)); return [...v]; };
-const lugarDe = (y) => (y <= CAMPO / 2 ? `nuestra ${Math.round(y)}` : `su ${Math.round(CAMPO - y)}`);
-// en defensa el balón es de ellos: su spot se cuenta desde su zona
-const lugarEllos = (y) => (y <= CAMPO / 2 ? `su ${Math.round(y)}` : `nuestra ${Math.round(CAMPO - y)}`);
 const fmtYd = (y) => (y > 0 ? '+' : '') + y;
 const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `incompleto, iba a ${n}` : 'incompleto, mal pase'), parada: (n) => (n ? `pararon a ${n}` : 'nos pararon'), buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera de ${n}`, tapado: (n) => `pase tapado por ${n}`, presion: (n) => `presión de ${n}, incompleto`, fallo: () => 'pase incompleto, no la atraparon', intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
 function textoDe(j) {
@@ -1491,8 +1530,11 @@ function avisoDe(x, opc) {
   return { txt: x.txt + conMarcador(x), id: x.id, tipo: x.tipo, uid: x.uid, opc };
 }
 function guarda(j) {
-  const p = st.partido, t = Date.now();
+  const p = st.partido, t = Date.now(), i = st.ins ? p.jugadas.findIndex((x) => x.uid === st.ins) : -1;
   j = { uid: nuevoUid(), t, ver: t, lado: p.lado, por: APARATO, id: null, ...j };
+  // la que faltó va entre la escogida y la siguiente (y no se compara con sus vecinas como repetida)
+  if (i >= 0 && p.jugadas[i + 1]) { j.t = (p.jugadas[i].t + p.jugadas[i + 1].t) / 2; j.unica = true; }
+  st.ins = null;
   p.jugadas.push(j); rehacer(p);
   const x = porUid(j.uid), opc = (['incompleto', 'parada'].includes(j.k) && !j.id) || ['sackr', 'safetyc'].includes(j.k) ? { pregunta: pregunta(j.k), ids: recientes(j.lado).filter((id) => j.k !== 'incompleto' || id !== j.qb) } : null;
   const a = avisoDe(x, opc);
@@ -1552,7 +1594,7 @@ function juegoDe(p) {
     if (j.k === 'sack') s(j.id, 'sack');
     if (j.k === 'safety') s(j.id, 'saf');
   });
-  return { id: p.id, rival: p.rival, fecha: fechaDe(p.inicio), nos: p.nos, ellos: p.ellos, jugadas: jug, funcion: fun, perdidas: per, primeras: prim, primerasEllos: primEllos, convs, tds: tds.filter((x) => x[0]), conv: tds.filter((x) => x[0] && x[3]).map((x) => x[3]), st: est_, nuevo: true };
+  return { id: p.id, rival: p.rival, fecha: fechaDe(p.dia || p.inicio), nos: p.nos, ellos: p.ellos, jugadas: jug, funcion: fun, perdidas: per, primeras: prim, primerasEllos: primEllos, convs, tds: tds.filter((x) => x[0]), conv: tds.filter((x) => x[0] && x[3]).map((x) => x[3]), st: est_, nuevo: true };
 }
 function empezar(vino) {
   if (unirseSiHay()) return;
@@ -1578,7 +1620,7 @@ let escrito = '', guardaMal = false;
 function guardaLocal() {
   if (st.practicando) return; // la jugada de práctica no se guarda
   const hay = lsGet(LOCAL); if (hay && hay !== escrito) { escrito = hay; tomaLocal(hay); } // otra pestaña de este teléfono guardó: se junta antes de escribir
-  const p = st.partido && !st.partido.practica ? st.partido : null;
+  const p = st.partido && !st.partido.practica && !st.partido.corrige ? st.partido : null; // el que se corrige ya vive en T
   const j = JSON.stringify({ T, partido: p ? aEnviar(p) : null, van: vanTodos ? null : st.van, pant: p && st.pant === 'marcar' ? 'marcar' : '' });
   if (j !== escrito) { guardaMal = !lsSet(LOCAL, j); if (!guardaMal) escrito = j; }
 }
@@ -1618,7 +1660,7 @@ const esHoy = (t) => new Date(t).toDateString() === new Date().toDateString();
 const viejo = (p) => !esHoy(p.inicio) && Date.now() - p.inicio > 6 * 3600e3; // un partido de otro día
 const fechaDe = (t) => (esHoy(t) ? 'Hoy' : new Date(t).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }).replace('.', ''));
 // el partido como viaja y como se guarda: solo lo que se marcó (el marcador y lo demás se cuentan de nuevo con rehacer)
-const aEnviar = (p) => ({ id: p.id, inicio: p.inicio, rival: p.rival, van: p === st.partido ? st.van : p.van || [], qb: p.qb, metaVer: p.metaVer, cambios: p.cambios || [], borradas: p.borradas || {}, terminado: !!p.terminado, terminadoVer: p.terminadoVer || 0,
+const aEnviar = (p) => ({ id: p.id, inicio: p.inicio, dia: p.dia, rival: p.rival, van: p === st.partido ? st.van : p.van || [], qb: p.qb, metaVer: p.metaVer, cambios: p.cambios || [], borradas: p.borradas || {}, terminado: !!p.terminado, terminadoVer: p.terminadoVer || 0,
   aparatos: { [APARATO]: Date.now(), ...p.aparatos }, jugadas: p.jugadas.map(({ uid, t, ver, viva, k, id, v, conv, convId, convQb, qb, yd, drop, pd, unica, lado, por }) => ({ uid, t, ver, viva, k, id, v, conv, convId, convQb, qb, yd, drop, pd, unica, lado, por })) });
 // dos copias del mismo partido: cada jugada queda en su versión más nueva, lo borrado no regresa (salvo que se haya
 // restaurado después) y rival, quiénes van, QB y «terminado» son del último que los cambió
@@ -1629,7 +1671,7 @@ function juntar(a, b) {
   const una = (xs, ys, mejor) => { const m = new Map(); for (const x of [...(xs || []), ...(ys || [])]) if (!m.has(x.uid) || mejor(x, m.get(x.uid))) m.set(x.uid, x); return [...m.values()]; };
   const meta = (b.metaVer || 0) > (a.metaVer || 0) ? b : a, fin = (b.terminadoVer || 0) > (a.terminadoVer || 0) ? b : a;
   const vv = new Map(); for (const x of [...(a.jugadas || []), ...(b.jugadas || [])]) if (x.viva) vv.set(x.uid, Math.max(vv.get(x.uid) || 0, x.viva)); // el «deshacer el borrado» más nuevo vale para las dos copias
-  return { ...a, rival: meta.rival, van: meta.van, qb: meta.qb, metaVer: meta.metaVer, terminado: !!fin.terminado, terminadoVer: fin.terminadoVer || 0, borradas, aparatos: { ...b.aparatos, ...a.aparatos },
+  return { ...a, rival: meta.rival, dia: meta.dia, van: meta.van, qb: meta.qb, metaVer: meta.metaVer, terminado: !!fin.terminado, terminadoVer: fin.terminadoVer || 0, borradas, aparatos: { ...b.aparatos, ...a.aparatos },
     jugadas: una(a.jugadas, b.jugadas, (x, y) => (x.ver || 0) > (y.ver || 0)).map((j) => (vv.has(j.uid) && vv.get(j.uid) !== j.viva ? { ...j, viva: vv.get(j.uid) } : j)), cambios: una(a.cambios, b.cambios, () => false) };
 }
 // sin las jugadas borradas
@@ -1686,7 +1728,7 @@ function juntaVivo(rd) {
   if (s && T.juegos[s.id]) s = juntar(s, T.juegos[s.id]); // lo que este celular ya sabe de ese partido: que terminó, o jugadas que le agregó después
   if (s && !s.terminado && viejo(s)) s = { ...s, terminado: true, terminadoVer: Date.now() }; // de otro día y nadie lo terminó: se da por terminado
   terminoEnOtro();
-  const p = st.partido && !st.partido.practica && !st.practicando ? st.partido : null;
+  const p = st.partido && !st.partido.practica && !st.partido.corrige && !st.practicando ? st.partido : null;
   let m = s, pasa = false;
   if (p) { const mio = aEnviar(p);
     if (!s || s.id === mio.id) m = juntar(mio, s);
@@ -1724,15 +1766,23 @@ async function sinc(f) {
   if (f.otra) { f.otra = false; sinc(f); }
 }
 let tSubir, tTemp;
-function subir() { clearTimeout(tSubir); tSubir = setTimeout(() => sinc(filas.vivo), 200); }
+// corrigiendo un partido terminado, cada cambio va directo a la temporada: nadie lo ve en vivo y no se cierra solo por ser de otro día
+function subir() { if (st.partido && st.partido.corrige) { aTemporada(aEnviar(st.partido)); return; } clearTimeout(tSubir); tSubir = setTimeout(() => sinc(filas.vivo), 200); }
 function subirTemp() { clearTimeout(tTemp); tTemp = setTimeout(() => sinc(filas.temp), 300); }
+// se acabó de corregir: la última versión queda en la temporada y se regresa a la ficha
+function acabaCorr() { const p = st.partido; if (!p || !p.corrige) return;
+  aTemporada(aEnviar(p)); st.partido = null; HOY = null; st.hoja = null; st.toast = null; st.ins = null; clearTimeout(tToast); cerrarCuanto();
+  const a = st.antesCorr || {}; if (a.van) { st.van = a.van; vanTodos = a.todos; } recalcular(); st.juego = p.id; st.pant = 'partido'; }
+// el color de arriba del encabezado de Marcar en defensa (color-mix del rival con 55 % de negro)
+const oscuro = (h) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(h.slice(i, i + 2), 16) * .45).toString(16).padStart(2, '0')).join('');
+const ymd = (t) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 // lo que llegó del partido en vivo (ya juntado con lo de aquí) entra a la pantalla
 function bajar(srv, pasa) {
   sync.srv = srv;
   if (srv && (srv.terminado || T.juegos[srv.id])) aTemporada(srv); // lo terminado va a la temporada; si se reanudó, también se entera
   const p = st.partido;
   // con una hoja abierta se espera a la siguiente vuelta, para no mover nada bajo el dedo
-  if (st.hoja || st.escribe || (p && (p.practica || st.practicando))) return;
+  if (st.hoja || st.escribe || (p && (p.practica || p.corrige || st.practicando))) return;
   if (pasa && p && srv && !srv.terminado && srv.id !== p.id) { p.id = srv.id; p.inicio = srv.inicio; } // empezaron dos a la vez: este celular se pasa al partido que quedó
   if (p && srv && srv.id === p.id) {
     const antes = fp(p), m = juntar(aEnviar(p), srv);
@@ -1760,7 +1810,7 @@ function unirseSiHay() { const s = vivoAjeno(); if (!s || st.partido) return fal
 // el partido de otro día que se quedó abierto en este teléfono: se da por terminado y pasa a la lista
 function cierraViejo() {
   const p = st.partido;
-  if (!p || p.practica || st.hoja || !viejo(p)) return;
+  if (!p || p.practica || p.corrige || st.hoja || !viejo(p)) return;
   p.terminado = true; p.terminadoVer = Date.now(); cerrarPartido(p); pintar();
 }
 // con la app a la vista: el partido en vivo cada 4 s (cada 12 s si este celular no está marcando) y la temporada cada minuto
@@ -1777,7 +1827,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261116172138';
+const VERSION = '20261116230918';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -1824,13 +1874,10 @@ function regla(c) {
 const antesDe = (j) => (j.k === 'td' ? { ...j.antes, spot: 0, primera: true, sabe: false } : j.antes.sabe ? j.antes : { ...j.antes, spot: 25, primera: true });
 function hojaCuanto() {
   const c = st.cuanto, j = porUid(c.uid); if (!j) return '';
-  const O = j.lado === 'O', a = antesDe(j), op = O ? 'Nuestro balón' : 'Su balón';
-  const lugar = j.k === 'td' ? 'lo que avanzó la jugada del TD' : j.antes.sabe ? (O ? lugarDe : lugarEllos)(a.spot) : 'sin saber dónde iba el balón';
-  return `<div class="hoja cuanto"><div class="rg-tit"><b>¿Cuánto avanzó?</b><small class="corta">${textoDe({ ...j, yd: null })}</small></div>
-    <div class="rg-op"><span class="op1">${op}</span><span class="rg-lugar">${lugar}</span></div>
+  const a = antesDe(j);
+  return `<div class="hoja cuanto">${barra(`<div class="hbt"><b>¿Cuánto avanzó?</b><small class="corta">${textoDe({ ...j, yd: null })}</small></div>`, 'sinyd', 'rgok', 'Guardar las yardas')}
     <div class="rg-pmf"><button class="rg-b" data-pm="-1" aria-label="Menos">${signo(false)}</button><div class="rg-vw"><span class="rg-anuncio" id="rganuncio"></span><span class="rg-v num" id="rgv">${fmtYd(c.yd)}<small>yd</small></span></div><button class="rg-b" data-pm="1" aria-label="Más">${signo(true)}</button></div>
-    ${regla(a)}
-    <button class="op sec sinyd" data-a="sinyd">Sin yardas</button></div>`;
+    ${regla(a)}</div>`;
 }
 let tCuanto = null, tSola = null;
 function cerrarCuanto() { clearTimeout(tCuanto); clearTimeout(tSola); tCuanto = tSola = null; }
@@ -1896,7 +1943,7 @@ function abrirConv(j) { st.conv = { uid: j.uid, paso: null }; st.lanzo = null; s
 // todo lo que sale de los datos se cuenta de nuevo: plantel, partidos jugados, puntos de cada quien, récord y el final de hoy
 function recalcular() {
   armarPlantel();
-  const hechos = Object.values(T.juegos || {}).filter((g) => g.terminado && (g.jugadas || []).length).sort((a, b) => a.inicio - b.inicio)
+  const hechos = Object.values(T.juegos || {}).filter((g) => g.terminado && (g.jugadas || []).length).sort((a, b) => (a.dia || a.inicio) - (b.dia || b.inicio))
     .map((g) => { const p = { ...g, jugadas: g.jugadas.map((j) => ({ ...j })) }; rehacer(p); return { ...juegoDe(p), partido: p }; });
   JUEGOS = [...PASADOS, ...hechos];
   Object.keys(TEMP).forEach((k) => { delete TEMP[k]; }); Object.assign(TEMP, calcTemp());
@@ -1937,7 +1984,7 @@ const A = {
   },
   // la app de antes (campo, libro de jugadas, imprimir pulsera), en su vista completa
   antes: () => { lsSet('tochito.completa', '1'); location.href = 'ipad.html?cel=1' + location.hash; },
-  ir: (v) => { if (st.pant !== v && v === 'inicio') st.entrar = true; st.pant = v; st.hoja = null; if (v === 'inicio') st.animar = true; },
+  ir: (v) => { acabaCorr(); if (st.pant !== v && v === 'inicio') st.entrar = true; st.pant = v; st.hoja = null; if (v === 'inicio') st.animar = true; },
   // tocar fuera de una hoja: de los selectores de QB se regresa a donde se venía; fuera de la conversión, el TD se queda
   // sin conversión y el aviso lo dice, con «Ponerla»
   cerrar: () => {
@@ -1954,12 +2001,13 @@ const A = {
     st.hoja = st.vanDe || 'editar'; if (st.partido) { st.partido.rival = v; st.partido.metaVer = Date.now(); rehacer(st.partido); subir(); } },
   editar: () => { st.hoja = 'editar'; },
   vanver: (v) => { st.vanDe = v; st.hoja = 'van'; },
-  vantoggle: (id) => { vanTodos = false; st.van = st.van.includes(id) ? st.van.filter((x) => x !== id) : [...st.van, id].sort((a, b) => PLANTEL.findIndex((p) => p.id === a) - PLANTEL.findIndex((p) => p.id === b)); if (st.partido) { st.partido.metaVer = Date.now(); subir(); } },
+  vantoggle: (id) => { st.recien = id; vanTodos = false; st.van = st.van.includes(id) ? st.van.filter((x) => x !== id) : [...st.van, id].sort((a, b) => PLANTEL.findIndex((p) => p.id === a) - PLANTEL.findIndex((p) => p.id === b)); if (st.partido) { st.partido.metaVer = Date.now(); subir(); } },
   vanlisto: () => { if (!st.van.length) return; if (st.vanDe === 'empezar') { st.vanDe = null; empezar(true); return; } st.hoja = st.vanDe || 'editar'; },
   // el botón + y los botones de Inicio: si hay partido se sigue; si lo marca otro celular, se une; si no, empieza con un toque
-  marcar: () => { if (st.partido) { st.pant = 'marcar'; st.hoja = null; } else empezar(); },
+  mkver: (v) => { st.mkDir = v === 'paso' ? 1 : -1; st.mkVer = v; },
+  marcar: () => { st.mkVer = 'marcar'; if (st.partido) { st.pant = 'marcar'; st.hoja = null; } else empezar(); },
   unirse: () => { unirseSiHay(); },
-  lado: (v) => { const p = st.partido; p.cambios.push({ uid: nuevoUid(), t: Date.now(), lado: v }); rehacer(p); subir(); },
+  lado: (v) => { const p = st.partido; if (st.ins) { p.lado = v; return; } p.cambios.push({ uid: nuevoUid(), t: Date.now(), lado: v }); rehacer(p); subir(); },
   // desde el aviso: poner las yardas que se saltaron, o la conversión que se cerró tocando fuera
   ponerlas: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); const y = st.yds; st.yds = 'si'; abrirCuanto(j); st.yds = y; },
   ponerconv: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); abrirConv(j); },
@@ -2026,6 +2074,7 @@ const A = {
     st.hoja = null; corrige(j, (x) => { x.conv = [n, entro]; x.convId = null; }, 'Guardado');
   },
   convq: (id) => { const c = st.conv, j = c && porUid(c.uid); st.hoja = null; if (!j) return; const n = c.paso; corrige(j, (x) => { x.conv = [n, 1]; x.convId = id || null; x.convQb = lanzo(); }, 'Guardado'); st.lanzo = null; },
+  rgok: () => { const c = st.cuanto; ponerYardas(c ? c.yd : 0); },
   sinyd: () => { const c = st.cuanto; cerrarCuanto(); st.cuanto = null; st.hoja = null; trasYardas(c && porUid(c.uid)); },
   // corregir cualquier jugada tocando su renglón: no se borra nada hasta escoger qué cambia
   fila: (i) => { st.edita = +i; st.hoja = 'corrige'; st.lanzo = null; },
@@ -2055,6 +2104,24 @@ const A = {
     if (v !== 'aviso' && !st.practicando) avisar({ txt: 'Borrada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb });
     subir();
   },
+  // corregir un partido terminado: se abre en Marcar sin dejar de estar terminado
+  corregirp: (gid) => { const q = T.juegos[gid]; if (!q || st.partido) return;
+    st.antesCorr = { van: st.van, todos: vanTodos };
+    st.partido = { ...revive(q), borradas: { ...q.borradas }, cambios: [...(q.cambios || [])], corrige: true }; HOY = esRival(q.rival) ? q.rival : null;
+    const v = (q.van || []).filter((id) => P(id)); st.van = v.length ? v : PLANTEL.map((x) => x.id); vanTodos = false;
+    rehacer(st.partido); st.toast = null; st.ins = null; st.hoja = null; st.mkVer = 'marcar'; st.pant = 'marcar'; },
+  listocorr: () => acabaCorr(),
+  fechaver: () => { st.hoja = 'fecha'; },
+  fechaya: () => { const v = ($('#fecha') || {}).value, p = st.partido; st.hoja = 'editar'; if (!v || !p) return;
+    const [y, m, d] = v.split('-').map(Number); p.dia = new Date(y, m - 1, d, 12).getTime(); p.metaVer = Date.now(); subir(); },
+  // agregar una que faltó: se escoge después de cuál va; Marcar se pone del lado que tocaba ahí
+  insaqui: () => { st.mkVer = 'marcar'; const p = st.partido, j = p.jugadas[st.edita], sig = p.jugadas[st.edita + 1]; st.hoja = null; if (!j) return; st.ins = j.uid; if (sig) p.lado = sig.lado; },
+  insno: () => { st.ins = null; rehacer(st.partido); },
+  eliminarver: (gid) => { st.juego = gid; st.hoja = 'eliminar'; },
+  // eliminar un partido = borrar todas sus jugadas: así viaja y se junta como cualquier borrado, también con la app de antes
+  eliminarp: (gid) => { const q = T.juegos[gid]; st.hoja = null; if (!q) return;
+    const b = { ...q.borradas }; (q.jugadas || []).forEach((j) => { b[j.uid] = sube(Math.max(j.viva || 0, b[j.uid] || 0)); });
+    aTemporada({ ...q, borradas: b }); st.pant = 'partidos'; },
   // terminar sin pregunta: el final trae «Seguir marcando» por si fue sin querer
   terminar: () => { const p = st.partido; if (p.practica) { st.partido = null; st.pant = 'inicio'; return; } p.terminado = true; p.terminadoVer = Date.now(); cerrarPartido(p); subir(); },
   seguir: () => {
@@ -2065,6 +2132,16 @@ const A = {
     aTemporada(aEnviar(p)); st.pant = 'marcar'; st.hoja = null; subir();
   },
 };
+// en Marcar, deslizar de lado cambia entre los botones y «Lo que pasó»
+let toque0 = null;
+document.addEventListener('touchstart', (e) => { toque0 = !st.hoja && e.touches.length === 1 && e.target.closest('.mk-cuerpo') ? [e.touches[0].clientX, e.touches[0].clientY] : null; }, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const a = toque0, t = e.changedTouches[0]; toque0 = null;
+  if (!a || !st.partido || !st.partido.jugadas.length || st.pant !== 'marcar') return;
+  const dx = t.clientX - a[0], dy = t.clientY - a[1];
+  if (Math.abs(dx) < 60 || Math.abs(dy) * 2 > Math.abs(dx)) return;
+  A.mkver(st.mkVer === 'paso' ? 'marcar' : 'paso'); pintar();
+}, { passive: true });
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-a]');
   if (!b || !A[b.dataset.a]) return;
