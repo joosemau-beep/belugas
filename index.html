@@ -416,16 +416,6 @@ table.bs td.v { color: #b8c2cf; }
 .mk-cuerpo { padding-top: 18px; display: flex; flex-direction: column; }
 .mk-cuerpo > * { flex-shrink: 0; }
 .mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
-.mk-grandes, .mk-chicos { display: grid; grid-template-columns: 1fr 1fr; }
-.mk-grandes { grid-auto-rows: 100px; gap: 10px; }
-.mk-chicos { grid-auto-rows: 60px; gap: 10px; margin-top: 12px; }
-.mk-grande { background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 14px 14px 13px; text-align: left; }
-.mk-grande b { display: block; font: 800 17px/1.15 Inter; }
-.mk-chico { background: #fff; border-radius: 14px; box-shadow: var(--sombra); display: flex; align-items: center; gap: 10px; padding: 0 14px; text-align: left; }
-.mk-chico b { font: 700 16px/1.15 Inter; }
-.mk-grande:active, .mk-chico:active, .mk-td:active { transform: scale(.98); }
-.mk-ic { display: grid; place-items: center; flex: none; }
-.mk-ic svg { width: 100%; height: 100%; fill: none; stroke: var(--c); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: 18px; background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(13,35,71,.25); }
 /* en defensa el encabezado y el TD de ellos toman el color del rival (--rc, de EQUIPOS), en degradado como el nuestro */
 .mcab.mk-def, .mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
@@ -508,14 +498,23 @@ table.bs td.v { color: #b8c2cf; }
 /* ajustes de Iker (17-nov): la pantalla no se jala ni rebota; la hoja que sigue abierta no se vuelve a animar */
 * { overscroll-behavior: none; } /* ni arriba ni abajo, en ninguna pantalla: así nunca se asoma el fondo azul */
 .hoja.quieta, .velo.quieta { animation: none; }
-/* la palomita: el degradado desde la orilla (sin el cuadro que dejaba el borde) y la marca en SVG; al tocar, un pop */
-.van-f.si .ck { background-origin: border-box; }
+/* la palomita: sin borde (el anillo gris es una sombra), así el degradado no deja cuadro; la marca en SVG; al tocar, un pop */
 .van-f .ck svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 .van-f.recien .ck { animation: pop .22s cubic-bezier(.3,1.6,.5,1); }
 /* abajo del botón fijo ya no se asoman los renglones */
 .hoja:has(> .ops.fijo) { padding-bottom: 0; }
-/* Marcar: los botones y «Lo que pasó» en dos pestañas */
-.mk-tabs { display: flex; margin: 10px 0 8px; } .mk-tabs button { flex: 1; padding: 9px 8px; }
+/* Marcar (Iker, 17-nov): tiras de solo texto, las de siempre y «Más» con las raras (como datos-07); sin pestañas: «Lo que pasó» está a la izquierda, se llega deslizando a la derecha y los puntos dicen dónde vas */
+.mk-tiras { display: grid; gap: 6px; }
+.mk-tira { min-height: 56px; background: #fff; border-radius: 14px; box-shadow: var(--sombra); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px; text-align: left; font: 700 17px/1.2 Inter; }
+.mk-tira small { color: var(--mut); font: 600 13px/1.2 Inter; }
+.mk-tira.mas { background: transparent; box-shadow: inset 0 0 0 1.5px var(--linea); }
+.hoja .mk-tira { background: var(--bg); box-shadow: none; }
+.mk-tiras .mk-td { margin-top: 0; height: 62px; }
+.mk-tira:active, .mk-td:active { transform: scale(.98); }
+.mk-puntos { display: flex; justify-content: center; margin: -16px 0 0; }
+.mk-puntos button { width: 32px; height: 28px; display: grid; place-items: center; }
+.mk-puntos button::after { content: ''; width: 8px; height: 8px; border-radius: 4px; background: var(--linea); transition: width .2s; }
+.mk-puntos button.on::after { width: 20px; background: var(--navy); }
 .mk-pag[style] { animation: desliza .2s ease-out; }
 @keyframes desliza { from { transform: translateX(var(--dx)); opacity: .3; } }
 /* ✕ y ✓ arriba de las hojas de llenar, grandes para tocarlos con guantes */
@@ -568,8 +567,8 @@ table.bs td.v { color: #b8c2cf; }
 .van-f > div { flex: 1; min-width: 0; }
 .van-f b { display: block; font: 700 14.5px/1.2 Inter; }
 .van-f small { color: var(--mut); font-size: 12px; }
-.van-f .ck { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--linea); display: grid; place-items: center; flex: none; color: #fff; font: 800 14px/1 Inter; }
-.van-f.si .ck { background: var(--boton); border-color: transparent; }
+.van-f .ck { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--linea); display: grid; place-items: center; flex: none; color: #fff; font: 800 14px/1 Inter; }
+.van-f.si .ck { background: var(--boton); box-shadow: none; }
 .op.prim:disabled { opacity: .4; }
 .van-f.no { opacity: .55; }
 .lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
@@ -987,13 +986,12 @@ const RES = {
 };
 // ícono de cada resultado (intercepción nuestra usa el mismo glifo que la de ellos)
 const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', presion: 'tapado', fallo: 'tapado'};
-// MARCAR (12-nov, la que escogió Mau en la ronda 6): íconos sueltos, sin cuadro de fondo; el color dice qué es
-// (verde lo que suma, rojo lo que nos sale mal, amarillo el castigo, azul lo demás). Ver el CSS «MARCAR».
-const mkGlifo = (k) => ICONOS_S[{intn: 'int', sackr: 'sack', pick6c: 'int'}[k] || k] || ICONOS_S.parada;
-const mkIc = (k, px, c) => `<span class="mk-ic" style="--c:${c};width:${px}px;height:${px}px"><svg viewBox="0 0 24 24" aria-hidden="true">${mkGlifo(k)}</svg></span>`;
-const mkColor = (k) => (['pase', 'corrida', 'pick6', 'safety'].includes(k) ? '#16a05a' : ['int', 'pick6c', 'sackr', 'safetyc'].includes(k) ? '#e0483e' : k === 'castigo' ? '#c99400' : '#1d4f8f');
 // sin títulos de grupo, lo malo lleva el nombre completo para no confundirse con lo de la defensa
 const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase incompleto'};
+// las tiras de Marcar: las de siempre a la vista; castigos, pick 6 y safety en «Más»
+const MK_TIRAS = { O: ['pase', 'corrida', 'incompleto', 'parada', 'int', 'sackr'], D: ['bandera', 'tapado', 'intn', 'sack'] }, MK_MAS = { O: ['pick6c', 'safetyc'], D: ['pick6', 'safety'] };
+const mkTira = (k) => `<button class="mk-tira" data-a="res" data-v="${k}">${MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1]}</button>`;
+const mkCastigo = (v) => `<button class="mk-tira" data-a="castigo" data-v="${v}">Castigo ${v === 'favor' ? 'a favor' : 'en contra'}</button>`;
 const MK_LADO = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14M14 4l4 4-4 4M20 16H6M10 12l-4 4 4 4"/></svg>';
 const MK_BALON = '<svg class="mk-bal" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9.5" ry="5.6" transform="rotate(-32 12 12)" fill="#fff"/><path d="M9.6 14.2l4.8-4.4M10.6 11.6l1.3 1.3M12.1 10.2l1.3 1.3" stroke="#0d2347" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
 // ---------- la lista «Este partido», por series ----------
@@ -1102,23 +1100,17 @@ function filaPregunta() {
 }
 function marcar() {
   const p = st.partido, O = p.lado === 'O', r = R(HOY);
-  const de = (k) => RES[p.lado].find((x) => x[0] === k);
-  const grande = (k) => `<button class="mk-grande" data-a="res" data-v="${k}">${mkIc(k, 30, mkColor(k))}<span><b>${MK_NOMBRE[k] || de(k)[1]}</b></span></button>`;
-  const chico = (k) => `<button class="mk-chico" data-a="res" data-v="${k}">${mkIc(k, 20, mkColor(k))}<b>${MK_NOMBRE[k] || de(k)[1]}</b></button>`;
-  const castigo = (v) => `<button class="mk-chico" data-a="castigo" data-v="${v}">${mkIc('castigo', 20, mkColor('castigo'))}<b>Castigo ${v === 'favor' ? 'a favor' : 'en contra'}</b></button>`;
-  const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIc('td', 30, '#fff')}Touchdown</button>`
-    : `<button class="mk-td riv" data-a="tdr">${mkIc('tdr', 30, '#fff')}TD de ${r.corto}</button>`;
+  const td = O ? '<button class="mk-td" data-a="res" data-v="td">Touchdown</button>' : `<button class="mk-td riv" data-a="tdr">TD de ${r.corto}</button>`;
   const eq = (img, n, conBalon) => `<div class="mk-eq">${img}<span>${conBalon ? MK_BALON : ''}${n}</span></div>`;
   const sube = (k) => (st.flash && st.flash[k] ? ' class="sube"' : '');
   const ver = st.mkVer === 'paso' && p.jugadas.length ? 'paso' : 'marcar', anim = st.mkDir ? ` style="--dx:${st.mkDir * 28}px"` : ''; st.mkDir = 0;
-  const tabs = p.jugadas.length ? `<div class="conm mk-tabs"><button data-a="mkver" data-v="marcar" class="${ver === 'marcar' ? 'on' : ''}">Marcar</button><button data-a="mkver" data-v="paso" class="${ver === 'paso' ? 'on' : ''}">Lo que pasó · ${p.jugadas.length}</button></div>` : '';
+  const puntos = p.jugadas.length ? `<div class="mk-puntos">${[['paso', 'Lo que pasó'], ['marcar', 'Marcar']].map(([v, n]) => `<button data-a="mkver" data-v="${v}" aria-label="${n}"${ver === v ? ' class="on" aria-current="true"' : ''}></button>`).join('')}</div>` : '';
   return `<div class="pant" style="--rc:${r.color}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
     <div class="mbar"><button class="mk-lado" data-a="lado" data-v="${O ? 'D' : 'O'}">${MK_LADO}${O ? 'Ataque' : 'Defensa'}</button><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button>${p.corrige ? '<button data-a="listocorr">Listo</button>' : '<button data-a="terminar">Terminar</button>'}</div>${p.corrige ? `<div class="mk-corr">Corrigiendo · ${fechaDe(p.dia || p.inicio)}</div>` : ''}
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas', O)}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto, !O)}</button></div>
     <div class="cuerpo mk-cuerpo">
       ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Va después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
-      ${tabs}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta()}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista"><div class="mk-grandes">${(O ? ['pase', 'corrida', 'incompleto', 'parada'] : ['bandera', 'tapado', 'intn', 'sack']).map(grande).join('')}</div>
-        <div class="mk-chicos">${(O ? ['int', 'pick6c', 'sackr', 'safetyc'] : ['pick6', 'safety']).map(chico).join('')}${castigo('favor')}${castigo('contra')}</div>${td}</div>
+      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta()}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras">${MK_TIRAS[p.lado].map(mkTira).join('')}${td}<button class="mk-tira mas" data-a="mas">Más<small>Castigo · Pick 6 · Safety</small></button></div>
       ${filaPregunta()}</div>`}
     </div>${nav()}</div>`;
 }
@@ -1363,6 +1355,7 @@ function hoja() {
         ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4><div class="pjs chicos">${cuantos.map((id) => botonPj(id, 'cquien', id === j.id)).join('')}</div>` : ''}`;
     }
   }
+  if (st.hoja === 'mas') h = `<h3>Más</h3><div class="mk-tiras">${['favor', 'contra'].map(mkCastigo).join('')}${MK_MAS[st.partido.lado].map(mkTira).join('')}</div>`;
   if (st.hoja === 'cqp') {
     const j = st.partido.jugadas[st.edita], O = j.lado === 'O';
     const ops = [...RES[j.lado].filter(([k]) => k !== 'castigo').map(([k, n, , , l]) => [k, l || n]), ...(O ? [] : [['presion', 'Presión, incompleto'], ['fallo', 'Incompleto, no la atraparon']]), ['castigo:favor', 'Castigo a favor'], ['castigo:contra', 'Castigo en contra'], O ? ['td', 'Touchdown'] : ['tdr', `TD de ${r.corto}`]];
@@ -1827,7 +1820,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261116230918';
+const VERSION = '20261116232511';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2004,7 +1997,8 @@ const A = {
   vantoggle: (id) => { st.recien = id; vanTodos = false; st.van = st.van.includes(id) ? st.van.filter((x) => x !== id) : [...st.van, id].sort((a, b) => PLANTEL.findIndex((p) => p.id === a) - PLANTEL.findIndex((p) => p.id === b)); if (st.partido) { st.partido.metaVer = Date.now(); subir(); } },
   vanlisto: () => { if (!st.van.length) return; if (st.vanDe === 'empezar') { st.vanDe = null; empezar(true); return; } st.hoja = st.vanDe || 'editar'; },
   // el botón + y los botones de Inicio: si hay partido se sigue; si lo marca otro celular, se une; si no, empieza con un toque
-  mkver: (v) => { st.mkDir = v === 'paso' ? 1 : -1; st.mkVer = v; },
+  mkver: (v) => { st.mkDir = v === 'paso' ? -1 : 1; st.mkVer = v; },
+  mas: () => { st.hoja = 'mas'; },
   marcar: () => { st.mkVer = 'marcar'; if (st.partido) { st.pant = 'marcar'; st.hoja = null; } else empezar(); },
   unirse: () => { unirseSiHay(); },
   lado: (v) => { const p = st.partido; if (st.ins) { p.lado = v; return; } p.cambios.push({ uid: nuevoUid(), t: Date.now(), lado: v }); rehacer(p); subir(); },
@@ -2132,15 +2126,15 @@ const A = {
     aTemporada(aEnviar(p)); st.pant = 'marcar'; st.hoja = null; subir();
   },
 };
-// en Marcar, deslizar de lado cambia entre los botones y «Lo que pasó»
+// en Marcar, deslizar a la derecha lleva a «Lo que pasó» y a la izquierda regresa a las tiras
 let toque0 = null;
 document.addEventListener('touchstart', (e) => { toque0 = !st.hoja && e.touches.length === 1 && e.target.closest('.mk-cuerpo') ? [e.touches[0].clientX, e.touches[0].clientY] : null; }, { passive: true });
 document.addEventListener('touchend', (e) => {
   const a = toque0, t = e.changedTouches[0]; toque0 = null;
   if (!a || !st.partido || !st.partido.jugadas.length || st.pant !== 'marcar') return;
   const dx = t.clientX - a[0], dy = t.clientY - a[1];
-  if (Math.abs(dx) < 60 || Math.abs(dy) * 2 > Math.abs(dx)) return;
-  A.mkver(st.mkVer === 'paso' ? 'marcar' : 'paso'); pintar();
+  if (Math.abs(dx) < 60 || Math.abs(dy) * 2 > Math.abs(dx) || (dx > 0) === (st.mkVer === 'paso')) return;
+  A.mkver(dx > 0 ? 'paso' : 'marcar'); pintar();
 }, { passive: true });
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-a]');
