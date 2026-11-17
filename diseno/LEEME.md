@@ -21,7 +21,7 @@ Si prefieres un servidor: `python3 -m http.server 4710` dentro de esta carpeta y
 | `archivos/equipos/` | Los 12 logos en 1024 y 256 px con fondo transparente, y `equipos.json` con nombre, nombre corto y color. `recortes/` son los recortes de la captura de la tabla de la liga de donde salieron. |
 | `archivos/marca/` | Logo, letras e ícono de Belugas (los mismos de la raíz del repo). |
 | `archivos/inicio/` | El balón y la corona 3D del inicio, y 11 capturas de la última vuelta: los toques al marcar, el editor de yardas, las zonas de TD y las vueltas 3 y 4 de yardas. |
-| `archivos/jugadores/` | Cinco retratos generados (`nico.jpg`, `rodrigo.jpg`, `mau.jpg`, `iker.jpg`, `mario.jpg`), aprobados para publicarse, que usan la tarjeta de jugador y las métricas. |
+| `archivos/jugadores/` | Doce retratos generados (`nico.jpg`, `rodrigo.jpg`, `mau.jpg`, `iker.jpg`, `mario.jpg`, `jaime.jpg`, `uri.jpg`, `ian.jpg`, `patrick.jpg`, `juanpi.jpg`, `leo.jpg`, `jose.jpg`), aprobados para publicarse, que usan la tarjeta de jugador y las métricas. |
 
 ## Qué no está aquí
 

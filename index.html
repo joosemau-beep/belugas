@@ -863,7 +863,7 @@ const ic = (k, chico = false) => { const g = ICONOS_S[k] || ICONOS_S.parada, ton
 const tempVacia = () => ({ v: 1, plantel: [], linea: { O: [], D: [], qb: null, ver: 0 }, juegos: {}, sembrado: 0 });
 let T = tempVacia(), PLANTEL = [];
 // retratos aprobados para publicarse (archivos/jugadores); los demás van con sus iniciales
-const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau', iker: 'iker', mario: 'mario' };
+const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau', iker: 'iker', mario: 'mario', jaime: 'jaime', uri: 'uri', ian: 'ian', patrick: 'patrick', juanpi: 'juanpi', leo: 'leo', jose: 'jose' };
 const P = (id) => PLANTEL.find((x) => x.id === id);
 function armarPlantel() {
   const l = T.linea || {};
@@ -1905,7 +1905,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117155229';
+const VERSION = '20261117163656';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
