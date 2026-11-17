@@ -334,21 +334,22 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(await pg.locator('.hoja .pj').evaluateAll((xs) => xs.map((x) => x.dataset.v)), ['rodrigo', 'mau', 'nico', 'hugo']);
   assert.doesNotMatch(await pg.locator('.hoja').innerText(), /última/);
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
-  // «Lo que pasó» va aparte, sin pestañas ni texto: deslizando a la derecha se llega y a la izquierda se regresa; los puntos dicen dónde vas
+  // «Lo que pasó» va aparte, a la derecha de Marcar, sin pestañas ni texto: deslizando a la izquierda se llega y a la derecha se regresa; los puntos dicen dónde vas
   // un evento con sus toques (WebKit de escritorio no deja crear Touch)
   const desliza = (de, a) => pg.evaluate(([de, a]) => { const c = document.querySelector('.mk-cuerpo'), t = (x) => ({ identifier: 1, target: c, clientX: x, clientY: 400 });
     const ev = (tipo, touches, changedTouches) => c.dispatchEvent(Object.assign(new Event(tipo, { bubbles: true }), { touches, changedTouches }));
     ev('touchstart', [t(de)], [t(de)]); ev('touchend', [], [t(a)]); }, [de, a]);
   assert.doesNotMatch(await texto(pg), /Lo que pasó|Jugada por jugada/);
-  assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['', 'on']);
-  await desliza(300, 120); // a la izquierda no hay nada más
-  assert.equal(await pg.locator('.mk-tiras').count(), 1);
-  await desliza(80, 300);
-  assert.match(await texto(pg), /Este partido/i);
   assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['on', '']);
-  await desliza(80, 300); // otra vez a la derecha: se queda
-  assert.equal(await pg.evaluate(() => st.mkVer), 'paso'); // eslint-disable-line no-undef
+  await desliza(80, 300); // a la izquierda de Marcar no hay nada
+  assert.equal(await pg.locator('.mk-tiras').count(), 1);
   await desliza(300, 120);
+  assert.equal(await pg.locator('.mk-pag').getAttribute('style'), '--dx:28px'); // entra desde la derecha
+  assert.match(await texto(pg), /Este partido/i);
+  assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['', 'on']);
+  await desliza(300, 120); // otra vez a la izquierda: se queda
+  assert.equal(await pg.evaluate(() => st.mkVer), 'paso'); // eslint-disable-line no-undef
+  await desliza(80, 300);
   assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   // Ataque/Defensa: grande, arriba, el lado en que vas marcado; tocar el mismo lado no cambia nada; sin 1ª y 10 en ¿Quién?

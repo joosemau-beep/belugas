@@ -513,7 +513,7 @@ table.bs td.v { color: #b8c2cf; }
 .van-f.recien .ck { animation: pop .22s cubic-bezier(.3,1.6,.5,1); }
 /* abajo del botón fijo ya no se asoman los renglones */
 .hoja:has(> .ops.fijo) { padding-bottom: 0; }
-/* Marcar (Iker, 17-nov): las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; sin pestañas: «Lo que pasó» está a la izquierda, se llega deslizando a la derecha y los puntos dicen dónde vas */
+/* Marcar (Iker, 17-nov): las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; sin pestañas: «Lo que pasó» está a la derecha, se llega deslizando a la izquierda y los puntos dicen dónde vas */
 .mk-tiras { display: grid; gap: 6px; }
 .mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
 .mk-grande { min-height: 104px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
@@ -1169,7 +1169,7 @@ function marcar() {
   const eq = (img, n) => `<div class="mk-eq">${img}<span>${n}</span></div>`; // sin el balón junto al nombre: el lado ya lo dice Ataque/Defensa
   const sube = (k) => (st.flash && st.flash[k] ? ' class="sube"' : '');
   const ver = st.mkVer === 'paso' && p.jugadas.length ? 'paso' : 'marcar', anim = st.mkDir ? ` style="--dx:${st.mkDir * 28}px"` : ''; st.mkDir = 0;
-  const puntos = p.jugadas.length ? `<div class="mk-puntos">${[['paso', 'Jugada por jugada'], ['marcar', 'Marcar']].map(([v, n]) => `<button data-a="mkver" data-v="${v}" aria-label="${n}"${ver === v ? ' class="on" aria-current="true"' : ''}></button>`).join('')}</div>` : '';
+  const puntos = p.jugadas.length ? `<div class="mk-puntos">${[['marcar', 'Marcar'], ['paso', 'Jugada por jugada']].map(([v, n]) => `<button data-a="mkver" data-v="${v}" aria-label="${n}"${ver === v ? ' class="on" aria-current="true"' : ''}></button>`).join('')}</div>` : '';
   return `<div class="pant" style="--rc:${r.color}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
     <div class="mbar"><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button>${p.corrige ? '<button data-a="listocorr">Listo</button>' : '<button data-a="terminar">Terminar</button>'}</div>${p.corrige ? `<div class="mk-corr">Editando · ${fechaDe(p.dia || p.inicio)}</div>` : ''}
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas')}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto)}</button>
@@ -2079,7 +2079,7 @@ const A = {
   vantoggle: (id) => { st.recien = id; vanTodos = false; st.van = st.van.includes(id) ? st.van.filter((x) => x !== id) : [...st.van, id].sort((a, b) => PLANTEL.findIndex((p) => p.id === a) - PLANTEL.findIndex((p) => p.id === b)); if (st.partido) { st.partido.metaVer = Date.now(); subir(); } },
   vanlisto: () => { if (!st.van.length) return; if (st.vanDe === 'empezar') { st.vanDe = null; empezar(true); return; } st.hoja = st.vanDe || 'editar'; },
   // el botón + y los botones de Inicio: si hay partido se sigue; si lo marca otro celular, se une; si no, empieza con un toque
-  mkver: (v) => { st.mkDir = v === 'paso' ? -1 : 1; st.mkVer = v; },
+  mkver: (v) => { st.mkDir = v === 'paso' ? 1 : -1; st.mkVer = v; },
   mas: () => { st.hoja = 'mas'; },
   marcar: () => { st.mkVer = 'marcar'; if (st.partido) { st.pant = 'marcar'; st.hoja = null; } else empezar(); },
   unirse: () => { unirseSiHay(); },
@@ -2199,15 +2199,15 @@ const A = {
     aTemporada(aEnviar(p)); st.pant = 'marcar'; st.hoja = null; subir();
   },
 };
-// en Marcar, deslizar a la derecha lleva a «Lo que pasó» y a la izquierda regresa a las tiras
+// en Marcar, deslizar a la izquierda lleva a «Lo que pasó» (a la derecha de Marcar, Iker 17-nov) y a la derecha regresa a las tiras
 let toque0 = null;
 document.addEventListener('touchstart', (e) => { toque0 = !st.hoja && e.touches.length === 1 && e.target.closest('.mk-cuerpo') ? [e.touches[0].clientX, e.touches[0].clientY] : null; }, { passive: true });
 document.addEventListener('touchend', (e) => {
   const a = toque0, t = e.changedTouches[0]; toque0 = null;
   if (!a || !st.partido || !st.partido.jugadas.length || st.pant !== 'marcar') return;
   const dx = t.clientX - a[0], dy = t.clientY - a[1];
-  if (Math.abs(dx) < 60 || Math.abs(dy) * 2 > Math.abs(dx) || (dx > 0) === (st.mkVer === 'paso')) return;
-  A.mkver(dx > 0 ? 'paso' : 'marcar'); pintar();
+  if (Math.abs(dx) < 60 || Math.abs(dy) * 2 > Math.abs(dx) || (dx < 0) === (st.mkVer === 'paso')) return;
+  A.mkver(dx < 0 ? 'paso' : 'marcar'); pintar();
 }, { passive: true });
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-a]');
@@ -2236,7 +2236,7 @@ let onbTras = () => {};
     { sel: '.hoja [data-a=quien]', tit: '¿Quién la atrapó?', txt: 'Toca al jugador. La jugada queda guardada.', hecho: () => vivas() > 0 },
     // si las yardas llegan a la zona la jugada pasa a TD y abre la conversión: en la práctica se cierra
     { sel: '.hoja.cuanto', tit: '¿Cuántas yardas?', txt: 'Toca 5, 10, 20 o 30 yd y afina con − y +. La ✓ las guarda; la ✕ la deja sin yardas.', hecho: () => { if (st.hoja === 'cuanto') return false; st.hoja = null; return true; } },
-    { sel: '.mk-puntos', tit: 'Lo que pasó', txt: 'Desliza a la derecha, o toca los puntos, para ver todas las jugadas del partido.', hecho: () => st.mkVer === 'paso' },
+    { sel: '.mk-puntos', tit: 'Lo que pasó', txt: 'Desliza a la izquierda, o toca los puntos, para ver todas las jugadas del partido.', hecho: () => st.mkVer === 'paso' },
     { sel: '.mk-pag [data-a=deshacer]', tit: 'Corregir o deshacer', txt: 'Toca una jugada para corregirla. «Deshacer» quita la última: tócalo.', hecho: () => vivas() === 0 },
     { sel: '.mk-lado', tit: 'Ataque o defensa', txt: 'Cuando cambia el balón, toca «Defensa». Los botones cambian a los de defensa.', hecho: () => st.partido.lado === 'D' },
     { sel: '.qbchip', tit: 'El QB', txt: 'Aquí se cambia al QB. En esa hoja, arriba a la derecha, está el botón para ver este recorrido otra vez.' },
