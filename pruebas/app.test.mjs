@@ -39,9 +39,9 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   await toca(pg, 'res', 'corrida'); await toca(pg, 'quien', 'rodrigo'); await toca(pg, 'sinyd');
   await toca(pg, 'res', 'incompleto'); await toca(pg, 'inc', 'cayo'); await toca(pg, 'quien', 'pepe');
   await toca(pg, 'res', 'incompleto'); await toca(pg, 'inc', 'mal');
-  await toca(pg, 'res', 'parada');
-  // castigos, presión y «no la atraparon» ya no se marcan (Iker, 17-nov), pero los de partidos viejos siguen contando: se ponen como antes
+  // «Nos pararon», castigos, presión y «no la atraparon» ya no se marcan (Iker, 17-nov), pero los de partidos viejos siguen contando: se ponen como antes
   const vieja = (j) => pg.evaluate((j) => { guarda(j); pintar(); }, j); // eslint-disable-line no-undef
+  await vieja({ k: 'parada' }); // «Nos pararon» ya no se marca, pero el de un partido viejo cuenta
   await vieja({ k: 'castigo', v: 'favor' }); await vieja({ k: 'castigo', v: 'contra' });
   await paso('0–0', /Ataque/);
   await toca(pg, 'res', 'td'); await toca(pg, 'como', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd');
@@ -276,8 +276,8 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   // (la D de Iker); sin castigos; el TD y «Más opciones» con el resto; todo cabe sin bajar
   const grandes = () => pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => [x.innerText, x.style.getPropertyValue('--c'), !!x.querySelector('.mk-gi svg')]));
   const ga = await grandes();
-  assert.deepEqual(ga.map((x) => x[0]), ['Pase completo', 'Corrida', 'Incompleto', 'Nos pararon', 'Intercepción', 'Sack a nuestro QB']);
-  assert.deepEqual([new Set(ga.map((x) => x[1])).size, ga.every((x) => x[2])], [6, true]);
+  assert.deepEqual(ga.map((x) => x[0]), ['Pase completo', 'Corrida', 'Incompleto', 'Intercepción', 'Sack a nuestro QB']);
+  assert.deepEqual([new Set(ga.map((x) => x[1])).size, ga.every((x) => x[2])], [5, true]);
   assert.deepEqual(await pg.locator('.mk-tiras > button').allInnerTexts(), ['Touchdown', 'Más opciones']);
   assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 100);
   assert.ok(Math.min(...await pg.locator('.mk-tiras > button').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 56);
@@ -415,7 +415,7 @@ test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga
   // el mal pase y «Nos pararon» ya no ofrecen las caras de a quién iba / a quién pararon
   await toca(pg, 'lado', 'O'); await toca(pg, 'res', 'incompleto'); await toca(pg, 'inc', 'mal');
   assert.equal(await pg.locator('.pregunta.aviso .cara').count(), 0);
-  await toca(pg, 'res', 'parada'); assert.equal(await pg.locator('.pregunta.aviso .cara').count(), 0);
+  assert.equal(await pg.locator('[data-a="res"][data-v="parada"]').count(), 0); // «Nos pararon» ya no está en Marcar
   await pg.evaluate(() => { A.mkver('paso'); pintar(); }); await sinPd('Lo que pasó'); // eslint-disable-line no-undef
   // «Lo que pasó»: las series de ataque con el marino de Belugas y las de defensa con el color del rival (Kaffies)
   assert.deepEqual(await pg.evaluate(() => ['O', 'D'].map((l) => getComputedStyle(document.querySelector(`.serie .lt.${l}`)).backgroundColor)), ['rgb(13, 35, 71)', await pg.evaluate(() => { const e = document.createElement('i'); e.style.color = `color-mix(in srgb, ${R('kaffies').color} 78%, #000)`; document.body.append(e); const c = getComputedStyle(e).color; e.remove(); return c; })]); // eslint-disable-line no-undef

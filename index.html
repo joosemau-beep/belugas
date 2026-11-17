@@ -1031,7 +1031,8 @@ const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sac
 // Marcar: las 6 más usadas van grandes (contadas en los 10 partidos de ejemplo: pase 14 por partido, incompleto 7, corrida 3,
 // nos pararon 2.5, intercepción 0.9, castigo a favor 0.8; bandera 13, tapado 11, sack 1.7, castigo a favor 0.8, intercepción 0.7, en contra 0.3); el resto en «Más opciones»
 // Sin castigos (Iker, 17-nov: no dan puntos ni salen en ninguna pantalla); sus lugares los toman sack a nuestro QB, pick 6 y safety a favor
-const MK_GRANDES = { O: ['pase', 'corrida', 'incompleto', 'parada', 'int', 'sackr'], D: ['bandera', 'tapado', 'sack', 'intn', 'pick6', 'safety'] };
+// sin «Nos pararon» (Iker, 17-nov: «quítalo y ya vamos viendo»); para regresarlo basta ponerlo otra vez aquí. Las jugadas viejas lo siguen contando
+const MK_GRANDES = { O: ['pase', 'corrida', 'incompleto', 'int', 'sackr'], D: ['bandera', 'tapado', 'sack', 'intn', 'pick6', 'safety'] };
 const MK_MAS = { O: ['pick6c', 'safetyc'], D: [] };
 // cada uno de los seis grandes de un color distinto en su lado (Iker, 17-nov); donde el glifo repite color, este manda
 const MK_COLOR = { sackr: '#c026d3', intn: '#7c3aed', pick6: '#2f7fd1', safety: '#f59e0b' };
