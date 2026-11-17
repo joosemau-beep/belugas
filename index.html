@@ -1837,6 +1837,7 @@ function aTemporada(x) {
 const slug = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 async function sembrar() {
   const [v] = await rpc('tochito_leer', { p_clave: clave });
+  if (st.practicando) return; // a media práctica no se siembra la copia de práctica
   const d = (v && v.datos) || {}, L = d.lines || {}, usados = new Set();
   if (!(d.players || []).length) return;
   T.plantel = d.players.map((nombre, n) => { let id = slug(nombre) || 'j'; while (usados.has(id)) id += '2'; usados.add(id); return { id, nombre: String(nombre), n, ver: 1 }; });
@@ -1889,8 +1890,11 @@ async function sinc(f) {
   try {
     for (let i = 0; i < 5; i++) {
       const [r] = await rpc('tochito_leer', { p_clave: clave + f.suf });
+      // el recorrido empezó mientras la nube contestaba: T es la copia de práctica (con los tres de mentira) y no se junta ni sube.
+      // Al acabar, el recorrido da otra vuelta
+      if (st.practicando) { f.ocupada = false; return; }
       if (!r) { nube.mala = true; pintar(); break; } // esa llave no tiene filas: no es la del equipo
-      if (f === filas.temp && !(r.datos || {}).sembrado && !T.sembrado) await sembrar();
+      if (f === filas.temp && !(r.datos || {}).sembrado && !T.sembrado) { await sembrar(); if (st.practicando) { f.ocupada = false; return; } }
       const m = f.junta(r.datos || {});
       if (!m) break; // la nube ya tiene todo lo de aquí
       // guarda solo si nadie guardó desde que se leyó; si alguien sí (null), otra vuelta: leer, juntar y subir

@@ -555,6 +555,26 @@ test('cómo funciona la app: sale sola la primera vez (sin jugadores practica co
   await pg.context().close();
 });
 
+// 17-nov: los tres de mentira llegaron al plantel real. Un celular nuevo abre con el link, el recorrido sale antes de que la nube
+// conteste y, al contestar, se juntaba la copia de práctica de la temporada y se subía. Ahora a media práctica no se junta ni se sube nada
+test('cómo funciona la app: si la nube contesta a media práctica, los jugadores de mentira no llegan a la nube', async () => {
+  const clave = 'prueba-0123456789abcdefghij', nube = nubeFalsa(clave, ['Mau', 'Nico']);
+  nube.db[clave + '-cel'].datos = { v: 1, plantel: [{ id: 'mau', nombre: 'Mau', n: 0, ver: 1 }, { id: 'nico', nombre: 'Nico', n: 1, ver: 1 }], linea: { O: [], D: [], qb: null, ver: 1 }, juegos: {}, sembrado: 1 };
+  const lenta = { ruta: async (route) => { const b = JSON.parse(route.request().postData() || '{}'); if (b.p_clave === clave + '-cel') await new Promise((ok) => setTimeout(ok, 2500)); return nube.ruta(route); } };
+  const pg = await telefono(srv.url, { nube: lenta, clave, nuevo: true });
+  await pg.waitForFunction(() => onb.T && PLANTEL.some((p) => p.id === 'practica1')); // eslint-disable-line no-undef
+  await pg.waitForTimeout(6000); // la nube ya contestó (y tardaría lo mismo en guardar), con el recorrido abierto
+  const ids = () => nube.db[clave + '-cel'].datos.plantel.map((p) => p.id).sort().join();
+  assert.equal(ids(), 'mau,nico');
+  await pg.locator('.onb [data-o=fin]').click();
+  await pg.waitForFunction(() => PLANTEL.length === 2, null, { timeout: 10000 }); // eslint-disable-line no-undef
+  await pg.waitForTimeout(1000);
+  assert.equal(ids(), 'mau,nico');
+  assert.doesNotMatch(await pg.evaluate(() => localStorage.getItem('belugas.cel')), /practica/);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+
 test('abre sin señal', { skip: !srv.url.startsWith('https:') && 'solo con URL=https://…' }, async () => {
   const pg = await telefono(srv.url);
   await pg.evaluate(() => navigator.serviceWorker.ready); await pg.waitForTimeout(2000);
