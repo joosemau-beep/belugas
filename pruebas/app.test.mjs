@@ -271,11 +271,15 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   for (const id of ['mau', 'nico', 'rodrigo']) await toca(pg, 'vantoggle', id);
   await toca(pg, 'vanlisto');
   // Marcar: las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; todo cabe sin bajar
-  // cada botón de jugada lleva su ícono arriba, en el juego con color (A) o el minimalista (B), que se escoge en Ajustes y se recuerda
-  assert.equal(await pg.locator('.mk-grande > .ic.relleno + span').count(), 6);
+  // cada botón de jugada lleva su ícono, en el estilo que se escoge en Ajustes y se recuerda: A ícono de color, C botón de color,
+  // D ícono de fondo, E vidrio (los tres últimos, el botón entero del color de su jugada)
+  assert.equal(await pg.locator('.mk-grandes.ico-color .mk-grande > .ic.relleno + span').count(), 6);
+  for (const e of ['lleno', 'fondo', 'vidrio']) {
+    await pg.evaluate(() => { A.ico(); pintar(); }); // eslint-disable-line no-undef
+    assert.deepEqual([await pg.locator(`.mk-grandes.ico-${e} .mk-grande[style*="--c"] > .mk-gi svg`).count(), await pg.evaluate(() => localStorage.getItem('belugas.ico'))], [6, e]);
+  }
   await pg.evaluate(() => { A.ico(); pintar(); }); // eslint-disable-line no-undef
-  assert.deepEqual([await pg.locator('.mk-grande > .ic.simple').count(), await pg.evaluate(() => localStorage.getItem('belugas.ico'))], [6, 'simple']);
-  await pg.evaluate(() => { A.ico(); pintar(); }); // eslint-disable-line no-undef
+  assert.equal(await pg.evaluate(() => st.ico), 'color'); // eslint-disable-line no-undef
   assert.deepEqual(await pg.locator('.mk-grande').allInnerTexts(), ['Pase completo', 'Corrida', 'Incompleto', 'Nos pararon', 'Intercepción', 'Castigo a favor']);
   assert.deepEqual(await pg.locator('.mk-tiras > button').allInnerTexts(), ['Touchdown', 'Más opciones']);
   assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 100);

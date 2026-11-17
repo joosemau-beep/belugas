@@ -509,6 +509,20 @@ table.bs td.v { color: #b8c2cf; }
 .mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
 .mk-grande { min-height: 104px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
 .mk-tira { gap: 12px; justify-content: flex-start; }
+/* C, D y E: el botón entero del color de su jugada (--c, de ICONOS_C), oscurecido un poco para que el blanco se lea al sol */
+.mk-grandes:not(.ico-color) .mk-grande { color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
+.mk-gi svg { display: block; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
+.ico-lleno .mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; }
+.ico-lleno .mk-gi svg { width: 44px; height: 44px; }
+.ico-fondo .mk-grande { position: relative; overflow: hidden; justify-content: flex-end; }
+.ico-fondo .mk-gi { position: absolute; right: -16px; top: -14px; opacity: .3; } .ico-fondo .mk-gi svg { width: 124px; height: 124px; stroke-width: 2; }
+.ico-fondo .mk-grande > span:last-child { position: relative; }
+.ico-vidrio .mk-grande { position: relative; overflow: hidden; isolation: isolate; align-items: center; justify-content: center; text-align: center; gap: 8px;
+  background: linear-gradient(160deg, rgba(255,255,255,.4), rgba(255,255,255,.06) 48%), color-mix(in srgb, var(--c) 76%, #0b1b33); border: 1px solid rgba(255,255,255,.6);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.75), inset 0 -12px 22px rgba(0,0,0,.2), 0 8px 18px color-mix(in srgb, var(--c) 35%, transparent); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%); }
+.ico-vidrio .mk-grande::before { content: ''; position: absolute; inset: -40% 25% 45% -25%; z-index: -1; background: radial-gradient(closest-side, rgba(255,255,255,.42), transparent); }
+.ico-vidrio .mk-gi { width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.6); }
+.ico-vidrio .mk-gi svg { width: 30px; height: 30px; }
 .mk-td .ic.relleno { background: #fff; } .mk-td .ic.relleno svg { stroke: var(--navy); } .mk-td .ic.relleno svg .f { fill: var(--navy); }
 .mk-td.riv .ic.relleno svg { stroke: color-mix(in srgb, var(--rc) 70%, #000); } .mk-td.riv .ic.relleno svg .f { fill: color-mix(in srgb, var(--rc) 70%, #000); }
 .mk-td .ic.simple svg { stroke: #fff; }
@@ -916,8 +930,10 @@ const iniciales = (n) => { const w = String(n || '?').split(/\s+/).filter(Boolea
 const foto = (p) => `<span class="foto"><span>${p && p.cara ? `<img src="${p.cara}" alt="">` : `<span class="ini">${iniciales(p && p.nombre)}</span>`}</span></span>`;
 
 // lo que se ve en este momento; lo que se guarda (partido, temporada, quiénes van) lo escribe guardaLocal
+// los cuatro estilos de botón que Iker compara en el teléfono (17-nov); se escoge en Ajustes
+const MK_ICO = { color: 'A · Ícono de color', lleno: 'C · Botón de color', fondo: 'D · Ícono de fondo', vidrio: 'E · Vidrio' };
 let st = {
-  anim: 'si', yds: 'si', ico: lsGet('belugas.ico') === 'simple' ? 'simple' : 'color', cuanto: null, conv: null, edita: null, lanzo: null, qbDe: null, entrar: true, jug: null, juego: null, desde: 'inicio',
+  anim: 'si', yds: 'si', ico: MK_ICO[lsGet('belugas.ico')] ? lsGet('belugas.ico') : 'color', cuanto: null, conv: null, edita: null, lanzo: null, qbDe: null, entrar: true, jug: null, juego: null, desde: 'inicio',
   cat: 'puntos', met: 'ataque', animar: true, todos: false, abre: {}, practicando: false,
   pant: 'inicio', hoja: null, sel: null, toast: null, final: null,
   van: [], // los que van hoy; mientras nadie lo cambie, todos (vanTodos)
@@ -1021,15 +1037,19 @@ const RES = {
 };
 // ícono de cada resultado (intercepción nuestra usa el mismo glifo que la de ellos)
 const ICO_DE = {intn: 'int', sackr: 'sack', pick6c: 'int', presion: 'tapado', fallo: 'tapado'};
-const mkIcono = (k) => { const g = ICO_DE[k] || k; if (st.ico === 'simple') return ic(g); const [c, d] = ICONOS_C[g] || ICONOS_C.parada; return `<span class="ic relleno chico" style="--c:${c}"><svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg></span>`; };
+const mkIcono = (k) => { const g = ICO_DE[k] || k; const [c, d] = ICONOS_C[g] || ICONOS_C.parada; return `<span class="ic relleno chico" style="--c:${c}"><svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg></span>`; };
 // sin títulos de grupo, lo malo lleva el nombre completo para no confundirse con lo de la defensa
 const MK_NOMBRE = {int: 'Intercepción', pick6c: 'Pick 6 en contra', sackr: 'Sack a nuestro QB', safetyc: 'Safety en contra', pick6: 'Pick 6', safety: 'Safety a favor', bandera: 'Quitamos la bandera', tapado: 'Pase incompleto'};
 // Marcar: las 6 más usadas van grandes (contadas en los 10 partidos de ejemplo: pase 14 por partido, incompleto 7, corrida 3,
 // nos pararon 2.5, intercepción 0.9, castigo a favor 0.8; bandera 13, tapado 11, sack 1.7, castigo a favor 0.8, intercepción 0.7, en contra 0.3); el resto en «Más opciones»
 const MK_GRANDES = { O: ['pase', 'corrida', 'incompleto', 'parada', 'int', 'castigo:favor'], D: ['bandera', 'tapado', 'sack', 'intn', 'castigo:favor', 'castigo:contra'] };
 const MK_MAS = { O: ['castigo:contra', 'sackr', 'pick6c', 'safetyc'], D: ['pick6', 'safety'] };
-const mkBoton = (k, cls) => { const [a, v] = k.startsWith('castigo:') ? ['castigo', k.slice(8)] : ['res', k];
-  return `<button class="${cls}" data-a="${a}" data-v="${v}">${mkIcono(a === 'castigo' ? 'castigo' : k)}<span>${a === 'castigo' ? `Castigo ${v === 'favor' ? 'a favor' : 'en contra'}` : MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1]}</span></button>`; };
+const mkBoton = (k, cls) => { const [a, v] = k.startsWith('castigo:') ? ['castigo', k.slice(8)] : ['res', k], g = a === 'castigo' ? 'castigo' : k;
+  const nombre = a === 'castigo' ? `Castigo ${v === 'favor' ? 'a favor' : 'en contra'}` : MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1];
+  // C, D y E: el botón entero del color de su jugada, con el glifo en blanco (grande al centro, de fondo o sobre vidrio)
+  if (cls === 'mk-grande' && st.ico !== 'color') { const [c, d] = ICONOS_C[ICO_DE[g] || g] || ICONOS_C.parada;
+    return `<button class="${cls}" data-a="${a}" data-v="${v}" style="--c:${c}"><span class="mk-gi"><svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg></span><span>${nombre}</span></button>`; }
+  return `<button class="${cls}" data-a="${a}" data-v="${v}">${mkIcono(g)}<span>${nombre}</span></button>`; };
 const MK_BALON = '<svg class="mk-bal" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="12" rx="9.5" ry="5.6" transform="rotate(-32 12 12)" fill="#fff"/><path d="M9.6 14.2l4.8-4.4M10.6 11.6l1.3 1.3M12.1 10.2l1.3 1.3" stroke="#0d2347" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg>';
 // ---------- la lista «Este partido», por series ----------
 // cada serie: de quién era el balón, sus jugadas y cómo acabó (las series las numera rehacer)
@@ -1147,7 +1167,7 @@ function marcar() {
     <div class="mk-lado" role="group" aria-label="Quién trae el balón">${[['O', 'Ataque'], ['D', 'Defensa']].map(([v, n]) => `<button data-a="lado" data-v="${v}" aria-pressed="${p.lado === v}"${p.lado === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div></div>
     <div class="cuerpo mk-cuerpo">
       ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Va después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
-      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}<button class="mk-tira mas" data-a="mas">Más opciones</button></div>
+      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes ico-${st.ico}">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}<button class="mk-tira mas" data-a="mas">Más opciones</button></div>
       ${filaPregunta()}</div>`}
     </div>${nav()}</div>`;
 }
@@ -1411,7 +1431,7 @@ function hoja() {
   if (st.hoja === 'ayuda') h = `<h3>Ajustes</h3>
     <button class="aj-fila" data-a="onbver"><span><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></span>Ver la bienvenida otra vez<em>›</em></button>
     <button class="aj-fila" data-a="onbmarcar"><span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Ver cómo se marca<em>›</em></button>
-    <button class="aj-fila" data-a="ico"><span>${mkIcono('pase')}</span>Íconos de Marcar<em>${st.ico === 'simple' ? 'B · Minimalistas' : 'A · Con color'}</em></button>
+    <button class="aj-fila" data-a="ico"><span>${mkIcono('pase')}</span>Íconos de Marcar<em>${MK_ICO[st.ico]}</em></button>
     <button class="aj-fila" data-a="antes"><span><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg></span>Libro de jugadas y pulsera<em>›</em></button>
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   // la barrita de arrastre no servía en la página: toda hoja lleva su ✕ arriba a la derecha (Iker, 17-nov)
@@ -1861,7 +1881,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117001821';
+const VERSION = '20261117003123';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2020,7 +2040,7 @@ const A = {
     recalcular(); subirTemp();
   },
   // la app de antes (campo, libro de jugadas, imprimir pulsera), en su vista completa
-  ico: () => { st.ico = st.ico === 'simple' ? 'color' : 'simple'; lsSet('belugas.ico', st.ico); },
+  ico: () => { const ks = Object.keys(MK_ICO); st.ico = ks[(ks.indexOf(st.ico) + 1) % ks.length]; lsSet('belugas.ico', st.ico); },
   antes: () => { lsSet('tochito.completa', '1'); location.href = 'ipad.html?cel=1' + location.hash; },
   ir: (v) => { acabaCorr(); if (st.pant !== v && v === 'inicio') st.entrar = true; st.pant = v; st.hoja = null; if (v === 'inicio') st.animar = true; },
   // tocar fuera de una hoja: de los selectores de QB se regresa a donde se venía; fuera de la conversión, el TD se queda
