@@ -456,16 +456,20 @@ test('la franja de la hora va del color del encabezado de cada pantalla, tambié
   await pg.context().close();
 });
 
-test('desde el ícono del iPhone la barra llega hasta abajo, aunque iOS 26 le dé a la página la pantalla menos la franja de la hora', async () => {
-  for (const alto of [852, 793]) {
-    const pg = await telefono(srv.url, { app: { alto } });
+// iOS 26 no pinta nada más allá de la orilla corta (WebKit 301108): una barra más abajo sale cortada (pasó con el PR 16, Iker 17-nov)
+test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le dé a la página la pantalla menos la franja de la hora', async () => {
+  // iPhone SE, 15 y 15 Pro Max: [ancho, pantalla, franja de la hora]
+  for (const [ancho, pantalla, hora] of [[375, 667, 20], [393, 852, 59], [430, 932, 59]]) for (const alto of [pantalla, pantalla - hora]) {
+    const pg = await telefono(srv.url, { app: { ancho, pantalla, alto } });
     await agrega(pg, ['Mau', 'Nico']);
-    // la barra pegada a la orilla de la pantalla, con el aire de la rayita dentro; nada se arrastra; lo último de la pantalla no queda tapado
+    // la página le pide a iOS la pantalla entera (mide la ventana más la franja); que iOS se la dé solo se ve en el iPhone
+    assert.match(await pg.evaluate(() => getComputedStyle(document.documentElement).minHeight), /^min\(/);
+    // la barra termina en la orilla de lo que se pinta, con el aire de la rayita dentro; nada se arrastra; lo último de la pantalla no queda tapado
     const revisa = (v) => pg.evaluate(() => {
       const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
       c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
-      return [Math.round(n.bottom), parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom) >= 20, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
-    }).then((r) => assert.deepEqual(r, [852, true, true, true], `${v} (${alto})`));
+      return [Math.round(n.bottom) - innerHeight, parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom) >= 20, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
+    }).then((r) => assert.deepEqual(r, [0, true, true, true], `${v} (${ancho} × ${alto})`));
     for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); await revisa(v); }
     await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
     await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');

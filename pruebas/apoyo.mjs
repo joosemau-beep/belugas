@@ -40,10 +40,11 @@ export const navegador = async () => (nav = nav || (await (process.env.NAVEGADOR
 export const cerrarNavegador = () => nav && nav.close();
 
 // un teléfono nuevo, sin el recorrido de la primera vez (con nuevo: true, con él); con nube, abre con el link del equipo.
-// con app: abierta desde el ícono de un iPhone 15 (393 × 852); app.alto es lo que iOS 26 le da a veces a la página (852 − 59 de la hora)
+// con app: abierta desde el ícono de un iPhone (app.ancho × app.pantalla, un 15 si no se dice); app.alto es lo que iOS 26 le da a veces
+// a la página (la pantalla menos la franja de la hora)
 export async function telefono(url, { nube, clave, nuevo, app } = {}) {
   const ctx = await (await navegador()).newContext(app
-    ? { viewport: { width: 393, height: app.alto || 852 }, screen: { width: 393, height: 852 }, isMobile: true, hasTouch: true }
+    ? { viewport: { width: app.ancho || 393, height: app.alto || app.pantalla || 852 }, screen: { width: app.ancho || 393, height: app.pantalla || 852 }, isMobile: true, hasTouch: true }
     : { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   if (app) await ctx.addInitScript(() => Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true }));
   if (!nuevo) await ctx.addInitScript(() => { localStorage.setItem('belugas.visto.ver', '1'); });
