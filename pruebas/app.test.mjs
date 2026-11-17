@@ -118,6 +118,9 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   assert.match(await texto(pg), /Puntos en contra por partido/); assert.doesNotMatch(met + await texto(pg), coloquial);
   await toca(pg, 'ir', 'partidos');
   assert.match(await texto(pg), /Kaffies Hoy P 15–16/);
+  // sin la tabla de la liga (Iker, 17-nov): ni pestaña de Posiciones en Partidos ni tarjeta en Inicio
+  assert.doesNotMatch(await texto(pg), /Posiciones|Tabla de la liga/);
+  await toca(pg, 'ir', 'inicio'); assert.doesNotMatch(await texto(pg), /Tabla de la liga|Ver la tabla|equipos/);
   await toca(pg, 'ir', 'jugadores');
   assert.match(await texto(pg), /Mau .*12\.8 pts/);
   // la 1ª y 10 ya no se muestra en ningún lado (ni en Métricas, ni en la tabla de puntos, ni en la ficha de un jugador)
