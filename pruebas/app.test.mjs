@@ -318,6 +318,7 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(gd.map((x) => x[0]), ['Bandera quitada', 'Pase tapado', 'Sack', 'Intercepción', 'Pick 6', 'Safety a favor']);
   assert.equal(new Set(gd.map((x) => x[1])).size, 6); // en defensa también, cada uno de su color
   assert.equal(await pg.locator('[data-a="mas"]').count(), 0); // en defensa ya no queda nada para «Más opciones»
+  assert.equal(await pg.locator('.mk-td.riv').innerText(), 'Touchdown'); // el TD de ellos dice solo «Touchdown»: el lado ya lo dice Defensa (Iker, 17-nov)
   await toca(pg, 'lado', 'O');
   // ¿Quién?: sin «No sé», y la ✕ de arriba no guarda nada; en la regla, la ✓ guarda las yardas ya
   await toca(pg, 'res', 'corrida');
