@@ -39,9 +39,13 @@ let nav;
 export const navegador = async () => (nav = nav || (await (process.env.NAVEGADOR === 'webkit' ? webkit : chromium).launch()));
 export const cerrarNavegador = () => nav && nav.close();
 
-// un teléfono nuevo, sin el recorrido de la primera vez (con nuevo: true, con él); con nube, abre con el link del equipo
-export async function telefono(url, { nube, clave, nuevo } = {}) {
-  const ctx = await (await navegador()).newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+// un teléfono nuevo, sin el recorrido de la primera vez (con nuevo: true, con él); con nube, abre con el link del equipo.
+// con app: abierta desde el ícono de un iPhone 15 (393 × 852); app.alto es lo que iOS 26 le da a veces a la página (852 − 59 de la hora)
+export async function telefono(url, { nube, clave, nuevo, app } = {}) {
+  const ctx = await (await navegador()).newContext(app
+    ? { viewport: { width: 393, height: app.alto || 852 }, screen: { width: 393, height: 852 }, isMobile: true, hasTouch: true }
+    : { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  if (app) await ctx.addInitScript(() => Object.defineProperty(Navigator.prototype, 'standalone', { get: () => true }));
   if (!nuevo) await ctx.addInitScript(() => { localStorage.setItem('belugas.visto.ver', '1'); });
   // la nube de verdad nunca se toca desde las pruebas
   await ctx.route(/supabase\.co/, nube ? nube.ruta : (r) => r.abort());

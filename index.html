@@ -117,9 +117,13 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
    marino (blanco = blur claro sobre el título); la barra lleva aire abajo para que los nombres no queden pegados a la rayita.
    Antes se adivinaba si iOS «cortaba» la app por la altura y entonces iba blanco y sin aire, pero en el iPhone de Mau la altura
    engaña con la pantalla completa y salía la niebla (16-nov tarde): ya no se adivina. */
-html.app .tel { --abajo: 20px; }
+html.app .tel { --abajo: max(20px, env(safe-area-inset-bottom)); }
 html.app, html.app body { background: var(--franja, #0d2347); }
 html.app .nav { height: calc(64px + var(--abajo)); }
+/* iOS 26 a veces le da a la página la pantalla menos la franja de la hora (793 de 852 en el iPhone 15) y el fondo azul se asoma abajo (Iker, 17-nov):
+   la app mide lo que la pantalla (--pantalla, de screen) y va fija para que lo de más no se pueda arrastrar; la barra va dentro, no a la orilla de iOS */
+html.app .tel { position: fixed; top: 0; left: 0; right: 0; height: max(100dvh, var(--pantalla, 0px)); }
+html.app .tel .nav { position: absolute; }
 /* iOS 26 difumina lo que queda bajo la hora hasta ~90 pt del borde: el encabezado baja 24 pt para que el logo y el título salgan nítidos (Mau, 16-nov) */
 html.app .estado { height: calc(env(safe-area-inset-top) + 24px); }
 /* arriba (Mau, 15-nov): el título va en blanco sobre el marino de la hora; así no se deslava bajo la hora y el contenido sube */
@@ -998,6 +1002,10 @@ const scrollDe = {}; // dónde iba la página de cada pantalla
 const $ = (s) => document.querySelector(s);
 if (matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
   document.documentElement.classList.add('app');
+  // el alto de la pantalla, de pie o acostado; solo si la app ocupa todo el ancho (en un iPad partido la ventana es más chica)
+  const pantalla = () => { const [a, b] = [screen.width, screen.height].sort((x, y) => x - y), [w, h] = innerWidth < innerHeight ? [a, b] : [b, a];
+    document.documentElement.style.setProperty('--pantalla', Math.abs(innerWidth - w) < 2 ? h + 'px' : '0px'); };
+  pantalla(); addEventListener('resize', pantalla);
 }
 const pila = (ids, max = 5) => `<span class="pila">${ids.slice(0, max).map((id) => foto(P(id))).join('')}${ids.length > max ? `<span class="mas">+${ids.length - max}</span>` : ''}</span>`;
 const ICO = {
@@ -1971,7 +1979,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117130051';
+const VERSION = '20261117145544';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
