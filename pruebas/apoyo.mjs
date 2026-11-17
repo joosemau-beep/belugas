@@ -3,7 +3,7 @@ import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 
 const RAIZ = fileURLToPath(new URL('..', import.meta.url));
 const TIPOS = { '.html': 'text/html', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.woff2': 'font/woff2', '.txt': 'text/plain', '.json': 'application/json' };
@@ -35,7 +35,8 @@ export function nubeFalsa(clave, jugadores) {
 }
 
 let nav;
-export const navegador = async () => (nav = nav || (await chromium.launch()));
+// NAVEGADOR=webkit npm test: las mismas pruebas en el motor del iPhone
+export const navegador = async () => (nav = nav || (await (process.env.NAVEGADOR === 'webkit' ? webkit : chromium).launch()));
 export const cerrarNavegador = () => nav && nav.close();
 
 // un teléfono nuevo, sin el recorrido de la primera vez (con nuevo: true, con él); con nube, abre con el link del equipo
