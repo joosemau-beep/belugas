@@ -126,10 +126,9 @@ html.app, html.app body { background: var(--franja, #0d2347); }
    de la pantalla) y iOS le da la pantalla entera. La app va fija a la ventana: la barra nunca queda fuera de lo que se pinta y nada se arrastra */
 html.app { min-height: min(100lvh, calc(100% + env(safe-area-inset-top))); }
 html.app .tel { position: fixed; inset: 0; height: auto; }
-/* iOS 26 difumina lo que queda bajo la hora hasta ~90 pt del borde: el encabezado baja 24 pt para que el logo y el título salgan nítidos (Mau, 16-nov) */
+/* iOS 26 difumina lo que queda bajo la hora hasta ~90 pt del borde: el encabezado baja 24 pt para que el logo y el título salgan nítidos (Mau, 16-nov).
+   También en Marcar: con QB y Terminar pegados a la hora salían borrosos (Iker, 17-nov) */
 html.app .estado { height: calc(env(safe-area-inset-top) + 24px); }
-/* en Marcar no hay título que difuminar: QB y Terminar van justo bajo la hora y el marcador sube (Iker, 17-nov) */
-html.app .mcab > .estado { height: calc(env(safe-area-inset-top) + 2px); }
 /* arriba (Mau, 15-nov): el título va en blanco sobre el marino de la hora; así no se deslava bajo la hora y el contenido sube */
 .cab + h2 { margin-top: 10px; }
 
@@ -483,7 +482,7 @@ html:not(.app) .nav { background: var(--bg); }
 .pant > .pregunta.aviso { position: absolute; left: 12px; right: 12px; top: calc(max(14px, env(safe-area-inset-top)) + 44px); margin: 0; height: 52px; z-index: 6; background: #04070e; border-radius: 18px; box-shadow: 0 0 0 1px rgba(255,255,255,.14), 0 14px 32px rgba(0,0,0,.4); }
 .pant > .pregunta.aviso .acc { height: 52px; padding: 0 14px; font-size: 15px; }
 .pant > .pregunta.aviso .txt { height: 52px; line-height: 52px; } /* el texto al centro del alto del aviso */
-html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
+html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .tel.anim .pant > .pregunta.aviso.nuevo { animation: toastIn .28s cubic-bezier(.3,1.4,.5,1); }
 .pregunta .ult { min-height: 40px; padding: 0 2px 0 10px; font: 700 13.5px/1 Inter; color: var(--acento); flex: none; }
 .pregunta .vista { display: inline-flex; background: #e3e8ef; border-radius: 9px; padding: 3px; flex: none; }
@@ -2123,7 +2122,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117172001';
+const VERSION = '20261117174738';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
