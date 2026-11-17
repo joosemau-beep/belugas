@@ -1178,7 +1178,7 @@ function filaPregunta(conUltima) {
 }
 function marcar() {
   const p = st.partido, O = p.lado === 'O', r = R(HOY);
-  const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIcono('td')}Touchdown</button>` : `<button class="mk-td riv" data-a="tdr">${mkIcono('tdr')}TD de ${r.corto}</button>`;
+  const td = O ? `<button class="mk-td" data-a="res" data-v="td">${mkIcono('td')}Touchdown</button>` : `<button class="mk-td riv" data-a="tdr">${mkIcono('tdr')}Touchdown</button>`;
   const eq = (img, n) => `<div class="mk-eq">${img}<span>${n}</span></div>`; // sin el balón junto al nombre: el lado ya lo dice Ataque/Defensa
   const sube = (k) => (st.flash && st.flash[k] ? ' class="sube"' : '');
   const ver = st.mkVer === 'paso' && p.jugadas.length ? 'paso' : 'marcar', anim = st.mkDir ? ` style="--dx:${st.mkDir * 28}px"` : ''; st.mkDir = 0;
@@ -1915,7 +1915,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117162855';
+const VERSION = '20261117163626';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
