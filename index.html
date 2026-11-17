@@ -509,12 +509,11 @@ table.bs td.v { color: #b8c2cf; }
 .mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
 .mk-grande { min-height: 104px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
 .mk-tira { gap: 12px; justify-content: flex-start; }
-/* los botones grandes (la D de Iker, 17-nov): enteros del color de su jugada (--c, de ICONOS_C), oscurecido para que el blanco se lea
-   al sol, con el glifo enorme y medio transparente de fondo */
-.mk-grande { position: relative; overflow: hidden; justify-content: flex-end; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
-.mk-gi { position: absolute; right: -16px; top: -14px; opacity: .3; }
-.mk-gi svg { display: block; width: 124px; height: 124px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
-.mk-grande > span:last-child { position: relative; }
+/* los botones grandes (la C de Iker, 17-nov: «más fácil de usar y de entender»): enteros del color de su jugada (--c, de ICONOS_C),
+   oscurecido para que el blanco se lea al sol, con el glifo grande al centro y el nombre abajo */
+.mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
+.mk-grandes > .mk-grande:last-child:nth-child(odd) { grid-column: span 2; } /* sin «Nos pararon» quedan 5 en ataque: el último a todo lo ancho */
+.mk-gi svg { display: block; width: 44px; height: 44px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
 .mk-td .ic.relleno { background: #fff; } .mk-td .ic.relleno svg { stroke: var(--navy); } .mk-td .ic.relleno svg .f { fill: var(--navy); }
 .mk-td.riv .ic.relleno svg { stroke: color-mix(in srgb, var(--rc) 70%, #000); } .mk-td.riv .ic.relleno svg .f { fill: color-mix(in srgb, var(--rc) 70%, #000); }
 .mk-td .ic.simple svg { stroke: #fff; }
@@ -1036,7 +1035,7 @@ const MK_GRANDES = { O: ['pase', 'corrida', 'incompleto', 'int', 'sackr'], D: ['
 const MK_MAS = { O: ['pick6c', 'safetyc'], D: [] };
 // cada uno de los seis grandes de un color distinto en su lado (Iker, 17-nov); donde el glifo repite color, este manda
 const MK_COLOR = { sackr: '#c026d3', intn: '#7c3aed', pick6: '#2f7fd1', safety: '#f59e0b' };
-// los grandes: el botón entero del color de su jugada con el glifo enorme de fondo (la D que escogió Iker, 17-nov); en «Más opciones», tira con ícono
+// los grandes: el botón entero del color de su jugada con el glifo grande al centro (la C que escogió Iker, 17-nov); en «Más opciones», tira con ícono
 const mkBoton = (k, cls) => { const nombre = MK_NOMBRE[k] || [...RES.O, ...RES.D].find((x) => x[0] === k)[1];
   if (cls !== 'mk-grande') return `<button class="${cls}" data-a="res" data-v="${k}">${mkIcono(k)}<span>${nombre}</span></button>`;
   const [c0, d] = ICONOS_C[ICO_DE[k] || k] || ICONOS_C.parada, c = MK_COLOR[k] || c0;
@@ -1868,7 +1867,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117003545';
+const VERSION = '20261117005216';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {

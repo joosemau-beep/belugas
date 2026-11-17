@@ -272,8 +272,8 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.equal(await pg.evaluate(() => Math.round(document.querySelector('.hoja').getBoundingClientRect().bottom - document.querySelector('.ops.fijo').getBoundingClientRect().bottom)), 0);
   for (const id of ['mau', 'nico', 'rodrigo']) await toca(pg, 'vantoggle', id);
   await toca(pg, 'vanlisto');
-  // Marcar: las 6 más usadas en botones grandes, cada uno entero de su color y distinto de los demás de su lado, con su glifo de fondo
-  // (la D de Iker); sin castigos; el TD y «Más opciones» con el resto; todo cabe sin bajar
+  // Marcar: las 6 más usadas en botones grandes, cada uno entero de su color y distinto de los demás de su lado, con su glifo al centro
+  // (la C de Iker); sin castigos; el TD y «Más opciones» con el resto; todo cabe sin bajar
   const grandes = () => pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => [x.innerText, x.style.getPropertyValue('--c'), !!x.querySelector('.mk-gi svg')]));
   const ga = await grandes();
   assert.deepEqual(ga.map((x) => x[0]), ['Pase completo', 'Corrida', 'Incompleto', 'Intercepción', 'Sack a nuestro QB']);
