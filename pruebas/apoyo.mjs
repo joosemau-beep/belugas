@@ -57,5 +57,5 @@ export async function toca(pg, a, v) {
   await pg.waitForTimeout(150);
 }
 export const marcador = async (pg) => (await pg.locator('.mk-marc strong').innerText()).replace(/\s/g, '');
-export const lado = (pg) => pg.locator('.mk-lado').innerText();
+export const lado = (pg) => pg.locator('.mk-lado .on').innerText();
 export const texto = async (pg) => (await pg.locator('#tel').innerText()).replace(/\s+/g, ' ');

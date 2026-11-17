@@ -32,7 +32,7 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
 
   const paso = async (esperado, ladoEsperado) => { assert.equal(await marcador(pg), esperado); if (ladoEsperado) assert.match(await lado(pg), ladoEsperado); };
   // ataque
-  await toca(pg, 'res', 'pase'); await toca(pg, 'pdt'); await toca(pg, 'quien', 'nico');
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico');
   for (let i = 0; i < 8; i++) await pg.locator('.rg-b[data-pm="1"]').click();
   await pg.waitForTimeout(3300); // la regla se cierra sola 3 s después del último toque
   await paso('0–0', /Ataque/);
@@ -93,7 +93,7 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   // las cuentas del partido, cada jugador
   const st = await pg.evaluate(() => { const g = JUEGOS[JUEGOS.length - 1]; return Object.fromEntries(Object.entries(g.st).map(([id, x]) => [id, { ...x, pts: puntosDe(x) }])); }); // eslint-disable-line no-undef
   assert.deepEqual(st.mau, { comp: 2, att: 6, pyd: 8, tdp: 1, convp: 1, intl: 2, tap: 1, td: 1, intn: 1, safc: 1, pts: 12.8 });
-  assert.deepEqual(st.nico, { rec: 2, ryd: 8, pd: 1, td: 1, pres: 1, saf: 1, car: 1, pts: 12.8 });
+  assert.deepEqual(st.nico, { rec: 2, ryd: 8, td: 1, pres: 1, saf: 1, car: 1, pts: 11.8 }); // sin 1ª y 10: ya no se marca
   assert.deepEqual(st.rodrigo, { car: 1, conv: 1, sack: 1, pts: 4 });
   assert.deepEqual(st.pepe, { drop: 1, band: 1, pts: 0.5 });
   assert.equal(await pg.evaluate(() => RECORD), '5–2'); // eslint-disable-line no-undef
@@ -109,6 +109,10 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   assert.match(await texto(pg), /Kaffies Hoy P 15–16/);
   await toca(pg, 'ir', 'jugadores');
   assert.match(await texto(pg), /Mau .*12\.8 pts/);
+  // la 1ª y 10 ya no se muestra en ningún lado (ni en Métricas, ni en la tabla de puntos, ni en la ficha de un jugador)
+  assert.doesNotMatch(met, /1ª y 10/);
+  assert.doesNotMatch(await pg.evaluate(() => document.querySelector('#tel').textContent), /Primero y diez|1ª y 10/);
+  await toca(pg, 'jug', 'nico'); assert.doesNotMatch(await texto(pg), /Primeros y diez|1ª y 10/);
   // y sigue ahí al volver a abrir
   await pg.reload(); await pg.waitForSelector('#tel .nav');
   assert.equal(await pg.evaluate(() => RECORD), '5–2'); // eslint-disable-line no-undef
@@ -316,6 +320,13 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   await desliza(300, 120);
   assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
+  // Ataque/Defensa: grande, arriba, el lado en que vas marcado; tocar el mismo lado no cambia nada; sin 1ª y 10 en ¿Quién?
+  assert.deepEqual(await pg.locator('.mk-lado button').evaluateAll((xs) => xs.map((x) => [x.innerText, x.classList.contains('on'), Math.round(x.getBoundingClientRect().height)])), [['Ataque', true, 48], ['Defensa', false, 48]]);
+  const cambios = await pg.evaluate(() => st.partido.cambios.length); // eslint-disable-line no-undef
+  await toca(pg, 'lado', 'O');
+  assert.equal(await pg.evaluate(() => st.partido.cambios.length), cambios); // eslint-disable-line no-undef
+  await toca(pg, 'res', 'pase'); assert.equal(await pg.locator('.hoja .pdt').count(), 0); assert.doesNotMatch(await pg.locator('.hoja').innerText(), /1ª y 10/);
+  await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
   // defendiendo, la franja de la hora toma el color del rival (Kaffies, oscurecido como el encabezado); atacando, el nuestro
   await toca(pg, 'lado', 'D');
   assert.equal(await pg.evaluate(() => document.querySelector('meta[name="theme-color"]').content), '#5e4824');
