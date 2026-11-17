@@ -355,13 +355,31 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   await desliza(80, 300); // a la izquierda de Marcar no hay nada
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   await desliza(300, 120);
-  assert.equal(await pg.locator('.mk-pag').getAttribute('style'), '--dx:28px'); // entra desde la derecha
+  assert.equal(await pg.locator('.mk-pag').getAttribute('style'), '--dx:72px'); // entra desde la derecha, con un resorte
   assert.match(await texto(pg), /Este partido/i);
   assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['', 'on']);
   await desliza(300, 120); // otra vez a la izquierda: se queda
   assert.equal(await pg.evaluate(() => st.mkVer), 'paso'); // eslint-disable-line no-undef
   await desliza(80, 300);
   assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
+  assert.equal(await pg.locator('.mk-tiras').count(), 1);
+  // con el dedo (Iker, 17-nov): la página lo sigue y el punto de arriba con ella; si se suelta antes de tiempo regresa; si pasa, sale y entra la otra
+  const arrastra = (xs, suelta = true) => pg.evaluate(([xs, suelta]) => { const c = document.querySelector('.mk-cuerpo'), t = (x) => ({ identifier: 1, target: c, clientX: x, clientY: 400 });
+    const ev = (tipo, touches, changedTouches) => c.dispatchEvent(Object.assign(new Event(tipo, { bubbles: true }), { touches, changedTouches }));
+    ev('touchstart', [t(xs[0])], [t(xs[0])]); for (const x of xs.slice(1)) ev('touchmove', [t(x)], [t(x)]);
+    const pag = document.querySelector('.mk-pag'), i = document.querySelector('.mk-puntos i'), va = [pag.style.transform, i.style.transform];
+    if (suelta) ev('touchend', [], [t(xs[xs.length - 1])]); return va; }, [xs, suelta]);
+  const [mueve, punto] = await arrastra([300, 280, 260, 250], false);
+  assert.equal(mueve, 'translateX(-50px)');
+  assert.ok(parseFloat(punto.slice(11)) > 0, punto); // el punto ya va camino a «Lo que pasó»
+  await pg.evaluate(() => document.dispatchEvent(new Event('touchcancel'))); // eslint-disable-line no-undef
+  assert.equal(await pg.locator('.mk-pag').evaluate((p) => p.style.transform), '');
+  await arrastra([300, 295, 290, 285]); await pg.waitForTimeout(500); // 15 px: no alcanza, regresa con un rebote
+  assert.deepEqual(await pg.evaluate(() => [st.mkVer, document.querySelector('.mk-pag').style.transform]), ['marcar', '']); // eslint-disable-line no-undef
+  await arrastra([300, 260, 210, 160, 120]); await pg.waitForTimeout(700); // pasa el umbral: sale, entra «Lo que pasó» y las series llegan escalonadas
+  assert.deepEqual(await pg.evaluate(() => [st.mkVer, document.querySelector('.mk-pag').hasAttribute('data-entra'), document.querySelector('.mk-puntos i').style.getPropertyValue('--p')]), ['paso', true, '1']); // eslint-disable-line no-undef
+  assert.match(await texto(pg), /Este partido/i);
+  await desliza(80, 300);
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   // Ataque/Defensa: grande, arriba, el lado en que vas marcado; tocar el mismo lado no cambia nada; sin 1ª y 10 en ¿Quién?
   assert.deepEqual(await pg.locator('.mk-lado button').evaluateAll((xs) => xs.map((x) => [x.innerText, x.classList.contains('on'), Math.round(x.getBoundingClientRect().height)])), [['Ataque', true, 34], ['Defensa', false, 34]]);
