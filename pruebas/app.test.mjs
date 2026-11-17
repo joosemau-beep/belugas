@@ -431,6 +431,39 @@ test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga
   await pg.context().close();
 });
 
+// Iker, 17-nov: en la ficha cada quien es de Ataque, de Defensa o de los dos; en «¿Quién?» salen primero los del lado que se marca
+test('el lado de cada jugador ordena «¿Quién?» y viaja a la nube y al otro celular', async () => {
+  const clave = 'prueba-lado-0123456789abcdef', nube = nubeFalsa(clave, ['Mau', 'Nico', 'Rodrigo', 'Pepe']);
+  const a = await telefono(srv.url, { nube, clave });
+  await a.waitForFunction(() => PLANTEL.length === 4); // eslint-disable-line no-undef
+  const pon = async (id, v) => { await toca(a, 'ir', 'jugadores'); await toca(a, 'jug', id); await toca(a, 'ladoj', v); };
+  await pon('pepe', 'D'); await pon('nico', 'O'); await pon('rodrigo', 'O');
+  assert.equal(await a.locator('.lado .on').innerText(), 'Ataque');
+  await toca(a, 'ladoj', ''); // de regreso a «Los dos»
+  assert.equal(await a.locator('.lado .on').innerText(), 'Los dos');
+  await toca(a, 'ir', 'inicio');
+  await toca(a, 'empezar'); await toca(a, 'rival', 'panini');
+  for (const id of ['mau', 'nico', 'rodrigo', 'pepe']) await toca(a, 'vantoggle', id);
+  await toca(a, 'vanlisto');
+  const quien = () => a.locator('.hoja .pjs > *').evaluateAll((xs) => xs.map((x) => (x.classList.contains('pj-sep') ? '|' : x.dataset.v)));
+  await toca(a, 'res', 'corrida');
+  assert.deepEqual(await quien(), ['mau', 'nico', 'rodrigo', '|', 'pepe']);
+  await toca(a, 'quien', 'nico'); await toca(a, 'sinyd');
+  await toca(a, 'lado', 'D'); await toca(a, 'res', 'bandera');
+  assert.deepEqual(await quien(), ['mau', 'rodrigo', 'pepe', '|', 'nico']);
+  await toca(a, 'quien', 'pepe'); await toca(a, 'sinyd');
+  // Corregir la corrida (de ataque): Pepe va después de la rayita
+  await a.evaluate(() => { A.fila(st.partido.jugadas.findIndex((j) => j.k === 'corrida')); pintar(); }); // eslint-disable-line no-undef
+  assert.deepEqual(await quien(), ['nico', 'mau', 'rodrigo', '|', 'pepe']);
+  await a.waitForTimeout(800); // la temporada sube 300 ms después del último cambio
+  const enNube = Object.fromEntries(nube.db[clave + '-cel'].datos.plantel.map((x) => [x.id, x.lado || '']));
+  assert.deepEqual(enNube, { mau: '', nico: 'O', rodrigo: '', pepe: 'D' });
+  const b = await telefono(srv.url, { nube, clave });
+  await b.waitForFunction(() => P('pepe') && P('pepe').lado === 'D' && P('nico').lado === 'O' && !P('mau').lado); // eslint-disable-line no-undef
+  assert.deepEqual([...a.errores, ...b.errores], []);
+  await a.context().close(); await b.context().close();
+});
+
 test('abre sin señal', { skip: !srv.url.startsWith('https:') && 'solo con URL=https://…' }, async () => {
   const pg = await telefono(srv.url);
   await pg.evaluate(() => navigator.serviceWorker.ready); await pg.waitForTimeout(2000);
