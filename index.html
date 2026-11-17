@@ -89,6 +89,7 @@
   --boton: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%);
   --anillo: conic-gradient(from 210deg, #0d2347, #5aaeff, #1d4f8f, #0d2347);
   --abajo: env(safe-area-inset-bottom, 0px);
+  --navh: calc(78px + var(--abajo)); /* lo que mide la barra de pestañas */
   --brillo: radial-gradient(70% 55% at 50% -10%, rgba(90,174,255,.20), transparent 70%);
   --acento: #1d4f8f;
 }
@@ -117,9 +118,10 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
    marino (blanco = blur claro sobre el título); la barra lleva aire abajo para que los nombres no queden pegados a la rayita.
    Antes se adivinaba si iOS «cortaba» la app por la altura y entonces iba blanco y sin aire, pero en el iPhone de Mau la altura
    engaña con la pantalla completa y salía la niebla (16-nov tarde): ya no se adivina. */
-html.app .tel { --abajo: max(20px, env(safe-area-inset-bottom)); }
+html.app .tel { --abajo: max(20px, env(safe-area-inset-bottom)); --navh: calc(50px + var(--abajo)); }
 html.app, html.app body { background: var(--franja, #0d2347); }
-html.app .nav { height: calc(64px + var(--abajo)); }
+/* como la de un iPhone (Iker, 17-nov): íconos y nombres pegados abajo, encima de la rayita; debajo solo la zona segura */
+html.app .nav { padding-top: 6px; }
 /* iOS 26 a veces le da a la página la pantalla menos la franja de la hora (793 de 852 en el iPhone 15) y el fondo azul se asoma abajo (Iker, 17-nov).
    Hacer la app más alta no sirve: WebKit no pinta nada fijo más allá de esa orilla y la barra sale cortada (lo que salió con el PR 16).
    iOS solo la acorta mientras la página es más chica que la pantalla (WebKit 301108): la página mide la ventana más la franja (sin pasar
@@ -128,6 +130,8 @@ html.app { min-height: min(100lvh, calc(100% + env(safe-area-inset-top))); }
 html.app .tel { position: fixed; inset: 0; height: auto; }
 /* iOS 26 difumina lo que queda bajo la hora hasta ~90 pt del borde: el encabezado baja 24 pt para que el logo y el título salgan nítidos (Mau, 16-nov) */
 html.app .estado { height: calc(env(safe-area-inset-top) + 24px); }
+/* en Marcar no hay título que difuminar: QB y Terminar van justo bajo la hora y el marcador sube (Iker, 17-nov) */
+html.app .mcab > .estado { height: calc(env(safe-area-inset-top) + 2px); }
 /* arriba (Mau, 15-nov): el título va en blanco sobre el marino de la hora; así no se deslava bajo la hora y el contenido sube */
 .cab + h2 { margin-top: 10px; }
 
@@ -373,7 +377,7 @@ table.bs td.v { color: #b8c2cf; }
 .fila-j .dato strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
 
 /* barra de abajo */
-.nav { position: absolute; left: 0; right: 0; bottom: 0; height: calc(78px + var(--abajo)); padding-bottom: var(--abajo); background: #fff; border-top: 1px solid var(--linea); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 9px; z-index: 5; }
+.nav { position: absolute; left: 0; right: 0; bottom: 0; height: var(--navh); padding-bottom: var(--abajo); background: #fff; border-top: 1px solid var(--linea); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 9px; z-index: 5; }
 .nav button { width: 64px; display: grid; justify-items: center; gap: 4px; font: 600 10.5px/1 Inter; color: #667185; }
 .nav button.on { color: var(--navy); }
 .nav svg { width: 25px; height: 25px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -389,8 +393,8 @@ table.bs td.v { color: #b8c2cf; }
 
 /* pantalla de marcar */
 /* encabezado B: marino liso en la orilla de arriba (sigue detrás de la hora) y el brillo abajo a la derecha */
-.mcab { background: radial-gradient(110% 130% at 100% 100%, rgba(120,190,255,.55) 0%, rgba(120,190,255,0) 60%), linear-gradient(180deg, #0d2347 0%, #0d2347 40%, #1d4f8f 100%); color: #fff; padding: 0 14px 16px; border-radius: 0 0 24px 24px; flex: none; position: relative; }
-.mbar { display: flex; align-items: center; justify-content: space-between; height: 44px; }
+.mcab { background: radial-gradient(110% 130% at 100% 100%, rgba(120,190,255,.55) 0%, rgba(120,190,255,0) 60%), linear-gradient(180deg, #0d2347 0%, #0d2347 40%, #1d4f8f 100%); color: #fff; padding: 0 14px 12px; border-radius: 0 0 24px 24px; flex: none; position: relative; }
+.mbar { display: flex; align-items: center; justify-content: space-between; height: 40px; }
 .mbar button { height: 38px; min-width: 38px; padding: 0 13px; border-radius: 999px; background: rgba(6,18,40,.3); font: 700 13px/1 Inter; color: #fff; }
 .mscore { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 6px; }
 .mscore .eq { display: flex; align-items: center; gap: 10px; }
@@ -411,19 +415,19 @@ table.bs td.v { color: #b8c2cf; }
    Medidas fijas: grande 3:2 (112 de alto), chico 52; 10 entre grandes, 8 entre chicos, 24 entre grupos. */
 .mbar .qbchip { max-width: 40%; }
 /* Ataque/Defensa (Iker, 17-nov): grande y arriba; el lado en que vas en blanco. Tocar el otro acaba la serie */
-.mk-lado { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 6px 0 0; padding: 2px; border-radius: 11px; background: rgba(6,18,40,.3); }
+.mk-lado { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 8px 0 0; padding: 2px; border-radius: 11px; background: rgba(6,18,40,.3); }
 .mk-lado button { height: 34px; border-radius: 9px; color: rgba(255,255,255,.8); font: 800 14px/1 Inter; }
 .mk-lado button.on { background: #fff; color: var(--navy); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
-.mk-marc { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 4px; color: #fff; }
-.mk-marc strong { font: italic 900 78px/.95 var(--disp); letter-spacing: -.01em; text-shadow: 0 3px 14px rgba(0,0,0,.25); }
+.mk-marc { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: #fff; }
+.mk-marc strong { font: italic 900 62px/.95 var(--disp); letter-spacing: -.01em; text-shadow: 0 3px 14px rgba(0,0,0,.25); }
 .mk-marc strong i { font-style: normal; opacity: .55; margin: 0 8px; }
 .mk-marc strong span { display: inline-block; }
 .tel.anim .mk-marc .sube { animation: bump .38s cubic-bezier(.3,1.6,.5,1); }
-.mk-eq { display: grid; justify-items: center; gap: 6px; }
-.mk-eq img, .mk-eq .rlogo { width: 44px; height: 44px; }
+.mk-eq { display: grid; justify-items: center; gap: 4px; }
+.mk-eq img, .mk-eq .rlogo { width: 36px; height: 36px; }
 .mk-eq span { display: flex; align-items: center; gap: 5px; font: 800 12.5px/1 Inter; letter-spacing: .05em; text-transform: uppercase; opacity: .92; }
-.mk-cuerpo { padding-top: 18px; padding-bottom: 0; display: flex; flex-direction: column; }
-.mk-cuerpo::after { content: ''; flex: none; height: 124px; } /* el aire de abajo de .cuerpo: WebKit no cuenta el padding de una columna flex al bajar y lo último quedaba bajo la barra */
+.mk-cuerpo { padding-top: 20px; padding-bottom: 0; display: flex; flex-direction: column; }
+.mk-cuerpo::after { content: ''; flex: none; height: calc(var(--navh) + 14px); } /* el aire de abajo de .cuerpo: WebKit no cuenta el padding de una columna flex al bajar y lo último quedaba bajo la barra */
 .mk-cuerpo > * { flex-shrink: 0; }
 .mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
 .mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: 18px; background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(13,35,71,.25); }
@@ -449,7 +453,8 @@ table.bs td.v { color: #b8c2cf; }
 .ultima b { color: var(--ink); font-weight: 600; }
 .ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; min-height: 44px; padding: 0 0 0 8px; flex: none; }
 .ultima button + button { margin-left: 0; padding-left: 14px; border-left: 1px solid var(--linea); }
-.mk-vista + .pregunta.aviso { margin: 18px 0 0; height: 44px; }
+/* en Marcar el aviso flota sobre la barra y se va solo: no empuja ni tapa los botones (Iker, 17-nov) */
+.pant > .pregunta.aviso { position: absolute; left: 14px; right: 14px; bottom: calc(var(--navh) + 10px); margin: 0; height: 48px; z-index: 6; box-shadow: 0 10px 28px rgba(11,27,51,.32); }
 .pregunta .ult { min-height: 40px; padding: 0 2px 0 10px; font: 700 13.5px/1 Inter; color: var(--acento); flex: none; }
 .pregunta .vista { display: inline-flex; background: #e3e8ef; border-radius: 9px; padding: 3px; flex: none; }
 .pregunta .vista button { font: 700 11.5px/1 Inter; color: var(--mut); padding: 7px 9px; border-radius: 7px; }
@@ -515,14 +520,14 @@ table.bs td.v { color: #b8c2cf; }
 .hoja:has(> .ops.fijo) { padding-bottom: 0; }
 /* Marcar (Iker, 17-nov): las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; sin pestañas: «Lo que pasó» está a la derecha, se llega deslizando a la izquierda y los puntos dicen dónde vas */
 .mk-tiras { display: grid; gap: 6px; }
-.mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
-.mk-grande { min-height: 104px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
+.mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+.mk-grande { min-height: 98px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
 .mk-tira { gap: 12px; justify-content: flex-start; }
 /* los botones grandes (la C de Iker, 17-nov: «más fácil de usar y de entender»): enteros del color de su jugada (--c, de ICONOS_C),
    oscurecido para que el blanco se lea al sol, con el glifo grande al centro y el nombre abajo */
 .mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
 .mk-grandes > .mk-grande:last-child:nth-child(odd) { grid-column: span 2; } /* sin «Nos pararon» quedan 5 en ataque: el último a todo lo ancho */
-.mk-gi svg { display: block; width: 44px; height: 44px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
+.mk-gi svg { display: block; width: 40px; height: 40px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
 .mk-td .ic.relleno { background: #fff; } .mk-td .ic.relleno svg { stroke: var(--navy); } .mk-td .ic.relleno svg .f { fill: var(--navy); }
 .mk-td.riv .ic.relleno svg { stroke: color-mix(in srgb, var(--rc) 70%, #000); } .mk-td.riv .ic.relleno svg .f { fill: color-mix(in srgb, var(--rc) 70%, #000); }
 .mk-td .ic.simple svg { stroke: #fff; }
@@ -1180,9 +1185,8 @@ function marcar() {
     <div class="mk-lado" role="group" aria-label="Quién trae el balón">${[['O', 'Ataque'], ['D', 'Defensa']].map(([v, n]) => `<button data-a="lado" data-v="${v}" aria-pressed="${p.lado === v}"${p.lado === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div></div>
     <div class="cuerpo mk-cuerpo">
       ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Insertar después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
-      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}${MK_MAS[p.lado].length ? '<button class="mk-tira mas" data-a="mas">Más opciones</button>' : ''}</div>
-      ${filaPregunta()}</div>`}
-    </div>${nav()}</div>`;
+      ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}${MK_MAS[p.lado].length ? '<button class="mk-tira mas" data-a="mas">Más opciones</button>' : ''}</div></div>`}
+    </div>${ver === 'marcar' ? filaPregunta() : ''}${nav()}</div>`;
 }
 // ganamos, perdimos o empatamos (un 0–0 es empate, no «Perdimos»)
 const resDe = (a, b) => (a > b ? ['g', 'G', 'Victoria'] : a < b ? ['p', 'P', 'Derrota'] : ['e', 'E', 'Empate']);
@@ -1489,8 +1493,6 @@ function pintar() {
   document.documentElement.style.setProperty('--franja', rc ? oscuro(rc) : '#0d2347');
   const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.content = rc ? oscuro(rc) : '#0d2347';
   const cu1 = t.querySelector('.cuerpo'); if (cu1) cu1.scrollTop = cu0;
-  if (st.pant === 'marcar') { const cu = cu1, av = t.querySelector('.mk-vista + .pregunta.aviso'), nv = t.querySelector('.nav');
-    if (cu && av && nv && st.toast && st.toast.nuevo) { const d = av.getBoundingClientRect().bottom + 8 - nv.getBoundingClientRect().top; if (d > 0) cu.scrollTo({ top: cu.scrollTop + d, behavior: st.anim === 'si' ? 'smooth' : 'auto' }); } }
   if (st.toast) st.toast.nuevo = false;
   if (st.hoja === 'cuanto') montarCuanto();
   st.flash = null;
@@ -1909,7 +1911,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117164601';
+const VERSION = '20261117161935';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
