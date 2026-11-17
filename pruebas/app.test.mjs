@@ -507,9 +507,10 @@ test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le d
     const revisa = (v) => pg.evaluate(() => {
       const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
       c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
-      // la píldora de las pestañas va pegada abajo, como en un iPhone: entre sus íconos y la zona segura de la rayita, a lo más 8 px
+      // la píldora de las pestañas va pegada abajo, como en un iPhone: entre sus íconos y su aire de abajo, a lo más 8 px; ese aire es la zona segura
+      // menos 6 px (Iker, 17-nov: 14 px más abajo), así que con la rayita queda encima de ella y sin rayita (SE) a 14 px de la orilla
       const ab = parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom), nom = Math.max(...[...document.querySelectorAll('#tel .nav button')].map((b) => b.getBoundingClientRect().bottom));
-      return [Math.round(n.bottom) - innerHeight, ab >= 20, n.bottom - ab - nom <= 8, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
+      return [Math.round(n.bottom) - innerHeight, ab >= 14, n.bottom - ab - nom <= 8, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
     }).then((r) => assert.deepEqual(r, [0, true, true, true, true], `${v} (${ancho} × ${alto})`));
     for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); await revisa(v); }
     await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
@@ -533,8 +534,10 @@ test('la barra es la Waterline: solo íconos, En vivo con el marcador, la gota v
     if (sinGL) assert.equal(await pg.locator('#tel .agua').getAttribute('data-gl'), 'off');
     const gota = () => pg.evaluate(() => { const b = document.querySelector('#tel .agua button.on, #tel .agua .centro2.on').getBoundingClientRect(), n = document.querySelector('#tel .agua').getBoundingClientRect(); // eslint-disable-line no-undef
       return [Math.abs(Math.round(AGUA.a.x - AGUA_PAD + n.left - (b.left + b.width / 2))), AGUA.raf, AGUA.moving]; }); // eslint-disable-line no-undef
-    await toca(pg, 'ir', 'metricas'); await pg.waitForTimeout(3600);
-    assert.deepEqual(await gota(), [0, 0, false]); // llegó a Métricas y, al irse la onda, ya no dibuja (la pila)
+    await toca(pg, 'ir', 'metricas'); await pg.waitForTimeout(550);
+    assert.deepEqual((await gota()).filter((x, i) => i !== 1), [0, false]); // ya llegó a Métricas y se asentó (antes tardaba más de un segundo)
+    await pg.waitForTimeout(1000);
+    assert.deepEqual(await gota(), [0, 0, false]); // y al irse la onda ya no dibuja (la pila)
     if (sinGL) assert.ok(parseFloat(await pg.locator('#tel .agua-gota').evaluate((g) => g.style.width)) > 20);
     // con partido, el centro es el marcador con el punto de en vivo, y la gota se va ahí
     await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto'); await pg.waitForTimeout(3600);
