@@ -334,21 +334,22 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(await pg.locator('.hoja .pj').evaluateAll((xs) => xs.map((x) => x.dataset.v)), ['rodrigo', 'mau', 'nico', 'hugo']);
   assert.doesNotMatch(await pg.locator('.hoja').innerText(), /última/);
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
-  // «Lo que pasó» va aparte, sin pestañas ni texto: deslizando a la derecha se llega y a la izquierda se regresa; los puntos dicen dónde vas
+  // «Lo que pasó» va aparte, a la derecha de Marcar, sin pestañas ni texto: deslizando a la izquierda se llega y a la derecha se regresa; los puntos dicen dónde vas
   // un evento con sus toques (WebKit de escritorio no deja crear Touch)
   const desliza = (de, a) => pg.evaluate(([de, a]) => { const c = document.querySelector('.mk-cuerpo'), t = (x) => ({ identifier: 1, target: c, clientX: x, clientY: 400 });
     const ev = (tipo, touches, changedTouches) => c.dispatchEvent(Object.assign(new Event(tipo, { bubbles: true }), { touches, changedTouches }));
     ev('touchstart', [t(de)], [t(de)]); ev('touchend', [], [t(a)]); }, [de, a]);
   assert.doesNotMatch(await texto(pg), /Lo que pasó|Jugada por jugada/);
-  assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['', 'on']);
-  await desliza(300, 120); // a la izquierda no hay nada más
-  assert.equal(await pg.locator('.mk-tiras').count(), 1);
-  await desliza(80, 300);
-  assert.match(await texto(pg), /Este partido/i);
   assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['on', '']);
-  await desliza(80, 300); // otra vez a la derecha: se queda
-  assert.equal(await pg.evaluate(() => st.mkVer), 'paso'); // eslint-disable-line no-undef
+  await desliza(80, 300); // a la izquierda de Marcar no hay nada
+  assert.equal(await pg.locator('.mk-tiras').count(), 1);
   await desliza(300, 120);
+  assert.equal(await pg.locator('.mk-pag').getAttribute('style'), '--dx:28px'); // entra desde la derecha
+  assert.match(await texto(pg), /Este partido/i);
+  assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['', 'on']);
+  await desliza(300, 120); // otra vez a la izquierda: se queda
+  assert.equal(await pg.evaluate(() => st.mkVer), 'paso'); // eslint-disable-line no-undef
+  await desliza(80, 300);
   assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   // Ataque/Defensa: grande, arriba, el lado en que vas marcado; tocar el mismo lado no cambia nada; sin 1ª y 10 en ¿Quién?
@@ -456,16 +457,20 @@ test('la franja de la hora va del color del encabezado de cada pantalla, tambié
   await pg.context().close();
 });
 
-test('desde el ícono del iPhone la barra llega hasta abajo, aunque iOS 26 le dé a la página la pantalla menos la franja de la hora', async () => {
-  for (const alto of [852, 793]) {
-    const pg = await telefono(srv.url, { app: { alto } });
+// iOS 26 no pinta nada más allá de la orilla corta (WebKit 301108): una barra más abajo sale cortada (pasó con el PR 16, Iker 17-nov)
+test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le dé a la página la pantalla menos la franja de la hora', async () => {
+  // iPhone SE, 15 y 15 Pro Max: [ancho, pantalla, franja de la hora]
+  for (const [ancho, pantalla, hora] of [[375, 667, 20], [393, 852, 59], [430, 932, 59]]) for (const alto of [pantalla, pantalla - hora]) {
+    const pg = await telefono(srv.url, { app: { ancho, pantalla, alto } });
     await agrega(pg, ['Mau', 'Nico']);
-    // la barra pegada a la orilla de la pantalla, con el aire de la rayita dentro; nada se arrastra; lo último de la pantalla no queda tapado
+    // la página le pide a iOS la pantalla entera (mide la ventana más la franja); que iOS se la dé solo se ve en el iPhone
+    assert.match(await pg.evaluate(() => getComputedStyle(document.documentElement).minHeight), /^min\(/);
+    // la barra termina en la orilla de lo que se pinta, con el aire de la rayita dentro; nada se arrastra; lo último de la pantalla no queda tapado
     const revisa = (v) => pg.evaluate(() => {
       const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
       c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
-      return [Math.round(n.bottom), parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom) >= 20, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
-    }).then((r) => assert.deepEqual(r, [852, true, true, true], `${v} (${alto})`));
+      return [Math.round(n.bottom) - innerHeight, parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom) >= 20, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
+    }).then((r) => assert.deepEqual(r, [0, true, true, true], `${v} (${ancho} × ${alto})`));
     for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); await revisa(v); }
     await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
     await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
