@@ -7,7 +7,7 @@ Recorren la app del teléfono (`index.html`) en Chromium, en 390 × 844, como en
 - **dos celulares**: el segundo se une al partido en vivo, los dos marcan y el que termina cierra el partido en el otro. Usa una nube falsa en memoria: las pruebas nunca tocan la nube del equipo.
 - **corregir y eliminar un partido ya jugado**: desde su ficha se borra una jugada, se cambia otra de tipo y de jugador, se agrega un TD que faltó en su lugar, y se cambian rival y fecha; luego se elimina otro partido. Revisa marcador, puntos, récord y Partidos, y que todo sigue al recargar.
 - **la corrección y el borrado en el otro celular**: llegan por la nube falsa sin pasar por el partido en vivo, y una copia vieja del partido (como la de un celular con la app de antes) no lo revive.
-- **las pantallas**: «¿Quiénes vinieron?» no se reinicia al tocar a alguien, ninguna pantalla rebota, Marcar sin textos de ayuda y con botones grandes, sin «No sé», ✕ y ✓ arriba, «Lo que pasó» aparte (también deslizando), la franja de la hora con el color del rival, la tarjeta de Inicio sin balón y Líderes sin brincar hasta arriba.
+- **las pantallas**: «¿Quiénes vinieron?» no se reinicia al tocar a alguien, la palomita sin cuadro, ninguna pantalla rebota, Marcar en tiras de solo texto con castigos, pick 6 y safeties en «Más», sin «No sé», ✕ y ✓ arriba, «Lo que pasó» aparte (sin pestañas: deslizando a la derecha y de regreso a la izquierda), la franja de la hora con el color del rival, la tarjeta de Inicio sin balón y Líderes sin brincar hasta arriba.
 - **abre sin señal**: solo contra la app publicada, porque el service worker necesita https.
 
 ## Cómo correrlas
