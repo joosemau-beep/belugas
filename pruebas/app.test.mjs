@@ -446,6 +446,26 @@ test('la franja de la hora va del color del encabezado de cada pantalla, tambié
   await pg.context().close();
 });
 
+test('desde el ícono del iPhone la barra llega hasta abajo, aunque iOS 26 le dé a la página la pantalla menos la franja de la hora', async () => {
+  for (const alto of [852, 793]) {
+    const pg = await telefono(srv.url, { app: { alto } });
+    await agrega(pg, ['Mau', 'Nico']);
+    // la barra pegada a la orilla de la pantalla, con el aire de la rayita dentro; nada se arrastra; lo último de la pantalla no queda tapado
+    const revisa = (v) => pg.evaluate(() => {
+      const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
+      c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
+      return [Math.round(n.bottom), parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom) >= 20, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
+    }).then((r) => assert.deepEqual(r, [852, true, true, true], `${v} (${alto})`));
+    for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); await revisa(v); }
+    await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
+    await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
+    await revisa('Marcar');
+    await toca(pg, 'terminar'); await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); await revisa('ficha de partido'); // eslint-disable-line no-undef
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+
 test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga', async () => {
   const pg = await telefono(srv.url);
   await agrega(pg, ['Mau', 'Nico']);
