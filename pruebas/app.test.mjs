@@ -254,8 +254,15 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   await toca(pg, 'vantoggle', 'hugo');
   assert.deepEqual(await pg.locator('.hoja').evaluate((h) => [h.scrollTop, h.classList.contains('quieta')]), [200, true]);
   assert.equal(await pg.locator('.van-f.si .ck svg').count(), 1);
-  // y sin borde: con borde transparente el degradado se repetía debajo y dejaba un cuadro dentro del círculo
-  assert.deepEqual(await pg.locator('.van-f.si .ck').evaluate((e) => { const c = getComputedStyle(e); return [c.borderTopWidth, c.borderRadius]; }), ['0px', '50%']);
+  // la palomita es un solo SVG (círculo y marca, colores planos): ni la caja ni nada adentro pinta fondo, degradado, borde, contorno
+  // ni sombra, no hay checkbox debajo y no hay otra figura que pueda verse como un cuadro (así se veía antes, con el degradado)
+  const ck = await pg.locator('.van-f .ck').evaluateAll((xs) => xs.map((e) => [e, ...e.querySelectorAll('*')].map((x) => { const c = getComputedStyle(x);
+    return [x.tagName.toLowerCase(), c.backgroundImage, c.backgroundColor, c.borderTopWidth + c.borderRightWidth + c.borderBottomWidth + c.borderLeftWidth, c.outlineStyle, c.boxShadow].join(' '); })));
+  assert.ok(ck.length >= 13);
+  for (const partes of ck) {
+    assert.ok(['span svg circle', 'span svg circle path'].includes(partes.map((x) => x.split(' ')[0]).join(' ')), partes.join(' | '));
+    for (const x of partes.slice(0, 2)) assert.equal(x.split(' ').slice(1).join(' '), 'none rgba(0, 0, 0, 0) 0px0px0px0px none none', x);
+  }
   // sin la barrita de arrastre: la hoja se cierra con su ✕, arriba a la derecha junto al título, de 44 px
   assert.equal(await pg.locator('.hoja').evaluate((h) => getComputedStyle(h, '::before').content), 'none');
   assert.deepEqual(await pg.locator('.hoja .hbar').evaluate((b) => [b.firstElementChild.tagName, b.querySelector('.hb.no').getBoundingClientRect().height, b.querySelector('.hb.no').getBoundingClientRect().right > innerWidth - 40]), ['H3', 44, true]);
@@ -264,10 +271,14 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   for (const id of ['mau', 'nico', 'rodrigo']) await toca(pg, 'vantoggle', id);
   await toca(pg, 'vanlisto');
   // Marcar: las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; todo cabe sin bajar
-  assert.equal(await pg.locator('.mk-tiras svg, .mk-tiras img').count(), 0);
+  // cada botón de jugada lleva su ícono arriba, en el juego con color (A) o el minimalista (B), que se escoge en Ajustes y se recuerda
+  assert.equal(await pg.locator('.mk-grande > .ic.relleno + span').count(), 6);
+  await pg.evaluate(() => { A.ico(); pintar(); }); // eslint-disable-line no-undef
+  assert.deepEqual([await pg.locator('.mk-grande > .ic.simple').count(), await pg.evaluate(() => localStorage.getItem('belugas.ico'))], [6, 'simple']);
+  await pg.evaluate(() => { A.ico(); pintar(); }); // eslint-disable-line no-undef
   assert.deepEqual(await pg.locator('.mk-grande').allInnerTexts(), ['Pase completo', 'Corrida', 'Incompleto', 'Nos pararon', 'Intercepción', 'Castigo a favor']);
   assert.deepEqual(await pg.locator('.mk-tiras > button').allInnerTexts(), ['Touchdown', 'Más opciones']);
-  assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 88);
+  assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 100);
   assert.ok(Math.min(...await pg.locator('.mk-tiras > button').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 56);
   assert.ok(await pg.evaluate(() => document.querySelector('.mk-vista + .pregunta').getBoundingClientRect().bottom <= document.querySelector('.nav').getBoundingClientRect().top));
   // el aviso de la jugada se va solo: en Marcar no se queda la tira «Última · Corregir · Deshacer»; todas las jugadas caben sin bajar
@@ -288,7 +299,9 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
   assert.equal(await pg.evaluate(() => st.partido.jugadas.length), 0); // eslint-disable-line no-undef
   await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico');
-  // yardas como la V2: sin regla a la vista, saltos de −5, +5, +10 y +20, y el + y el − afinan
+  // yardas como la V2: sin regla a la vista, saltos de −5, +5, +10 y +20, y el + y el − afinan; ✕ a la izquierda, el título al centro y ✓ a la derecha, sin texto abajo
+  assert.deepEqual(await pg.locator('.hoja.cuanto .hbar > *').evaluateAll((xs) => xs.map((x) => x.className || x.tagName)), ['hb no', 'H3', 'hb si']);
+  assert.equal(await pg.locator('.hoja.cuanto .hbar small, .hoja.cuanto p').count(), 0);
   assert.deepEqual(await pg.locator('.rg-saltos button').allInnerTexts(), ['-5', '+5', '+10', '+20']);
   assert.equal(await pg.locator('#rgth').isVisible(), false);
   await pg.locator('[data-salto="10"]').click(); await pg.locator('[data-salto="-5"]').click();
@@ -321,10 +334,14 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.equal(await pg.evaluate(() => st.mkVer), 'marcar'); // eslint-disable-line no-undef
   assert.equal(await pg.locator('.mk-tiras').count(), 1);
   // Ataque/Defensa: grande, arriba, el lado en que vas marcado; tocar el mismo lado no cambia nada; sin 1ª y 10 en ¿Quién?
-  assert.deepEqual(await pg.locator('.mk-lado button').evaluateAll((xs) => xs.map((x) => [x.innerText, x.classList.contains('on'), Math.round(x.getBoundingClientRect().height)])), [['Ataque', true, 48], ['Defensa', false, 48]]);
+  assert.deepEqual(await pg.locator('.mk-lado button').evaluateAll((xs) => xs.map((x) => [x.innerText, x.classList.contains('on'), Math.round(x.getBoundingClientRect().height)])), [['Ataque', true, 38], ['Defensa', false, 38]]);
   const cambios = await pg.evaluate(() => st.partido.cambios.length); // eslint-disable-line no-undef
   await toca(pg, 'lado', 'O');
   assert.equal(await pg.evaluate(() => st.partido.cambios.length), cambios); // eslint-disable-line no-undef
+  // sin textos de ayuda: el incompleto solo trae sus opciones (y su ✕)
+  await toca(pg, 'res', 'incompleto');
+  assert.deepEqual([await pg.locator('.hoja p, .hoja h3').count(), await pg.locator('.hoja .hb.no').count(), await pg.locator('.hoja .op').allInnerTexts()], [0, 1, ['Se le cayó, no la atrapó', 'Mal pase o no se podía agarrar']]);
+  await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
   await toca(pg, 'res', 'pase'); assert.equal(await pg.locator('.hoja .pdt').count(), 0); assert.doesNotMatch(await pg.locator('.hoja').innerText(), /1ª y 10/);
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
   // defendiendo, la franja de la hora toma el color del rival (Kaffies, oscurecido como el encabezado); atacando, el nuestro
@@ -349,11 +366,62 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.ok(y > 0);
   await toca(pg, 'cat', 'yds');
   assert.equal(await cu.evaluate((c) => c.scrollTop), y);
+  // y al entrar a un jugador desde Líderes y regresar, Inicio sigue donde iba y con la misma categoría; igual Partidos y Jugadores
+  const entra = (a) => pg.evaluate((a) => [...document.querySelectorAll(`#tel .cuerpo [data-a="${a}"]`)].pop().click(), a); // sin mover la página antes de tocar
+  await entra('jug'); await pg.waitForTimeout(200);
+  await toca(pg, 'volver');
+  assert.deepEqual([await cu.evaluate((c) => c.scrollTop), await pg.evaluate(() => st.cat)], [y, 'yds']); // eslint-disable-line no-undef
+  for (const [v, a] of [['jugadores', 'jug'], ['partidos', 'juego']]) {
+    await toca(pg, 'ir', v); await pg.evaluate(() => { const c = document.querySelector('#tel .cuerpo'); c.scrollTop = c.scrollHeight; });
+    const y2 = await cu.evaluate((c) => c.scrollTop); // con los datos de la prueba pueden caber sin bajar; el mecanismo es el mismo que en Inicio
+    await entra(a); await pg.waitForTimeout(200);
+    await toca(pg, 'volver'); assert.equal(await cu.evaluate((c) => c.scrollTop), y2, v);
+  }
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
 
 // el service worker solo corre en https: con URL=https://joosemau-beep.github.io/belugas/
+test('la franja de la hora va del color del encabezado de cada pantalla, también en las fichas', async () => {
+  const pg = await telefono(srv.url);
+  await agrega(pg, ['Mau', 'Nico']);
+  // el color justo debajo de la franja de la hora (a la orilla, donde no hay botones) y el theme-color de esa pantalla
+  const arriba = () => pg.evaluate(() => { const y = document.querySelector('#tel .estado').getBoundingClientRect().bottom + 6; let e = document.elementFromPoint(6, y);
+    while (e && getComputedStyle(e).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(e).backgroundImage === 'none') e = e.parentElement;
+    const c = getComputedStyle(e); return [document.querySelector('meta[name="theme-color"]').content, c.backgroundImage !== 'none' ? 'degradado' : c.backgroundColor]; });
+  const MARINO = ['#0d2347', 'rgb(13, 35, 71)'];
+  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); assert.deepEqual(await arriba(), MARINO, v); }
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); assert.deepEqual(await arriba(), MARINO, 'ficha de jugador');
+  await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); assert.deepEqual(await arriba(), MARINO, 'ficha de partido'); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
+  assert.deepEqual(await arriba(), ['#0d2347', 'degradado'], 'Marcar en ataque');
+  await toca(pg, 'lado', 'D'); assert.deepEqual(await arriba(), ['#5e4824', 'degradado'], 'Marcar en defensa');
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+
+test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga', async () => {
+  const pg = await telefono(srv.url);
+  await agrega(pg, ['Mau', 'Nico']);
+  await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vantoggle', 'nico'); await toca(pg, 'vanlisto');
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd');
+  await toca(pg, 'lado', 'D'); await toca(pg, 'res', 'bandera'); await toca(pg, 'quien', 'mau'); await toca(pg, 'sinyd');
+  await pg.evaluate(() => { const p = st.partido; p.jugadas.forEach((j) => { j.pd = true; }); rehacer(p); pintar(); }); // eslint-disable-line no-undef
+  const sinPd = async (donde) => assert.doesNotMatch(await pg.evaluate(() => document.querySelector('#tel').textContent), /1ª|primeros? y diez/i, donde);
+  await sinPd('Marcar');
+  await pg.evaluate(() => { A.mkver('paso'); pintar(); }); await sinPd('Lo que pasó'); // eslint-disable-line no-undef
+  await pg.evaluate(() => { A.fila(0); pintar(); }); await sinPd('Corregir'); await pg.locator('.hoja .hb.no').click(); await pg.waitForTimeout(150); // eslint-disable-line no-undef
+  await toca(pg, 'terminar'); await sinPd('el final');
+  for (const v of ['inicio', 'partidos', 'jugadores']) { await toca(pg, 'ir', v); await sinPd(v); }
+  await toca(pg, 'jug', 'nico'); await sinPd('ficha de jugador');
+  await pg.evaluate(() => { A.juego(JUEGOS[JUEGOS.length - 1].id); pintar(); }); await sinPd('ficha de partido'); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'metricas'); await sinPd('Métricas · ataque'); await toca(pg, 'met', 'defensa'); await sinPd('Métricas · defensa');
+  // los datos viejos se quedan: la jugada sigue con su 1ª y 10 guardada (y su punto), solo no se muestra
+  assert.equal(await pg.evaluate(() => JUEGOS[JUEGOS.length - 1].st.nico.pd), 1); // eslint-disable-line no-undef
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+
 test('abre sin señal', { skip: !srv.url.startsWith('https:') && 'solo con URL=https://…' }, async () => {
   const pg = await telefono(srv.url);
   await pg.evaluate(() => navigator.serviceWorker.ready); await pg.waitForTimeout(2000);
