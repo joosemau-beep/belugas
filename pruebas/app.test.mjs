@@ -212,7 +212,8 @@ test('corregir un partido que ya se jugó (borrar, cambiar, agregar en su lugar,
   assert.equal(await pg.evaluate(() => JUEGOS.some((g) => g.rival === 'panini')), false); // eslint-disable-line no-undef
   assert.equal(await pg.evaluate(() => TEMP.rodrigo.pts), 10.5); // eslint-disable-line no-undef
   await toca(pg, 'ir', 'jugadores');
-  assert.match(await texto(pg), /Rodrigo 1 TD · 1 corrida 10\.5 pts/);
+  // + lo de antes de la app (ANTES: 1 TD corriendo de Rodrigo): suma al TD y a la corrida, no a los puntos
+  assert.match(await texto(pg), /Rodrigo 2 TD · 2 corridas 10\.5 pts/);
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
