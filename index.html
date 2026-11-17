@@ -919,6 +919,12 @@ function armarPlantel() {
 const PASADOS = [['p1', 'kaffies', '5 oct', 13, 20], ['p2', 'only-fins', '12 oct', 14, 8], ['p3', 'ultimos-aztecas', '19 oct', 21, 20], ['p4', 'kaffies', '26 oct', 14, 13], ['p5', 'lobos-its', '2 nov', 33, 12], ['p6', 'bucaneros', '9 nov', 16, 14]]
   .map(([id, rival, fecha, nos, ellos]) => ({ id, rival, fecha, nos, ellos, solo: true, jugadas: 0, funcion: 0, perdidas: 0, convs: [0, 0], tds: [], conv: [], st: {} }));
 let JUEGOS = PASADOS.slice();
+// lo que hizo cada quien en esos 6 partidos (lo pasó Mau el 17-nov), sumado por jugador: entra en sus stats (ficha, Líderes, Jugadores)
+// pero NO da puntos de fantasy, no se liga a ningún partido y no cuenta partidos jugados. Pick 6 = intercepción + TD
+const ANTES = {
+  mau: {td: 2, rec: 3, ryd: 50, conv: 2}, mario: {td: 1, conv: 2}, juancho: {td: 1, rec: 1, tap: 1}, rodrigo: {td: 1, car: 1, intl: 1}, leo: {td: 1},
+  jaime: {intn: 2, td: 2}, nicolas: {td: 1, rec: 1}, uri: {rec: 1, ryd: 25, conv: 2}, patrick: {rec: 2},
+};
 // tabla de la liga: se copia a mano de la foto que manda Mau cada semana (en orden, como viene; empate en G: arriba quien lleva más JJ)
 const TABLA_AL = '11 nov';
 const TABLA = [['belugas', 6, 5, 1], ['kickass', 6, 5, 1], ['ultimos-aztecas', 6, 3, 3], ['kaffies', 6, 2, 4], ['only-fins', 6, 2, 4], ['bucaneros', 6, 2, 4],
@@ -939,7 +945,7 @@ const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
 const tablaPuntos = () => `<details class="card reglas"><summary>Sistema de puntos</summary>
   ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.filter(([k]) => k !== 'pd').map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
   <p>El pase completo no da puntos: el QB gana por las yardas que lanza. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni la bandera fallada. No hay puntos de defensa por equipo, porque casi todos juegan en ataque y en defensa.</p></details>`;
-const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
+const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); Object.entries(ANTES[p.id] || {}).forEach(([k, v]) => { t[k] += v; }); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
 const TEMP = {};
 const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][k]]));
 const CATS = [['puntos', 'Puntos', 'pts', {}], ['td', 'TD', 'TD', {}], ['yds', 'Yardas', 'yd', {}], ['rec', 'Recepciones', 'rec', {}], ['band', 'Banderas', 'band.', {}]];
@@ -1961,7 +1967,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117014053';
+const VERSION = '20261117125335';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
