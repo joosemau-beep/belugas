@@ -814,7 +814,7 @@ const ic = (k, chico = false) => { const g = ICONOS_S[k] || ICONOS_S.parada, ton
 const tempVacia = () => ({ v: 1, plantel: [], linea: { O: [], D: [], qb: null, ver: 0 }, juegos: {}, sembrado: 0 });
 let T = tempVacia(), PLANTEL = [];
 // retratos aprobados para publicarse (archivos/jugadores); los demás van con sus iniciales
-const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau' };
+const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau', iker: 'iker', mario: 'mario' };
 const P = (id) => PLANTEL.find((x) => x.id === id);
 function armarPlantel() {
   const l = T.linea || {};
