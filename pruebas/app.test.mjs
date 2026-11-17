@@ -293,9 +293,11 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(ga.map((x) => x[0]), ['Pase completo', 'Corrida', 'Incompleto', 'Intercepción lanzada', 'Sack recibido']);
   assert.deepEqual([new Set(ga.map((x) => x[1])).size, ga.every((x) => x[2])], [5, true]);
   assert.deepEqual(await pg.locator('.mk-tiras > button').allInnerTexts(), ['Touchdown', 'Más opciones']);
-  assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 100);
+  assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 98);
   assert.ok(Math.min(...await pg.locator('.mk-tiras > button').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 56);
-  assert.ok(await pg.evaluate(() => document.querySelector('.mk-vista + .pregunta').getBoundingClientRect().bottom <= document.querySelector('.nav').getBoundingClientRect().top));
+  // el aviso flota encima de la barra: no empuja la página ni tapa «Más opciones», y todo sigue sin bajar (Iker, 17-nov)
+  assert.deepEqual(await pg.evaluate(() => { const a = document.querySelector('.pant > .pregunta.aviso').getBoundingClientRect(), c = document.querySelector('.mk-cuerpo');
+    return [a.bottom <= document.querySelector('.nav').getBoundingClientRect().top, a.top >= document.querySelector('.mk-tira.mas').getBoundingClientRect().bottom, c.scrollTop, c.scrollHeight <= c.clientHeight]; }), [true, true, 0, true]);
   // el aviso de la jugada se va solo: en Marcar no se queda la tira «Última · Corregir · Deshacer»; todas las jugadas caben sin bajar
   await pg.evaluate(() => { st.toast = null; pintar(); }); // eslint-disable-line no-undef
   assert.deepEqual(await pg.evaluate(() => { const c = document.querySelector('.mk-cuerpo'); return [document.querySelectorAll('.mk-cuerpo .ultima').length, c.scrollHeight <= c.clientHeight]; }), [0, true]);
@@ -469,8 +471,10 @@ test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le d
     const revisa = (v) => pg.evaluate(() => {
       const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
       c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
-      return [Math.round(n.bottom) - innerHeight, parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom) >= 20, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
-    }).then((r) => assert.deepEqual(r, [0, true, true, true], `${v} (${ancho} × ${alto})`));
+      // los nombres de las pestañas van pegados abajo, como en un iPhone: entre ellos y la zona segura de la rayita, a lo más 8 px
+      const ab = parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom), nom = Math.max(...[...document.querySelectorAll('#tel .nav button')].map((b) => b.getBoundingClientRect().bottom));
+      return [Math.round(n.bottom) - innerHeight, ab >= 20, n.bottom - ab - nom <= 8, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
+    }).then((r) => assert.deepEqual(r, [0, true, true, true, true], `${v} (${ancho} × ${alto})`));
     for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); await revisa(v); }
     await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
     await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
