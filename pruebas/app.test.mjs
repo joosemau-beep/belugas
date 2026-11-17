@@ -435,6 +435,87 @@ test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga
   await pg.context().close();
 });
 
+// cómo funciona la app (belugas-tutorial): el recorrido toca los botones de verdad en un partido de práctica aparte
+const recorre = async (pg) => {
+  const hacer = {
+    '[data-a=res][data-v=pase]': () => toca(pg, 'res', 'pase'),
+    '.hoja [data-a=quien]': () => pg.locator('#tel .hoja [data-a=quien]').first().click(),
+    '.hoja.cuanto': async () => { await pg.locator('[data-salto="10"]').click(); await toca(pg, 'rgok'); },
+    '.mk-puntos': () => toca(pg, 'mkver', 'paso'),
+    '.mk-pag [data-a=deshacer]': () => pg.locator('#tel .mk-pag [data-a=deshacer]').first().click(),
+    '.mk-lado': () => toca(pg, 'lado', 'D'),
+  };
+  const vistos = [];
+  for (let k = 0; k < 30; k++) {
+    await pg.waitForTimeout(350);
+    const p = await pg.evaluate(() => onb.paso && { sel: onb.paso.sel || '', tit: onb.paso.tit, hecho: !!onb.paso.hecho, pant: st.pant, practica: !!(st.partido && st.partido.practica) }); // eslint-disable-line no-undef
+    if (!p) break;
+    assert.ok(p.practica, `${p.tit}: en un partido de práctica`);
+    vistos.push(p.tit);
+    if (p.hecho) await hacer[p.sel](); else await pg.locator('.onb [data-o=sig]').click(); // los de tocar se tocan a través del hueco
+  }
+  return vistos;
+};
+const foto = (pg) => pg.evaluate(() => JSON.stringify({ st: Object.keys(st).sort(), mk: st.mkVer, yds: st.yds, cel: localStorage.getItem('belugas.cel'), pant: st.pant, partido: st.partido && aEnviar(st.partido).jugadas, marc: st.partido && [st.partido.nos, st.partido.ellos, st.partido.lado, st.partido.qb], van: st.van, temp: TEMP, juegos: JUEGOS.length, hoy: HOY })); // eslint-disable-line no-undef
+
+test('cómo funciona la app: desde «¿Quién es el QB?» a media partida, sin tocar el partido en vivo', async () => {
+  const clave = 'prueba-0123456789abcdefghij', nube = nubeFalsa(clave, ['Mau', 'Nico', 'Rodrigo']);
+  const pg = await telefono(srv.url, { nube, clave });
+  await pg.waitForFunction(() => PLANTEL.length === 3); // eslint-disable-line no-undef
+  await toca(pg, 'empezar'); await toca(pg, 'rival', 'panini');
+  for (const id of ['mau', 'nico', 'rodrigo']) await toca(pg, 'vantoggle', id);
+  await toca(pg, 'vanlisto');
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd');
+  await toca(pg, 'res', 'td'); await toca(pg, 'como', 'corrida'); await toca(pg, 'quien', 'rodrigo'); await toca(pg, 'sinyd'); await toca(pg, 'conv', '0');
+  await pg.waitForFunction(() => !st.toast); // eslint-disable-line no-undef
+  await pg.waitForTimeout(1500);
+  const nube0 = JSON.stringify(nube.db), antes = await foto(pg);
+  assert.equal(nube.db[clave + '-vivo'].datos.partido.jugadas.length, 2);
+  // el botón está arriba a la derecha de «¿Quién es el QB?»
+  await toca(pg, 'qbver');
+  const hb = await pg.locator('#tel .hoja .hbar [data-a=tour]').boundingBox(), x = await pg.locator('#tel .hoja .hbar .hb.no').boundingBox();
+  assert.ok(hb.x > 300 && x.x < 60 && Math.abs(hb.y - x.y) < 2 && hb.width >= 44, 'arriba a la derecha, frente a la ✕');
+  await toca(pg, 'tour');
+  const vistos = await recorre(pg);
+  assert.deepEqual(vistos.slice(0, 3), ['Así funciona Belugas', 'Inicio', 'Marcar']);
+  assert.equal(vistos.at(-1), 'Listo, ya lo puedes usar');
+  for (const t of ['Toca «Pase completo»', '¿Quién la atrapó?', '¿Cuántas yardas?', 'Lo que pasó', 'Corregir o deshacer', 'Ataque o defensa', 'Terminar', 'Partidos', 'Jugadores', 'Métricas']) assert.ok(vistos.includes(t), t);
+  // regresa a donde estaba, con todo igual: el partido, el teléfono y la nube
+  assert.deepEqual(await pg.evaluate(() => [onb.T, st.practicando, st.hoja, !!document.querySelector('.onb.on')]), [null, false, null, false]); // eslint-disable-line no-undef
+  await pg.waitForTimeout(1500);
+  assert.equal(await foto(pg), antes);
+  assert.equal(JSON.stringify(nube.db), nube0);
+  assert.equal(await marcador(pg), '6–0');
+  // y se sigue marcando como siempre
+  await toca(pg, 'res', 'bandera'); await toca(pg, 'quien', 'mau'); await toca(pg, 'sinyd'); // después del TD vamos en defensa
+  await pg.waitForFunction(() => !st.toast); // eslint-disable-line no-undef
+  await pg.waitForTimeout(1000);
+  assert.equal(nube.db[clave + '-vivo'].datos.partido.jugadas.length, 3);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+
+test('cómo funciona la app: sale sola la primera vez (sin jugadores practica con tres de mentira), se salta y se abre desde Ajustes', async () => {
+  const pg = await telefono(srv.url, { nuevo: true });
+  const antes = await foto(pg);
+  await pg.waitForFunction(() => onb.T); // eslint-disable-line no-undef
+  const vistos = await recorre(pg);
+  assert.equal(vistos.length, 15);
+  assert.equal(await foto(pg), antes);
+  assert.deepEqual(await pg.evaluate(() => [st.pant, st.partido, PLANTEL.length, localStorage.getItem('belugas.visto.ver')]), ['inicio', null, 0, '1']); // eslint-disable-line no-undef
+  // ya no sale solo; desde Ajustes sí, y «Saltar» regresa todo
+  await pg.reload(); await pg.waitForSelector('#tel .nav'); await pg.waitForTimeout(1600);
+  assert.equal(await pg.evaluate(() => onb.T), null); // eslint-disable-line no-undef
+  await toca(pg, 'ayuda');
+  await toca(pg, 'tour'); await pg.locator('.onb [data-o=sig]').click(); await pg.locator('.onb [data-o=sig]').click();
+  await pg.locator('.onb [data-o=sig]').click();
+  assert.equal(await pg.evaluate(() => [st.pant, st.partido.practica]).then(JSON.stringify), '["marcar",true]'); // eslint-disable-line no-undef
+  await pg.locator('.onb [data-o=fin]').click();
+  assert.deepEqual(await pg.evaluate(() => [onb.T, st.pant, st.partido, st.hoja]), [null, 'inicio', null, null]); // eslint-disable-line no-undef
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+
 test('abre sin señal', { skip: !srv.url.startsWith('https:') && 'solo con URL=https://…' }, async () => {
   const pg = await telefono(srv.url);
   await pg.evaluate(() => navigator.serviceWorker.ready); await pg.waitForTimeout(2000);

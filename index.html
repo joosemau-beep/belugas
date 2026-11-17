@@ -534,6 +534,7 @@ table.bs td.v { color: #b8c2cf; }
 .hbar h3 { margin: 0; font-size: 19px; text-align: center; }
 .hb { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: #c0392b; }
 .hb.si { background: var(--boton); color: #fff; }
+.hb.ayuda { color: var(--navy); }
 .hb svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
 .hoja .pjs .pj { min-height: 118px; font-size: 15px; } .hoja .pjs .pj .foto { width: 58px; height: 58px; }
 .hoja .pjs.chicos .pj { min-height: 104px; }
@@ -724,7 +725,7 @@ table.bs td.v { color: #b8c2cf; }
 @keyframes vsEntra { from { transform: scale(.6); opacity: 0; } }
 /* R6-FIN */
 
-/* ONB-INICIO: la primera vez (hoja de bienvenida y jugada de práctica) y el engrane de Ajustes, de belugas-onboarding */
+/* ONB-INICIO: cómo funciona la app (recorrido con partido de práctica) y el engrane de Ajustes, de belugas-onboarding y belugas-tutorial */
 .onb { position: fixed; z-index: 60; pointer-events: none; overflow: hidden; display: none; }
 .onb.on { display: block; pointer-events: auto; }
 .onb.practica { pointer-events: none; }
@@ -744,17 +745,6 @@ table.bs td.v { color: #b8c2cf; }
 .onb-acc { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
 .onb-acc .saltar { color: var(--mut); font: 700 14px/1 Inter; min-height: 44px; padding: 0 6px; margin-right: auto; }
 .onb-acc .sig { min-height: 44px; padding: 0 20px; border-radius: 22px; background: var(--navy); color: #fff; font: 700 15px/1 Inter; margin-left: auto; }
-.onb-hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 26px 26px 0 0; padding: 22px 20px calc(18px + var(--abajo)); pointer-events: auto; animation: sube .26s cubic-bezier(.3,1.1,.5,1); }
-.onb-hoja .marca { display: flex; align-items: center; gap: 12px; }
-.onb-hoja .marca img { width: 46px; height: 46px; object-fit: contain; }
-.onb-hoja .marca b { font: 800 22px/1.15 Inter; }
-.onb-hoja .fila { display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--linea); }
-.onb-hoja .marca + .fila { margin-top: 14px; }
-.onb-hoja .fila span { width: 40px; height: 40px; border-radius: 12px; background: #eef3fa; display: grid; place-items: center; color: var(--navy); }
-.onb-hoja .fila svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-.onb-hoja .fila b { display: block; font: 700 15px/1.2 Inter; }
-.onb-hoja .fila small { display: block; font: 500 13.5px/1.35 Inter; color: var(--mut); margin-top: 2px; }
-.onb-hoja .sig { width: 100%; height: 54px; border-radius: 16px; background: var(--navy); color: #fff; font: 800 17px/1 Inter; margin-top: 14px; }
 @keyframes onbIn { from { opacity: 0; } }
 @keyframes onbCard { from { opacity: 0; transform: translateY(6px) scale(.98); } }
 @keyframes onbPulso { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); } }
@@ -1342,7 +1332,8 @@ const X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M1
 const CK_SI = '<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="14" fill="#1d4f8f"/><path d="M8.6 14.6l3.7 3.7 7.1-7.9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   CK_NO = '<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="13" fill="none" stroke="#d3d9e2" stroke-width="2"/></svg>';
 // el encabezado de cada paso (Iker, 17-nov): ✕ a la izquierda, el título al centro y ✓ a la derecha (si hay algo que confirmar)
-const barra = (tit, no, si, siTxt) => `<div class="hbar"><button class="hb no" data-a="${no}" aria-label="Cerrar">${X_SVG}</button>${tit}${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : '<span></span>'}</div>`;
+const barra = (tit, no, si, siTxt, der = '<span></span>') => `<div class="hbar"><button class="hb no" data-a="${no}" aria-label="Cerrar">${X_SVG}</button>${tit}${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : der}</div>`;
+const AYUDA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9.2a3 3 0 0 1 5.9.8c0 2-3 2.5-3 4.6"/><path d="M12 18.5h.01"/></svg>';
 // quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
 const botonPj = (id, accion, actual, ult) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${ult ? '<em class="ult">última</em>' : ''}${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
 // ¿Quién?: primero los que han jugado de este lado, el de la última jugada con la marca «última» (marcar-simple, punto 4)
@@ -1381,7 +1372,8 @@ function hoja() {
   if (st.hoja === 'inc') h = '<div class="ops"><button class="op prim" data-a="inc" data-v="cayo">Pase soltado (era atrapable)</button><button class="op" data-a="inc" data-v="mal">Mal pase o no atrapable</button></div>';
   if (st.hoja === 'como') h = '<h3>¿Cómo fue el TD?</h3><div class="ops dos"><button class="op prim" data-a="como" data-v="pase">Pase</button><button class="op prim" data-a="como" data-v="corrida">Corrida</button></div>';
   if (st.hoja === 'qb') { const deJugada = st.qbDe !== 'partido', cur = st.qbDe === 'corrige' ? (st.partido.jugadas[st.edita] || {}).qb : deJugada ? lanzo() : st.partido.qb;
-    h = `<h3>${deJugada ? '¿Quién lanzó?' : '¿Quién es el QB?'}</h3><div class="pjs">${st.van.map((id) => { const p = P(id); return `<button class="pj${id === cur ? ' actual' : ''}" data-a="qb" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}</div>
+    // el del partido: arriba a la derecha, cómo funciona la app (para quien agarra un celular que ya tiene todo)
+    h = `${deJugada ? '<h3>¿Quién lanzó?</h3>' : barra('<h3>¿Quién es el QB?</h3>', 'cerrar', '', '', `<button class="hb ayuda" data-a="tour" aria-label="Cómo funciona la app">${AYUDA_SVG}</button>`)}<div class="pjs">${st.van.map((id) => { const p = P(id); return `<button class="pj${id === cur ? ' actual' : ''}" data-a="qb" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}</div>
       ${(st.qbDe === 'jugada' && st.sel === 'td') || (st.qbDe === 'corrige' && (st.partido.jugadas[st.edita] || {}).k === 'td') ? '<div class="ops" style="margin-top:12px"><button class="op sec" data-a="qb" data-v="corre">Ninguno: fue corrida</button></div>' : ''}`; }
   if (st.hoja === 'cuanto') return hojaCuanto();
   if (st.hoja === 'corrige') {
@@ -1415,8 +1407,7 @@ function hoja() {
       <div class="ops" style="margin-top:4px"><button class="op sec" data-a="conv" data-v="0">No se intentó</button></div>`;
   }
   if (st.hoja === 'ayuda') h = `<h3>Ajustes</h3>
-    <button class="aj-fila" data-a="onbver"><span><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/></svg></span>Ver la bienvenida otra vez<em>›</em></button>
-    <button class="aj-fila" data-a="onbmarcar"><span><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>Ver cómo se marca<em>›</em></button>
+    <button class="aj-fila" data-a="tour"><span>${AYUDA_SVG}</span>Cómo funciona la app<em>›</em></button>
     <button class="aj-fila" data-a="antes"><span><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg></span>Libro de jugadas y pulsera<em>›</em></button>
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   // la barrita de arrastre no servía en la página: toda hoja lleva su ✕ arriba a la derecha (Iker, 17-nov)
@@ -1783,7 +1774,7 @@ function juntaVivo(rd) {
 }
 const filas = { vivo: { suf: '-vivo', junta: juntaVivo }, temp: { suf: '-cel', junta: juntaTemp } };
 async function sinc(f) {
-  if (!clave || nube.mala) return;
+  if (!clave || nube.mala || st.practicando) return; // el recorrido de práctica no sube ni baja nada
   if (f.ocupada) { f.otra = true; return; } // ya va una vuelta: al acabar se da otra
   f.ocupada = true;
   try {
@@ -1867,7 +1858,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117005216';
+const VERSION = '20261117011516';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2190,56 +2181,67 @@ document.addEventListener('click', (e) => {
 document.addEventListener('input', (e) => { if (e.target.id === 'escribe' && st.escribe) st.escribe.txt = e.target.value; });
 document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.id === 'escribe') { e.preventDefault(); A.escribeya(); pintar(); } });
 
-// ---------- la primera vez (belugas-onboarding, dirección 3): hoja de bienvenida al abrir y una jugada de práctica al marcar ----------
-// Sale una vez por celular (localStorage) y se vuelve a ver desde el engrane de Inicio. La jugada de práctica no cuenta:
-// se borra al acabar, aunque se salte a medias, y no se sube al relevo.
+// ---------- cómo funciona la app: un recorrido corto con un partido de práctica (belugas-tutorial) ----------
+// Sale solo la primera vez en cada celular y se vuelve a abrir desde Ajustes o desde «¿Quién es el QB?» (un celular que ya tiene
+// todo). Los botones se tocan de verdad, pero en un partido de práctica aparte: mientras dura no se guarda nada en el teléfono ni
+// en la nube, y al acabar (o al saltarlo) todo regresa como estaba, también un partido en vivo.
 let onbTras = () => {};
 (() => {
-  const BIENVENIDA = { tit: 'Así funciona Belugas', boton: 'Entendido', filas: [['inicio', 'Inicio', 'El partido de hoy y su marcador en vivo.'], ['partidos', 'Partidos', 'Cada resultado y quién anotó.'], ['jug', 'Jugadores', 'La tarjeta de cada quien y sus puntos.'], ['mas', 'Marcar', 'Desde la banca: toca la jugada y quién la hizo. Se guarda sola.']] };
-  const PRACTICA = [
-    { tit: 'Una jugada de práctica', txt: 'Toma 20 segundos y no cuenta en el partido.', boton: 'Practicar' },
-    { sel: '[data-a=res][data-v=pase]', tit: 'Toca «Pase completo»', txt: 'Así empieza cada jugada: qué pasó.', practica: 'quien' },
-    { sel: '.hoja [data-a=quien]', tit: '¿Quién la atrapó?', txt: 'Toca al jugador. La jugada queda guardada.', practica: 'guardada' },
-    { sel: '.pregunta.aviso [data-a=deshacer]', tit: 'Bórrala con «Deshacer»', txt: 'Así se arregla cualquier error.', practica: 'borrada' },
-    { tit: '¡Ya sabes marcar!', txt: 'Siempre igual: la jugada y quién la hizo. Lo demás se calcula solo.', boton: 'Empezar el partido' },
+  const vivas = () => st.partido.jugadas.length;
+  const PASOS = [
+    { pant: 'inicio', tit: 'Así funciona Belugas', txt: 'Un recorrido de un minuto. Vas a probar los botones en un partido de práctica: nada de lo que toques cuenta ni se guarda.', boton: 'Empezar' },
+    { pant: 'inicio', sel: '.nav [data-v=inicio]', tit: 'Inicio', txt: 'El partido de hoy con su marcador en vivo, el último resultado y los líderes del equipo.' },
+    { pant: 'inicio', sel: '.nav .centro2', tit: 'Marcar', txt: 'Aquí se empieza el partido, o se sigue si ya va en vivo. Vamos a practicar.' },
+    { pant: 'marcar', sel: '[data-a=res][data-v=pase]', tit: 'Toca «Pase completo»', txt: 'Cada jugada empieza por lo que pasó.', hecho: () => st.hoja === 'quien' },
+    { sel: '.hoja [data-a=quien]', tit: '¿Quién la atrapó?', txt: 'Toca al jugador. La jugada queda guardada.', hecho: () => vivas() > 0 },
+    // si las yardas llegan a la zona la jugada pasa a TD y abre la conversión: en la práctica se cierra
+    { sel: '.hoja.cuanto', tit: '¿Cuántas yardas?', txt: 'Ajusta con − y +, o con +5 y +10. La ✓ las guarda; la ✕ la deja sin yardas.', hecho: () => { if (st.hoja === 'cuanto') return false; st.hoja = null; return true; } },
+    { sel: '.mk-puntos', tit: 'Lo que pasó', txt: 'Desliza a la derecha, o toca los puntos, para ver todas las jugadas del partido.', hecho: () => st.mkVer === 'paso' },
+    { sel: '.mk-pag [data-a=deshacer]', tit: 'Corregir o deshacer', txt: 'Toca una jugada para corregirla. «Deshacer» quita la última: tócalo.', hecho: () => vivas() === 0 },
+    { sel: '.mk-lado', tit: 'Ataque o defensa', txt: 'Cuando cambia el balón, toca «Defensa». Los botones cambian a los de defensa.', hecho: () => st.partido.lado === 'D' },
+    { sel: '.qbchip', tit: 'El QB', txt: 'Aquí se cambia al QB. En esa hoja, arriba a la derecha, está el botón para ver este recorrido otra vez.' },
+    { sel: '[data-a=terminar]', tit: 'Terminar', txt: 'Al acabar el partido, toca «Terminar». El resultado pasa a Partidos y los puntos se calculan solos.' },
+    { pant: 'partidos', sel: '.nav [data-v=partidos]', tit: 'Partidos', txt: 'Cada resultado de la temporada. Toca uno para ver quién anotó.' },
+    { pant: 'jugadores', sel: '.nav [data-v=jugadores]', tit: 'Jugadores', txt: 'Los puntos de cada quien. Toca a alguien para ver sus números, partido por partido.' },
+    { pant: 'metricas', sel: '.nav [data-v=metricas]', tit: 'Métricas', txt: 'Los números del equipo, en ataque y en defensa.' },
+    { tit: 'Listo, ya lo puedes usar', txt: 'Nada de la práctica se guardó. Te regresamos a donde estabas.', boton: 'Listo' },
   ];
-  const visto = (k) => { try { return localStorage.getItem('belugas.visto.' + k) === '1'; } catch { return true; } };
-  const marcaVisto = (k) => { try { localStorage.setItem('belugas.visto.' + k, '1'); } catch { /* sin guardado */ } };
-  const ICO_HOJA = { ...ICO, mas: '<path d="M12 5v14M5 12h14"/>' };
+  const visto = () => { try { return localStorage.getItem('belugas.visto.ver') === '1'; } catch { return true; } };
   const ov = document.createElement('div'); ov.className = 'onb'; document.body.appendChild(ov);
-  let T = null; // { id, pasos, i, practica: { n0, yds } }
+  let tour = null; // { i, caja: lo de antes del recorrido, para dejarlo igual }
   const lista = (sel) => [...document.querySelectorAll('#tel ' + sel)].slice(0, 1);
-  const existe = (sel) => lista(sel).length > 0;
-  function empieza(id) {
-    if (T) return;
-    const pasos = (id === 'ver' ? [{ hoja: true }] : PRACTICA).filter((p) => !p.sel || p.practica || existe(p.sel));
-    T = { id, pasos, i: 0 };
-    if (id === 'marcar') { T.practica = { n0: st.partido.jugadas.length, yds: st.yds }; st.practicando = true; }
-    st.toast = null; clearTimeout(tToast);
-    pintar(); entra();
+  function empieza() {
+    if (tour) return;
+    tour = { i: 0, caja: { st: { ...st }, T, HOY, vanTodos } };
+    st.practicando = true; st.hoja = null; st.toast = null; st.escribe = null; st.ins = null; st.yds = 'si'; st.mkVer = 'marcar'; clearTimeout(tToast); cerrarCuanto();
+    // un celular sin jugadores practica con tres de mentira (solo en esta copia de la temporada)
+    if (!PLANTEL.length) { T = { ...T, plantel: [1, 2, 3].map((n) => ({ id: 'practica' + n, nombre: 'Jugador ' + n, n })) }; recalcular(); }
+    if (!st.van.length) st.van = PLANTEL.map((x) => x.id);
+    if (!esRival(HOY)) HOY = RIVALES[0].id;
+    nuevoPartido(); st.partido.practica = true;
+    entra();
   }
-  // al llegar a un paso: lo deja a la vista
+  // al llegar a un paso: su pantalla, y lo que se resalta a la vista
   function entra() {
-    const p = T && T.pasos[T.i]; if (!p || !p.sel) return pinta();
-    const el = lista(p.sel)[0], c = el && el.closest('.cuerpo');
+    const p = PASOS[tour.i];
+    if (p.pant && st.pant !== p.pant) { st.pant = p.pant; st.hoja = null; }
+    pintar();
+    const el = p.sel && lista(p.sel)[0], c = el && el.closest('.cuerpo');
     if (c) { const r = el.getBoundingClientRect(), rc = c.getBoundingClientRect(); if (r.top < rc.top + 60 || r.bottom > rc.bottom - 150) c.scrollTop += r.top - rc.top - Math.max(80, (rc.bottom - rc.top) * .3); }
-    if (p.practica === 'borrada' && st.toast) avisar(st.toast, 60000); // el aviso se queda mientras dura la práctica
-    requestAnimationFrame(pinta);
     if (document.querySelector('#tel .hoja')) setTimeout(pinta, 260); // la hoja sube en .2 s: se mide ya quieta
   }
-  function fin(guardar = true) {
-    if (!T) return;
-    const t = T; T = null;
-    if (guardar) marcaVisto(t.id);
-    if (t.practica) { const p = st.partido; st.yds = t.practica.yds; st.practicando = false;
-      if (p) { const n = Date.now() + 1; p.jugadas.slice(t.practica.n0).forEach((j) => { p.borradas[j.uid] = n; }); rehacer(p); } // la práctica no cuenta
-      st.toast = null; st.hoja = null; }
-    if (st.partido && st.partido.practica) { st.partido = null; st.pant = 'inicio'; }
+  function fin() {
+    if (!tour) return;
+    const c = tour.caja; tour = null;
+    try { localStorage.setItem('belugas.visto.ver', '1'); } catch { /* sin guardado */ }
+    T = c.T; HOY = c.HOY; vanTodos = c.vanTodos;
+    for (const k in st) if (!(k in c.st)) delete st[k]; // lo que la práctica agregó (en qué vista iba Marcar, la jugada escogida)
+    Object.assign(st, c.st, { hoja: null, toast: null, cuanto: null, practicando: false }); clearTimeout(tToast); cerrarCuanto();
+    recalcular(); if (st.partido) rehacer(st.partido);
     pinta(); pintar();
+    sinc(filas.vivo); sinc(filas.temp); // lo que llegó de la nube mientras tanto
   }
-  function sigue() { if (!T) return; if (T.i >= T.pasos.length - 1) return fin(); T.i++;
-    if (T.practica && T.i === 1) st.yds = 'no'; // la práctica no abre la regla de yardas: es opcional
-    pintar(); entra(); }
+  function sigue() { if (!tour) return; if (tour.i >= PASOS.length - 1) return fin(); tour.i++; entra(); }
   function rect(p, tel) {
     const els = lista(p.sel); if (!els.length) return null;
     const r = els[0].getBoundingClientRect(), pad = 6, rad = parseFloat(getComputedStyle(els[0]).borderTopLeftRadius) || 12;
@@ -2247,54 +2249,39 @@ let onbTras = () => {};
     return { l, t: tp, w: r.width + 2 * pad, h: Math.max(b - tp, 24), rad: rad + pad };
   }
   function pinta() {
-    if (!T) { ov.className = 'onb'; ov.innerHTML = ''; return; }
-    const tel = document.querySelector('#tel').getBoundingClientRect(), p = T.pasos[T.i];
+    if (!tour) { ov.className = 'onb'; ov.innerHTML = ''; return; }
+    const tel = document.querySelector('#tel').getBoundingClientRect(), p = PASOS[tour.i];
     ov.style.cssText = `left:${tel.left}px;top:${tel.top}px;width:${tel.width}px;height:${tel.height}px;border-radius:${getComputedStyle(document.querySelector('#tel')).borderRadius}`;
-    ov.className = 'onb on' + (p.practica ? ' practica' : '');
-    if (p.hoja) return hojaBienvenida();
-    const r = p.sel ? rect(p, tel) : null, n = T.pasos.length, ultimo = T.i === n - 1;
-    const cuenta = `<div class="onb-n">Práctica · ${T.i + 1} de ${n}<span class="puntos">${T.pasos.map((_, i) => `<i class="${i === T.i ? 'on' : ''}"></i>`).join('')}</span></div>`;
-    const acc = p.practica ? '<div class="onb-acc"><button class="saltar" data-o="fin">Saltar la práctica</button></div>'
-      : `<div class="onb-acc">${ultimo ? '' : '<button class="saltar" data-o="fin">Saltar</button>'}<button class="sig" data-o="sig">${p.boton || 'Siguiente'}</button></div>`;
+    ov.className = 'onb on' + (p.hecho ? ' practica' : '');
+    const r = p.sel ? rect(p, tel) : null, n = PASOS.length, ultimo = tour.i === n - 1;
+    const cuenta = `<div class="onb-n">Paso ${tour.i + 1} de ${n}<span class="puntos">${PASOS.map((_, i) => `<i class="${i === tour.i ? 'on' : ''}"></i>`).join('')}</span></div>`;
+    const acc = `<div class="onb-acc">${ultimo ? '' : '<button class="saltar" data-o="fin">Saltar</button>'}${p.hecho ? '' : `<button class="sig" data-o="sig">${p.boton || 'Siguiente'}</button>`}</div>`;
     let pos = 'centro', estilo = 'top:50%;transform:translateY(-50%)', ax = 50;
     if (r) { const cy = r.t + r.h / 2; ax = Math.min(88, Math.max(12, ((r.l + r.w / 2) - 16) / (tel.width - 32) * 100));
       if (cy > tel.height * .52 || r.t + r.h + 190 > tel.height) { pos = 'arriba'; estilo = `bottom:${tel.height - r.t + 14}px`; } else { pos = 'abajo'; estilo = `top:${r.t + r.h + 14}px`; } }
-    // en la práctica solo se puede tocar el hueco
-    const tapas = r && p.practica ? [`left:0;top:0;right:0;height:${r.t}px`, `left:0;top:${r.t + r.h}px;right:0;bottom:0`, `left:0;top:${r.t}px;width:${r.l}px;height:${r.h}px`, `left:${r.l + r.w}px;top:${r.t}px;right:0;height:${r.h}px`].map((s) => `<div class="onb-tapa" style="${s}"></div>`).join('') : '';
+    // en los pasos de tocar solo se puede tocar el hueco
+    const tapas = r && p.hecho ? [`left:0;top:0;right:0;height:${r.t}px`, `left:0;top:${r.t + r.h}px;right:0;bottom:0`, `left:0;top:${r.t}px;width:${r.l}px;height:${r.h}px`, `left:${r.l + r.w}px;top:${r.t}px;right:0;height:${r.h}px`].map((s) => `<div class="onb-tapa" style="${s}"></div>`).join('') : '';
     ov.innerHTML = (r ? `<div class="onb-hueco" style="left:${r.l}px;top:${r.t}px;width:${r.w}px;height:${r.h}px;border-radius:${r.rad}px"></div>` : '<div class="onb-velo"></div>') + tapas
       + `<div class="onb-card ${pos}" style="${estilo};--ax:${ax}%">${cuenta}<b>${p.tit}</b><p>${p.txt}</p>${acc}</div>`;
   }
-  function hojaBienvenida() {
-    const h = BIENVENIDA;
-    ov.innerHTML = `<div class="onb-velo"></div><div class="onb-hoja"><div class="marca"><img src="${LOGO}" alt=""><b>${h.tit}</b></div>
-      ${h.filas.map(([i, tt, s]) => `<div class="fila"><span><svg viewBox="0 0 24 24">${ICO_HOJA[i]}</svg></span><div><b>${tt}</b><small>${s}</small></div></div>`).join('')}
-      <button class="sig" data-o="fin">${h.boton}</button></div>`;
-  }
   ov.addEventListener('click', (e) => {
     const b = e.target.closest('[data-o]');
-    if (b) { e.stopPropagation(); ({ sig: sigue, fin: () => fin() }[b.dataset.o])(); return; }
-    if (T && !T.pasos[T.i].practica && !T.pasos[T.i].hoja && !e.target.closest('.onb-card')) sigue(); // tocar fuera de la tarjeta = siguiente
+    if (b) { e.stopPropagation(); ({ sig: sigue, fin }[b.dataset.o])(); return; }
+    if (tour && !PASOS[tour.i].hecho && !e.target.closest('.onb-card')) sigue(); // tocar fuera de la tarjeta = siguiente
   });
-  document.addEventListener('keydown', (e) => { if (T && e.key === 'Escape') fin(); });
+  document.addEventListener('keydown', (e) => { if (tour && e.key === 'Escape') fin(); });
   addEventListener('resize', () => pinta());
-  // después de cada pintada: la práctica avanza sola, y la primera vez que se entra a Marcar arranca
+  // después de cada pintada: el paso de tocar avanza solo en cuanto se hizo
   onbTras = () => {
-    if (T) {
-      const p = T.pasos[T.i], j = st.partido ? st.partido.jugadas.length : 0;
-      if (p.practica === 'quien' && st.hoja === 'quien') return sigue();
-      if (p.practica === 'guardada' && T.practica && j > T.practica.n0) { if (st.hoja === 'cuanto') st.hoja = null; return sigue(); }
-      if (p.practica === 'borrada' && T.practica && j <= T.practica.n0) return sigue();
-      if (T.id === 'marcar' && st.pant !== 'marcar') return fin(false);
-      return requestAnimationFrame(pinta);
-    }
-    if (st.pant === 'marcar' && st.partido && !st.hoja && !visto('marcar')) setTimeout(() => { if (!T && st.pant === 'marcar' && st.partido && !st.hoja) empieza('marcar'); }, 350);
+    if (!tour) return;
+    const p = PASOS[tour.i];
+    if (p.hecho && st.partido && p.hecho()) return sigue();
+    requestAnimationFrame(pinta);
   };
-  // el engrane de Inicio: volver a ver la bienvenida o la práctica (sin partido, con uno de prueba que se tira al acabar)
   A.ayuda = () => { st.hoja = 'ayuda'; };
-  A.onbver = () => { st.hoja = null; st.pant = 'inicio'; fin(false); setTimeout(() => empieza('ver'), 250); };
-  A.onbmarcar = () => { st.hoja = null; fin(false); if (!st.partido) { nuevoPartido(); st.partido.practica = true; st.final = null; } st.pant = 'marcar'; setTimeout(() => empieza('marcar'), 250); };
-  window.onb = { empieza, fin, sigue, get T() { return T; } };
-  if (!visto('ver')) setTimeout(() => { if (st.pant === 'inicio' && !st.hoja) empieza('ver'); }, 1300);
+  A.tour = () => empieza();
+  window.onb = { empieza, fin, sigue, get T() { return tour; }, get paso() { return tour && PASOS[tour.i]; } };
+  if (!visto()) setTimeout(() => { if (st.pant === 'inicio' && !st.hoja) empieza(); }, 1300);
 })();
 // ---------- al abrir: lo guardado en el teléfono primero (sirve sin señal), luego la nube ----------
 cargaLocal(); recalcular(); if (st.partido) rehacer(st.partido); cierraViejo();

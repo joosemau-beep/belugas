@@ -38,10 +38,10 @@ let nav;
 export const navegador = async () => (nav = nav || (await chromium.launch()));
 export const cerrarNavegador = () => nav && nav.close();
 
-// un teléfono nuevo, sin la bienvenida ni la práctica; con nube, abre con el link del equipo
-export async function telefono(url, { nube, clave } = {}) {
+// un teléfono nuevo, sin el recorrido de la primera vez (con nuevo: true, con él); con nube, abre con el link del equipo
+export async function telefono(url, { nube, clave, nuevo } = {}) {
   const ctx = await (await navegador()).newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
-  await ctx.addInitScript(() => { localStorage.setItem('belugas.visto.ver', '1'); localStorage.setItem('belugas.visto.marcar', '1'); });
+  if (!nuevo) await ctx.addInitScript(() => { localStorage.setItem('belugas.visto.ver', '1'); });
   // la nube de verdad nunca se toca desde las pruebas
   await ctx.route(/supabase\.co/, nube ? nube.ruta : (r) => r.abort());
   const pg = await ctx.newPage();
