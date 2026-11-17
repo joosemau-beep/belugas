@@ -683,6 +683,71 @@ table.bs td.v { color: #b8c2cf; }
 .pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
 .pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: #d6453d; font-weight: 700; }
 .pp.pp2 { min-height: 72px; }
+.pips { display: flex; gap: 3px; margin-top: 5px; }
+.pips i { width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px #c3ccd8; }
+.pips i.g { background: var(--ok); box-shadow: none; }
+.pips i.e { background: #c3ccd8; box-shadow: none; }
+/* Partidos: dos pestañas (Mau, 17-nov) */
+.pest { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 0 0 16px; border-radius: 14px; background: #e3e8ef; }
+.pest button { height: 40px; border-radius: 11px; font: 700 14px/1 Inter; color: var(--mut); }
+.pest button.on { background: #fff; color: var(--navy); box-shadow: 0 1px 2px rgba(11,27,51,.08), 0 4px 10px rgba(11,27,51,.10); }
+/* Posiciones: el podio en el escenario marino y del 4 en adelante en lista */
+.liga { border-radius: 22px; background: #fff; box-shadow: var(--sombra); overflow: hidden; }
+.escena { position: relative; background: var(--grad); color: #fff; padding: 16px 12px 0; text-shadow: 0 1px 3px rgba(5,15,35,.35); }
+.escena::before { content: ''; position: absolute; left: 50%; top: -40px; width: 260px; height: 260px; transform: translateX(-50%); background: radial-gradient(closest-side, rgba(255,226,140,.38), rgba(255,226,140,0)); pointer-events: none; }
+.escena .eti { position: relative; display: flex; justify-content: space-between; font: 700 12px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .92; padding: 0 6px; }
+.escena .eti span { letter-spacing: .02em; text-transform: none; opacity: .85; }
+.escena .podio { background: none; padding: 18px 0 0; gap: 6px; position: relative; }
+.escena .rlogo { width: 62px; height: 62px; filter: drop-shadow(0 8px 10px rgba(0,0,0,.35)); }
+.escena .p1 .rlogo { width: 88px; height: 88px; }
+.escena .corona { width: 58px; margin-bottom: -14px; }
+.escena .pcol b { font: 800 13px/1.15 Inter; margin-top: 8px; min-height: 30px; display: flex; align-items: flex-start; justify-content: center; }
+.escena .pcol .valor { color: #fff; font-size: 26px; margin-top: 0; }
+.escena .p1 .valor { font-size: 32px; }
+.escena .escalon { text-shadow: none; }
+.escena .p1 .escalon { height: 86px; background: var(--oro); color: #7a4a00; font-size: 44px; }
+.escena .p2 .escalon { height: 64px; } .escena .p3 .escalon { height: 48px; }
+.escena .pcol.nos b { color: #ffe38c; }
+.liga .tfila { padding: 10px 16px; }
+.liga .tfila .rk { font: italic 900 20px/1 var(--disp); color: var(--tenue); width: 22px; }
+.liga .tfila .rlogo { width: 34px; height: 34px; }
+.liga .tfila .valor { font-size: 24px; }
+.liga .tfila.nos { background: #eef4ff; box-shadow: inset 4px 0 0 var(--acento); }
+.liga .tfila.nos b, .liga .tfila.nos .rk { color: var(--acento); font-weight: 800; }
+.liga-nota { margin: 10px 4px 0; font: 500 12.5px/1.35 Inter; color: var(--mut); }
+/* Inicio: la tarjeta de la tabla junto a la del último partido */
+.nl { position: relative; display: grid; grid-template-columns: 104px 1fr; align-items: center; gap: 4px 10px; width: 100%; padding: 16px 14px 14px 12px; border-radius: 22px; background: var(--grad); color: #fff; text-align: left; overflow: hidden; box-shadow: 0 12px 28px rgba(13,35,71,.26); text-shadow: 0 1px 3px rgba(5,15,35,.35); }
+/* líneas de yarda */
+.nl::before { content: ''; position: absolute; inset: -20px; background: repeating-linear-gradient(100deg, rgba(255,255,255,.07) 0 2px, transparent 2px 40px); pointer-events: none; }
+.nl > * { position: relative; }
+.nl .lug { text-align: center; }
+.nl .lug strong { display: block; padding-right: 8px; font: italic 900 86px/.84 var(--disp); letter-spacing: -.03em; background: var(--oro); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
+.nl .lug.gris strong { background: none; color: #fff; }
+.nl .lug small { display: block; margin-top: 7px; font: italic 800 13px/1 var(--disp); letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.nl .ver { grid-column: 1 / -1; justify-self: end; margin-top: 8px; font: 600 12.5px/1.2 Inter; opacity: .88; }
+.nlB { padding-bottom: 0; align-items: end; }
+.nlB .lug { grid-row: 1 / span 2; padding-bottom: 14px; align-self: center; }
+.nlB .ver { grid-row: 1; grid-column: 2; justify-self: stretch; text-align: right; align-self: start; margin: 0 2px 6px 0; }
+.nlB .mp { grid-row: 2; grid-column: 2; }
+.nlB .mp { display: grid; grid-template-columns: repeat(3, 1fr); align-items: end; gap: 5px; }
+.nlB .c { display: flex; flex-direction: column; align-items: center; }
+.nlB .c .rlogo { width: 46px; height: 46px; filter: drop-shadow(0 6px 8px rgba(0,0,0,.35)); }
+.nlB .c1 .rlogo { width: 60px; height: 60px; }
+.nlB .c .corona { width: 32px; margin-bottom: -8px; }
+.nlB .c .paso { width: 100%; margin-top: 6px; border-radius: 9px 9px 0 0; display: grid; place-items: center; font: italic 900 20px/1 var(--disp); text-shadow: none; box-shadow: inset 0 3px 0 rgba(255,255,255,.35); }
+.nlB .c1 .paso { height: 44px; background: var(--oro); color: #7a4a00; } .nlB .c2 .paso { height: 32px; background: var(--plata); color: #5b6676; } .nlB .c3 .paso { height: 24px; background: var(--bronce); color: #7a431b; }
+/* Inicio: el último partido como marcador de tele */
+.ug { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; padding: 14px 12px 12px 16px; overflow: hidden; }
+.ug::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--ok); }
+.ug.p::before { background: #d6453d; } .ug.e::before { background: var(--tenue); }
+.ug .eq { display: flex; flex-direction: column; align-items: center; gap: 6px; font: italic 800 14px/1 var(--disp); letter-spacing: .06em; color: var(--mut); }
+.ug .eq img, .ug .eq .rlogo { width: 48px; height: 48px; object-fit: contain; }
+.ug .mid { text-align: center; }
+.ug strong { display: flex; align-items: baseline; justify-content: center; gap: 6px; font: italic 900 48px/1 var(--disp); color: var(--tenue); }
+.ug strong .w { color: var(--navy); }
+.ug strong i { font-style: normal; font-size: 30px; }
+.ug small { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 6px; font: 700 11.5px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .06em; }
+.ug .rs { width: auto; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 10.5px; letter-spacing: .06em; }
 .pp2 small { display: block; }
 .pp2 small .punto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5483f; margin-right: 6px; vertical-align: 1px; }
 .pp2 .der2 { flex: none; display: grid; grid-template-columns: 22px 60px; gap: 8px; align-items: center; justify-items: end; }
@@ -854,6 +919,10 @@ function armarPlantel() {
 const PASADOS = [['p1', 'kaffies', '5 oct', 13, 20], ['p2', 'only-fins', '12 oct', 14, 8], ['p3', 'ultimos-aztecas', '19 oct', 21, 20], ['p4', 'kaffies', '26 oct', 14, 13], ['p5', 'lobos-its', '2 nov', 33, 12], ['p6', 'bucaneros', '9 nov', 16, 14]]
   .map(([id, rival, fecha, nos, ellos]) => ({ id, rival, fecha, nos, ellos, solo: true, jugadas: 0, funcion: 0, perdidas: 0, convs: [0, 0], tds: [], conv: [], st: {} }));
 let JUEGOS = PASADOS.slice();
+// tabla de la liga: se copia a mano de la foto que manda Mau cada semana (en orden, como viene; empate en G: arriba quien lleva más JJ)
+const TABLA_AL = '11 nov';
+const TABLA = [['belugas', 6, 5, 1], ['kickass', 6, 5, 1], ['ultimos-aztecas', 6, 3, 3], ['kaffies', 6, 2, 4], ['only-fins', 6, 2, 4], ['bucaneros', 6, 2, 4],
+  ['triple-t', 2, 2, 0], ['lobos-its', 5, 1, 4], ['bulldogs', 3, 1, 2], ['los-fantasmas', 3, 1, 2], ['panini', 6, 1, 5], ['destroyers', 3, 0, 3]];
 // fantasy (tabla de Mau, con lo decidido el 12-nov en la tarde): [campo, cómo se dice, puntos]; los de ataque primero. Pick 6 = intercepción + TD.
 // Yardas como en la NFL: 0.1 por yarda lanzada, atrapada o corrida; la recepción da 0.5 y el pase completo no da nada; el sack quita 0.1 por yarda.
 // No cuentan: fumble (el balón queda muerto) ni "se le fue". Sin bono de defensa por equipo: casi todos juegan de los dos lados.
@@ -913,7 +982,7 @@ const foto = (p) => `<span class="foto"><span>${p && p.cara ? `<img src="${p.car
 // lo que se ve en este momento; lo que se guarda (partido, temporada, quiénes van) lo escribe guardaLocal
 let st = {
   anim: 'si', yds: 'si', cuanto: null, conv: null, edita: null, lanzo: null, qbDe: null, entrar: true, jug: null, juego: null, desde: 'inicio',
-  cat: 'puntos', met: 'ataque', animar: true, todos: false, abre: {}, practicando: false,
+  cat: 'puntos', met: 'ataque', ptab: 'nuestros', animar: true, todos: false, abre: {}, practicando: false,
   pant: 'inicio', hoja: null, sel: null, toast: null, final: null,
   van: [], // los que van hoy; mientras nadie lo cambie, todos (vanTodos)
   partido: null, // {nos, ellos, down, lado, jugadas: []}
@@ -957,7 +1026,10 @@ const ultimo = () => RESULTADOS[0];
 function minis() {
   if (!RESULTADOS.length) return '';
   const [rid, fecha, a, b, gid] = ultimo(), r = R(rid);
-  return `<div class="pmini" style="grid-template-columns:1fr"><button class="card pm" data-a="juego" data-v="${gid}">${rlogo(r)}<div style="min-width:0"><small>Último · ${fecha}</small><b class="corta">vs ${r.corto}</b><span class="sc num ${a > b ? 'g' : ''}">${a}–${b}</span></div></button></div>`;
+  const [c, , txt] = resDe(a, b);
+  return `<button class="card ug ${c}" data-a="juego" data-v="${gid}"><div class="eq"><img src="${LOGO}" alt="">BEL</div>
+    <div class="mid"><strong class="num"><b${a >= b ? ' class="w"' : ''}>${a}</b><i>–</i><b${b >= a ? ' class="w"' : ''}>${b}</b></strong><small><span class="rs ${c}">${txt}</span>${fecha}</small></div>
+    <div class="eq">${rlogo(r)}${r.corto}</div></button>`;
 }
 
 // ---------- líderes ----------
@@ -1005,7 +1077,8 @@ function inicio1() {
   return `<div class="pant">${est()}<div class="cuerpo">
     ${cab('Belugas', `Temporada 2026 · ${RECORD}`)}
     ${avisoNube()}${heroeHoy()}
-    <h2>Partidos</h2>${minis()}
+    ${lugarLiga()}
+    ${RESULTADOS.length ? `<h2>Último partido</h2>${minis()}` : ''}
     ${lideres()}
   </div>${nav()}</div>`;
 }
@@ -1161,11 +1234,33 @@ function partidos() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = R(aj ? aj.rival : p ? p.rival : HOY);
   const hoy = p ? filaP(rlogo(r), r.largo, `<i class="punto"></i>En vivo · ${oportunidad(p)}`, `<strong class="num solo">${p.nos}–${p.ellos}</strong>`, 'data-a="marcar"')
     : st.final ? '' : filaP(rlogo(r), r.largo, 'Próximo partido', '<span class="btn-m solo">Marcar</span>', 'data-a="marcar"');
-  return `<div class="pant">${est()}<div class="cuerpo">${cab('Partidos', `Temporada 2026 · ${RECORD}`)}
-  ${hoy ? `<div class="card">${hoy}</div>` : ''}
+  const pest = `<div class="pest">${[['nuestros', 'Nuestros partidos'], ['tabla', 'Posiciones']].map(([k, t]) => `<button class="${st.ptab === k ? 'on' : ''}" data-a="ptab" data-v="${k}">${t}</button>`).join('')}</div>`;
+  return `<div class="pant">${est()}<div class="cuerpo">${cab('Partidos', `Temporada 2026 · ${RECORD}`)}${pest}
+  ${st.ptab === 'tabla' ? posiciones() : `${hoy ? `<div class="card">${hoy}</div>` : ''}
   <h2>Resultados</h2>
-  <div class="card">${RESULTADOS.map(([rid, f, a, b, gid]) => { const x = R(rid); return filaP(rlogo(x), x.largo, f, `${pastilla(a, b)}<strong class="num">${a}–${b}</strong>`, `data-a="juego" data-v="${gid}"`); }).join('')}</div>
+  <div class="card">${RESULTADOS.map(([rid, f, a, b, gid]) => { const x = R(rid); return filaP(rlogo(x), x.largo, f, `${pastilla(a, b)}<strong class="num">${a}–${b}</strong>`, `data-a="juego" data-v="${gid}"`); }).join('')}</div>`}
   </div>${nav()}</div>`;
+}
+const filasLiga = () => TABLA.map(([id, jj, g, p], i) => { const nos = id === 'belugas', r = nos ? { largo: 'Belugas' } : R(id);
+  return { id, n: i + 1, jj, g, p, e: jj - g - p, nos, nombre: r.largo, logo: nos ? `<span class="rlogo"><img src="${LOGO}" alt="Belugas"></span>` : rlogo(r) }; });
+const marca = (x) => `${x.g}–${x.p}${x.e > 0 ? `–${x.e}` : ''}`;
+// una bolita por partido jugado: verdes los ganados
+const pips = (x) => `<span class="pips" aria-label="${x.g} ganados de ${x.jj}">${'<i class="g"></i>'.repeat(x.g)}${'<i class="e"></i>'.repeat(Math.max(x.e, 0))}${'<i></i>'.repeat(x.p)}</span>`;
+// Posiciones: los 3 primeros en el podio (oro con corona) y del 4 en adelante en lista; Belugas resaltado donde vaya
+// cómo va Belugas frente al primero (la liga ordena por G; empate en G, arriba quien lleva más JJ)
+const comoVamos = (f, b) => { const l = f[0];
+  if (b.n === 1) { const e = f.find((x) => !x.nos && x.g === b.g); return e ? `Empatados en ganados con ${e.nombre}` : 'Solos arriba'; }
+  return l.g === b.g ? `Mismos ganados que ${l.nombre}` : `A ${plural(l.g - b.g, 'victoria', 'victorias')} de ${l.nombre}`; };
+// Inicio: nuestro lugar y el mini podio de los 3 primeros (Mau, 17-nov); al tocarlo abre Partidos en Posiciones
+const lugarLiga = () => { const f = filasLiga(), b = f.find((x) => x.nos); if (!b) return '';
+  const lug = `<div class="lug${b.n > 3 ? ' gris' : ''}"><strong>${b.n}º</strong><small>de ${f.length} equipos</small></div>`;
+  const der = `<div class="mp">${[[f[1], 2], [f[0], 1], [f[2], 3]].map(([x, n]) => `<div class="c c${n}${x.nos ? ' yo' : ''}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${x.logo}<span class="paso">${n}</span></div>`).join('')}</div>`;
+  return `<h2>Tabla de la liga <small>al ${TABLA_AL}</small></h2><button class="nl nlB" data-a="tabla">${lug}${der}<span class="ver">${comoVamos(f, b)} · Ver la tabla ›</span></button>`; };
+function posiciones() {
+  const f = filasLiga(), col = (x, k) => `<div class="pcol p${k}${x.nos ? ' nos' : ''}">${k === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${x.logo}<b>${x.nombre}</b><span class="valor">${marca(x)}</span><div class="escalon">${k}</div></div>`;
+  return `<div class="liga"><div class="escena"><div class="eti">Tabla de la liga<span>al ${TABLA_AL}</span></div><div class="podio">${col(f[1], 2)}${col(f[0], 1)}${col(f[2], 3)}</div></div>
+    <div class="tabla">${f.slice(3).map((x) => `<div class="tfila${x.nos ? ' nos' : ''}"><span class="rk">${x.n}</span>${x.logo}<div><b class="corta">${x.nombre}</b>${pips(x)}</div><span class="valor">${marca(x)}</span></div>`).join('')}</div></div>
+    <p class="liga-nota">Una bolita por partido jugado; verde, ganado. Con los mismos ganados, va arriba quien ha jugado más.</p>`;
 }
 const rankPts = () => PLANTEL.slice().sort((a, b) => TEMP[b.id].pts - TEMP[a.id].pts);
 // escribir un nombre (jugador nuevo o cambio de nombre) va en su renglón, sin hoja ni menú; st.escribe = { que: 'nuevo' | 'nombre' | 'baja', txt }
@@ -1435,7 +1530,7 @@ function pintar() {
   // en la misma pantalla la página se queda donde iba (cambiar la categoría de Líderes no la regresa hasta arriba)
   // al regresar de una ficha (‹ Inicio, ‹ Partidos, ‹ Jugadores) la pestaña vuelve a donde iba, no hasta arriba (Iker, 17-nov)
   const cuA = t.querySelector('.cuerpo'); if (cuA && t.dataset.pant) scrollDe[t.dataset.pant] = cuA.scrollTop;
-  const vista = [st.pant, st.juego, st.jug].join('|'), cu0 = t.dataset.vista === vista ? (cuA || {}).scrollTop || 0 : st.regresa ? scrollDe[st.pant] || 0 : 0;
+  const vista = [st.pant, st.juego, st.jug, st.pant === 'partidos' ? st.ptab : ''].join('|'), cu0 = t.dataset.vista === vista ? (cuA || {}).scrollTop || 0 : st.regresa ? scrollDe[st.pant] || 0 : 0;
   st.regresa = false;
   // la misma hoja sigue abierta: no vuelve a subir ni regresa arriba (tocar a alguien en «¿Quiénes vinieron?» ya no la reinicia)
   const h0 = st.hoja && t.dataset.hoja === st.hoja ? t.querySelector('.hoja') : null, hs = h0 ? h0.scrollTop : 0, otraHoja = st.hoja && t.dataset.hoja && !h0;
@@ -2026,6 +2121,9 @@ const A = {
   },
   // la app de antes (campo, libro de jugadas, imprimir pulsera), en su vista completa
   antes: () => { lsSet('tochito.completa', '1'); location.href = 'ipad.html?cel=1' + location.hash; },
+  ptab: (v) => { st.ptab = v; },
+  // la tarjeta de la tabla en Inicio abre Partidos en Posiciones
+  tabla: () => { A.ir('partidos'); st.ptab = 'tabla'; },
   ir: (v) => { acabaCorr(); if (st.pant !== v && v === 'inicio') st.entrar = true; st.pant = v; st.hoja = null; if (v === 'inicio') st.animar = true; },
   // tocar fuera de una hoja: de los selectores de QB se regresa a donde se venía; fuera de la conversión, el TD se queda
   // sin conversión y el aviso lo dice, con «Ponerla»
