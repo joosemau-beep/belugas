@@ -324,9 +324,10 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(await pg.locator('.hoja .pj').evaluateAll((xs) => xs.map((x) => [x.dataset.v, !!x.querySelector('.ult')])), [['rodrigo', true], ['mau', false], ['nico', false], ['hugo', false]]);
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
   // «Lo que pasó» va aparte, sin pestañas ni texto: deslizando a la derecha se llega y a la izquierda se regresa; los puntos dicen dónde vas
-  const desliza = (de, a) => pg.evaluate(([de, a]) => { const c = document.querySelector('.mk-cuerpo'), t = (x) => new Touch({ identifier: 1, target: c, clientX: x, clientY: 400 });
-    c.dispatchEvent(new TouchEvent('touchstart', { touches: [t(de)], changedTouches: [t(de)], bubbles: true }));
-    c.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [t(a)], bubbles: true })); }, [de, a]);
+  // un evento con sus toques (WebKit de escritorio no deja crear Touch)
+  const desliza = (de, a) => pg.evaluate(([de, a]) => { const c = document.querySelector('.mk-cuerpo'), t = (x) => ({ identifier: 1, target: c, clientX: x, clientY: 400 });
+    const ev = (tipo, touches, changedTouches) => c.dispatchEvent(Object.assign(new Event(tipo, { bubbles: true }), { touches, changedTouches }));
+    ev('touchstart', [t(de)], [t(de)]); ev('touchend', [], [t(a)]); }, [de, a]);
   assert.doesNotMatch(await texto(pg), /Lo que pasó|Jugada por jugada/);
   assert.deepEqual(await pg.locator('.mk-puntos button').evaluateAll((xs) => xs.map((x) => x.className)), ['', 'on']);
   await desliza(300, 120); // a la izquierda no hay nada más
@@ -416,6 +417,12 @@ test('las animaciones: Líderes sin recargar fotos, sin barra en Partido por par
   await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nicolas');
   assert.match(await texto(pg), /Partido por partido/);
   assert.equal(await pg.locator('#tel .pp .barra').count(), 0);
+  // el recorrido: si la app se vuelve a pintar (la nube cada 4 s) la tarjeta no vuelve a aparecer
+  await pg.evaluate(() => onb.empieza()); await pg.waitForTimeout(600); // eslint-disable-line no-undef
+  const card = await pg.locator('.onb-card').elementHandle();
+  await pg.evaluate(() => pintar()); await pg.waitForTimeout(50); // eslint-disable-line no-undef
+  assert.deepEqual(await pg.evaluate((c) => [c.isConnected, document.querySelector('.onb').getAnimations({ subtree: true }).length], card), [true, 0]);
+  await pg.evaluate(() => onb.fin()); // eslint-disable-line no-undef
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
