@@ -552,6 +552,7 @@ table.bs td.v { color: #b8c2cf; }
 .rg-saltos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 6px; }
 .rg-saltos button { height: 64px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: italic 900 26px/1 var(--disp); color: var(--navy); }
 .hoja.cuanto .rg-b:active, .rg-saltos button:active { transform: scale(.97); }
+.rg-saltos button small { font: 800 13px/1 Inter; font-style: normal; margin-left: 2px; color: var(--mut); }
 /* Inicio: la tarjeta del partido sin balón, centrada */
 .heroe.hoy .vs { margin-right: 0; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
 .op.rojo { background: #c0392b; color: #fff; }
@@ -572,7 +573,6 @@ table.bs td.v { color: #b8c2cf; }
 .pj-sep { grid-column: 1 / -1; height: 1px; background: var(--linea); margin: 4px 6px; }
 .pj .corta { max-width: 100%; }
 .pj small { color: var(--mut); font: 600 11px/1 Inter; }
-.pj { position: relative; } .pj .ult { position: absolute; top: 6px; right: 6px; font: 800 10px/1 Inter; font-style: normal; letter-spacing: .03em; color: #fff; background: var(--navy); border-radius: 999px; padding: 3px 6px; }
 .ops { display: grid; gap: 10px; }
 .ops.dos { grid-template-columns: 1fr 1fr; }
 .op { height: 64px; border-radius: 16px; background: var(--bg); font: 800 17px/1 Inter; }
@@ -587,6 +587,7 @@ table.bs td.v { color: #b8c2cf; }
 .campo b { font-weight: 700; }
 .campo u { text-decoration: none; color: var(--acento); font: 700 13.5px/1 Inter; flex: none; }
 .lista-van { display: grid; gap: 6px; margin-bottom: 12px; }
+.hoja .lista-van h4.sub { margin: 10px 4px 2px; } .hoja .lista-van h4.sub:first-child { margin-top: 0; }
 .van-f { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 10px; border-radius: 14px; background: var(--bg); }
 .van-f .foto { width: 40px; height: 40px; }
 .van-f > div { flex: 1; min-width: 0; }
@@ -1448,12 +1449,14 @@ const CK_SI = '<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="1
 const barra = (tit, no, si, siTxt, der = '<span></span>') => `<div class="hbar"><button class="hb no" data-a="${no}" aria-label="Cerrar">${X_SVG}</button>${tit}${si ? `<button class="hb si" data-a="${si}" aria-label="${siTxt}">${PALOMITA}</button>` : der}</div>`;
 const AYUDA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9.2a3 3 0 0 1 5.9.8c0 2-3 2.5-3 4.6"/><path d="M12 18.5h.01"/></svg>';
 // quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
-const botonPj = (id, accion, actual, ult) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${ult ? '<em class="ult">última</em>' : ''}${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
-// ¿Quién?: primero los que han jugado de este lado, el de la última jugada con la marca «última» (marcar-simple, punto 4)
-const pjsRecientes = (lado, accion, fuera) => { const u = [...st.partido.jugadas].reverse().find((j) => j.lado === lado && j.id && !borrada(st.partido, j));
-  return conSep(recientes(lado).filter((id) => id !== fuera), lado, (id) => botonPj(id, accion, false, u && u.id === id)); };
+const botonPj = (id, accion, actual) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
+// ¿Quién?: primero los que han jugado de este lado (sin la marca «última»: Iker, 17-nov)
+const pjsRecientes = (lado, accion, fuera) => conSep(recientes(lado).filter((id) => id !== fuera), lado, (id) => botonPj(id, accion, false));
 // una rayita entre los de este lado (y los de los dos) y los que solo juegan del otro
 const conSep = (ids, lado, boton) => ids.map((id, i) => (i && otroLado(id, lado) && !otroLado(ids[i - 1], lado) ? '<i class="pj-sep" aria-hidden="true"></i>' : '') + boton(id)).join('');
+// «¿Quiénes vinieron hoy?» por grupos, Ataque, Defensa y Los dos (Iker, 17-nov); si nadie tiene lado, la lista de siempre
+const porGrupo = (fila) => !PLANTEL.some((p) => p.lado) ? PLANTEL.map(fila).join('')
+  : [['O', 'Ataque'], ['D', 'Defensa'], [undefined, 'Los dos']].map(([l, n]) => { const ps = PLANTEL.filter((p) => p.lado === l); return ps.length ? `<h4 class="sub">${n}</h4>${ps.map(fila).join('')}` : ''; }).join('');
 function hoja() {
   if (!st.hoja) return '';
   let h = '';
@@ -1468,7 +1471,7 @@ function hoja() {
       <div class="relevo">${pc ? 'Los cambios se guardan solos y llegan a los otros celulares.' : !clave ? 'Sin el enlace del equipo, se guarda solo en este celular.' : !sync.ok ? 'Sin señal: se sincroniza al reconectar.' : otros ? `Marcando desde ${otros + 1} celulares.` : '¿Otro celular? Abre la app y toca «Seguir marcando».'}</div>
       <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   }
-  if (st.hoja === 'van') h = `<h3>¿Quiénes vinieron hoy?</h3><div class="lista-van">${PLANTEL.map((p) => { const si = st.van.includes(p.id); return `<button class="van-f ${si ? 'si' : 'no'}${st.recien === p.id ? ' recien' : ''}" data-a="vantoggle" data-v="${p.id}">${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div><span class="ck">${si ? CK_SI : CK_NO}</span></button>`; }).join('')}</div><div class="ops fijo"><button class="op prim" data-a="vanlisto"${st.van.length ? '' : ' disabled'}>${!st.van.length ? 'Marca quién vino' : st.vanDe === 'empezar' ? `Empezar · vinieron ${st.van.length}` : `Listo · vinieron ${st.van.length}`}</button></div>`;
+  if (st.hoja === 'van') h = `<h3>¿Quiénes vinieron hoy?</h3><div class="lista-van">${porGrupo((p) => { const si = st.van.includes(p.id); return `<button class="van-f ${si ? 'si' : 'no'}${st.recien === p.id ? ' recien' : ''}" data-a="vantoggle" data-v="${p.id}">${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}</div><span class="ck">${si ? CK_SI : CK_NO}</span></button>`; })}</div><div class="ops fijo"><button class="op prim" data-a="vanlisto"${st.van.length ? '' : ' disabled'}>${!st.van.length ? 'Marca quién vino' : st.vanDe === 'empezar' ? `Empezar · vinieron ${st.van.length}` : `Listo · vinieron ${st.van.length}`}</button></div>`;
   if (st.hoja === 'fecha') h = `<h3>¿Qué día fue?</h3><input class="nombre" type="date" id="fecha" style="width:100%" value="${ymd(st.partido.dia || st.partido.inicio)}" max="${ymd(Date.now())}">
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="fechaya">Listo</button></div>`;
   if (st.hoja === 'eliminar') { const g = JUEGOS.find((x) => x.id === st.juego);
@@ -1490,7 +1493,7 @@ function hoja() {
     // el del partido: arriba a la derecha, cómo funciona la app (para quien agarra un celular que ya tiene todo)
     h = `${deJugada ? '<h3>¿Quién lanzó?</h3>' : barra('<h3>¿Quién es el QB?</h3>', 'cerrar', '', '', `<button class="hb ayuda" data-a="tour" aria-label="Cómo funciona la app">${AYUDA_SVG}</button>`)}<div class="pjs">${st.van.map((id) => { const p = P(id); return `<button class="pj${id === cur ? ' actual' : ''}" data-a="qb" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; }).join('')}</div>
       ${(st.qbDe === 'jugada' && st.sel === 'td') || (st.qbDe === 'corrige' && (st.partido.jugadas[st.edita] || {}).k === 'td') ? '<div class="ops" style="margin-top:12px"><button class="op sec" data-a="qb" data-v="corre">Ninguno: fue corrida</button></div>' : ''}`; }
-  if (st.hoja === 'cuanto') return hojaCuanto();
+  if (st.hoja === 'cuanto') return `<div class="velo"></div>${hojaCuanto()}`; // tocar fuera no la cierra ni guarda: solo ✓ o ✕ (Iker, 17-nov)
   if (st.hoja === 'corrige') {
     const j = st.partido.jugadas[st.edita];
     if (j) {
@@ -1568,7 +1571,7 @@ function pintar() {
   if (st.pant === 'marcar') { const cu = cu1, av = t.querySelector('.mk-vista + .pregunta.aviso'), nv = t.querySelector('.nav');
     if (cu && av && nv && st.toast && st.toast.nuevo) { const d = av.getBoundingClientRect().bottom + 8 - nv.getBoundingClientRect().top; if (d > 0) cu.scrollTo({ top: cu.scrollTop + d, behavior: st.anim === 'si' ? 'smooth' : 'auto' }); } }
   if (st.toast) st.toast.nuevo = false;
-  if (st.hoja === 'cuanto') montarCuanto(); else if (tCuanto || tSola) cerrarCuanto();
+  if (st.hoja === 'cuanto') montarCuanto();
   st.flash = null;
   // la entrada del podio corre una vez (al abrir, o al cambiar de categoría)
   st.animar = st.cambiaCat = false;
@@ -1762,7 +1765,7 @@ function empezar(vino) {
 let avisoFinal = null; // [partido, «Lo terminó el otro celular.»]
 function cerrarPartido(p, aviso) {
   const x = aEnviar(p);
-  st.partido = null; HOY = null; st.hoja = null; st.toast = null; clearTimeout(tToast); cerrarCuanto();
+  st.partido = null; HOY = null; st.hoja = null; st.toast = null; clearTimeout(tToast);
   aTemporada(x); // queda en la temporada (y de ahí salen el final de hoy, los puntos y el récord)
   // un partido sin jugadas no cuenta: no sale en la lista ni en el récord
   if (st.final && st.final.gid === x.id) { avisoFinal = aviso ? [x.id, aviso] : null; st.pant = 'resumen'; } else st.pant = 'inicio';
@@ -1929,7 +1932,7 @@ function subir() { if (st.partido && st.partido.corrige) { aTemporada(aEnviar(st
 function subirTemp() { clearTimeout(tTemp); tTemp = setTimeout(() => sinc(filas.temp), 300); }
 // se acabó de corregir: la última versión queda en la temporada y se regresa a la ficha
 function acabaCorr() { const p = st.partido; if (!p || !p.corrige) return;
-  aTemporada(aEnviar(p)); st.partido = null; HOY = null; st.hoja = null; st.toast = null; st.ins = null; clearTimeout(tToast); cerrarCuanto();
+  aTemporada(aEnviar(p)); st.partido = null; HOY = null; st.hoja = null; st.toast = null; st.ins = null; clearTimeout(tToast);
   const a = st.antesCorr || {}; if (a.van) { st.van = a.van; vanTodos = a.todos; } recalcular(); st.juego = p.id; st.pant = 'partido'; }
 // el color de arriba del encabezado de Marcar en defensa (color-mix del rival con 55 % de negro)
 const oscuro = (h) => '#' + [1, 3, 5].map((i) => Math.round(parseInt(h.slice(i, i + 2), 16) * .45).toString(16).padStart(2, '0')).join('');
@@ -2035,14 +2038,12 @@ function hojaCuanto() {
   const a = antesDe(j);
   return `<div class="hoja cuanto">${barra('<h3>¿Cuánto avanzó?</h3>', 'sinyd', 'rgok', 'Guardar las yardas')}
     <div class="rg-pmf"><button class="rg-b" data-pm="-1" aria-label="Menos">${signo(false)}</button><div class="rg-vw"><span class="rg-anuncio" id="rganuncio"></span><span class="rg-v num" id="rgv">${fmtYd(c.yd)}<small>yd</small></span></div><button class="rg-b" data-pm="1" aria-label="Más">${signo(true)}</button></div>
-    <div class="rg-saltos">${[-5, 5, 10, 20].map((v) => `<button data-salto="${v}">${fmtYd(v)}</button>`).join('')}</div>
+    <div class="rg-saltos">${[5, 10, 20, 30].map((v) => (j.k === 'sackr' ? -v : v)).map((v) => `<button data-salto="${v}">${fmtYd(v)}<small>yd</small></button>`).join('')}</div>
     <div hidden>${regla(a)}</div></div>`; // la regla sigue escondida: así los topes, los colores y el «¡Touchdown!» funcionan igual
 }
-let tCuanto = null, tSola = null;
-function cerrarCuanto() { clearTimeout(tCuanto); clearTimeout(tSola); tCuanto = tSola = null; }
 function abrirCuanto(j) { if (st.yds !== 'si') return; st.cuanto = { uid: j.uid, yd: j.yd || 0 }; st.hoja = 'cuanto'; }
 function ponerYardas(yd) {
-  const c = st.cuanto; cerrarCuanto(); st.cuanto = null; st.hoja = null;
+  const c = st.cuanto; st.cuanto = null; st.hoja = null;
   const j = c && porUid(c.uid); if (!j) return;
   const a = j.antes;
   // si llegó a la zona, fue touchdown: la jugada pasa a TD y sigue la conversión
@@ -2059,7 +2060,6 @@ function montarCuanto() {
   const inv = j.lado === 'D', enRegla = (f) => (inv ? CAMPO - f : f);
   let armado = false;
   const centrar = (y, suave) => { armado = false; th.scrollTo({ left: (enRegla(a.spot + y) - FMIN) * s, behavior: suave ? 'smooth' : 'auto' }); };
-  const programar = (ms) => { clearTimeout(tSola); clearTimeout(tCuanto); tCuanto = setTimeout(() => { ponerYardas(st.cuanto ? st.cuanto.yd : 0); pintar(); }, ms); };
   const colorear = (y) => { const f = a.spot + y; document.querySelectorAll('.rg-m').forEach((b) => { const x = enRegla(+b.dataset.f); let k = ''; if (j.antes.sabe && x >= 5 && x <= Math.min(a.spot, f)) k = RG.hecho; if (y > 0 && x > a.spot && x <= f) k = RG.gana; if (y < 0 && x > f && x <= a.spot) k = RG.pierde; b.style.background = k; }); };
   const poner = (y) => {
     y = Math.max(lo, Math.min(hi, Math.round(y))); if (y === c.yd) return;
@@ -2074,31 +2074,27 @@ function montarCuanto() {
   };
   centrar(c.yd); colorear(c.yd);
   const leer = () => enRegla(Math.round(th.scrollLeft / s) + FMIN) - a.spot;
-  ['pointerdown', 'touchstart', 'wheel'].forEach((t) => th.addEventListener(t, () => { armado = true; clearTimeout(tCuanto); clearTimeout(tSola); }, { passive: true }));
-  th.addEventListener('scroll', () => { if (armado) { poner(leer()); programar(3000); } }, { passive: true });
+  ['pointerdown', 'touchstart', 'wheel'].forEach((t) => th.addEventListener(t, () => { armado = true; }, { passive: true }));
+  th.addEventListener('scroll', () => { if (armado) poner(leer()); }, { passive: true });
   // con el ratón se arrastra (en el teléfono es el desplazamiento nativo, con inercia)
   th.addEventListener('pointerdown', (e) => {
     if (e.pointerType !== 'mouse') return;
     const s0 = th.scrollLeft, x0 = e.clientX; try { th.setPointerCapture(e.pointerId); } catch { /* sin captura */ }
     const mover = (ev) => { th.scrollLeft = s0 - (ev.clientX - x0); };
-    const soltar = () => { th.removeEventListener('pointermove', mover); th.removeEventListener('pointerup', soltar); programar(3000); };
+    const soltar = () => { th.removeEventListener('pointermove', mover); th.removeEventListener('pointerup', soltar); };
     th.addEventListener('pointermove', mover); th.addEventListener('pointerup', soltar);
   });
   // más y menos: un toque es una yarda; dejarlo apretado sigue sumando
   document.querySelectorAll('.rg-b').forEach((b) => {
     let t1 = null, t2 = null;
     const uno = () => { poner(c.yd + +b.dataset.pm); centrar(c.yd, true); };
-    const parar = () => { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; programar(3000); };
-    b.addEventListener('pointerdown', (e) => { e.preventDefault(); clearTimeout(tCuanto); clearTimeout(tSola); uno(); t1 = setTimeout(() => { t2 = setInterval(uno, 90); }, 380); });
+    const parar = () => { clearTimeout(t1); clearInterval(t2); t1 = t2 = null; };
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); uno(); t1 = setTimeout(() => { t2 = setInterval(uno, 90); }, 380); });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach((t) => b.addEventListener(t, () => { if (t1 || t2) parar(); }));
   });
-  // los saltos: llegar rápido con guantes; el + y el − afinan de una en una
-  document.querySelectorAll('[data-salto]').forEach((b) => b.addEventListener('click', () => { clearTimeout(tCuanto); clearTimeout(tSola); poner(c.yd + +b.dataset.salto); centrar(c.yd); programar(3000); }));
-  // nadie la tocó: se cierra sola y la jugada queda sin yardas
-  if (!tSola && !tCuanto) tSola = setTimeout(() => { if (st.hoja === 'cuanto') { const j = porUid(st.cuanto.uid); st.cuanto = null; st.hoja = null; tSola = null; if (j && st.convLuego === j.uid) trasYardas(j); else if (j) sinYardas(j.uid); pintar(); } }, 10000);
+  // los saltos ponen ese número (no guardan): el + y el − afinan de una en una, y solo la ✓ guarda
+  document.querySelectorAll('[data-salto]').forEach((b) => b.addEventListener('click', () => { poner(+b.dataset.salto); centrar(c.yd); }));
 }
-// la regla se cerró sola: el aviso lo dice y las yardas se ponen con un toque
-function sinYardas(uid) { const x = porUid(uid); if (!x || st.practicando) return; avisar({ txt: `${x.txt} · sin yardas`, id: x.id, tipo: x.tipo, uid, accion: ['ponerlas', 'Agregar', uid] }, 6000); }
 // la conversión, en una sola hoja; si entró, en la misma hoja se escoge quién la atrapó
 function abrirConv(j) { st.conv = { uid: j.uid, paso: null }; st.lanzo = null; st.hoja = 'conv'; }
 // todo lo que sale de los datos se cuenta de nuevo: plantel, partidos jugados, puntos de cada quien, récord y el final de hoy
@@ -2156,7 +2152,7 @@ const A = {
     if (st.hoja === 'qb' && st.qbDe !== 'partido') { st.hoja = { jugada: 'quien', conv: 'conv', corrige: 'corrige' }[st.qbDe]; return; }
     if (st.hoja === 'conv' && st.conv && st.conv.paso) { st.conv.paso = null; return; }
     if (st.hoja === 'conv' && st.conv) { const j = porUid(st.conv.uid); if (j && j.conv === undefined) avisar({ txt: `${j.txt} · sin conversión`, id: j.id, tipo: j.tipo, uid: j.uid, accion: ['ponerconv', 'Agregar', j.uid] }, 6000); }
-    if (st.hoja === 'cuanto') { const c = st.cuanto; cerrarCuanto(); st.cuanto = null; st.hoja = null; st.lanzo = null; trasYardas(c && porUid(c.uid)); return; }
+    if (st.hoja === 'cuanto') { const c = st.cuanto; st.cuanto = null; st.hoja = null; st.lanzo = null; trasYardas(c && porUid(c.uid)); return; }
     st.lanzo = null; st.hoja = null;
   },
   empezar: () => empezar(),
@@ -2175,7 +2171,6 @@ const A = {
   unirse: () => { unirseSiHay(); },
   lado: (v) => { const p = st.partido; if (v === p.lado) return; if (st.ins) { p.lado = v; return; } p.cambios.push({ uid: nuevoUid(), t: Date.now(), lado: v }); rehacer(p); subir(); },
   // desde el aviso: poner las yardas que se saltaron, o la conversión que se cerró tocando fuera
-  ponerlas: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); const y = st.yds; st.yds = 'si'; abrirCuanto(j); st.yds = y; },
   ponerconv: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); abrirConv(j); },
   // la jugada que marcaron los dos celulares: se quita la repetida (con Deshacer) o se deja como dos
   quitarrep: (uid) => { const p = st.partido, j = porUid(uid); if (!j) return; const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); p.borradas[uid] = tb; rehacer(p); avisar({ txt: 'Duplicada quitada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb }); subir(); },
@@ -2233,7 +2228,7 @@ const A = {
   },
   convq: (id) => { const c = st.conv, j = c && porUid(c.uid); st.hoja = null; if (!j) return; const n = c.paso; corrige(j, (x) => { x.conv = [n, 1]; x.convId = id || null; x.convQb = lanzo(); }, 'Guardado'); st.lanzo = null; },
   rgok: () => { const c = st.cuanto; ponerYardas(c ? c.yd : 0); },
-  sinyd: () => { const c = st.cuanto; cerrarCuanto(); st.cuanto = null; st.hoja = null; trasYardas(c && porUid(c.uid)); },
+  sinyd: () => { const c = st.cuanto; st.cuanto = null; st.hoja = null; trasYardas(c && porUid(c.uid)); },
   // corregir cualquier jugada tocando su renglón: no se borra nada hasta escoger qué cambia
   fila: (i) => { st.edita = +i; st.hoja = 'corrige'; st.lanzo = null; },
   cquien: (id) => { const j = st.partido.jugadas[st.edita]; st.hoja = null; corrige(j, (x) => { if (x.k === 'int') x.qb = id || null; else x.id = id || null; }); },
@@ -2257,7 +2252,7 @@ const A = {
     const j = v === 'aviso' ? ta && ta.uid && porUid(ta.uid) : porUid(v) || p.jugadas[p.jugadas.length - 1];
     if (!j) return;
     const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva);
-    p.borradas[j.uid] = tb; rehacer(p); st.toast = null; clearTimeout(tToast); cerrarCuanto(); if (st.hoja === 'cuanto' || st.hoja === 'conv') st.hoja = null;
+    p.borradas[j.uid] = tb; rehacer(p); st.toast = null; clearTimeout(tToast); if (st.hoja === 'cuanto' || st.hoja === 'conv') st.hoja = null;
     // desde «Última» se quita una jugada que ya no estaba a la vista en el aviso: se dice cuál fue, con Deshacer
     if (v !== 'aviso' && !st.practicando) avisar({ txt: 'Borrada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb });
     subir();
@@ -2326,7 +2321,7 @@ let onbTras = () => {};
     { pant: 'marcar', sel: '[data-a=res][data-v=pase]', tit: 'Toca «Pase completo»', txt: 'Cada jugada empieza por lo que pasó.', hecho: () => st.hoja === 'quien' },
     { sel: '.hoja [data-a=quien]', tit: '¿Quién la atrapó?', txt: 'Toca al jugador. La jugada queda guardada.', hecho: () => vivas() > 0 },
     // si las yardas llegan a la zona la jugada pasa a TD y abre la conversión: en la práctica se cierra
-    { sel: '.hoja.cuanto', tit: '¿Cuántas yardas?', txt: 'Ajusta con − y +, o con +5 y +10. La ✓ las guarda; la ✕ la deja sin yardas.', hecho: () => { if (st.hoja === 'cuanto') return false; st.hoja = null; return true; } },
+    { sel: '.hoja.cuanto', tit: '¿Cuántas yardas?', txt: 'Toca 5, 10, 20 o 30 yd y afina con − y +. La ✓ las guarda; la ✕ la deja sin yardas.', hecho: () => { if (st.hoja === 'cuanto') return false; st.hoja = null; return true; } },
     { sel: '.mk-puntos', tit: 'Lo que pasó', txt: 'Desliza a la derecha, o toca los puntos, para ver todas las jugadas del partido.', hecho: () => st.mkVer === 'paso' },
     { sel: '.mk-pag [data-a=deshacer]', tit: 'Corregir o deshacer', txt: 'Toca una jugada para corregirla. «Deshacer» quita la última: tócalo.', hecho: () => vivas() === 0 },
     { sel: '.mk-lado', tit: 'Ataque o defensa', txt: 'Cuando cambia el balón, toca «Defensa». Los botones cambian a los de defensa.', hecho: () => st.partido.lado === 'D' },
@@ -2344,7 +2339,7 @@ let onbTras = () => {};
   function empieza() {
     if (tour) return;
     tour = { i: 0, caja: { st: { ...st }, T, HOY, vanTodos } };
-    st.practicando = true; st.hoja = null; st.toast = null; st.escribe = null; st.ins = null; st.yds = 'si'; st.mkVer = 'marcar'; clearTimeout(tToast); cerrarCuanto();
+    st.practicando = true; st.hoja = null; st.toast = null; st.escribe = null; st.ins = null; st.yds = 'si'; st.mkVer = 'marcar'; clearTimeout(tToast);
     // un celular sin jugadores practica con tres de mentira (solo en esta copia de la temporada)
     if (!PLANTEL.length) { T = { ...T, plantel: [1, 2, 3].map((n) => ({ id: 'practica' + n, nombre: 'Jugador ' + n, n })) }; recalcular(); }
     if (!st.van.length) st.van = PLANTEL.map((x) => x.id);
@@ -2367,7 +2362,7 @@ let onbTras = () => {};
     try { localStorage.setItem('belugas.visto.ver', '1'); } catch { /* sin guardado */ }
     T = c.T; HOY = c.HOY; vanTodos = c.vanTodos;
     for (const k in st) if (!(k in c.st)) delete st[k]; // lo que la práctica agregó (en qué vista iba Marcar, la jugada escogida)
-    Object.assign(st, c.st, { hoja: null, toast: null, cuanto: null, practicando: false }); clearTimeout(tToast); cerrarCuanto();
+    Object.assign(st, c.st, { hoja: null, toast: null, cuanto: null, practicando: false }); clearTimeout(tToast);
     recalcular(); if (st.partido) rehacer(st.partido);
     pinta(); pintar();
     sinc(filas.vivo); sinc(filas.temp); // lo que llegó de la nube mientras tanto
