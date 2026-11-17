@@ -328,17 +328,17 @@ table.bs td.v { color: #b8c2cf; }
 .tfila .desg span + span::before { content: ' · '; }
 
 /* versión 1: escalones */
-.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 16px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
+.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 10px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
 .pcol { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
 .pcol .foto { width: 64px; height: 64px; box-shadow: 0 8px 16px rgba(13,35,71,.18); }
-.pcol.p1 .foto { width: 86px; height: 86px; }
+.pcol.p1 .foto { width: 76px; height: 76px; }
 .pcol .corona { width: 62px; margin-bottom: -16px; }
 .pcol b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 7px; }
 .pcol .valor { margin-top: 2px; }
 .escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); box-shadow: inset 0 5px 0 rgba(255,255,255,.35); }
-.p1 .escalon { height: 104px; background: var(--grad); color: #fff; }
-.p2 .escalon { height: 78px; background: var(--plata); color: #5b6676; }
-.p3 .escalon { height: 60px; background: var(--bronce); color: #7a431b; }
+.p1 .escalon { height: 56px; background: var(--grad); color: #fff; }
+.p2 .escalon { height: 46px; background: var(--plata); color: #5b6676; }
+.p3 .escalon { height: 38px; background: var(--bronce); color: #7a431b; }
 
 
 /* la tabla de abajo, compacta */
@@ -590,7 +590,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 .hoja.cuanto .rg-b:active, .rg-saltos button:active { transform: scale(.97); }
 .rg-saltos button small { font: 800 13px/1 Inter; font-style: normal; margin-left: 2px; color: var(--mut); }
 /* Inicio: la tarjeta del partido sin balón, centrada */
-.heroe.hoy .vs { margin-right: 0; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
+.heroe.hoy { padding: 16px 18px; } .heroe.hoy .vs { margin: 10px 0; } .heroe.hoy + h2 { margin-top: 14px; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
 .op.rojo { background: #c0392b; color: #fff; }
 .mk-corr { text-align: center; font: 800 11.5px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin: 2px 0 4px; }
 .sinquerer button { background: var(--ink); color: #fff; border-radius: 10px; height: 40px; padding: 0 14px; font: 800 14px/1 Inter; flex: none; }
@@ -728,18 +728,6 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 .pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
 .pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: #d6453d; font-weight: 700; }
 .pp.pp2 { min-height: 72px; }
-/* Inicio: el último partido como marcador de tele */
-.ug { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; padding: 14px 12px 12px 16px; overflow: hidden; }
-.ug::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--ok); }
-.ug.p::before { background: #d6453d; } .ug.e::before { background: var(--tenue); }
-.ug .eq { display: flex; flex-direction: column; align-items: center; gap: 6px; font: italic 800 14px/1 var(--disp); letter-spacing: .06em; color: var(--mut); }
-.ug .eq img, .ug .eq .rlogo { width: 48px; height: 48px; object-fit: contain; }
-.ug .mid { text-align: center; }
-.ug strong { display: flex; align-items: baseline; justify-content: center; gap: 6px; font: italic 900 48px/1 var(--disp); color: var(--tenue); }
-.ug strong .w { color: var(--navy); }
-.ug strong i { font-style: normal; font-size: 30px; }
-.ug small { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 6px; font: 700 11.5px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .06em; }
-.ug .rs { width: auto; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 10.5px; letter-spacing: .06em; }
 .pp2 small { display: block; }
 .pp2 small .punto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5483f; margin-right: 6px; vertical-align: 1px; }
 .pp2 .der2 { flex: none; display: grid; grid-template-columns: 22px 60px; gap: 8px; align-items: center; justify-items: end; }
@@ -1018,17 +1006,6 @@ const ENGRANE = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d
 const cab = (titulo, sub, der = '') => `<div class="cab"><img src="${LOGO}" alt=""><div><b>${titulo}</b><small>${sub}</small></div>${titulo === 'Belugas' ? `<button class="engrane" data-a="ayuda" aria-label="Ajustes">${ENGRANE}</button>` : der}</div>`;
 // compartir el resultado de un partido (imagen por el menú del teléfono); «Copiado» cuando solo se pudo copiar el texto
 const btnCompartir = (gid) => `<button class="comp" data-a="compartir" data-v="${gid}">${st.copiado === gid ? 'Copiado' : 'Compartir'}</button>`;
-const ultimo = () => RESULTADOS[0];
-
-// el último partido (el próximo ya no se sabe: no hay calendario en el código)
-function minis() {
-  if (!RESULTADOS.length) return '';
-  const [rid, fecha, a, b, gid] = ultimo(), r = R(rid);
-  const [c, , txt] = resDe(a, b);
-  return `<button class="card ug ${c}" data-a="juego" data-v="${gid}"><div class="eq"><img src="${LOGO}" alt="">BEL</div>
-    <div class="mid"><strong class="num"><b${a >= b ? ' class="w"' : ''}>${a}</b><i>–</i><b${b >= a ? ' class="w"' : ''}>${b}</b></strong><small><span class="rs ${c}">${txt}</span>${fecha}</small></div>
-    <div class="eq">${rlogo(r)}${r.corto}</div></button>`;
-}
 
 // ---------- líderes ----------
 function ranking() {
@@ -1044,14 +1021,14 @@ function podio(top) {
   return `<div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${foto(x[0])}<b class="corta">${x[0].corto}</b>${val(x[1], x[2])}${desg(x[0])}<div class="escalon">${n}</div></div>`).join('')}</div>`;
 }
 function lideres() {
-  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 3);
+  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : []; // Inicio cabe en una pantalla: solo el podio, el resto con «Ver todos»
   if (r.length < 3) return ''; // sin plantel todavía (falta el link del equipo)
   if (!JUEGOS.some((g) => !g.solo)) return '<h2>Líderes <small>Temporada</small></h2><div class="relevo" style="margin-top:0">Los líderes aparecen al marcar el primer partido.</div>';
   return `<h2>Líderes <small>Temporada</small></h2>
   <div class="cats">${CATS.map(([k, t]) => `<button class="cat ${st.cat === k ? 'on' : ''}" data-a="cat" data-v="${k}">${t}</button>`).join('')}</div>
   <div class="lideres ${st.animar ? 'entra' : st.cambiaCat ? 'cambia' : ''}">${podio(r)}
     <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}${desg(p)}</div>${val(v, u)}</div>`).join('')}</div>
-    ${resto.length > 3 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
+    ${resto.length ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
 }
 
 // ---------- pantallas ----------
@@ -1075,7 +1052,6 @@ function inicio1() {
   return `<div class="pant">${est()}<div class="cuerpo">
     ${cab('Belugas', `Temporada 2026 · ${RECORD}`)}
     ${avisoNube()}${heroeHoy()}
-    ${RESULTADOS.length ? `<h2>Último partido</h2>${minis()}` : ''}
     ${lideres()}
   </div>${nav()}</div>`;
 }
