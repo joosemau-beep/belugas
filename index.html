@@ -897,20 +897,24 @@ const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
 const tablaPuntos = () => `<details class="card reglas"><summary>Sistema de puntos</summary>
   ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.filter(([k]) => k !== 'pd').map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
   <p>El pase completo no da puntos: el QB gana por las yardas que lanza. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni la bandera fallada. No hay puntos de defensa por equipo, porque casi todos juegan en ataque y en defensa.</p></details>`;
-const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (x) { t.pj++; CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); } }); t.pts = puntosDe(t); Object.entries(ANTES[p.id] || {}).forEach(([k, v]) => { t[k] += v; }); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
+// vino: está en «quiénes vinieron» o hizo alguna jugada (los partidos sin esa lista cuentan solo lo segundo)
+const vino = (g, id) => !!g.st[id] || !!(g.partido && (g.partido.van || []).includes(id));
+// el QB del partido: el marcado; si no hay, el que más lanzó
+const qbDe = (g) => (g.partido && g.partido.qb) || Object.keys(g.st).filter((id) => g.st[id].att).sort((a, b) => g.st[b].att - g.st[a].att)[0];
+const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0, qbs: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (vino(g, p.id)) t.pj++; if (qbDe(g) === p.id) t.qbs++; if (x) CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); }); t.pts = puntosDe(t); Object.entries(ANTES[p.id] || {}).forEach(([k, v]) => { t[k] += v; }); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
 const TEMP = {};
 const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][k]]));
 const CATS = [['puntos', 'Puntos', 'pts', {}], ['td', 'TD', 'TD', {}], ['yds', 'Yardas', 'yd', {}], ['rec', 'Recepciones', 'rec', {}], ['band', 'Banderas', 'band.', {}]];
 // cómo se resume a cada quien en una línea
-const lineaDe = (x) => { if (!x) return 'No jugó'; const o = [];
-  if (x.att) o.push(`${x.comp}/${x.att} pases`); if (x.intl) o.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.pyd) o.push(`${x.pyd} yd de pase`); if (x.tdp) o.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`); if (!x.att && (x.ryd || x.ruyd)) o.push(`${(x.ryd || 0) + (x.ruyd || 0)} yd`);
+const lineaDe = (x, qb) => { if (!x) return 'No jugó'; const o = [], pas = qb ? o : []; // al que no es QB sus pases van al final
+  if (x.att) pas.push(`${x.comp}/${x.att} pases`); if (x.intl) pas.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.pyd) pas.push(`${x.pyd} yd de pase`); if (x.tdp) pas.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`); if (!qb && (x.ryd || x.ruyd)) o.push(`${(x.ryd || 0) + (x.ruyd || 0)} yd`);
   if (x.band) o.push(`${x.band} bandera${x.band > 1 ? 's' : ''}`); if (x.intn) o.push(`${x.intn} INT`); if (x.sack) o.push(`${x.sack} sack${x.sack > 1 ? 's' : ''}`); if (x.tap) o.push(`${x.tap} pase${x.tap > 1 ? 's' : ''} tapado${x.tap > 1 ? 's' : ''}`); if (x.conv) o.push(`conv. +${x.conv}`);
-  return o.filter((s) => !/INT lanzada/.test(s)).slice(0, 2).join(' · ') || 'Sin jugadas'; };
+  return (qb ? o : o.concat(pas)).filter((s) => !/INT lanzada/.test(s)).slice(0, 2).join(' · ') || 'Sin jugadas'; };
 
 // lo que más hace cada quien manda en la tarjeta: pases, defensa, corridas o recepciones
 function statsTarjeta(p) {
   const t = TEMP[p.id];
-  if (t.att) return {k: 'Pases completos', v: t.comp, tira: [['% comp.', Math.round(t.comp / t.att * 100)], ['TD de pase', t.tdp], ['INT', t.intl]]};
+  if (t.att && t.qbs) return {k: 'Pases completos', v: t.comp, tira: [['% comp.', Math.round(t.comp / t.att * 100)], ['TD de pase', t.tdp], ['INT', t.intl]]};
   if (t.band + t.intn + t.sack + t.tap > t.rec + t.car) return {k: 'Banderas', v: t.band, tira: [['INT', t.intn], ['Sacks', t.sack], ['Tapados', t.tap]]};
   if (t.car > t.rec) return {k: 'Corridas', v: t.car, tira: [['TD', t.td], ['Recepciones', t.rec], ['Puntos', t.pts]]};
   return {k: 'Recepciones', v: t.rec, tira: [['TD', t.td], ['Conversión', t.conv ? `+${t.conv}` : 0], ['Puntos', t.pts]]};
@@ -1208,7 +1212,7 @@ const pieJugador = (p) => { const e = st.escribe;
   return `<div class="ops dos acc" style="margin-top:18px"><button class="op" data-a="escribe" data-v="nombre">Cambiar nombre</button><button class="op borrar" data-a="escribe" data-v="baja">Dar de baja</button></div>`; };
 function jugadores() {
   return `<div class="pant">${est()}<div class="cuerpo">${cab('Jugadores', 'Temporada 2026')}
-  <div class="card">${rankPts().map((p, i) => { const t = TEMP[p.id]; return `<button class="pp" data-a="jug" data-v="${p.id}"><span class="rk" style="width:18px;font:800 13px/1 Inter;color:var(--mut);text-align:center">${i + 1}</span>${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(t)}</small></div><div class="der"><strong class="num">${t.pts}</strong><small>pts</small></div></button>`; }).join('')}${filaAgregar()}</div>
+  <div class="card">${rankPts().map((p, i) => { const t = TEMP[p.id]; return `<button class="pp" data-a="jug" data-v="${p.id}"><span class="rk" style="width:18px;font:800 13px/1 Inter;color:var(--mut);text-align:center">${i + 1}</span>${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(t, t.qbs)}</small></div><div class="der"><strong class="num">${t.pts}</strong><small>pts</small></div></button>`; }).join('')}${filaAgregar()}</div>
   ${tablaPuntos()}
   </div>${nav()}</div>`;
 }
@@ -1222,11 +1226,11 @@ function jugador() {
     ['Banderas', t.band], ['Intercepciones', t.intn], ['Sacks', t.sack], ['Pases tapados', t.tap], ['Presiones', t.pres]].filter((x) => x[1]);
   return `<div class="pant">${est()}<div class="cuerpo"><div class="fila-v vuelta">${volver()}</div>
   ${tarjetaJ(p)}
-  <div class="tj-info"><span><b class="num">${t.pts}</b> puntos</span><span><b class="num">${lugar}º</b> del equipo</span><span><b class="num">${t.pj}</b> partidos</span></div>
+  <div class="tj-info"><span><b class="num">${t.pts}</b> puntos</span><span><b class="num">${lugar}º</b> del equipo</span><span><b class="num">${t.pj}</b> partido${t.pj === 1 ? '' : 's'}</span></div>
   <div class="lado" style="--n:3" role="group" aria-label="De qué lado juega">${[['O', 'Ataque'], ['D', 'Defensa'], ['', 'Los dos']].map(([v, n]) => `<button data-a="ladoj" data-v="${v}" aria-pressed="${(p.lado || '') === v}"${(p.lado || '') === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div>
   ${tiles.length ? `<h2>Temporada</h2><div class="tiles">${tiles.map(([k, v, e]) => `<div class="tile"><strong class="num">${v}</strong><span>${k}</span>${e ? `<em>${e}</em>` : ''}</div>`).join('')}</div>` : ''}
   ${lanza.length ? `<h2>Conexiones</h2><div class="card">${conexiones(lanza, p.id)}</div>` : ''}
-  ${con.length ? `<h2>Partido por partido</h2><div class="card">${con.slice().reverse().map((g) => { const x = g.st[p.id], r = R(g.rival), pt = puntosDe(x); return `<button class="pp" data-a="juego" data-v="${g.id}">${rlogo(r)}<div><b class="corta">vs ${r.corto} · ${g.fecha}</b><small class="corta" style="display:block">${lineaDe(x)}</small></div><div class="der"><strong class="num">${pt}</strong><small>pts</small></div></button>`; }).join('')}</div>` : ''}
+  ${con.length ? `<h2>Partido por partido</h2><div class="card">${con.slice().reverse().map((g) => { const x = g.st[p.id], r = R(g.rival), pt = puntosDe(x); return `<button class="pp" data-a="juego" data-v="${g.id}">${rlogo(r)}<div><b class="corta">vs ${r.corto} · ${g.fecha}</b><small class="corta" style="display:block">${lineaDe(vino(g, p.id) ? x || {} : null, qbDe(g) === p.id)}</small></div><div class="der"><strong class="num">${pt}</strong><small>pts</small></div></button>`; }).join('')}</div>` : ''}
   ${pieJugador(p)}
   </div>${nav()}</div>`;
 }
@@ -1248,7 +1252,7 @@ function partido() {
   <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
   ${st.partido && !st.partido.corrige ? '<div class="sinquerer"><span>Para corregir este partido, primero termina el de hoy.</span></div>' : `<div class="sinquerer"><span>¿Hay un error?</span><button data-a="corregirp" data-v="${g.id}">Corregir</button></div>`}
   <h2>Anotaciones</h2><div class="jlista" style="margin-top:0">${anot.join('') || '<div class="jfila">Sin touchdowns</div>'}</div>
-  <h2>Destacados</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(g.st[id])}</small></div><div class="der"><strong class="num">${puntosDe(g.st[id])}</strong><small>pts</small></div></button>`; }).join('')}</div>
+  <h2>Destacados</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(g.st[id], qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(g.st[id])}</strong><small>pts</small></div></button>`; }).join('')}</div>
   <h2>Equipo</h2><div class="card"><div class="franja3"><div><span>Touchdowns</span><strong class="num">${g.tds.length}</strong></div><div><span>Conversiones</span><strong class="num">${g.convs[1] ? `${g.convs[0]} de ${g.convs[1]}` : '—'}</strong></div><div><span>Banderas</span><strong class="num">${band}</strong></div></div>
     <details class="mas"><summary>Ver todos los números</summary>
       <div class="mrow"><div><b>Jugadas exitosas</b><small>${g.funcion} de ${g.jugadas}</small></div><strong class="num">${g.jugadas ? Math.round(g.funcion / g.jugadas * 100) : '—'}<i>%</i></strong></div>
@@ -1280,7 +1284,7 @@ function resumen() {
   <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(u.nos, u.ellos)[2]}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${u.nos} – ${u.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
   ${u.partido ? '<div class="sinquerer"><span>¿Lo terminaste por error?</span><button data-a="seguir">Seguir marcando</button></div>' : ''}
   ${u.partido && u.partido.jugadas.length ? loQueMarcamos(u.partido) : ''}
-  <h2>Destacados</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(jg.st[id])}</small></div><div class="der"><strong class="num">${puntosDe(jg.st[id])}</strong><small>pts</small></div></button>`; }).join('') || '<div class="pp">Sin jugadas por jugador</div>'}</div>
+  <h2>Destacados</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(jg.st[id], qbDe(jg) === id)}</small></div><div class="der"><strong class="num">${puntosDe(jg.st[id])}</strong><small>pts</small></div></button>`; }).join('') || '<div class="pp">Sin jugadas por jugador</div>'}</div>
   ${u.partido && u.partido.jugadas.length ? jlista(u.partido, false) : ''}
   <div class="ops dos" style="margin-top:18px"><button class="op" data-a="juego" data-v="${u.gid}">Ver el partido</button><button class="op prim" data-a="ir" data-v="inicio">Listo</button></div>
   </div>${nav()}</div>`;
@@ -2152,7 +2156,8 @@ const A = {
   cqp: () => { st.hoja = 'cqp'; },
   cqpya: (v) => {
     const j = st.partido.jugadas[st.edita], [k, cv] = v.split(':');
-    corrige(j, (x) => { x.k = k; if (k === 'castigo') x.v = cv; if (!['td', 'pick6', 'tdr', 'pick6c'].includes(k)) { x.conv = null; x.convId = null; x.convQb = null; } if (!CON_NOMBRE.includes(k)) x.id = null; if (!conYardas(x)) x.yd = null; if (k !== 'incompleto') x.drop = false; if (!['pase', 'corrida', 'bandera'].includes(k)) x.pd = false; if (['int', 'pick6c', 'pase', 'incompleto', 'td'].includes(k)) x.qb = x.qb || st.partido.qb; else x.qb = null; });
+    corrige(j, (x) => { const era = x.k; x.k = k; if (k === 'castigo') x.v = cv; if (!['td', 'pick6', 'tdr', 'pick6c'].includes(k)) { x.conv = null; x.convId = null; x.convQb = null; } if (!CON_NOMBRE.includes(k)) x.id = null; if (!conYardas(x)) x.yd = null; if (k !== 'incompleto') x.drop = false; if (!['pase', 'corrida', 'bandera'].includes(k)) x.pd = false; if (k === 'td' && era === 'corrida') x.qb = null; // la corrida que acabó en TD es TD corriendo, no de pase
+    else if (['int', 'pick6c', 'pase', 'incompleto', 'td'].includes(k)) x.qb = x.qb || st.partido.qb; else x.qb = null; });
     st.hoja = ['td', 'pick6'].includes(k) ? null : CON_NOMBRE.includes(k) && !SIN_QUIEN.includes(k) && !j.id ? 'corrige' : null;
     if (['td', 'pick6', 'tdr', 'pick6c'].includes(k)) abrirConv(j);
   },
