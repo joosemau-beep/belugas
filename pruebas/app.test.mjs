@@ -507,7 +507,7 @@ test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le d
     const revisa = (v) => pg.evaluate(() => {
       const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
       c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
-      // los nombres de las pestañas van pegados abajo, como en un iPhone: entre ellos y la zona segura de la rayita, a lo más 8 px
+      // la píldora de las pestañas va pegada abajo, como en un iPhone: entre sus íconos y la zona segura de la rayita, a lo más 8 px
       const ab = parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom), nom = Math.max(...[...document.querySelectorAll('#tel .nav button')].map((b) => b.getBoundingClientRect().bottom));
       return [Math.round(n.bottom) - innerHeight, ab >= 20, n.bottom - ab - nom <= 8, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
     }).then((r) => assert.deepEqual(r, [0, true, true, true, true], `${v} (${ancho} × ${alto})`));
@@ -519,6 +519,35 @@ test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le d
     assert.deepEqual(pg.errores, []);
     await pg.context().close();
   }
+});
+
+test('la barra es la Waterline: solo íconos, En vivo con el marcador, la gota va a la pestaña tocada y se queda quieta; sin WebGL y sin animaciones también', async () => {
+  for (const sinGL of [false, true]) {
+    const pg = await telefono(srv.url, { app: {} });
+    if (sinGL) { await pg.addInitScript(() => { HTMLCanvasElement.prototype.getContext = () => null; }); await pg.reload(); await pg.waitForSelector('#tel .nav'); }
+    await agrega(pg, ['Mau', 'Nico']);
+    // solo íconos: los nombres quedan para el lector de pantalla, sin ocupar lugar
+    assert.deepEqual(await pg.locator('#tel .agua .nom').evaluateAll((xs) => xs.map((x) => [x.textContent, x.getBoundingClientRect().width <= 1])), [['Inicio', true], ['Partidos', true], ['Marcar', true], ['Jugadores', true], ['Métricas', true]]);
+    if (sinGL) assert.equal(await pg.locator('#tel .agua').getAttribute('data-gl'), 'off');
+    const gota = () => pg.evaluate(() => { const b = document.querySelector('#tel .agua button.on, #tel .agua .centro2.on').getBoundingClientRect(), n = document.querySelector('#tel .agua').getBoundingClientRect(); // eslint-disable-line no-undef
+      return [Math.abs(Math.round(AGUA.a.x - AGUA_PAD + n.left - (b.left + b.width / 2))), AGUA.raf, AGUA.moving]; }); // eslint-disable-line no-undef
+    await toca(pg, 'ir', 'metricas'); await pg.waitForTimeout(3600);
+    assert.deepEqual(await gota(), [0, 0, false]); // llegó a Métricas y, al irse la onda, ya no dibuja (la pila)
+    if (sinGL) assert.ok(parseFloat(await pg.locator('#tel .agua-gota').evaluate((g) => g.style.width)) > 20);
+    // con partido, el centro es el marcador con el punto de en vivo, y la gota se va ahí
+    await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto'); await pg.waitForTimeout(3600);
+    assert.deepEqual(await pg.locator('#tel .agua .centro2').evaluate((b) => [b.className, b.querySelector('.pill').textContent, b.querySelector('.nom').textContent]), ['centro2 vivo on', '0–0', 'En vivo']);
+    assert.deepEqual(await gota(), [0, 0, false]);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+  // sin animaciones (reducir movimiento): la gota cambia de lugar de una vez
+  const pg = await telefono(srv.url, { app: {} });
+  await pg.emulateMedia({ reducedMotion: 'reduce' });
+  await toca(pg, 'ir', 'jugadores');
+  await pg.waitForTimeout(100);
+  assert.deepEqual(await pg.evaluate(() => [AGUA.quieta, Math.abs(Math.round(AGUA.a.x - AGUA.t.x)), AGUA.rips.length, AGUA.moving, AGUA.raf]), [true, 0, 0, false, 0]); // eslint-disable-line no-undef
+  await pg.context().close();
 });
 
 test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga', async () => {
