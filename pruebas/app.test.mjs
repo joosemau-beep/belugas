@@ -295,9 +295,17 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.deepEqual(await pg.locator('.mk-tiras > button').allInnerTexts(), ['Touchdown', 'Más opciones']);
   assert.ok(Math.min(...await pg.locator('.mk-grande').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 98);
   assert.ok(Math.min(...await pg.locator('.mk-tiras > button').evaluateAll((xs) => xs.map((x) => x.getBoundingClientRect().height))) >= 56);
-  // el aviso flota encima de la barra: no empuja la página ni tapa «Más opciones», y todo sigue sin bajar (Iker, 17-nov)
+  // el aviso sale arriba como pop-up, sobre el marcador: deja libres QB y Terminar, no toca los botones ni mueve la página, «Deshacer» de 44 o más, y todo sigue sin bajar (Iker, 17-nov)
   assert.deepEqual(await pg.evaluate(() => { const a = document.querySelector('.pant > .pregunta.aviso').getBoundingClientRect(), c = document.querySelector('.mk-cuerpo');
-    return [a.bottom <= document.querySelector('.nav').getBoundingClientRect().top, a.top >= document.querySelector('.mk-tira.mas').getBoundingClientRect().bottom, c.scrollTop, c.scrollHeight <= c.clientHeight]; }), [true, true, 0, true]);
+    return [a.top >= document.querySelector('.mbar').getBoundingClientRect().bottom, a.bottom <= document.querySelector('.mk-lado').getBoundingClientRect().top, document.querySelector('.pant > .pregunta.aviso .acc').getBoundingClientRect().height >= 44, c.scrollTop, c.scrollHeight <= c.clientHeight]; }), [true, true, true, 0, true]);
+  // guardar una jugada no mueve nada: los botones quedan donde estaban, con el aviso arriba (antes la pantalla se bajaba, Iker 17-nov); luego se deshace
+  const dondeBotones = () => pg.evaluate(() => [document.querySelector('.mk-cuerpo').scrollTop, ...[...document.querySelectorAll('.mk-grande, .mk-tiras > button')].map((x) => Math.round(x.getBoundingClientRect().top))]);
+  const antes = await dondeBotones();
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nico'); await toca(pg, 'sinyd'); await pg.waitForTimeout(400);
+  assert.equal(await pg.locator('.pant > .pregunta.aviso [data-a=deshacer]').count(), 1);
+  assert.deepEqual(await dondeBotones(), antes);
+  await toca(pg, 'deshacer', 'aviso'); await pg.waitForTimeout(300);
+  assert.deepEqual(await dondeBotones(), antes);
   // el aviso de la jugada se va solo: en Marcar no se queda la tira «Última · Corregir · Deshacer»; todas las jugadas caben sin bajar
   await pg.evaluate(() => { st.toast = null; pintar(); }); // eslint-disable-line no-undef
   assert.deepEqual(await pg.evaluate(() => { const c = document.querySelector('.mk-cuerpo'); return [document.querySelectorAll('.mk-cuerpo .ultima').length, c.scrollHeight <= c.clientHeight]; }), [0, true]);

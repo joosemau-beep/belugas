@@ -453,8 +453,12 @@ table.bs td.v { color: #b8c2cf; }
 .ultima b { color: var(--ink); font-weight: 600; }
 .ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; min-height: 44px; padding: 0 0 0 8px; flex: none; }
 .ultima button + button { margin-left: 0; padding-left: 14px; border-left: 1px solid var(--linea); }
-/* en Marcar el aviso flota sobre la barra y se va solo: no empuja ni tapa los botones (Iker, 17-nov) */
-.pant > .pregunta.aviso { position: absolute; left: 14px; right: 14px; bottom: calc(var(--navh) + 10px); margin: 0; height: 48px; z-index: 6; box-shadow: 0 10px 28px rgba(11,27,51,.32); }
+/* en Marcar el aviso sale arriba como pop-up, sobre el marcador, y se va solo: nunca abajo ni empujando los botones (Iker, 17-nov).
+   Va bajo QB/Terminar/Listo para no quitarles el toque (la hora + los 40 de .mbar) */
+.pant > .pregunta.aviso { position: absolute; left: 12px; right: 12px; top: calc(max(14px, env(safe-area-inset-top)) + 44px); margin: 0; height: 52px; z-index: 6; background: #04070e; border-radius: 18px; box-shadow: 0 0 0 1px rgba(255,255,255,.14), 0 14px 32px rgba(0,0,0,.4); }
+.pant > .pregunta.aviso .acc { height: 52px; padding: 0 14px; font-size: 15px; }
+html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
+.tel.anim .pant > .pregunta.aviso.nuevo { animation: toastIn .28s cubic-bezier(.3,1.4,.5,1); }
 .pregunta .ult { min-height: 40px; padding: 0 2px 0 10px; font: 700 13.5px/1 Inter; color: var(--acento); flex: none; }
 .pregunta .vista { display: inline-flex; background: #e3e8ef; border-radius: 9px; padding: 3px; flex: none; }
 .pregunta .vista button { font: 700 11.5px/1 Inter; color: var(--mut); padding: 7px 9px; border-radius: 7px; }
@@ -1907,7 +1911,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117161935';
+const VERSION = '20261117162855';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
