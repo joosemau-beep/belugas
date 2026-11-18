@@ -485,9 +485,11 @@ test('la franja de la hora va del color del encabezado de cada pantalla, tambié
     while (e && getComputedStyle(e).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(e).backgroundImage === 'none') e = e.parentElement;
     const c = getComputedStyle(e); return [document.querySelector('meta[name="theme-color"]').content, c.backgroundImage !== 'none' ? 'degradado' : c.backgroundColor]; });
   const MARINO = ['#0d2347', 'rgb(13, 35, 71)'];
-  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); assert.deepEqual(await arriba(), MARINO, v); }
-  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); assert.deepEqual(await arriba(), MARINO, 'ficha de jugador');
-  await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); assert.deepEqual(await arriba(), MARINO, 'ficha de partido'); // eslint-disable-line no-undef
+  // al bajar, la franja se va con el encabezado (va dentro de lo que se desplaza): no queda una barra marina pegada arriba (Iker, 17-nov)
+  const seVa = (v) => pg.evaluate(() => document.querySelector('#tel .estado').parentElement.className).then((c) => assert.equal(c, 'cuerpo', v));
+  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); assert.deepEqual(await arriba(), MARINO, v); await seVa(v); }
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); assert.deepEqual(await arriba(), MARINO, 'ficha de jugador'); await seVa('ficha de jugador');
+  await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); assert.deepEqual(await arriba(), MARINO, 'ficha de partido'); await seVa('ficha de partido'); // eslint-disable-line no-undef
   await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
   assert.deepEqual(await arriba(), ['#0d2347', 'degradado'], 'Marcar en ataque');
   await toca(pg, 'lado', 'D'); assert.deepEqual(await arriba(), ['#5e4824', 'degradado'], 'Marcar en defensa');
