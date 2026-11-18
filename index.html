@@ -624,6 +624,24 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .rg-saltos button small { font: 800 13px/1 Inter; font-style: normal; margin-left: 2px; color: var(--mut); }
 /* Inicio: la tarjeta del partido sin balón, centrada */
 .heroe.hoy .vs { margin-right: 0; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
+/* Inicio cabe en una pantalla (Iker, 17-nov): la tarjeta del partido, el podio y los renglones de Líderes un poco más chicos */
+.inicio .heroe.hoy { padding: 12px 16px 14px; }
+.inicio .heroe.hoy .vs { margin: 8px 0 10px; }
+.inicio .heroe .eq img, .inicio .heroe .eq .rlogo { width: 44px; height: 44px; }
+.inicio .heroe .mid strong { font-size: 40px; }
+.inicio .btn-blanco { height: 42px; font-size: 16px; }
+.inicio h2 { margin: 18px 2px 6px; }
+.inicio .cats { padding-bottom: 6px; } .inicio .cat { height: 32px; font-size: 12.5px; }
+.inicio .podio { padding-top: 8px; }
+.inicio .pcol .foto { width: 52px; height: 52px; } .inicio .pcol.p1 .foto { width: 64px; height: 64px; }
+.inicio .pcol .corona { width: 50px; margin-bottom: -13px; }
+.inicio .pcol b { margin-top: 5px; font-size: 13px; }
+.inicio .valor { font-size: 21px; }
+.inicio .escalon { margin-top: 6px; padding-top: 6px; font-size: 30px; }
+/* escalones altos y bien distintos, que se note quién va primero (Iker, 17-nov); por ellos abajo van solo el 4.º y el 5.º */
+.inicio .p1 .escalon { height: 88px; } .inicio .p2 .escalon { height: 62px; } .inicio .p3 .escalon { height: 42px; }
+.inicio .tfila { padding: 5px 14px; } .inicio .tfila .foto { width: 30px; height: 30px; } .inicio .tfila .valor { font-size: 18px; }
+.inicio .vertodos { height: 36px; }
 .op.rojo { background: #c0392b; color: #fff; }
 .mk-corr { text-align: center; font: 800 11.5px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin: 2px 0 4px; }
 .sinquerer button { background: var(--ink); color: #fff; border-radius: 10px; height: 40px; padding: 0 14px; font: 800 14px/1 Inter; flex: none; }
@@ -763,18 +781,6 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
 .pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: #d6453d; font-weight: 700; }
 .pp.pp2 { min-height: 72px; }
-/* Inicio: el último partido como marcador de tele */
-.ug { position: relative; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; padding: 14px 12px 12px 16px; overflow: hidden; }
-.ug::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--ok); }
-.ug.p::before { background: #d6453d; } .ug.e::before { background: var(--tenue); }
-.ug .eq { display: flex; flex-direction: column; align-items: center; gap: 6px; font: italic 800 14px/1 var(--disp); letter-spacing: .06em; color: var(--mut); }
-.ug .eq img, .ug .eq .rlogo { width: 48px; height: 48px; object-fit: contain; }
-.ug .mid { text-align: center; }
-.ug strong { display: flex; align-items: baseline; justify-content: center; gap: 6px; font: italic 900 48px/1 var(--disp); color: var(--tenue); }
-.ug strong .w { color: var(--navy); }
-.ug strong i { font-style: normal; font-size: 30px; }
-.ug small { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 6px; font: 700 11.5px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .06em; }
-.ug .rs { width: auto; height: 20px; padding: 0 8px; border-radius: 999px; font-size: 10.5px; letter-spacing: .06em; }
 .pp2 small { display: block; }
 .pp2 small .punto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5483f; margin-right: 6px; vertical-align: 1px; }
 .pp2 .der2 { flex: none; display: grid; grid-template-columns: 22px 60px; gap: 8px; align-items: center; justify-items: end; }
@@ -1206,17 +1212,6 @@ const ENGRANE = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d
 const cab = (titulo, sub, der = '') => `<div class="cab"><img src="${LOGO}" alt=""><div><b>${titulo}</b><small>${sub}</small></div>${titulo === 'Belugas' ? `<button class="engrane" data-a="ayuda" aria-label="Ajustes">${ENGRANE}</button>` : der}</div>`;
 // compartir el resultado de un partido (imagen por el menú del teléfono); «Copiado» cuando solo se pudo copiar el texto
 const btnCompartir = (gid) => `<button class="comp" data-a="compartir" data-v="${gid}">${st.copiado === gid ? 'Copiado' : 'Compartir'}</button>`;
-const ultimo = () => RESULTADOS[0];
-
-// el último partido (el próximo ya no se sabe: no hay calendario en el código)
-function minis() {
-  if (!RESULTADOS.length) return '';
-  const [rid, fecha, a, b, gid] = ultimo(), r = R(rid);
-  const [c, , txt] = resDe(a, b);
-  return `<button class="card ug ${c}" data-a="juego" data-v="${gid}"><div class="eq"><img src="${LOGO}" alt="">BEL</div>
-    <div class="mid"><strong class="num"><b${a >= b ? ' class="w"' : ''}>${a}</b><i>–</i><b${b >= a ? ' class="w"' : ''}>${b}</b></strong><small><span class="rs ${c}">${txt}</span>${fecha}</small></div>
-    <div class="eq">${rlogo(r)}${r.corto}</div></button>`;
-}
 
 // ---------- líderes ----------
 function ranking() {
@@ -1232,14 +1227,14 @@ function podio(top) {
   return `<div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${foto(x[0])}<b class="corta">${x[0].corto}</b>${val(x[1], x[2])}${desg(x[0])}<div class="escalon">${n}</div></div>`).join('')}</div>`;
 }
 function lideres() {
-  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 3);
+  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 2);
   if (r.length < 3) return ''; // sin plantel todavía (falta el link del equipo)
   if (!JUEGOS.some((g) => !g.solo)) return '<h2>Líderes <small>Temporada</small></h2><div class="relevo" style="margin-top:0">Los líderes aparecen al marcar el primer partido.</div>';
   return `<h2>Líderes <small>Temporada</small></h2>
   <div class="cats">${CATS.map(([k, t]) => `<button class="cat ${st.cat === k ? 'on' : ''}" data-a="cat" data-v="${k}">${t}</button>`).join('')}</div>
   <div class="lideres ${st.animar ? 'entra' : st.cambiaCat ? 'cambia' : ''}">${podio(r)}
     <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}${desg(p)}</div>${val(v, u)}</div>`).join('')}</div>
-    ${resto.length > 3 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
+    ${resto.length > 2 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
 }
 
 // ---------- pantallas ----------
@@ -1260,10 +1255,9 @@ function heroeHoy() {
       <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
 }
 function inicio1() {
-  return `<div class="pant"><div class="cuerpo">${est()}
+  return `<div class="pant inicio"><div class="cuerpo">${est()}
     ${cab('Belugas', `Temporada 2026 · ${RECORD}`)}
     ${avisoNube()}${heroeHoy()}
-    ${RESULTADOS.length ? `<h2>Último partido</h2>${minis()}` : ''}
     ${lideres()}
   </div>${nav()}</div>`;
 }
@@ -2141,7 +2135,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117192206';
+const VERSION = '20261117192641';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {

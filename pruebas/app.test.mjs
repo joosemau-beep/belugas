@@ -412,6 +412,7 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   assert.equal(await pg.locator('.heroe .balon').count(), 0);
   assert.match(await pg.locator('.heroe').innerText(), /Belugas[\s\S]*0 – 0[\s\S]*Kaffies/);
   await toca(pg, 'marcar'); await td(pg, 'corrida', 'nico'); await toca(pg, 'terminar'); await toca(pg, 'ir', 'inicio');
+  assert.doesNotMatch(await texto(pg), /Último partido/); // Inicio: solo la tarjeta de arriba y Líderes (Iker, 17-nov); el partido sigue en Partidos
   // ninguna pantalla rebota (ni arriba ni abajo) ni deja mover la página entera
   for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) {
     await toca(pg, 'ir', v);
@@ -419,8 +420,9 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   }
   // Líderes: cambiar de categoría no regresa la página hasta arriba
   await toca(pg, 'ir', 'inicio');
+  await toca(pg, 'todos'); // Inicio cabe en una pantalla; con «Ver todos» ya se baja
   const cu = pg.locator('#tel .cuerpo');
-  await cu.evaluate((c) => { c.scrollTop = 300; }); const y = await cu.evaluate((c) => c.scrollTop);
+  await cu.evaluate((c) => { c.scrollTop = 150; }); const y = await cu.evaluate((c) => c.scrollTop); // a media lista: con todo más chico, 300 ya es casi el fondo
   assert.ok(y > 0);
   await toca(pg, 'cat', 'yds');
   assert.equal(await cu.evaluate((c) => c.scrollTop), y);
