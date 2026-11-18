@@ -75,37 +75,56 @@
   src: url(archivos/fuentes/inter-var.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
+/* «me gusta» (Iker, 18-nov): un degradado cónico azul muy claro de fondo y las tarjetas en vidrio V03 «lechoso con borde finísimo» de su
+   laboratorio (sin relleno: el desenfoque y dos filos de luz), redondez de 38 px y, dentro, radios concéntricos (interior = exterior − relleno) */
 :root {
-  --bg: #f3f5f8; --card: #fff; --ink: #0b1b33; --navy: #0d2347; --azul: #1d4f8f; --hielo: #5aaeff; --mut: #56647a; --tenue: #a3acb9; --linea: #e4e8ee; --ok: #16a05a;
-  --sombra: 0 1px 2px rgba(11, 27, 51, .05), 0 6px 18px rgba(11, 27, 51, .07);
+  --bg: rgba(11,27,51,.05); --ink: #0b1b33; --navy: #0b1b33; --azul: #1d4f8f; --hielo: #5aaeff; --mut: rgba(11,27,51,.8); --tenue: rgba(11,27,51,.4); --linea: rgba(11,27,51,.1); --ok: #0f6e3e; --mal: #b42318;
+  --card: radial-gradient(120% 60% at 20% 0%, rgba(255,255,255,.2), rgba(255,255,255,0) 60%), linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 38%), rgba(255,253,247,0);
+  --blur: blur(40px) saturate(105%); --borde: rgba(255,255,255,.25);
+  --sombra: inset 0 1px 0 rgba(255,255,255,.43), 0 10px 26px rgba(18,32,50,.091), 0 2px 5px rgba(18,32,50,.049);
+  --fondo: radial-gradient(45% 45% at 0% 0%, rgba(237,245,252,1) 0%, rgba(237,245,252,.9) 20%, rgba(237,245,252,.65) 40%, rgba(237,245,252,.35) 60%, rgba(237,245,252,.1) 80%, rgba(237,245,252,0) 100%),
+    conic-gradient(from 190deg at 0% 0%, #ecf4fc 5%, #edf5fc 10%, #eff6fd 14%, #f2f7fd 19%, #f4f8fe 24%, #f5f9fe 28%, #f5f9fe 38%, #f4f8fe 43%, #f0f6fd 48%, #ecf4fc 52%, #e8f2fb 57%, #e7f1fb 62%, #e7f1fb 72%, #e8f1fb 76%, #e9f2fb 81%, #eaf3fc 86%, #ebf4fc 90%, #ecf4fc 95%), #fbfdff;
+  --franja: #ecf4fc;
+  --radio: 38px; --r-tile: 26px; --r-hoja: 40px; --r-in: 24px; --r-seg: 19px;
+  font-synthesis: none;
   --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --oro: linear-gradient(180deg, #ffe38c 0%, #f6b73c 55%, #dd8d16 100%);
   --plata: linear-gradient(180deg, #f1f4f8 0%, #c6cfda 60%, #9aa7b6 100%);
   --bronce: linear-gradient(180deg, #ffd9b5 0%, #d99257 60%, #a9602b 100%);
 }
+@supports (corner-shape: squircle) {
+  :root { --radio: 61px; --r-tile: 42px; --r-hoja: 64px; }
+  .card, .jlista, .lideres, .tile, .lqm > div, .heroe, .fj-cab, .mcab, .hoja, .res, .mk-grande, .mk-td, .tj, .grafica, .tm, .agua-vidrio { corner-shape: squircle; }
+}
 /* familias de gradiente: el marcador, el botón de Marcar, las tarjetas de jugador y el encabezado */
 .tel {
   --grad: radial-gradient(120% 90% at 100% 0%, rgba(120,190,255,.85) 0%, rgba(120,190,255,0) 55%), linear-gradient(135deg, #0d2347 0%, #1d4f8f 62%, #3f8fe6 100%);
-  --boton: linear-gradient(135deg, #0d2347 0%, #1d4f8f 55%, #5aaeff 100%);
+  --boton: linear-gradient(135deg, #163f75 0%, #1d4f8f 55%, #2a62a8 100%);
   --anillo: conic-gradient(from 210deg, #0d2347, #5aaeff, #1d4f8f, #0d2347);
   --abajo: env(safe-area-inset-bottom, 0px);
   --navh: calc(64px + var(--abajo)); /* lo que tapa la barra de pestañas: la píldora (56), su aire y la zona segura */
-  --brillo: radial-gradient(70% 55% at 50% -10%, rgba(90,174,255,.20), transparent 70%);
   --acento: #1d4f8f;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; }
-body { font: 16px/1.35 Inter, -apple-system, system-ui, sans-serif; color: var(--ink); background: #e6eaf0; -webkit-font-smoothing: antialiased; }
+body { font: 16px/1.35 Inter, -apple-system, system-ui, sans-serif; color: var(--ink); background: var(--franja); -webkit-font-smoothing: antialiased; }
 button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; }
 .num { font-variant-numeric: tabular-nums; }
 .corta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
 /* la app llena el teléfono; en pantalla ancha va centrada, a ancho de teléfono */
-.tel { width: 100%; max-width: 430px; height: 100dvh; margin: 0 auto; background: var(--bg); position: relative; overflow: hidden; }
-.tel::before { content: ''; position: absolute; inset: 0 0 auto; height: 260px; background: var(--brillo); pointer-events: none; }
-.conm { display: inline-flex; flex-wrap: wrap; background: #d9dfe8; border-radius: 10px; padding: 3px; margin: 7px 0 0; }
-.conm button { padding: 8px 12px; border-radius: 8px; font: 600 13px/1 Inter; }
-.conm button.on { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.tel { width: 100%; max-width: 430px; height: 100dvh; margin: 0 auto; background: var(--fondo); position: relative; overflow: hidden; }
+/* el vidrio: tarjetas, listas y bloques (nada de vidrio dentro de vidrio: lo de adentro lleva el relleno tenue --bg) */
+.card, .jlista, .lideres, .tile, .grafica, .tm, .lqm > div, .res, .mk-tira, .cuerpo > .ops.acc .op, .fj-cab, .agua-vidrio {
+  background: var(--card); border: .5px solid var(--borde); box-shadow: var(--sombra); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); }
+/* el fondo empieza desde el borde y no se repite: si no, el medio píxel del borde deja ver el otro lado del degradado */
+.card, .heroe, .fj-cab, .mcab { background-origin: border-box; background-repeat: no-repeat; }
+@media (prefers-reduced-transparency: reduce) {
+  .card, .jlista, .lideres, .tile, .grafica, .tm, .lqm > div, .res, .mk-tira, .fj-cab, .agua-vidrio { -webkit-backdrop-filter: none; backdrop-filter: none; background-color: rgba(248,251,255,.94); }
+}
+.conm { display: inline-flex; flex-wrap: wrap; background: rgba(11,27,51,.07); border-radius: 999px; padding: 3px; margin: 7px 0 0; }
+.conm button { padding: 8px 12px; border-radius: 999px; font: 600 13px/1 Inter; }
+.conm button.on { background: var(--ink); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.12); }
 @media (max-width: 520px) {
   /* encabezado B: la página es marina, así Safari 26 pinta de marino la franja de la hora en todas las pantallas;
      la barra de abajo va fija para que Safari tome su blanco en la orilla de abajo */
@@ -139,28 +158,30 @@ html.app .estado { height: calc(env(safe-area-inset-top) + 24px); }
 .cuerpo { flex: 1; overflow-y: auto; padding: 0 20px 124px; position: relative; }
 /* la franja marina detrás de la hora de verdad (con black-translucent mide lo que la zona segura de arriba; en Safari, 14 px) */
 .estado { height: max(14px, env(safe-area-inset-top)); flex: none; position: relative; }
-.pant > .estado { background: #0d2347; }
-/* la franja va dentro de lo que se desplaza: al bajar se va con el encabezado y no queda una barra marina pegada arriba (Iker, 17-nov) */
-.cuerpo > .estado { margin: 0 -20px; background: #0d2347; }
+.pant > .estado { background: transparent; }
+/* la franja va dentro de lo que se desplaza: al bajar se va con el encabezado (Iker, 17-nov); sin marino: el fondo se ve hasta arriba */
+.cuerpo > .estado { margin: 0 -20px; }
 /* desde el ícono la hora va en blanco: un velo marino suave, sin orilla, la deja leer cuando la lista pasa por debajo */
 html.app .pant:has(> .cuerpo > .estado)::before { content: ''; position: absolute; inset: 0 0 auto; z-index: 4; height: calc(env(safe-area-inset-top) + 16px); background: linear-gradient(rgba(13,35,71,.62), rgba(13,35,71,.3) 55%, rgba(13,35,71,0)); pointer-events: none; }
-.cab { display: flex; align-items: center; gap: 10px; margin: 0 -20px 14px; padding: 2px 22px 14px; background: #0d2347; color: #fff; }
+.cab { display: flex; align-items: center; gap: 10px; margin: 0 -20px 14px; padding: 2px 22px 14px; color: var(--ink); }
 .cab img { width: 38px; height: 38px; object-fit: contain; }
 .cab b { font: 800 20px/1 Inter; }
-.cab small { display: block; color: rgba(255,255,255,.72); font: 500 13px/1.2 Inter; margin-top: 3px; }
+.cab small { display: block; color: var(--mut); font: 500 13px/1.2 Inter; margin-top: 3px; }
 h2 { font: 800 15px/1.2 Inter; margin: 32px 2px 12px; color: var(--ink); display: flex; justify-content: space-between; align-items: baseline; }
 h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
-.card { background: var(--card); border-radius: 16px; box-shadow: var(--sombra); }
+.card { border-radius: var(--radio); }
+/* aire en las esquinas de 38 px: los renglones de las listas entran un poco más, todos igual para que sigan alineados */
+.card > .pp, .card > .mrow, .jlista > .serie { padding-left: 22px; padding-right: 22px; }
 
 /* retratos: siempre en círculo, con anillo de la familia de gradiente */
 /* el rostro va solo, recortado en círculo, sin aro (decisión de Iker) */
 .foto { position: relative; flex: none; display: block; border-radius: 50%; }
-.foto > span { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #fff; }
+.foto > span { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: #dfe5ee; }
 .foto svg, .foto img { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* los retratos son de 725 × 900 con la cabeza arriba: el círculo toma la parte de arriba para no cortarles el pelo (Iker, 17-nov).
    Todos vienen reencuadrados igual: cara del mismo tamaño y ojos a la misma altura (y 309), para que nadie se vea más grande ni más alto */
 .foto img { object-position: 50% 0; }
-.foto .ini { display: grid; place-items: center; height: 100%; background: #e8eef7; color: var(--navy); font: 800 13px/1 Inter; }
+.foto .ini { display: grid; place-items: center; height: 100%; background: rgba(11,27,51,.12); color: var(--navy); font: 800 13px/1 Inter; }
 .pila { display: flex; align-items: center; }
 .pila .foto { width: 34px; height: 34px; margin-left: -9px; box-shadow: 0 0 0 2px rgba(255,255,255,.9); }
 .pila .foto:first-child { margin-left: 0; }
@@ -189,8 +210,8 @@ h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
 .res.td .ic.relleno, .res.tdr .ic.relleno { background: #fff; }
 .res.td .ic.relleno svg { stroke: #1d4f8f; } .res.tdr .ic.relleno svg { stroke: #4b5563; }
 .res.td .ic.relleno svg .f { fill: #1d4f8f; } .res.tdr .ic.relleno svg .f { fill: #4b5563; }
-.jlista { margin-top: 20px; background: #fff; border-radius: 16px; box-shadow: var(--sombra); }
-.jlista h4 { margin: 0; padding: 12px 14px 4px; font: 800 13px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; display: flex; justify-content: space-between; }
+.jlista { margin-top: 20px; border-radius: var(--radio); }
+.jlista h4 { margin: 0; padding: 12px 22px 4px; font: 800 13px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; display: flex; justify-content: space-between; }
 .jlista h4 button { font: 700 13px/1 Inter; color: var(--acento); text-transform: none; letter-spacing: 0; }
 .jfila { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-top: 1px solid var(--linea); font-size: 14px; }
 .jfila:first-of-type { border-top: 0; }
@@ -212,17 +233,17 @@ button.jfila { width: 100%; text-align: left; }
 .hoja h4.sub { margin: 16px 2px 8px; font: 800 12.5px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
 .hoja .pjs.chicos .pj { min-height: 90px; }
 .hoja .ops.acc .op { height: 48px; font-size: 15px; }
-.hoja .op.borrar, .op.borrar { color: #c0392b; }
-.cuerpo > .ops.acc .op { height: 48px; font-size: 15px; background: #fff; box-shadow: var(--sombra); }
-input.nombre { flex: 1; min-width: 0; height: 44px; border: 1.5px solid var(--linea); border-radius: 12px; padding: 0 12px; font: 700 16px/1 Inter; color: var(--ink); background: #fff; outline: none; -webkit-appearance: none; }
+.hoja .op.borrar, .op.borrar { color: var(--mal); }
+.cuerpo > .ops.acc .op { height: 48px; font-size: 15px; }
+input.nombre { flex: 1; min-width: 0; height: 44px; border: 1.5px solid rgba(11,27,51,.16); border-radius: 12px; padding: 0 12px; font: 700 16px/1 Inter; color: var(--ink); background: var(--bg); outline: none; -webkit-appearance: none; }
 input.nombre:focus { border-color: var(--acento); }
 .pj.actual, .op.actual { box-shadow: inset 0 0 0 2.5px var(--acento); }
 .mbar .qbchip { margin: 0; height: 38px; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* «¿Cuánto avanzó?»: la regla que escogió Iker en el editor; sin velo, las tiras de arriba siguen tocables */
-.hoja.cuanto { padding: 14px 16px calc(22px + var(--abajo)); box-shadow: 0 -10px 30px rgba(11,27,51,.18); }
+.hoja.cuanto { padding: 14px 16px calc(22px + var(--abajo)); }
 .mscore .down .op1 { font: italic 900 24px/1 var(--disp); }
 .rg-pmf { display: grid; grid-template-columns: 70px minmax(0, 1fr) 70px; align-items: center; gap: 8px; margin-top: 2px; }
-.rg-b { width: 70px; height: 70px; border-radius: 50%; background: #eceef1; color: var(--navy); display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; }
+.rg-b { width: 70px; height: 70px; border-radius: var(--r-in); background: var(--bg); color: var(--navy); display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; }
 .rg-b svg { display: block; }
 .rg-vw { position: relative; text-align: center; min-width: 0; white-space: nowrap; }
 .rg-v { display: inline-block; font: italic 900 100px/96px var(--disp); color: var(--ink); transition: color .15s; }
@@ -236,7 +257,7 @@ input.nombre:focus { border-color: var(--acento); }
 .rg-p { position: relative; height: 100%; }
 .rg-mm { position: absolute; top: 0; bottom: 0; }
 .rg-s { position: absolute; top: 0; height: 100%; width: 1px; scroll-snap-align: center; }
-.rg-m { position: absolute; border-radius: 3px; background: #d6dce5; }
+.rg-m { position: absolute; border-radius: 3px; background: rgba(11,27,51,.28); }
 .rg-n { position: absolute; transform: translateX(-50%); color: var(--mut); font: 700 12px/1 Inter; }
 .rg-z { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
 .rg-pm { position: absolute; width: 3px; margin-left: -1.5px; background: #f6c90e; border-radius: 2px; box-shadow: 0 0 6px rgba(246,201,14,.6); }
@@ -246,6 +267,7 @@ input.nombre:focus { border-color: var(--acento); }
 @keyframes rgRebote { 0% { transform: scale(1); } 35% { transform: scale(1.18); } 100% { transform: scale(1); } }
 /* Equipo al final de un partido: franja de 3 y «Ver todos los números» (la limpieza, aprobada por Iker) */
 .franja3 { display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; }
+.card > .franja3 { padding: 0 14px; } /* lejos de las esquinas de 38 px */
 .franja3 > div { padding: 16px 6px 14px; border-left: 1px solid var(--linea); } .franja3 > div:first-child { border-left: 0; }
 .franja3 span { display: block; font: 600 12px/1.2 Inter; color: var(--mut); } .franja3 strong { display: block; font: italic 900 38px/1 var(--disp); margin-top: 6px; }
 details.mas > summary { list-style: none; cursor: pointer; font: 700 13.5px/1 Inter; color: var(--acento); padding: 15px 16px; border-top: 1px solid var(--linea); text-align: center; }
@@ -262,11 +284,11 @@ table.bs th:first-child { text-align: left; padding-left: 14px; font: 800 13.5px
 table.bs td { text-align: center; padding: 7px 0; font: 600 14px/1.2 Inter; font-variant-numeric: tabular-nums; border-top: 1px solid var(--linea); white-space: nowrap; }
 table.bs td:first-child { text-align: left; padding-left: 14px; }
 table.bs th:last-child, table.bs td:last-child { padding-right: 8px; }
-table.bs td.v { color: #b8c2cf; }
+table.bs td.v { color: rgba(11,27,51,.4); }
 .nm { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .nm .foto { width: 28px; height: 28px; }
 .nm b { font: 600 14px/1.2 Inter; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.relevo { margin-top: 12px; background: var(--bg); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; line-height: 1.4; color: var(--mut); }
+.relevo { margin-top: 12px; background: var(--bg); border-radius: var(--r-in); padding: 12px 14px; font-size: 13.5px; line-height: 1.4; color: var(--ink); }
 .relevo b { color: var(--ink); }
 .convs .op { display: flex; align-items: center; justify-content: center; gap: 10px; }
 .convs .op .ic.relleno { background: #fff; } .convs .op .ic.relleno svg { stroke: var(--c); } .convs .op .ic.relleno svg .f { fill: var(--c); }
@@ -285,28 +307,35 @@ table.bs td.v { color: #b8c2cf; }
 @keyframes chispa { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--r)); } }
 @keyframes destello { 30% { opacity: 1; } }
 /* ANIM-FIN */
-.rlogo.sin { border-radius: 50%; background: linear-gradient(135deg, #4b5563, #9ca3af); color: #fff; display: grid; place-items: center; font: 800 12px/1 Inter; letter-spacing: .02em; box-shadow: inset 0 0 0 2px rgba(255,255,255,.7); }
+.rlogo.sin { border-radius: 50%; background: linear-gradient(135deg, #374151, #6b7280); color: #fff; display: grid; place-items: center; font: 800 12px/1 Inter; letter-spacing: .02em; box-shadow: inset 0 0 0 2px rgba(255,255,255,.7); }
 
-/* héroe del partido (Inicio 1): se queda como en la ronda 4 */
-.heroe { border-radius: 22px; background: var(--grad); color: #fff; padding: 18px; position: relative; overflow: hidden; box-shadow: 0 12px 28px rgba(13,35,71,.26); }
-.heroe, .gigante, .mcab { text-shadow: 0 1px 3px rgba(5,15,35,.35); }
-.btn-blanco, .gigante .tocar span { text-shadow: none; }
-.heroe .balon { position: absolute; right: -30px; top: -14px; width: 150px; transform: rotate(-12deg); filter: drop-shadow(0 10px 14px rgba(0,0,0,.35)); pointer-events: none; }
-.heroe .eti { font: 700 12px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .9; display: flex; align-items: center; gap: 7px; position: relative; }
+/* la tarjeta del partido: el degradado de los dos equipos (Iker, 18-nov; intensidad media), Belugas a la izquierda y el rival (--rq) a la derecha.
+   Los colores van ya calculados (sin oklch(from …)) y sin desenfoque: el fondo es opaco y el desenfoque solo costaba. El grano es una capa que se repite */
+.heroe, .mcab { --eq-bel: #005ead; --eq-riv: var(--rq, #515e74); color: #fff; border: .5px solid var(--borde); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 40px rgba(0,0,0,.35);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E"),
+    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 70%),
+    linear-gradient(90deg, color-mix(in srgb, var(--eq-bel) 50%, #08090d) 0%, color-mix(in srgb, var(--eq-bel) 35%, #08090d) 14%, color-mix(in srgb, var(--eq-bel) 19%, #08090d) 30%, color-mix(in srgb, var(--eq-bel) 6%, #08090d) 44%, #08090d 50%,
+      color-mix(in srgb, var(--eq-riv) 6%, #08090d) 56%, color-mix(in srgb, var(--eq-riv) 19%, #08090d) 70%, color-mix(in srgb, var(--eq-riv) 35%, #08090d) 86%, color-mix(in srgb, var(--eq-riv) 50%, #08090d) 100%);
+  background-origin: border-box; background-repeat: repeat, no-repeat, no-repeat; }
+.heroe { border-radius: var(--radio); padding: 16px 22px 18px; position: relative; overflow: hidden; }
+.gigante { text-shadow: 0 1px 3px rgba(5,15,35,.35); }
+.gigante .tocar span { text-shadow: none; }
+
+.heroe .eti { font: 700 12px/1 Inter; letter-spacing: .08em; text-transform: uppercase; display: flex; align-items: center; gap: 7px; position: relative; }
 .heroe .eti i { width: 8px; height: 8px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 0 3px rgba(255,90,90,.3); }
-.heroe .vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: 14px 96px 12px 0; position: relative; }
+.heroe .vs { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin: 14px 0 12px; position: relative; }
 .heroe .vs .mid strong { white-space: nowrap; }
-/* el logo del rival 12 px a la derecha y el de Belugas 8 px a la izquierda: ya no tocan la cifra; el balón no se mueve */
-.heroe .vs .eq:first-child { transform: translateX(-8px); } .heroe .vs .eq:last-child { transform: translateX(12px); }
 .heroe .eq { display: flex; flex-direction: column; align-items: center; gap: 6px; font: 700 13px/1 Inter; }
 .heroe .eq img, .heroe .eq .rlogo { width: 54px; height: 54px; }
 .heroe .mid { text-align: center; }
 .heroe .mid strong { font: italic 900 48px/1 var(--disp); letter-spacing: -.01em; text-shadow: 0 2px 10px rgba(0,0,0,.2); }
+.heroe.hoy .mid strong { font-size: 52px; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
 .heroe .mid small { display: block; font: 600 13px/1.3 Inter; opacity: .9; margin-top: 4px; }
-.btn-blanco { width: 100%; height: 60px; border-radius: 14px; background: #fff; color: var(--navy); font: 800 18px/1 Inter; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 2px 0 rgba(0,0,0,.08); position: relative; }
+/* «Seguir marcando», «Empezar a marcar» y «Ver el partido»: una píldora de liquid glass más corta, al 63 % de la tarjeta (Iker, 18-nov) */
+.btn-blanco { width: 63%; margin: 0 auto; height: 60px; border-radius: 999px; font: 800 18px/1 Inter; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3); border: .5px solid rgba(255,255,255,.34);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 8px 22px rgba(0,0,0,.3); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
 .btn-blanco:active, .gigante:active, .res:active, .pj:active, .op:active, .cat:active { transform: scale(.98); }
-
-
 /* último y próximo partido */
 .pmini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .pm { display: flex; align-items: center; gap: 10px; padding: 12px; text-align: left; width: 100%; min-width: 0; }
@@ -318,9 +347,9 @@ table.bs td.v { color: #b8c2cf; }
 
 /* ---------- líderes ---------- */
 .cats { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 12px; scrollbar-width: none; }
-.cat { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: 700 13px/1 Inter; color: var(--mut); }
-.cat.on { background: var(--boton); color: #fff; box-shadow: 0 3px 0 rgba(13,35,71,.25); }
-.lideres { background: #fff; border-radius: 22px; box-shadow: var(--sombra); overflow: hidden; }
+.cat { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px rgba(11,27,51,.18); font: 700 13px/1 Inter; color: rgba(11,27,51,.92); }
+.cat.on { background: var(--boton); color: #fff; box-shadow: none; }
+.lideres { border-radius: var(--radio); overflow: hidden; }
 .corona { position: relative; z-index: 3; display: block; pointer-events: none; filter: drop-shadow(0 4px 5px rgba(160,100,0,.35)); }
 .valor { font: italic 900 24px/1 var(--disp); color: var(--navy); }
 .valor small { font: 700 11px/1 Inter; font-style: normal; color: var(--mut); margin-left: 2px; }
@@ -331,9 +360,9 @@ table.bs td.v { color: #b8c2cf; }
 .tfila .desg span + span::before { content: ' · '; }
 
 /* versión 1: escalones */
-.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 16px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
+.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 16px 12px 0; }
 .pcol { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
-.pcol .foto { width: 64px; height: 64px; box-shadow: 0 8px 16px rgba(13,35,71,.18); }
+.pcol .foto { width: 64px; height: 64px; box-shadow: 0 8px 16px rgba(0,0,0,.35); }
 .pcol.p1 .foto { width: 86px; height: 86px; }
 .pcol .corona { width: 62px; margin-bottom: -16px; }
 .pcol b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 7px; }
@@ -341,8 +370,7 @@ table.bs td.v { color: #b8c2cf; }
 .escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); box-shadow: inset 0 5px 0 rgba(255,255,255,.35); }
 .p1 .escalon { height: 104px; background: var(--grad); color: #fff; }
 .p2 .escalon { height: 78px; background: var(--plata); color: #5b6676; }
-.p3 .escalon { height: 60px; background: var(--bronce); color: #7a431b; }
-
+.p3 .escalon { height: 60px; background: var(--bronce); color: #4a2508; }
 
 /* la tabla de abajo, compacta */
 .tabla { border-top: 1px solid var(--linea); }
@@ -383,13 +411,13 @@ table.bs td.v { color: #b8c2cf; }
 /* barra de abajo */
 .nav { position: absolute; left: 0; right: 0; bottom: 0; height: var(--navh); padding: 0 14px calc(var(--abajo) + 8px); display: flex; align-items: flex-end; z-index: 5; pointer-events: none; }
 /* en Safari (no desde el ícono) la franja de la barra va del fondo de la página, para que Safari pinte su barra de ese color y no de marino */
-html:not(.app) .nav { background: var(--bg); }
+html:not(.app) .nav { background: transparent; }
 /* la barra (Iker, 17-nov: la Waterline con «En vivo» de la A): una píldora de vidrio que flota, solo íconos; una gota de agua marca la
    pestaña, se estira hacia la que tocas, se parte en gotitas en los saltos largos y se junta con una onda (montaAgua) */
-.agua { position: relative; flex: 1; display: flex; gap: 2px; padding: 5px; border-radius: 999px; isolation: isolate; pointer-events: auto; color: rgba(13,35,71,.66); }
-/* vidrio limpio (Iker, 17-nov, la 1 de belugas-dock-limpio): blanco y transparente, sin arcoíris ni filos de color; los íconos apagados al 66 % (3:1 o más) */
-.agua-vidrio { position: absolute; inset: 0; border-radius: inherit; z-index: -2; background: rgba(255,255,255,.6); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  box-shadow: inset 0 1px 1px rgba(255,255,255,.9), inset 0 0 0 1px rgba(255,255,255,.35), 0 10px 28px -14px rgba(0,0,0,.35), 0 1px 4px rgba(0,0,0,.06); }
+.agua { position: relative; flex: 1; display: flex; gap: 2px; padding: 5px; border-radius: 999px; isolation: isolate; pointer-events: auto; color: rgba(11,27,51,.6); }
+/* la píldora en el vidrio V03 de las tarjetas (antes, el vidrio limpio de belugas-dock-limpio); los íconos apagados al 60 % */
+.agua-vidrio { position: absolute; inset: 0; border-radius: inherit; z-index: -2; border: 0;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 0 0 .5px rgba(11,27,51,.14), 0 18px 40px rgba(0,0,0,.4); }
 .agua canvas { position: absolute; left: -14px; top: -14px; z-index: -1; pointer-events: none; }
 .agua-gota { display: none; position: absolute; top: 5px; bottom: 5px; left: 0; border-radius: 999px; z-index: -1; pointer-events: none; will-change: transform, width;
   background: radial-gradient(120% 140% at 30% 0%, rgba(255,255,255,.75), rgba(255,255,255,0) 55%), rgba(255,255,255,.38);
@@ -414,7 +442,7 @@ html:not(.app) .nav { background: var(--bg); }
 .tel.anim .nv-ico[data-fx="saluda"] > * { animation: nvSaluda .3s ease-in-out both; transform-origin: 50% 92%; }
 @keyframes nvSaluda { 20% { transform: rotate(-15deg); } 40% { transform: rotate(12deg); } 60% { transform: rotate(-8deg); } 80% { transform: rotate(4deg); } 100% { transform: translateY(-1px) scale(1.08); } }
 /* el botón del centro: una píldora con +; mientras hay partido, el marcador con el punto rojo de en vivo */
-.nav .centro2 .pill { height: 25px; min-width: 44px; padding: 0 9px; border-radius: 13px; background: var(--boton); color: #fff; display: grid; place-items: center; position: relative; box-shadow: 0 3px 8px rgba(13,35,71,.22); }
+.nav .centro2 .pill { height: 25px; min-width: 44px; padding: 0 9px; border-radius: 13px; background: var(--boton); color: #fff; display: grid; place-items: center; position: relative; box-shadow: 0 3px 8px rgba(0,0,0,.3); }
 .nav .centro2 .pill svg { width: 17px; height: 17px; stroke: #fff; stroke-width: 2.5; }
 .nav .centro2.vivo .pill { font: italic 900 17px/1 var(--disp); letter-spacing: .01em; min-width: 50px; padding: 0 8px; }
 .nav .centro2.vivo .pill::after { content: ''; position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%; background: #ff4d4f; box-shadow: 0 0 0 2px #fff; }
@@ -424,7 +452,7 @@ html:not(.app) .nav { background: var(--bg); }
 
 /* pantalla de marcar */
 /* encabezado B: marino liso en la orilla de arriba (sigue detrás de la hora) y el brillo abajo a la derecha */
-.mcab { background: radial-gradient(110% 130% at 100% 100%, rgba(120,190,255,.55) 0%, rgba(120,190,255,0) 60%), linear-gradient(180deg, #0d2347 0%, #0d2347 40%, #1d4f8f 100%); color: #fff; padding: 0 14px 12px; border-radius: 0 0 24px 24px; flex: none; position: relative; }
+.mcab { padding: 0 14px 12px; border-radius: 0 0 var(--radio) var(--radio); flex: none; position: relative; border-width: 0 0 .5px; }
 .mbar { display: flex; align-items: center; justify-content: space-between; height: 40px; }
 .mbar button { height: 38px; min-width: 38px; padding: 0 13px; border-radius: 999px; background: rgba(6,18,40,.3); font: 700 13px/1 Inter; color: #fff; }
 .mscore { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; margin-top: 6px; }
@@ -438,17 +466,23 @@ html:not(.app) .nav { background: var(--bg); }
 .qbchip { display: block; margin: 10px auto 0; height: 32px; padding: 0 14px; border-radius: 999px; background: rgba(255,255,255,.14); color: #fff; font: 600 13px/1 Inter; }
 .qbchip b { font-weight: 800; }
 .ic.simple.bueno svg { stroke: #16a05a; } .ic.simple.malo svg { stroke: #e0483e; }
-.lado { display: grid; grid-template-columns: repeat(var(--n, 2), 1fr); background: #e3e8ef; border-radius: 12px; padding: 4px; margin: 14px 0 4px; }
-.lado button { height: 46px; border-radius: 9px; font: 700 15px/1 Inter; color: var(--mut); }
-.lado button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.lado { display: grid; grid-template-columns: repeat(var(--n, 2), 1fr); background: rgba(11,27,51,.07); border-radius: 999px; padding: 4px; margin: 14px 0 4px; }
+.lado button { height: 46px; border-radius: 999px; font: 700 15px/1 Inter; color: rgba(11,27,51,.92); }
+.lado button.on { background: var(--ink); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
 /* MARCAR (12-nov, ronda 6 opción 2 de Mau): marcador gigante; 4 grandes; los chicos y los castigos en un bloque; el TD hasta abajo.
    Sin títulos; la defensa no cambia de color. Al abrir se ve justo hasta el TD (en ataque); la última jugada y la lista quedan abajo.
    Medidas fijas: grande 3:2 (112 de alto), chico 52; 10 entre grandes, 8 entre chicos, 24 entre grupos. */
 .mbar .qbchip { max-width: 40%; }
-/* Ataque/Defensa (Iker, 17-nov): grande y arriba; el lado en que vas en blanco. Tocar el otro acaba la serie */
-.mk-lado { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 8px 0 0; padding: 2px; border-radius: 11px; background: rgba(6,18,40,.3); }
-.mk-lado button { height: 34px; border-radius: 9px; color: rgba(255,255,255,.8); font: 800 14px/1 Inter; }
-.mk-lado button.on { background: #fff; color: var(--navy); box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+/* Ataque/Defensa (Iker, 17-nov): grande y arriba. El lado en que vas lo marca un indicador que se desliza en .45 s con un rebote, como la
+   gota del dock (pintar() le pone --p: 0 Ataque, 1 Defensa). En degradado azul Belugas; con ?lado=vidrio, en liquid glass (Iker aún no decide) */
+.mk-lado { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 8px 0 0; padding: 2px; border-radius: 999px; background: rgba(6,18,40,.3); position: relative; isolation: isolate; }
+.mk-lado::before { content: ''; position: absolute; z-index: -1; top: 2px; bottom: 2px; left: 2px; width: calc(50% - 3px); border-radius: 999px; transform: translateX(calc(var(--p, 0) * (100% + 2px)));
+  transition: transform .45s cubic-bezier(.3,1.35,.5,1); background: linear-gradient(135deg, #2f74c8 0%, #1d4f8f 55%, #163f75 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 4px 12px rgba(0,20,60,.35); }
+[data-lado="vidrio"] .mk-lado::before { background: linear-gradient(180deg, rgba(255,255,255,.3), rgba(255,255,255,.1)); -webkit-backdrop-filter: blur(12px) saturate(160%); backdrop-filter: blur(12px) saturate(160%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 0 0 .5px rgba(255,255,255,.45), 0 6px 16px rgba(0,0,0,.28); }
+[data-lado="vidrio"] .mk-lado button.on { text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+.mk-lado button { position: relative; height: 34px; border-radius: 999px; color: rgba(255,255,255,.8); font: 800 14px/1 Inter; transition: color .25s; }
+.mk-lado button.on { color: #fff; }
 .mk-marc { width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; color: #fff; }
 .mk-marc strong { font: italic 900 62px/.95 var(--disp); letter-spacing: -.01em; text-shadow: 0 3px 14px rgba(0,0,0,.25); }
 .mk-marc strong i { font-style: normal; opacity: .55; margin: 0 8px; }
@@ -456,19 +490,19 @@ html:not(.app) .nav { background: var(--bg); }
 .tel.anim .mk-marc .sube { animation: bump .3s cubic-bezier(.3,1.6,.5,1); }
 .mk-eq { display: grid; justify-items: center; gap: 4px; }
 .mk-eq img, .mk-eq .rlogo { width: 36px; height: 36px; }
-.mk-eq span { display: flex; align-items: center; gap: 5px; font: 800 12.5px/1 Inter; letter-spacing: .05em; text-transform: uppercase; opacity: .92; }
+.mk-eq span { display: flex; align-items: center; gap: 5px; font: 800 12.5px/1 Inter; letter-spacing: .05em; text-transform: uppercase; }
 .mk-cuerpo { padding-top: 20px; padding-bottom: 0; display: flex; flex-direction: column; }
 .mk-cuerpo::after { content: ''; flex: none; height: calc(var(--navh) + 14px); } /* el aire de abajo de .cuerpo: WebKit no cuenta el padding de una columna flex al bajar y lo último quedaba bajo la barra */
 .mk-cuerpo > * { flex-shrink: 0; }
 .mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
-.mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: 18px; background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(13,35,71,.25); }
+.mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: var(--radio); background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(0,0,0,.3); }
 /* en defensa el encabezado y el TD de ellos toman el color del rival (--rc, de EQUIPOS), en degradado como el nuestro */
-.mcab.mk-def, .mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
+.mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
 .mk-td.riv { box-shadow: 0 8px 18px color-mix(in srgb, var(--rc) 35%, transparent); text-shadow: 0 1px 3px rgba(0,0,0,.35); }
-.mcab.mk-def .mk-lado button.on { color: color-mix(in srgb, var(--rc) 70%, #000) !important; }
 .pregunta { font: 800 22px/1.2 Inter; margin: 14px 2px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
 /* el aviso de cada jugada va en este renglón y con la misma altura: el marcador queda a la vista y ninguna tira se mueve */
-.pregunta.aviso { height: 40px; margin: 14px 0 10px; background: var(--ink); color: #fff; border-radius: 14px; padding: 0 2px 0 10px; font: 600 14px/1.2 Inter; gap: 6px; justify-content: flex-start; }
+.pregunta.aviso { height: 40px; margin: 14px 0 10px; background: rgba(10,16,30,.9); color: #fff; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  box-shadow: 0 0 0 .5px rgba(11,27,51,.16), 0 14px 32px rgba(0,0,0,.4); border-radius: 14px; padding: 0 2px 0 10px; font: 600 14px/1.2 Inter; gap: 6px; justify-content: flex-start; }
 .tel.anim .pregunta.aviso.nuevo { animation: avisoIn .22s cubic-bezier(.3,1.4,.5,1); }
 .pregunta.aviso > .foto { width: 28px; height: 28px; }
 .pregunta.aviso .ic.simple svg { stroke: #fff; }
@@ -482,11 +516,11 @@ html:not(.app) .nav { background: var(--bg); }
 /* abajo del TD: el aviso de la jugada, o «Última · Corregir · Deshacer» si no hay aviso (mismo alto, nada brinca) */
 .ultima { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--mut); padding: 0 2px; min-height: 44px; }
 .ultima b { color: var(--ink); font-weight: 600; }
-.ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; min-height: 44px; padding: 0 0 0 8px; flex: none; }
-.ultima button + button { margin-left: 0; padding-left: 14px; border-left: 1px solid var(--linea); }
+.ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; min-height: 44px; padding: 0 0 0 6px; flex: none; }
+.ultima button + button { margin-left: 0; padding-left: 11px; border-left: 1px solid var(--linea); }
 /* en Marcar el aviso sale arriba como pop-up, sobre el marcador, y se va solo: nunca abajo ni empujando los botones (Iker, 17-nov).
    Va bajo QB/Terminar/Listo para no quitarles el toque (la hora + los 40 de .mbar) */
-.pant > .pregunta.aviso { position: absolute; left: 12px; right: 12px; top: calc(max(14px, env(safe-area-inset-top)) + 44px); margin: 0; height: 52px; z-index: 6; background: #04070e; border-radius: 18px; box-shadow: 0 0 0 1px rgba(255,255,255,.14), 0 14px 32px rgba(0,0,0,.4); }
+.pant > .pregunta.aviso { position: absolute; left: 12px; right: 12px; top: calc(max(14px, env(safe-area-inset-top)) + 44px); margin: 0; height: 52px; z-index: 6; border-radius: 18px; }
 .pant > .pregunta.aviso .acc { height: 52px; padding: 0 14px; font-size: 15px; }
 .pant > .pregunta.aviso .txt { height: 52px; line-height: 52px; } /* el texto al centro del alto del aviso */
 html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
@@ -494,24 +528,24 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .tel.anim .pant > .pregunta.aviso.sale { animation: toastOut .2s ease-in forwards; pointer-events: none; }
 @keyframes toastOut { to { transform: translateY(-14px) scale(.96); opacity: 0; } }
 .pregunta .ult { min-height: 40px; padding: 0 2px 0 10px; font: 700 13.5px/1 Inter; color: var(--acento); flex: none; }
-.pregunta .vista { display: inline-flex; background: #e3e8ef; border-radius: 9px; padding: 3px; flex: none; }
+.pregunta .vista { display: inline-flex; background: rgba(11,27,51,.08); border-radius: 9px; padding: 3px; flex: none; }
 .pregunta .vista button { font: 700 11.5px/1 Inter; color: var(--mut); padding: 7px 9px; border-radius: 7px; }
-.pregunta .vista button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+.pregunta .vista button.on { background: var(--ink); color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.res { background: #fff; border-radius: 16px; box-shadow: var(--sombra); min-height: 76px; padding: 12px; text-align: left; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; align-content: center; }
+.res { border-radius: var(--r-in); min-height: 76px; padding: 12px; text-align: left; display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; align-content: center; }
 .res .ic { grid-row: span 2; }
 .res b { font: 800 16px/1.15 Inter; }
 .res small { color: var(--mut); font-size: 12px; margin-top: 3px; }
-.res.td { grid-column: span 2; background: var(--boton); color: #fff; min-height: 76px; }
-.res.td small { color: rgba(255,255,255,.88); }
+.res.td { grid-column: span 2; background: var(--boton); color: #fff; min-height: 76px; box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+.res.td small { color: inherit; opacity: .8; }
 .res.tdr { grid-column: span 2; background: linear-gradient(135deg, #374151, #6b7280 60%, #a3acb9); color: #fff; min-height: 76px; }
 .res.tdr small { color: rgba(255,255,255,.88); }
-.res.sec { grid-column: span 2; min-height: 54px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--linea); grid-template-columns: auto 1fr auto; }
+.res.sec { grid-column: span 2; min-height: 54px; background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 0 0 1px rgba(11,27,51,.16); grid-template-columns: auto 1fr auto; }
 .res.sec .ic { grid-row: auto; }
 .res.sec small { margin-top: 0; }
 /* tiras: una opción por renglón, a todo el ancho */
 .grid.tiras { grid-template-columns: minmax(0, 1fr); gap: 6px; }
-.grid.tiras .res { min-height: 54px; padding: 8px 16px; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 14px; border-radius: 14px; }
+.grid.tiras .res { min-height: 54px; padding: 8px 16px; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 14px; }
 .grid.tiras .res .ic { grid-row: auto; }
 .grid.tiras .res b { font: 700 16px/1.2 Inter; }
 .grid.tiras .res small { margin-top: 0; text-align: right; font-size: 12.5px; }
@@ -526,28 +560,28 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* «Este partido» por series: de quién era el balón, cómo acabó, cuántas jugadas y el marcador; la serie en juego va abierta */
 .serie { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 12px 14px; border-top: 1px solid var(--linea); }
 .jlista h4 + .serie { border-top: 0; }
-.serie.abierta { background: #f6f9fd; }
-.serie .lt { flex: none; font: 800 11px/1 Inter; letter-spacing: .05em; text-transform: uppercase; padding: 5px 7px; border-radius: 7px; background: #e3e8ef; color: #374151; }
+.serie.abierta { background: rgba(11,27,51,.05); }
+.serie .lt { flex: none; font: 800 11px/1 Inter; letter-spacing: .05em; text-transform: uppercase; padding: 5px 7px; border-radius: 999px; background: var(--bg); color: var(--ink); }
 /* «Lo que pasó»: Ataque con el color de Belugas y Defensa con el del rival (Iker, 17-nov) */
-.serie .lt.O { background: var(--navy); color: #fff; } .serie .lt.D { background: color-mix(in srgb, var(--rc) 78%, #000); color: #fff; }
+.serie .lt.O { background: #0d2347; color: #fff; } .serie .lt.D { background: color-mix(in srgb, var(--rc) 78%, #000); color: #fff; }
 .serie b { flex: 1; font: 700 14px/1.2 Inter; }
 .serie small { flex: none; color: var(--mut); font: 600 12px/1 Inter; }
 .serie .mk { flex: none; font: italic 900 17px/1 var(--disp); color: var(--navy); min-width: 44px; text-align: right; }
 .serie i { flex: none; width: 10px; font-style: normal; color: var(--mut); font-size: 13px; }
 .jlista .jfila.en { padding-left: 26px; }
-.jfila.repe { background: #fff7e6; }
-.repe-av { display: flex; align-items: center; gap: 8px; padding: 6px 12px 10px 26px; background: #fff7e6; font: 600 13px/1.3 Inter; color: #5b3b00; }
+.jfila.repe { background: rgba(229,194,58,.22); color: #5b3b00; }
+.repe-av { display: flex; align-items: center; gap: 8px; padding: 6px 12px 10px 26px; background: rgba(229,194,58,.22); font: 600 13px/1.3 Inter; color: #5b3b00; }
 .repe-av span { flex: 1; }
 .repe-av button { background: var(--ink); color: #fff; border-radius: 9px; height: 36px; padding: 0 12px; font: 800 13px/1 Inter; flex: none; }
 /* uso-16: «Lo que marcamos» al terminar, ataque y defensa, solo con lo que se marca */
 .lqm { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.lqm > div { background: #fff; border-radius: 16px; box-shadow: var(--sombra); padding: 12px 12px 4px; min-width: 0; }
+.lqm > div { border-radius: var(--r-tile); padding: 12px 12px 4px; min-width: 0; }
 .lqm h5 { margin: 0 0 8px; font: 800 12px/1 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
 .lqm .f { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 9px 0; border-top: 1px solid var(--linea); }
 .lqm .f span { font: 600 12.5px/1.2 Inter; color: var(--mut); min-width: 0; }
 .lqm .f b { font: italic 900 18px/1 var(--disp); color: var(--navy); white-space: nowrap; }
 /* uso-07: arriba en el final, por si se tocó Terminar sin querer */
-.sinquerer { margin: 12px 0 4px; display: flex; align-items: center; gap: 10px; background: #fff7e6; border-radius: 14px; padding: 6px 6px 6px 14px; font: 600 14px/1.25 Inter; color: #5b3b00; }
+.sinquerer { margin: 12px 0 4px; display: flex; align-items: center; gap: 10px; background: rgba(229,194,58,.22); border-radius: 999px; padding: 6px 6px 6px 14px; font: 600 14px/1.25 Inter; color: #5b3b00; }
 .sinquerer span { flex: 1; }
 /* ajustes de Iker (17-nov): la pantalla no se jala ni rebota; la hoja que sigue abierta no se vuelve a animar */
 * { overscroll-behavior: none; } /* ni arriba ni abajo, en ninguna pantalla: así nunca se asoma el fondo azul */
@@ -559,7 +593,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* Marcar (Iker, 17-nov): las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; sin pestañas: «Lo que pasó» está a la derecha, se llega deslizando a la izquierda y los puntos dicen dónde vas */
 .mk-tiras { display: grid; gap: 6px; }
 .mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
-.mk-grande { min-height: 98px; background: #fff; border-radius: 18px; box-shadow: var(--sombra); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
+.mk-grande { min-height: 98px; border-radius: var(--radio); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
 .mk-tira { gap: 12px; justify-content: flex-start; }
 /* los botones grandes (la C de Iker, 17-nov: «más fácil de usar y de entender»): enteros del color de su jugada (--c, de ICONOS_C),
    oscurecido para que el blanco se lea al sol, con el glifo grande al centro y el nombre abajo */
@@ -579,18 +613,18 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 @keyframes destello { from, 30% { opacity: 1; } to { opacity: 0; } }
 .mk-grandes > .mk-grande:last-child:nth-child(odd) { grid-column: span 2; } /* sin «Nos pararon» quedan 5 en ataque: el último a todo lo ancho */
 .mk-gi svg { display: block; width: 40px; height: 40px; fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; } .mk-gi svg .f { fill: #fff; stroke: none; }
-.mk-td .ic.relleno { background: #fff; } .mk-td .ic.relleno svg { stroke: var(--navy); } .mk-td .ic.relleno svg .f { fill: var(--navy); }
+.mk-td .ic.relleno { background: rgba(0,0,0,.35); } .mk-td .ic.relleno svg { stroke: #fff; } .mk-td .ic.relleno svg .f { fill: #fff; } .mk-td.riv .ic.relleno { background: #fff; }
 .mk-td.riv .ic.relleno svg { stroke: color-mix(in srgb, var(--rc) 70%, #000); } .mk-td.riv .ic.relleno svg .f { fill: color-mix(in srgb, var(--rc) 70%, #000); }
 .mk-td .ic.simple svg { stroke: #fff; }
-.mk-tira { min-height: 56px; background: #fff; border-radius: 14px; box-shadow: var(--sombra); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px; text-align: left; font: 700 17px/1.2 Inter; }
+.mk-tira { min-height: 56px; border-radius: var(--r-in); display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px; text-align: left; font: 700 17px/1.2 Inter; }
 .mk-tira small { color: var(--mut); font: 600 13px/1.2 Inter; }
-.mk-tira.mas { background: transparent; box-shadow: inset 0 0 0 1.5px var(--linea); }
-.hoja .mk-tira { background: var(--bg); box-shadow: none; }
+.mk-tira.mas { background: transparent; border-color: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 0 0 1px rgba(11,27,51,.16); }
+.hoja .mk-tira { background: var(--bg); box-shadow: none; border: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .mk-tiras .mk-td { margin-top: 0; height: 60px; gap: 12px; }
 .mk-tira:active, .mk-td:active { transform: scale(.98); }
 .mk-puntos { display: flex; justify-content: center; margin: -15px 0 -1px; position: relative; }
 .mk-puntos button { width: 26px; height: 16px; display: grid; place-items: center; }
-.mk-puntos button::after { content: ''; width: 6px; height: 6px; border-radius: 3px; background: var(--linea); }
+.mk-puntos button::after { content: ''; width: 6px; height: 6px; border-radius: 3px; background: rgba(11,27,51,.25); }
 /* el punto de dónde vas se desliza con la página (--p: 0 Marcar, 1 Lo que pasó; --p0: de dónde viene) */
 .mk-puntos i { position: absolute; left: 50%; top: 5px; width: 14px; height: 6px; margin-left: -20px; border-radius: 3px; background: var(--navy); transform: translateX(calc(var(--p) * 26px)); pointer-events: none; }
 .mk-puntos i.mueve { animation: punto .3s cubic-bezier(.3,1.4,.5,1); }
@@ -607,7 +641,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* ✕ a la izquierda, el título al centro y ✓ a la derecha en cada hoja, de 44 px: caben con guantes sin quitar lugar (Iker, 17-nov) */
 .hbar { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 10px; margin: 0 0 12px; }
 .hbar h3 { margin: 0; font-size: 19px; text-align: center; }
-.hb { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: #c0392b; }
+.hb { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--bg); color: var(--mal); }
 .hb.si { background: var(--boton); color: #fff; }
 .hb.ayuda { color: var(--navy); }
 .hb svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -615,20 +649,18 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .hoja .pjs.chicos .pj { min-height: 104px; }
 /* ¿Cuánto avanzó? como la V2 que escogió Iker (17-nov, data/belugas-yardas): + y − grandes y saltos en vez de la regla */
 .hoja.cuanto .rg-pmf { grid-template-columns: 80px minmax(0, 1fr) 80px; margin-top: 16px; }
-.hoja.cuanto .rg-b { width: 80px; height: 84px; border-radius: 20px; background: #e6eaf0; }
+.hoja.cuanto .rg-b { width: 80px; height: 84px; }
 .hoja.cuanto .rg-v { font-size: 76px; line-height: 76px; }
 .hoja.cuanto .rg-anuncio { bottom: -12px; }
 .rg-saltos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 28px 0 8px; }
-.rg-saltos button { height: 80px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: italic 900 26px/1 var(--disp); color: var(--navy); }
+.rg-saltos button { height: 80px; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px rgba(11,27,51,.18); font: italic 900 26px/1 var(--disp); color: var(--navy); }
 .hoja.cuanto .rg-b:active, .rg-saltos button:active { transform: scale(.97); }
 .rg-saltos button small { font: 800 13px/1 Inter; font-style: normal; margin-left: 2px; color: var(--mut); }
-/* Inicio: la tarjeta del partido sin balón, centrada */
-.heroe.hoy .vs { margin-right: 0; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
+/* las tarjetas de partido van sin balón (Iker, 18-nov): el marcador centrado */
+.heroe .vs .eq { text-align: center; }
 /* Inicio cabe en una pantalla (Iker, 17-nov): la tarjeta del partido, el podio y los renglones de Líderes un poco más chicos */
-.inicio .heroe.hoy { padding: 12px 16px 14px; }
 .inicio .heroe.hoy .vs { margin: 8px 0 10px; }
 .inicio .heroe .eq img, .inicio .heroe .eq .rlogo { width: 44px; height: 44px; }
-.inicio .heroe .mid strong { font-size: 40px; }
 .inicio .btn-blanco { height: 42px; font-size: 16px; }
 .inicio h2 { margin: 18px 2px 6px; }
 .inicio .cats { padding-bottom: 6px; } .inicio .cat { height: 32px; font-size: 12.5px; }
@@ -647,31 +679,32 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .sinquerer button { background: var(--ink); color: #fff; border-radius: 10px; height: 40px; padding: 0 14px; font: 800 14px/1 Inter; flex: none; }
 
 /* hojas de abajo */
-.velo { position: absolute; inset: 0; background: rgba(11,27,51,.38); z-index: 10; animation: ap .15s ease-out; }
-.hoja { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-radius: 24px 24px 0 0; padding: 10px 16px calc(22px + var(--abajo)); z-index: 11; animation: sube .2s ease-out; max-height: 88%; overflow-y: auto; }
+.velo { position: absolute; inset: 0; background: rgba(0,0,0,.42); z-index: 10; animation: ap .15s ease-out; }
+.hoja { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(248,251,255,.97); color: var(--ink); border-radius: var(--r-hoja) var(--r-hoja) 0 0; border-top: .5px solid rgba(11,27,51,.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 -18px 40px rgba(0,0,0,.35); padding: 10px 16px calc(22px + var(--abajo)); z-index: 11; animation: sube .2s ease-out; max-height: 88%; overflow-y: auto; }
 .hoja h3 { font: 800 21px/1.2 Inter; margin: 4px 2px 14px; }
 .hoja h3 + p { margin-top: -10px; }
 .hoja p { margin: 0 2px 14px; color: var(--mut); font-size: 14px; }
 .hoja ul { margin: 0 2px 14px; padding-left: 18px; color: var(--ink); font-size: 14px; }
 .hoja li { margin-bottom: 6px; }
 .pjs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-.pj { background: var(--bg); border-radius: 16px; min-height: 104px; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 8px 4px; font: 700 13px/1.1 Inter; min-width: 0; }
+.pj { background: var(--bg); color: var(--ink); border-radius: var(--r-in); min-height: 104px; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 8px 4px; font: 700 13px/1.1 Inter; min-width: 0; }
 .pj .foto { width: 50px; height: 50px; }
 .hoja .lados h4.sub { display: flex; align-items: center; gap: 8px; color: var(--ink); } .hoja .lados h4.sub:first-child { margin-top: 2px; }
 .lados h4.sub i { width: 4px; height: 16px; border-radius: 2px; background: #8a97a8; } .lados h4.sub.lO i { background: var(--azul); } .lados h4.sub.lD i { background: color-mix(in srgb, var(--rc) 75%, #000); }
 /* «¿Quién?»: cada quien con el color de su lado (Iker, 17-nov): Ataque en azul Belugas, Defensa en el color del rival, Los dos sin color; las fotos sin aro de color (Iker, 17-nov) */
-.lados .pj.lO { background: linear-gradient(180deg, #eef4fc, #e1ebf8); }
-.lados .pj.lD { background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 8%, #fff), color-mix(in srgb, var(--rc) 18%, #fff)); }
+.lados .pj.lO { background: linear-gradient(180deg, rgba(90,174,255,.2), rgba(29,79,143,.3)); }
+.lados .pj.lD { background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 22%, transparent), color-mix(in srgb, var(--rc) 34%, transparent)); }
 .lados .pj .ini { border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--linea); }
 .pj .corta { max-width: 100%; }
 .pj small { color: var(--mut); font: 600 11px/1 Inter; }
 .ops { display: grid; gap: 10px; }
 .ops.dos { grid-template-columns: 1fr 1fr; }
-.op { height: 64px; border-radius: 16px; background: var(--bg); font: 800 17px/1 Inter; }
+.op { height: 64px; border-radius: 999px; background: var(--bg); color: var(--ink); font: 800 17px/1 Inter; }
 .op.prim, .btn-gr { background: var(--boton); color: #fff; }
-.op.sec { background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); color: var(--mut); font-weight: 700; }
-.ops.fijo { position: sticky; bottom: 0; background: #fff; padding: 10px 0 calc(12px + var(--abajo)); box-shadow: 0 -10px 12px -8px rgba(11,27,51,.08); }
-.campo { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; background: var(--bg); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; font-size: 15px; }
+.op.sec { background: transparent; box-shadow: inset 0 0 0 1px rgba(11,27,51,.18); font-weight: 700; }
+.ops.fijo { position: sticky; bottom: 0; margin: 0 -16px; background: rgba(248,251,255,.97); padding: 10px 16px calc(12px + var(--abajo)); box-shadow: 0 -1px 0 rgba(11,27,51,.06); }
+.campo { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; background: var(--bg); color: var(--ink); border-radius: var(--r-in); padding: 12px 14px; margin-bottom: 10px; font-size: 15px; }
 .campo .izq { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .campo .izq .rlogo { width: 34px; height: 34px; }
 .campo .izq .foto { width: 40px; height: 40px; }
@@ -680,7 +713,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .campo u { text-decoration: none; color: var(--acento); font: 700 13.5px/1 Inter; flex: none; }
 .lista-van { display: grid; gap: 6px; margin-bottom: 12px; }
 .hoja .lista-van h4.sub { margin: 10px 4px 2px; } .hoja .lista-van h4.sub:first-child { margin-top: 0; }
-.van-f { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 10px; border-radius: 14px; background: var(--bg); }
+.van-f { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 8px 14px; border-radius: var(--r-in); background: var(--bg); color: var(--ink); }
 .van-f .foto { width: 40px; height: 40px; }
 .van-f > div { flex: 1; min-width: 0; }
 .van-f b { display: block; font: 700 14.5px/1.2 Inter; }
@@ -688,7 +721,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .van-f .ck { margin-left: auto; width: 28px; height: 28px; flex: none; display: block; background: none; border: 0; box-shadow: none; }
 .van-f .ck svg { display: block; width: 28px; height: 28px; }
 .op.prim:disabled { opacity: .4; }
-.van-f.no { opacity: .55; }
+.van-f.no { opacity: .72; }
 .lista { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .fila { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
 .fila .rlogo { width: 40px; height: 40px; }
@@ -697,12 +730,11 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .fila small { color: var(--mut); font-size: 13px; }
 .fila .sc { margin-left: auto; text-align: right; font: italic 900 24px/1 var(--disp); color: var(--navy); flex: none; }
 .fila .sc small { display: block; font: 800 11px/1.2 Inter; font-style: normal; }
-.fila .sc small.g { color: var(--ok); } .fila .sc small.p { color: #d6453d; }
+.fila .sc small.g { color: var(--ok); } .fila .sc small.p { color: var(--mal); }
 .info a { display: block; padding: 11px 2px; border-bottom: 1px solid var(--linea); color: var(--azul); text-decoration: none; font-size: 14.5px; }
 .info a small { display: block; color: var(--mut); font-size: 12.5px; }
 @keyframes sube { from { transform: translateY(24px); opacity: 0; } }
 @keyframes ap { from { opacity: 0; } }
-
 
 /* R6-INICIO: íconos simples, fichas, métricas, entrada */
 .ic.simple { width: 34px; height: 34px; border-radius: 0; background: transparent; }
@@ -710,7 +742,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .ic.simple.chico { width: 24px; height: 24px; } .ic.simple.chico svg { width: 20px; height: 20px; }
 .res.td .ic.simple svg, .res.tdr .ic.simple svg, .convs .op .ic.simple svg { stroke: #fff; }
 .volver { display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 8px; border-radius: 999px; background: rgba(11,27,51,.07); font: 700 13.5px/1 Inter; color: var(--ink); margin: 4px 0 8px; }
-.fj-cab { border-radius: 22px; background: var(--grad); color: #fff; padding: 18px; display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; box-shadow: 0 12px 26px rgba(13,35,71,.24); }
+.fj-cab { border-radius: var(--radio); color: var(--ink); padding: 18px; display: flex; align-items: center; gap: 14px; position: relative; overflow: hidden; }
 .fj-cab .foto { width: 84px; height: 84px; box-shadow: 0 0 0 3px rgba(255,255,255,.85); }
 .fj-cab b { display: block; font: italic 900 30px/.95 var(--disp); text-transform: uppercase; }
 .fj-cab small { display: block; font: 600 13px/1.3 Inter; opacity: .9; margin-top: 6px; }
@@ -718,7 +750,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .fj-cab .pts strong { display: block; font: italic 900 40px/1 var(--disp); }
 .fj-cab .pts span { font: 700 11px/1 Inter; opacity: .85; text-transform: uppercase; letter-spacing: .05em; }
 /* tarjeta del jugador: logo arriba, nombre grande, medio cuerpo a la derecha, su número principal y tres más abajo */
-.tj { position: relative; height: 468px; border-radius: 24px; overflow: hidden; background: linear-gradient(180deg, #101d38 0%, #0d1730 100%); color: #fff; box-shadow: 0 14px 30px rgba(13,35,71,.28); margin-top: 2px; }
+.tj { position: relative; height: 468px; border-radius: var(--radio); overflow: hidden; background: linear-gradient(180deg, #101d38 0%, #0d1730 100%); color: #fff; border: .5px solid var(--borde); box-shadow: var(--sombra); margin-top: 2px; }
 .tj-trazos { display: none; }
 .tj-logo { position: absolute; top: 16px; left: 16px; width: 62px; filter: drop-shadow(0 2px 6px rgba(0,0,0,.25)); z-index: 2; }
 .tj-nom { position: absolute; left: 18px; top: 92px; z-index: 3; font-family: var(--disp); font-style: italic; font-weight: 900; line-height: .9; text-transform: uppercase; letter-spacing: .005em; text-shadow: 0 2px 10px rgba(5,14,30,.35); }
@@ -733,7 +765,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .tj-main { position: absolute; left: 18px; bottom: 104px; z-index: 3; text-shadow: 0 2px 10px rgba(5,14,30,.35); }
 .tj-main small { display: block; font: 700 12.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .95; }
 .tj-main strong { display: block; font: italic 900 74px/.9 var(--disp); margin-top: 4px; }
-.tj-tira { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; text-align: center; background: #0a1226; box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
+.tj-tira { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; text-align: center; background: rgba(0,0,0,.28); box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
 .tj-tira small { display: block; font: 700 11.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .85; }
 .tj-tira strong { display: block; font: italic 900 38px/1 var(--disp); margin-top: 5px; }
 .tj-info { display: flex; justify-content: space-between; gap: 8px; margin: 10px 2px 0; font: 600 13px/1.2 Inter; color: var(--mut); }
@@ -744,27 +776,27 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .reglas h4 { margin: 10px 0 4px; font: 700 12px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
 .reglas .rg { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--linea); font-size: 14px; }
 .reglas .rg b { font-weight: 800; color: var(--navy); flex: none; }
-.reglas .rg b.neg { color: #c2362d; }
+.reglas .rg b.neg { color: var(--mal); }
 .reglas p { margin: 10px 0 12px; font-size: 13px; color: var(--mut); line-height: 1.4; }
 /* rival de la liga, con su logo */
 .rivales { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 4px; }
-.rv { display: grid; justify-items: center; gap: 6px; padding: 10px 4px 9px; border-radius: 14px; background: #f3f5f8; font: 600 12px/1.15 Inter; color: var(--ink); text-align: center; min-height: 104px; }
+.rv { display: grid; justify-items: center; gap: 6px; padding: 10px 4px 12px; border-radius: 16px; background: var(--bg); font: 600 12px/1.15 Inter; color: var(--ink); text-align: center; min-height: 104px; }
 .rv .rlogo { width: 56px; height: 56px; }
-.rv.on { background: #e6efff; box-shadow: inset 0 0 0 2px var(--acento); }
+.rv.on { background: rgba(156,203,255,.16); box-shadow: inset 0 0 0 2px var(--acento); }
 /* Métricas: el prototipo de métricas dentro del teléfono */
 .franja3 em { display: block; font: 600 11.5px/1.2 Inter; font-style: normal; color: var(--mut); margin-top: 4px; }
 .forma { display: flex; gap: 4px; flex: none; }
 .mrow .rs { justify-self: auto; }
 .reparto { flex: 1; min-width: 0; }
-.reparto .barra { height: 10px; border-radius: 5px; background: #cfe0f5; margin-top: 8px; }
+.reparto .barra { height: 10px; border-radius: 5px; background: rgba(11,27,51,.12); margin-top: 8px; }
 .reparto .barra i { border-radius: 5px 0 0 5px; }
 .pp .pila .foto { width: 36px; height: 36px; box-shadow: 0 0 0 2px #fff; }
 /* compartir el resultado: arriba a la derecha, en el Final y en la ficha del partido */
-.comp { flex: none; margin-left: auto; height: 40px; padding: 0 18px; border-radius: 20px; background: var(--boton); color: #fff; font: 700 14px/1 Inter; }
+.comp { flex: none; margin-left: auto; height: 40px; padding: 0 18px; border-radius: 999px; background: var(--boton); color: #fff; font: 700 14px/1 Inter; }
 .fila-v { display: flex; align-items: center; justify-content: space-between; }
 /* fichas: «‹ Volver» en una franja marina que sigue a la de la hora, como el encabezado de las pestañas (Iker, 17-nov) */
-.vuelta { margin: 0 -20px 14px; padding: 2px 20px 12px; background: #0d2347; min-height: 50px; } .vuelta .volver { margin: 0; background: rgba(255,255,255,.14); color: #fff; }
-.tile { background: #fff; border-radius: 14px; box-shadow: var(--sombra); padding: 11px 10px; min-width: 0; }
+.vuelta { margin: 0 -20px 14px; padding: 2px 20px 12px; min-height: 50px; } .vuelta .volver { margin: 0; }
+.tile { border-radius: 16px; padding: 12px 11px; min-width: 0; }
 .tile strong { display: block; font: italic 900 28px/1 var(--disp); color: var(--navy); }
 .tile span { display: block; font: 700 11px/1.25 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .03em; margin-top: 4px; }
 .tile em { display: block; font: 600 11.5px/1.2 Inter; font-style: normal; color: var(--mut); margin-top: 2px; }
@@ -779,28 +811,28 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .pp small { color: var(--mut); font-size: 12.5px; }
 .pp .der { flex: none; text-align: right; }
 .pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
-.pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: #d6453d; font-weight: 700; }
+.pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: var(--mal); font-weight: 700; }
 .pp.pp2 { min-height: 72px; }
 .pp2 small { display: block; }
 .pp2 small .punto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5483f; margin-right: 6px; vertical-align: 1px; }
 .pp2 .der2 { flex: none; display: grid; grid-template-columns: 22px 60px; gap: 8px; align-items: center; justify-items: end; }
 .pp2 .der2 strong { font: italic 900 22px/1 var(--disp); color: var(--navy); font-variant-numeric: tabular-nums; }
 .pp2 .der2 .solo { grid-column: 1 / -1; }
-.rs { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font: 800 11px/1 Inter; justify-self: start; }
-.rs.g { background: #e3f5eb; color: #13854b; } .rs.p { background: #fdecea; color: #c2372f; } .rs.e { background: #eceff3; color: #56647a; }
-.btn-m { height: 34px; padding: 0 16px; border-radius: 17px; background: var(--boton); color: #fff; font: 700 13px/34px Inter; }
+.rs { width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; font: 800 11px/1 Inter; justify-self: start; }
+.rs.g { background: rgba(126,220,159,.12); color: var(--ok); } .rs.p { background: rgba(255,138,128,.12); color: var(--mal); } .rs.e { background: var(--bg); color: var(--mut); }
+.btn-m { height: 34px; padding: 0 16px; border-radius: 999px; background: var(--boton); color: #fff; font: 700 13px/34px Inter; }
 .jfila.td2 { min-height: 60px; }
 .td2 .txt { flex: 1; min-width: 0; display: grid; gap: 3px; }
 .td2 .txt b { font: 600 14.5px/1.2 Inter; }
 .td2 .txt small { font: 500 12.5px/1.25 Inter; color: var(--mut); }
 .td2 strong { flex: none; font: italic 900 20px/1 var(--disp); color: var(--navy); min-width: 30px; text-align: right; }
-.barra { height: 6px; border-radius: 3px; background: #e6ebf2; margin-top: 6px; overflow: hidden; }
+.barra { height: 6px; border-radius: 3px; background: rgba(11,27,51,.12); margin-top: 6px; overflow: hidden; }
 .barra i { display: block; height: 100%; background: var(--boton); border-radius: 3px; }
-.grafica { background: #fff; border-radius: 16px; box-shadow: var(--sombra); padding: 14px 12px 8px; }
+.grafica { border-radius: var(--radio); padding: 14px 12px 8px; }
 .grafica svg { display: block; width: 100%; height: auto; }
 .leyenda { display: flex; gap: 14px; font: 600 12px/1 Inter; color: var(--mut); margin: 0 2px 10px; }
 .leyenda i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
-.tm { width: 100%; border-collapse: collapse; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: var(--sombra); font-size: 13.5px; }
+.tm { width: 100%; border-collapse: collapse; border-radius: var(--radio); overflow: hidden; font-size: 13.5px; }
 .tm th { text-align: right; font: 700 11px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .04em; padding: 10px 8px; border-bottom: 1px solid var(--linea); }
 .tm td { text-align: right; padding: 8px; border-bottom: 1px solid var(--linea); font-variant-numeric: tabular-nums; }
 .tm th:first-child, .tm td:first-child { text-align: left; }
@@ -818,9 +850,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .ajustes h4 { margin: 14px 2px 6px; font: 700 12px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
 .ajustes .conm { margin: 0; }
 .ajustes .conm button { padding: 9px 12px; }
-/* entrada al abrir Inicio: el balón entra girando; el botón se puede tocar desde el primer momento */
-.tel.entrada .heroe .balon, .tel.entrada .gigante .balon { animation: balonEntra .35s cubic-bezier(.2,.85,.3,1.12) both; }
-.tel.entrada .heroe .mid strong, .tel.entrada .gigante .rival { animation: vsEntra .25s .1s cubic-bezier(.3,1.4,.5,1) both; }
+.tel.entrada .gigante .rival { animation: vsEntra .25s .1s cubic-bezier(.3,1.4,.5,1) both; }
 @keyframes balonEntra { 0% { transform: translate(210px, -30px) rotate(-620deg) scale(.5); opacity: 0; } 35% { opacity: 1; } }
 @keyframes vsEntra { from { transform: scale(.6); opacity: 0; } }
 /* R6-FIN */
@@ -848,13 +878,13 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 @keyframes onbIn { from { opacity: 0; } }
 @keyframes onbCard { from { opacity: 0; transform: translateY(6px) scale(.98); } }
 @keyframes onbPulso { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); } }
-.cab .engrane { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: rgba(255,255,255,.85); }
+.cab .engrane { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); }
 .cab .engrane svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .aj-fila { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 0 4px; border-top: 1px solid var(--linea); text-align: left; font: 600 15.5px/1.2 Inter; color: var(--ink); }
 .aj-fila:first-of-type { border-top: 0; }
-.aj-fila span { width: 36px; height: 36px; border-radius: 10px; background: #eef3fa; display: grid; place-items: center; color: var(--navy); flex: none; }
+.aj-fila span { width: 36px; height: 36px; border-radius: 10px; background: var(--bg); display: grid; place-items: center; color: var(--navy); flex: none; }
 .aj-fila svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-.aj-fila em { margin-left: auto; font-style: normal; color: var(--tenue); font-size: 20px; }
+.aj-fila em { margin-left: auto; font-style: normal; color: var(--mut); font-size: 20px; }
 /* ONB-FIN */
 
 </style>
@@ -863,25 +893,30 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 <div class="tel" id="tel"></div>
 <script>
 'use strict';
-const LOGO = 'logo.webp', BALON = 'archivos/balon-3d.png', CORONA = 'archivos/corona-3d.png';
+const LOGO = 'logo.webp', CORONA = 'archivos/corona-3d.png';
+// interruptor de desarrollo (Iker aún no decide): ?lado=vidrio pinta el indicador de Ataque/Defensa en liquid glass; sin él, en degradado azul
+if (new URLSearchParams(location.search).get('lado') === 'vidrio') document.documentElement.dataset.lado = 'vidrio';
 const lsGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } }, lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } };
 // los nombres los escribe la gente: van siempre escapados a la pantalla
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-// los 12 de la liga (diseno/archivos/equipos/equipos.json)
+// los 12 de la liga (diseno/archivos/equipos/equipos.json). El segundo color es el de la tarjeta de los dos equipos: el mismo tono con la luz
+// topada (oklch L ≤ .48), ya calculado: Safari de iOS 17 no entiende oklch(from …) y sin él la tarjeta se quedaba sin fondo
 const EQUIPOS = [
-  ['only-fins', 'ONF', 'Only Fins', '#10a6b3'], ['triple-t', 'TTT', 'Triple T', '#c5353e'], ['bucaneros', 'BUC', 'Bucaneros', '#bd3e44'],
-  ['destroyers', 'DES', 'Destroyers', '#3c6f34'], ['kickass', 'KCK', 'Kickass', '#141723'], ['bulldogs', 'BUL', 'Bulldogs', '#714246'],
-  ['lobos-its', 'LOB', 'Lobos ITSZ', '#767577'], ['kaffies', 'KAF', 'Kaffies', '#d1a050'], ['ultimos-aztecas', 'AZT', 'Últimos Aztecas', '#d3a45a'],
-  ['los-fantasmas', 'FAN', 'Los Fantas', '#3a3a3b'], ['panini', 'PAN', 'Panini', '#dba466'],
+  ['only-fins', 'ONF', 'Only Fins', '#10a6b3', '#006e7b'], ['triple-t', 'TTT', 'Triple T', '#c5353e', '#ac172a'], ['bucaneros', 'BUC', 'Bucaneros', '#bd3e44', '#a62731'],
+  ['destroyers', 'DES', 'Destroyers', '#3c6f34', '#396c31'], ['kickass', 'KCK', 'Kickass', '#141723', '#141723'], ['bulldogs', 'BUL', 'Bulldogs', '#714246', '#714246'],
+  ['lobos-its', 'LOB', 'Lobos ITSZ', '#767577', '#5e5d5f'], ['kaffies', 'KAF', 'Kaffies', '#d1a050', '#805300'], ['ultimos-aztecas', 'AZT', 'Últimos Aztecas', '#d3a45a', '#7f5400'],
+  ['los-fantasmas', 'FAN', 'Los Fantas', '#3a3a3b', '#3a3a3b'], ['panini', 'PAN', 'Panini', '#dba466', '#835106'],
 ];
 // tamaño visible de cada logo en su caja (raíz del área pintada y ancho), medido en los PNG de 256:
 // en listas se igualan entre ellos; frente al logo de Belugas (marcador y partido) pesan como él
 const VISIBLE = {'only-fins': [.659, .910], 'triple-t': [.658, .914], bucaneros: [.698, .922], destroyers: [.743, .922], kickass: [.722, .906], bulldogs: [.613, .906], 'lobos-its': [.643, .910], kaffies: [.645, .910], 'ultimos-aztecas': [.705, .906], 'los-fantasmas': [.616, .934], panini: [.622, .906]};
 const escala = (id, meta, tope) => { const [a, w] = VISIBLE[id] || [.66, .91]; return Math.min(meta / a, tope / w).toFixed(3); };
-const RIVALES = EQUIPOS.map(([id, corto, largo, color]) => ({id, corto, largo, color, logo: `archivos/equipos/${id}-256.png`, k: escala(id, .66, 1.0), kv: escala(id, .78, 1.1)}));
+const RIVALES = EQUIPOS.map(([id, corto, largo, color, eq]) => ({id, corto, largo, color, eq, logo: `archivos/equipos/${id}-256.png`, k: escala(id, .66, 1.0), kv: escala(id, .78, 1.1)}));
 // mientras no se escoge contra quién (se escoge al empezar a marcar)
-const SIN_RIVAL = {id: '', corto: 'Rival', largo: 'Rival', sig: '?', color: '#56647a', logo: null};
+const SIN_RIVAL = {id: '', corto: 'Rival', largo: 'Rival', sig: '?', color: '#56647a', eq: '#515e74', logo: null};
+// la tarjeta de los dos equipos (en vivo, final y la ficha de cada partido) se pinta con el color de ese rival
+const colores = (r) => `--rc:${r.color};--rq:${r.eq}`;
 const esRival = (id) => RIVALES.some((x) => x.id === id);
 const R = (id) => RIVALES.find((x) => x.id === id) || SIN_RIVAL;
 let HOY = null; // el rival del partido que se está marcando
@@ -1244,13 +1279,13 @@ const avisoNube = () => (!clave ? '<div class="relevo" style="margin:0 0 12px">F
   : guardaMal ? '<div class="relevo" style="margin:0 0 12px">Este celular no puede guardar las jugadas (¿navegación privada?). Con señal se suben a la nube; sin señal podrían perderse.</div>' : '');
 function heroeHoy() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = R(aj ? aj.rival : p ? p.rival : HOY);
-  return p ? `<div class="heroe hoy"><div class="eti"><i></i>En vivo${aj ? ' · desde otro celular' : ''}</div>
+  return p ? `<div class="heroe hoy" style="${colores(r)}"><div class="eti"><i></i>En vivo${aj ? ' · desde otro celular' : ''}</div>
       <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
       <button class="btn-blanco" data-a="marcar">Seguir marcando</button></div>`
-    : st.final ? `<div class="heroe hoy"><div class="eti">Final · hoy · ${resDe(st.final.nos, st.final.ellos)[2]}</div>
+    : st.final ? `<div class="heroe hoy" style="${colores(R(st.final.rival))}"><div class="eti">Final · hoy · ${resDe(st.final.nos, st.final.ellos)[2]}</div>
       <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).largo}</div></div>
       <button class="btn-blanco" data-a="juego" data-v="${st.final.gid}">Ver el partido</button></div>`
-    : `<div class="heroe hoy"><div class="eti">Próximo partido</div>
+    : `<div class="heroe hoy" style="${colores(r)}"><div class="eti">Próximo partido</div>
       <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
       <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
 }
@@ -1395,7 +1430,7 @@ function marcar() {
   const ver = st.mkVer === 'paso' && p.jugadas.length ? 'paso' : 'marcar', anim = st.mkDir ? ` style="--dx:${st.mkDir * 72}px" data-entra` : '', pv = ver === 'paso' ? 1 : 0;
   const punto = `<i aria-hidden="true"${st.mkDir ? ' class="mueve"' : ''} style="--p:${pv};--p0:${st.mkDir ? st.mkP0 ?? 1 - pv : pv}"></i>`; st.mkDir = 0; st.mkP0 = null;
   const puntos = p.jugadas.length ? `<div class="mk-puntos">${[['marcar', 'Marcar'], ['paso', 'Jugada por jugada']].map(([v, n]) => `<button data-a="mkver" data-v="${v}" aria-label="${n}"${ver === v ? ' class="on" aria-current="true"' : ''}></button>`).join('')}${punto}</div>` : '';
-  return `<div class="pant" style="--rc:${r.color}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
+  return `<div class="pant" style="${colores(r)}"><div class="mcab${O ? '' : ' mk-def'}">${est().replace('class="estado"', 'class="estado" style="color:#fff;padding-left:20px;padding-right:14px"')}
     <div class="mbar"><button class="qbchip" data-a="qbver">QB: <b>${nom(p.qb)}</b></button>${p.corrige ? '<button data-a="listocorr">Listo</button>' : '<button data-a="terminar">Terminar</button>'}</div>${p.corrige ? `<div class="mk-corr">Editando · ${fechaDe(p.dia || p.inicio)}</div>` : ''}
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas')}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto)}</button>
     <div class="mk-lado" role="group" aria-label="Quién trae el balón">${[['O', 'Ataque'], ['D', 'Defensa']].map(([v, n]) => `<button data-a="lado" data-v="${v}" aria-pressed="${p.lado === v}"${p.lado === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div></div>
@@ -1461,7 +1496,7 @@ const anotDe = (g) => g.tds.map(([id, como, qb, cv], i) => { const c = g.nuevo ?
 // ficha de un partido jugado
 function partido() {
   const g = JUEGOS.find((x) => x.id === st.juego), r = R(g.rival);
-  const cabeza = `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>`;
+  const cabeza = `<div class="heroe" style="${colores(r)}"><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>`;
   // de los partidos de antes de la app solo se sabe el marcador: no se inventan ceros
   if (g.solo) return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}${btnCompartir(g.id)}</div>${cabeza}<div class="card" style="margin-top:12px"><div class="pp">De este partido solo se registró el marcador.</div></div></div>${nav()}</div>`;
   const anot = anotDe(g).map((a) => `<button class="jfila td2" data-a="jug" data-v="${a.id}">${ic('td', true)}<span class="txt"><b class="corta">${a.tit}</b>${a.sub ? `<small class="corta">${a.sub}</small>` : ''}</span><strong class="num">+${a.pts}</strong></button>`);
@@ -1469,7 +1504,7 @@ function partido() {
   const top = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a])).slice(0, 3);
   const band = Object.values(g.st).reduce((a, x) => a + (x.band || 0), 0), intn = Object.values(g.st).reduce((a, x) => a + (x.intn || 0), 0), robaron = Object.keys(g.st).filter((id) => g.st[id].intn && P(id));
   return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}${btnCompartir(g.id)}</div>
-  <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
+  <div class="heroe" style="${colores(r)}"><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
   ${st.partido && !st.partido.corrige ? '<div class="sinquerer"><span>Para corregir este partido, primero termina el de hoy.</span></div>' : `<div class="sinquerer"><span>¿Hay un error?</span><button data-a="corregirp" data-v="${g.id}">Corregir</button></div>`}
   <h2>Anotaciones</h2><div class="jlista" style="margin-top:0">${anot.join('') || '<div class="jfila">Sin touchdowns</div>'}</div>
   <h2>Destacados</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(g.st[id], qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(g.st[id])}</strong><small>pts</small></div></button>`; }).join('')}</div>
@@ -1501,7 +1536,7 @@ function resumen() {
   const u = st.final, r = R(u.rival), jg = JUEGOS.find((x) => x.id === u.gid);
   const top = jg ? Object.keys(jg.st).filter((id) => P(id)).sort((a, b) => puntosDe(jg.st[b]) - puntosDe(jg.st[a])).slice(0, 4) : [];
   return `<div class="pant"><div class="cuerpo">${est()}${cab('Final', `vs ${r.largo} · hoy${avisoFinal && avisoFinal[0] === u.gid ? ' · ' + avisoFinal[1] : ''}`, jg ? btnCompartir(u.gid) : '')}
-  <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(u.nos, u.ellos)[2]}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${u.nos} – ${u.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
+  <div class="heroe" style="${colores(r)}"><div class="eti">${resDe(u.nos, u.ellos)[2]}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${u.nos} – ${u.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
   ${u.partido ? '<div class="sinquerer"><span>¿Lo terminaste por error?</span><button data-a="seguir">Seguir marcando</button></div>' : ''}
   ${u.partido && u.partido.jugadas.length ? loQueMarcamos(u.partido) : ''}
   <h2>Destacados</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(jg.st[id], qbDe(jg) === id)}</small></div><div class="der"><strong class="num">${puntosDe(jg.st[id])}</strong><small>pts</small></div></button>`; }).join('') || '<div class="pp">Sin jugadas por jugador</div>'}</div>
@@ -1677,6 +1712,7 @@ function hoja() {
 }
 // quién lanzó (el QB del partido por omisión); se cambia solo para esta jugada
 const campoLanzo = (q, de) => `<button class="campo" data-a="lanzover" data-v="${de}"><div class="izq">${q && P(q) ? foto(P(q)) : ''}<div style="min-width:0"><span class="l">Lanzó</span><b class="corta" style="display:block">${nom(q)}${q === st.partido.qb ? ' · QB' : ''}</b></div></div><u>Cambiar</u></button>`;
+let ladoAntes = null; // dónde quedó el indicador de Ataque/Defensa en el último repintado
 function pintar() {
   const t = $('#tel');
   // si lo que se estaba viendo ya no existe (lo terminó otro celular, cambió el plantel), se regresa a su lista
@@ -1709,8 +1745,13 @@ function pintar() {
   if (h0) { t.querySelectorAll('.hoja, .velo').forEach((e) => e.classList.add('quieta')); const h = t.querySelector('.hoja'); if (h) h.scrollTop = hs; }
   st.recien = null;
   const rc = st.pant === 'marcar' && st.partido && st.partido.lado === 'D' ? R(HOY).color : null;
-  document.documentElement.style.setProperty('--franja', rc ? oscuro(rc) : '#0d2347');
-  const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.content = rc ? oscuro(rc) : '#0d2347';
+  document.documentElement.style.setProperty('--franja', rc ? oscuro(rc) : '#ecf4fc');
+  const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.content = rc ? oscuro(rc) : '#ecf4fc';
+  // el indicador de Ataque/Defensa se desliza de donde estaba (la gota del dock): el conmutador es nuevo en cada repintado, así que arranca
+  // en el lado de antes y en el siguiente cuadro se va al de ahora (la transición es de .mk-lado::before)
+  const ml = t.querySelector('.mk-lado'), lp = ml ? +(st.partido.lado === 'D') : null;
+  if (ml) { ml.style.setProperty('--p', ladoAntes ?? lp); if (ladoAntes !== null && ladoAntes !== lp) { ml.getBoundingClientRect(); requestAnimationFrame(() => ml.style.setProperty('--p', lp)); } }
+  ladoAntes = lp;
   const cu1 = t.querySelector('.cuerpo'); if (cu1) cu1.scrollTop = cu0;
   if (st.toast) st.toast.nuevo = false;
   if (st.hoja === 'cuanto') montarCuanto();

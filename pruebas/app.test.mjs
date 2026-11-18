@@ -402,11 +402,11 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
   await toca(pg, 'res', 'pase'); assert.equal(await pg.locator('.hoja .pdt').count(), 0); assert.doesNotMatch(await pg.locator('.hoja').innerText(), /1ª y 10/);
   await pg.locator('.hb.no').click(); await pg.waitForTimeout(150);
-  // defendiendo, la franja de la hora toma el color del rival (Kaffies, oscurecido como el encabezado); atacando, el nuestro
+  // defendiendo, la franja de la hora toma el color del rival (Kaffies, oscurecido); atacando, el azul muy claro del fondo («me gusta», 18-nov)
   await toca(pg, 'lado', 'D');
   assert.equal(await pg.evaluate(() => document.querySelector('meta[name="theme-color"]').content), '#5e4824');
   await toca(pg, 'lado', 'O');
-  assert.equal(await pg.evaluate(() => document.querySelector('meta[name="theme-color"]').content), '#0d2347');
+  assert.equal(await pg.evaluate(() => document.querySelector('meta[name="theme-color"]').content), '#ecf4fc');
   // Inicio: la tarjeta del partido sin balón, con Belugas, el marcador y el nombre del rival
   await toca(pg, 'ir', 'inicio');
   assert.equal(await pg.locator('.heroe .balon').count(), 0);
@@ -486,14 +486,15 @@ test('la franja de la hora va del color del encabezado de cada pantalla, tambié
   const arriba = () => pg.evaluate(() => { const y = document.querySelector('#tel .estado').getBoundingClientRect().bottom + 6; let e = document.elementFromPoint(6, y);
     while (e && getComputedStyle(e).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(e).backgroundImage === 'none') e = e.parentElement;
     const c = getComputedStyle(e); return [document.querySelector('meta[name="theme-color"]').content, c.backgroundImage !== 'none' ? 'degradado' : c.backgroundColor]; });
-  const MARINO = ['#0d2347', 'rgb(13, 35, 71)'];
-  // al bajar, la franja se va con el encabezado (va dentro de lo que se desplaza): no queda una barra marina pegada arriba (Iker, 17-nov)
+  // sin franja marina («me gusta», 18-nov): bajo la hora se ve el degradado del fondo y la barra de Safari toma su azul muy claro
+  const CLARO = ['#ecf4fc', 'degradado'];
+  // al bajar, la franja se va con el encabezado (va dentro de lo que se desplaza): no queda una barra pegada arriba (Iker, 17-nov)
   const seVa = (v) => pg.evaluate(() => document.querySelector('#tel .estado').parentElement.className).then((c) => assert.equal(c, 'cuerpo', v));
-  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); assert.deepEqual(await arriba(), MARINO, v); await seVa(v); }
-  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); assert.deepEqual(await arriba(), MARINO, 'ficha de jugador'); await seVa('ficha de jugador');
-  await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); assert.deepEqual(await arriba(), MARINO, 'ficha de partido'); await seVa('ficha de partido'); // eslint-disable-line no-undef
+  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); assert.deepEqual(await arriba(), CLARO, v); await seVa(v); }
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); assert.deepEqual(await arriba(), CLARO, 'ficha de jugador'); await seVa('ficha de jugador');
+  await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); assert.deepEqual(await arriba(), CLARO, 'ficha de partido'); await seVa('ficha de partido'); // eslint-disable-line no-undef
   await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
-  assert.deepEqual(await arriba(), ['#0d2347', 'degradado'], 'Marcar en ataque');
+  assert.deepEqual(await arriba(), ['#ecf4fc', 'degradado'], 'Marcar en ataque');
   await toca(pg, 'lado', 'D'); assert.deepEqual(await arriba(), ['#5e4824', 'degradado'], 'Marcar en defensa');
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
