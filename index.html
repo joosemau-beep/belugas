@@ -628,15 +628,16 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .inicio .heroe .eq img, .inicio .heroe .eq .rlogo { width: 44px; height: 44px; }
 .inicio .heroe .mid strong { font-size: 40px; }
 .inicio .btn-blanco { height: 42px; font-size: 16px; }
-.inicio h2 { margin: 12px 2px 8px; }
-.inicio .cats { padding-bottom: 8px; } .inicio .cat { height: 32px; font-size: 12.5px; }
+.inicio h2 { margin: 10px 2px 6px; }
+.inicio .cats { padding-bottom: 6px; } .inicio .cat { height: 32px; font-size: 12.5px; }
 .inicio .podio { padding-top: 8px; }
 .inicio .pcol .foto { width: 52px; height: 52px; } .inicio .pcol.p1 .foto { width: 64px; height: 64px; }
 .inicio .pcol .corona { width: 50px; margin-bottom: -13px; }
 .inicio .pcol b { margin-top: 5px; font-size: 13px; }
 .inicio .valor { font-size: 21px; }
-.inicio .escalon { margin-top: 6px; padding-top: 5px; font-size: 24px; }
-.inicio .p1 .escalon { height: 36px; } .inicio .p2 .escalon { height: 31px; } .inicio .p3 .escalon { height: 27px; }
+.inicio .escalon { margin-top: 6px; padding-top: 6px; font-size: 30px; }
+/* escalones altos y bien distintos, que se note quién va primero (Iker, 17-nov); por ellos abajo van solo el 4.º y el 5.º */
+.inicio .p1 .escalon { height: 88px; } .inicio .p2 .escalon { height: 62px; } .inicio .p3 .escalon { height: 42px; }
 .inicio .tfila { padding: 5px 14px; } .inicio .tfila .foto { width: 30px; height: 30px; } .inicio .tfila .valor { font-size: 18px; }
 .inicio .vertodos { height: 36px; }
 .op.rojo { background: #c0392b; color: #fff; }
@@ -1224,14 +1225,14 @@ function podio(top) {
   return `<div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${foto(x[0])}<b class="corta">${x[0].corto}</b>${val(x[1], x[2])}${desg(x[0])}<div class="escalon">${n}</div></div>`).join('')}</div>`;
 }
 function lideres() {
-  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 3);
+  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 2);
   if (r.length < 3) return ''; // sin plantel todavía (falta el link del equipo)
   if (!JUEGOS.some((g) => !g.solo)) return '<h2>Líderes <small>Temporada</small></h2><div class="relevo" style="margin-top:0">Los líderes aparecen al marcar el primer partido.</div>';
   return `<h2>Líderes <small>Temporada</small></h2>
   <div class="cats">${CATS.map(([k, t]) => `<button class="cat ${st.cat === k ? 'on' : ''}" data-a="cat" data-v="${k}">${t}</button>`).join('')}</div>
   <div class="lideres ${st.animar ? 'entra' : st.cambiaCat ? 'cambia' : ''}">${podio(r)}
     <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}${desg(p)}</div>${val(v, u)}</div>`).join('')}</div>
-    ${resto.length > 3 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
+    ${resto.length > 2 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
 }
 
 // ---------- pantallas ----------
@@ -2130,7 +2131,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117182757';
+const VERSION = '20261117190423';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
