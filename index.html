@@ -941,7 +941,7 @@ const tempVacia = () => ({ v: 1, plantel: [], linea: { O: [], D: [], qb: null, v
 let T = tempVacia(), PLANTEL = [];
 // retratos aprobados para publicarse (archivos/jugadores); los demás van con sus iniciales.
 // Se ligan por id o por el nombre de hoy: el id se queda con el nombre con que entró (Juanpi entró como «Jonpol», Iker 17-nov)
-const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau', iker: 'iker', mario: 'mario', jaime: 'jaime', uri: 'uri', ian: 'ian', patrick: 'patrick', juanpi: 'juanpi', jonpol: 'juanpi', leo: 'leo', jose: 'jose', juancho: 'juancho' };
+const RETRATOS = { nicolas: 'nico', rodrigo: 'rodrigo', mau: 'mau', iker: 'iker', mario: 'mario', jaime: 'jaime', uri: 'uri', ian: 'ian', patrick: 'patrick', juanpi: 'juanpi', jonpol: 'juanpi', leo: 'leo', jose: 'jose', juancho: 'juancho', jj: 'jj' };
 const retrato = (x) => RETRATOS[x.id] || RETRATOS[slug(x.nombre).replace(/-/g, '')];
 const P = (id) => PLANTEL.find((x) => x.id === id);
 function armarPlantel() {
@@ -2135,7 +2135,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117192641';
+const VERSION = '20261117193243';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
