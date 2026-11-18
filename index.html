@@ -219,7 +219,7 @@ input.nombre:focus { border-color: var(--acento); }
 .pj.actual, .op.actual { box-shadow: inset 0 0 0 2.5px var(--acento); }
 .mbar .qbchip { margin: 0; height: 38px; max-width: 46%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* «¿Cuánto avanzó?»: la regla que escogió Iker en el editor; sin velo, las tiras de arriba siguen tocables */
-.hoja.cuanto { padding: 8px 16px calc(14px + var(--abajo)); box-shadow: 0 -10px 30px rgba(11,27,51,.18); }
+.hoja.cuanto { padding: 14px 16px calc(22px + var(--abajo)); box-shadow: 0 -10px 30px rgba(11,27,51,.18); }
 .mscore .down .op1 { font: italic 900 24px/1 var(--disp); }
 .rg-pmf { display: grid; grid-template-columns: 70px minmax(0, 1fr) 70px; align-items: center; gap: 8px; margin-top: 2px; }
 .rg-b { width: 70px; height: 70px; border-radius: 50%; background: #eceef1; color: var(--navy); display: grid; place-items: center; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -490,7 +490,9 @@ html:not(.app) .nav { background: var(--bg); }
 .pant > .pregunta.aviso .acc { height: 52px; padding: 0 14px; font-size: 15px; }
 .pant > .pregunta.aviso .txt { height: 52px; line-height: 52px; } /* el texto al centro del alto del aviso */
 html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
-.tel.anim .pant > .pregunta.aviso.nuevo { animation: toastIn .28s cubic-bezier(.3,1.4,.5,1); }
+.tel.anim .pant > .pregunta.aviso.nuevo { animation: toastIn .22s cubic-bezier(.3,1.4,.5,1); }
+.tel.anim .pant > .pregunta.aviso.sale { animation: toastOut .2s ease-in forwards; pointer-events: none; }
+@keyframes toastOut { to { transform: translateY(-14px) scale(.96); opacity: 0; } }
 .pregunta .ult { min-height: 40px; padding: 0 2px 0 10px; font: 700 13.5px/1 Inter; color: var(--acento); flex: none; }
 .pregunta .vista { display: inline-flex; background: #e3e8ef; border-radius: 9px; padding: 3px; flex: none; }
 .pregunta .vista button { font: 700 11.5px/1 Inter; color: var(--mut); padding: 7px 9px; border-radius: 7px; }
@@ -612,12 +614,12 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .hoja .pjs .pj { min-height: 118px; font-size: 15px; } .hoja .pjs .pj .foto { width: 58px; height: 58px; }
 .hoja .pjs.chicos .pj { min-height: 104px; }
 /* ¿Cuánto avanzó? como la V2 que escogió Iker (17-nov, data/belugas-yardas): + y − grandes y saltos en vez de la regla */
-.hoja.cuanto .rg-pmf { grid-template-columns: 80px minmax(0, 1fr) 80px; margin-top: 4px; }
-.hoja.cuanto .rg-b { width: 80px; height: 76px; border-radius: 20px; background: #e6eaf0; }
+.hoja.cuanto .rg-pmf { grid-template-columns: 80px minmax(0, 1fr) 80px; margin-top: 16px; }
+.hoja.cuanto .rg-b { width: 80px; height: 84px; border-radius: 20px; background: #e6eaf0; }
 .hoja.cuanto .rg-v { font-size: 76px; line-height: 76px; }
 .hoja.cuanto .rg-anuncio { bottom: -12px; }
-.rg-saltos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 6px; }
-.rg-saltos button { height: 64px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: italic 900 26px/1 var(--disp); color: var(--navy); }
+.rg-saltos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 28px 0 8px; }
+.rg-saltos button { height: 80px; border-radius: 16px; background: #fff; box-shadow: inset 0 0 0 1.5px var(--linea); font: italic 900 26px/1 var(--disp); color: var(--navy); }
 .hoja.cuanto .rg-b:active, .rg-saltos button:active { transform: scale(.97); }
 .rg-saltos button small { font: 800 13px/1 Inter; font-style: normal; margin-left: 2px; color: var(--mut); }
 /* Inicio: la tarjeta del partido sin balón, centrada */
@@ -1827,7 +1829,9 @@ function rehacer0(p) {
 const oportunidad = (p) => (p.lado === 'O' ? 'En ataque' : 'En defensa');
 let tToast;
 // el aviso vive en el renglón de «¿Qué pasó?»; si vence con la regla abierta solo se cambia ese renglón (no se quita nada de bajo el dedo)
-function avisar(toast, ms = 4000) { st.toast = { ...toast, nuevo: true }; clearTimeout(tToast); tToast = setTimeout(() => { st.toast = null; if (st.hoja === 'cuanto') { const e = document.querySelector('#tel .pregunta'); if (e && st.partido) e.outerHTML = filaPregunta(); } else pintar(); }, ms); }
+const AVISO_DURA = 2 / 3; // el aviso se queda un tercio menos que antes: 4 → 2.7 s, 5 → 3.3 s, 6 → 4 s (Iker, 17-nov)
+function avisar(toast, ms = 4000) { st.toast = { ...toast, nuevo: true }; clearTimeout(tToast); tToast = setTimeout(() => { const e = document.querySelector('.tel.anim .pant > .pregunta.aviso'); if (e) e.classList.add('sale'); tToast = setTimeout(quitarAviso, e ? 200 : 0); }, ms * AVISO_DURA); }
+function quitarAviso() { st.toast = null; if (st.hoja === 'cuanto') { const e = document.querySelector('#tel .pregunta'); if (e && st.partido) e.outerHTML = filaPregunta(); } else pintar(); }
 const conMarcador = (j) => { const f = efecto(j); return f.nos || f.ellos ? ` · ${st.partido.nos}–${st.partido.ellos}` : ''; };
 const porUid = (uid) => (st.partido ? st.partido.jugadas.find((x) => x.uid === uid) : null);
 // el aviso de una jugada: la jugada y su cambio en el marcador
@@ -2137,7 +2141,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117182051';
+const VERSION = '20261117192206';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2187,7 +2191,7 @@ function hojaCuanto() {
   const a = antesDe(j);
   return `<div class="hoja cuanto">${barra('<h3>¿Cuánto avanzó?</h3>', 'sinyd', 'rgok', 'Guardar las yardas')}
     <div class="rg-pmf"><button class="rg-b" data-pm="-1" aria-label="Menos">${signo(false)}</button><div class="rg-vw"><span class="rg-anuncio" id="rganuncio"></span><span class="rg-v num" id="rgv">${fmtYd(c.yd)}<small>yd</small></span></div><button class="rg-b" data-pm="1" aria-label="Más">${signo(true)}</button></div>
-    <div class="rg-saltos">${[5, 10, 20, 30].map((v) => (j.k === 'sackr' ? -v : v)).map((v) => `<button data-salto="${v}">${fmtYd(v)}<small>yd</small></button>`).join('')}</div>
+    <div class="rg-saltos">${[5, 10, 20, 30].map((v) => (j.k === 'sackr' ? -v : v)).map((v) => `<button data-salto="${v}">${v}<small>yd</small></button>`).join('')}</div>
     <div hidden>${regla(a)}</div></div>`; // la regla sigue escondida: así los topes, los colores y el «¡Touchdown!» funcionan igual
 }
 function abrirCuanto(j) { if (st.yds !== 'si') return; st.cuanto = { uid: j.uid, yd: j.yd || 0 }; st.hoja = 'cuanto'; }
