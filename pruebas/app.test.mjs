@@ -536,8 +536,8 @@ test('la barra es la Waterline: solo íconos, En vivo con el marcador, la gota v
     if (sinGL) assert.equal(await pg.locator('#tel .agua').getAttribute('data-gl'), 'off');
     const gota = () => pg.evaluate(() => { const b = document.querySelector('#tel .agua button.on, #tel .agua .centro2.on').getBoundingClientRect(), n = document.querySelector('#tel .agua').getBoundingClientRect(); // eslint-disable-line no-undef
       return [Math.abs(Math.round(AGUA.a.x - AGUA_PAD + n.left - (b.left + b.width / 2))), AGUA.raf, AGUA.moving]; }); // eslint-disable-line no-undef
-    await toca(pg, 'ir', 'metricas'); await pg.waitForTimeout(550);
-    assert.deepEqual((await gota()).filter((x, i) => i !== 1), [0, false]); // ya llegó a Métricas y se asentó (antes tardaba más de un segundo)
+    await toca(pg, 'ir', 'metricas'); await pg.waitForTimeout(800);
+    assert.deepEqual((await gota()).filter((x, i) => i !== 1), [0, false]); // ya llegó a Métricas y se asentó (se asienta en ~0.5 s; a la primera velocidad tardaba más de un segundo)
     await pg.waitForTimeout(1000);
     assert.deepEqual(await gota(), [0, 0, false]); // y al irse la onda ya no dibuja (la pila)
     if (sinGL) assert.ok(parseFloat(await pg.locator('#tel .agua-gota').evaluate((g) => g.style.width)) > 20);
