@@ -420,9 +420,9 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   }
   // Líderes: cambiar de categoría no regresa la página hasta arriba
   await toca(pg, 'ir', 'inicio');
-  await toca(pg, 'todos'); // Inicio cabe en una pantalla con el podio solo; con «Ver todos» ya se baja
+  await toca(pg, 'todos'); // Inicio cabe en una pantalla; con «Ver todos» ya se baja
   const cu = pg.locator('#tel .cuerpo');
-  await cu.evaluate((c) => { c.scrollTop = 300; }); const y = await cu.evaluate((c) => c.scrollTop);
+  await cu.evaluate((c) => { c.scrollTop = 150; }); const y = await cu.evaluate((c) => c.scrollTop); // a media lista: con todo más chico, 300 ya es casi el fondo
   assert.ok(y > 0);
   await toca(pg, 'cat', 'yds');
   assert.equal(await cu.evaluate((c) => c.scrollTop), y);

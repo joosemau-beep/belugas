@@ -326,17 +326,17 @@ table.bs td.v { color: #b8c2cf; }
 .tfila .desg span + span::before { content: ' · '; }
 
 /* versión 1: escalones */
-.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 10px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
+.podio { display: grid; grid-template-columns: 1fr 1.18fr 1fr; align-items: end; gap: 8px; padding: 16px 12px 0; background: linear-gradient(180deg, #f6f9ff, #fff 70%); }
 .pcol { display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
 .pcol .foto { width: 64px; height: 64px; box-shadow: 0 8px 16px rgba(13,35,71,.18); }
-.pcol.p1 .foto { width: 76px; height: 76px; }
+.pcol.p1 .foto { width: 86px; height: 86px; }
 .pcol .corona { width: 62px; margin-bottom: -16px; }
 .pcol b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 7px; }
 .pcol .valor { margin-top: 2px; }
 .escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); box-shadow: inset 0 5px 0 rgba(255,255,255,.35); }
-.p1 .escalon { height: 56px; background: var(--grad); color: #fff; }
-.p2 .escalon { height: 46px; background: var(--plata); color: #5b6676; }
-.p3 .escalon { height: 38px; background: var(--bronce); color: #7a431b; }
+.p1 .escalon { height: 104px; background: var(--grad); color: #fff; }
+.p2 .escalon { height: 78px; background: var(--plata); color: #5b6676; }
+.p3 .escalon { height: 60px; background: var(--bronce); color: #7a431b; }
 
 
 /* la tabla de abajo, compacta */
@@ -615,7 +615,24 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 46px); }
 .hoja.cuanto .rg-b:active, .rg-saltos button:active { transform: scale(.97); }
 .rg-saltos button small { font: 800 13px/1 Inter; font-style: normal; margin-left: 2px; color: var(--mut); }
 /* Inicio: la tarjeta del partido sin balón, centrada */
-.heroe.hoy { padding: 16px 18px; } .heroe.hoy .vs { margin: 10px 0; } .heroe.hoy + h2 { margin-top: 14px; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
+.heroe.hoy .vs { margin-right: 0; } .heroe.hoy .vs .eq { transform: none; text-align: center; }
+/* Inicio cabe en una pantalla (Iker, 17-nov): la tarjeta del partido, el podio y los renglones de Líderes un poco más chicos */
+.inicio .heroe.hoy { padding: 12px 16px 14px; }
+.inicio .heroe.hoy .vs { margin: 8px 0 10px; }
+.inicio .heroe .eq img, .inicio .heroe .eq .rlogo { width: 44px; height: 44px; }
+.inicio .heroe .mid strong { font-size: 40px; }
+.inicio .btn-blanco { height: 42px; font-size: 16px; }
+.inicio h2 { margin: 12px 2px 8px; }
+.inicio .cats { padding-bottom: 8px; } .inicio .cat { height: 32px; font-size: 12.5px; }
+.inicio .podio { padding-top: 8px; }
+.inicio .pcol .foto { width: 52px; height: 52px; } .inicio .pcol.p1 .foto { width: 64px; height: 64px; }
+.inicio .pcol .corona { width: 50px; margin-bottom: -13px; }
+.inicio .pcol b { margin-top: 5px; font-size: 13px; }
+.inicio .valor { font-size: 21px; }
+.inicio .escalon { margin-top: 6px; padding-top: 5px; font-size: 24px; }
+.inicio .p1 .escalon { height: 36px; } .inicio .p2 .escalon { height: 31px; } .inicio .p3 .escalon { height: 27px; }
+.inicio .tfila { padding: 5px 14px; } .inicio .tfila .foto { width: 30px; height: 30px; } .inicio .tfila .valor { font-size: 18px; }
+.inicio .vertodos { height: 36px; }
 .op.rojo { background: #c0392b; color: #fff; }
 .mk-corr { text-align: center; font: 800 11.5px/1 Inter; letter-spacing: .08em; text-transform: uppercase; opacity: .9; margin: 2px 0 4px; }
 .sinquerer button { background: var(--ink); color: #fff; border-radius: 10px; height: 40px; padding: 0 14px; font: 800 14px/1 Inter; flex: none; }
@@ -1196,14 +1213,14 @@ function podio(top) {
   return `<div class="podio">${[[b, 2], [a, 1], [c, 3]].map(([x, n]) => `<div class="pcol p${n}" data-a="jug" data-v="${x[0].id}">${n === 1 ? `<img class="corona" src="${CORONA}" alt="">` : ''}${foto(x[0])}<b class="corta">${x[0].corto}</b>${val(x[1], x[2])}${desg(x[0])}<div class="escalon">${n}</div></div>`).join('')}</div>`;
 }
 function lideres() {
-  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : []; // Inicio cabe en una pantalla: solo el podio, el resto con «Ver todos»
+  const r = ranking(), resto = r.slice(3), ver = st.todos ? resto : resto.slice(0, 3);
   if (r.length < 3) return ''; // sin plantel todavía (falta el link del equipo)
   if (!JUEGOS.some((g) => !g.solo)) return '<h2>Líderes <small>Temporada</small></h2><div class="relevo" style="margin-top:0">Los líderes aparecen al marcar el primer partido.</div>';
   return `<h2>Líderes <small>Temporada</small></h2>
   <div class="cats">${CATS.map(([k, t]) => `<button class="cat ${st.cat === k ? 'on' : ''}" data-a="cat" data-v="${k}">${t}</button>`).join('')}</div>
   <div class="lideres ${st.animar ? 'entra' : st.cambiaCat ? 'cambia' : ''}">${podio(r)}
     <div class="tabla">${ver.map(([p, v, u], i) => `<div class="tfila" data-a="jug" data-v="${p.id}"><span class="rk">${i + 4}</span>${foto(p)}<div><b class="corta">${p.nombre}</b>${chico(p)}${desg(p)}</div>${val(v, u)}</div>`).join('')}</div>
-    ${resto.length ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
+    ${resto.length > 3 ? `<button class="vertodos" data-a="todos">${st.todos ? 'Ver menos' : `Ver todos (${r.length})`}</button>` : ''}</div>`;
 }
 
 // ---------- pantallas ----------
@@ -1224,7 +1241,7 @@ function heroeHoy() {
       <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
 }
 function inicio1() {
-  return `<div class="pant">${est()}<div class="cuerpo">
+  return `<div class="pant inicio">${est()}<div class="cuerpo">
     ${cab('Belugas', `Temporada 2026 · ${RECORD}`)}
     ${avisoNube()}${heroeHoy()}
     ${lideres()}
