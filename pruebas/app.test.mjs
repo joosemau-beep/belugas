@@ -487,9 +487,11 @@ test('la franja de la hora va del color del encabezado de cada pantalla, tambié
     while (e && getComputedStyle(e).backgroundColor === 'rgba(0, 0, 0, 0)' && getComputedStyle(e).backgroundImage === 'none') e = e.parentElement;
     const c = getComputedStyle(e); return [document.querySelector('meta[name="theme-color"]').content, c.backgroundImage !== 'none' ? 'degradado' : c.backgroundColor]; });
   const MARINO = ['#0d2347', 'rgb(13, 35, 71)'];
-  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); assert.deepEqual(await arriba(), MARINO, v); }
-  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); assert.deepEqual(await arriba(), MARINO, 'ficha de jugador');
-  await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); assert.deepEqual(await arriba(), MARINO, 'ficha de partido'); // eslint-disable-line no-undef
+  // al bajar, la franja se va con el encabezado (va dentro de lo que se desplaza): no queda una barra marina pegada arriba (Iker, 17-nov)
+  const seVa = (v) => pg.evaluate(() => document.querySelector('#tel .estado').parentElement.className).then((c) => assert.equal(c, 'cuerpo', v));
+  for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); assert.deepEqual(await arriba(), MARINO, v); await seVa(v); }
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); assert.deepEqual(await arriba(), MARINO, 'ficha de jugador'); await seVa('ficha de jugador');
+  await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); assert.deepEqual(await arriba(), MARINO, 'ficha de partido'); await seVa('ficha de partido'); // eslint-disable-line no-undef
   await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
   assert.deepEqual(await arriba(), ['#0d2347', 'degradado'], 'Marcar en ataque');
   await toca(pg, 'lado', 'D'); assert.deepEqual(await arriba(), ['#5e4824', 'degradado'], 'Marcar en defensa');
@@ -509,9 +511,10 @@ test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le d
     const revisa = (v) => pg.evaluate(() => {
       const n = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo, #tel .mk-cuerpo');
       c.scrollTop = c.scrollHeight; const u = c.lastElementChild.getBoundingClientRect();
-      // la píldora de las pestañas va pegada abajo, como en un iPhone: entre sus íconos y la zona segura de la rayita, a lo más 8 px
+      // la píldora de las pestañas va pegada abajo, como en un iPhone: entre sus íconos y su aire de abajo, a lo más 8 px; ese aire es la zona segura
+      // menos 6 px (Iker, 17-nov: 14 px más abajo), así que con la rayita queda encima de ella y sin rayita (SE) a 14 px de la orilla
       const ab = parseFloat(getComputedStyle(document.querySelector('#tel .nav')).paddingBottom), nom = Math.max(...[...document.querySelectorAll('#tel .nav button')].map((b) => b.getBoundingClientRect().bottom));
-      return [Math.round(n.bottom) - innerHeight, ab >= 20, n.bottom - ab - nom <= 8, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
+      return [Math.round(n.bottom) - innerHeight, ab >= 14, n.bottom - ab - nom <= 8, document.scrollingElement.scrollHeight <= innerHeight, u.bottom <= n.top];
     }).then((r) => assert.deepEqual(r, [0, true, true, true, true], `${v} (${ancho} × ${alto})`));
     for (const v of ['inicio', 'partidos', 'jugadores', 'metricas']) { await toca(pg, 'ir', v); await revisa(v); }
     await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
@@ -535,8 +538,10 @@ test('la barra es la Waterline: solo íconos, En vivo con el marcador, la gota v
     if (sinGL) assert.equal(await pg.locator('#tel .agua').getAttribute('data-gl'), 'off');
     const gota = () => pg.evaluate(() => { const b = document.querySelector('#tel .agua button.on, #tel .agua .centro2.on').getBoundingClientRect(), n = document.querySelector('#tel .agua').getBoundingClientRect(); // eslint-disable-line no-undef
       return [Math.abs(Math.round(AGUA.a.x - AGUA_PAD + n.left - (b.left + b.width / 2))), AGUA.raf, AGUA.moving]; }); // eslint-disable-line no-undef
-    await toca(pg, 'ir', 'metricas'); await pg.waitForTimeout(3600);
-    assert.deepEqual(await gota(), [0, 0, false]); // llegó a Métricas y, al irse la onda, ya no dibuja (la pila)
+    await toca(pg, 'ir', 'metricas'); await pg.waitForTimeout(550);
+    assert.deepEqual((await gota()).filter((x, i) => i !== 1), [0, false]); // ya llegó a Métricas y se asentó (antes tardaba más de un segundo)
+    await pg.waitForTimeout(1000);
+    assert.deepEqual(await gota(), [0, 0, false]); // y al irse la onda ya no dibuja (la pila)
     if (sinGL) assert.ok(parseFloat(await pg.locator('#tel .agua-gota').evaluate((g) => g.style.width)) > 20);
     // con partido, el centro es el marcador con el punto de en vivo, y la gota se va ahí
     await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto'); await pg.waitForTimeout(3600);
@@ -683,8 +688,8 @@ test('cómo funciona la app: si la nube contesta a media práctica, los jugadore
   await pg.context().close();
 });
 
-// Iker, 17-nov: en la ficha cada quien es de Ataque, de Defensa o de los dos; en «¿Quién?» salen primero los del lado que se marca
-test('el lado de cada jugador ordena «¿Quién?» y viaja a la nube y al otro celular', async () => {
+// Iker, 17-nov: en la ficha cada quien es de Ataque, de Defensa o de los dos; «¿Quién?» va por grupos con su título, primero el lado que se marca y Los dos al final
+test('el lado de cada jugador agrupa «¿Quién?» y viaja a la nube y al otro celular', async () => {
   const clave = 'prueba-lado-0123456789abcdef', nube = nubeFalsa(clave, ['Mau', 'Nico', 'Rodrigo', 'Pepe']);
   const a = await telefono(srv.url, { nube, clave });
   await a.waitForFunction(() => PLANTEL.length === 4); // eslint-disable-line no-undef
@@ -700,20 +705,20 @@ test('el lado de cada jugador ordena «¿Quién?» y viaja a la nube y al otro c
   assert.deepEqual(await van(), ['ATAQUE', 'nico', 'DEFENSA', 'pepe', 'LOS DOS', 'mau', 'rodrigo']);
   for (const id of ['mau', 'nico', 'rodrigo', 'pepe']) await toca(a, 'vantoggle', id);
   await toca(a, 'vanlisto');
-  const quien = () => a.locator('.hoja .pjs > *').evaluateAll((xs) => xs.map((x) => (x.classList.contains('pj-sep') ? '|' : x.dataset.v)));
+  const quien = () => a.locator('.hoja .lados > *').evaluateAll((xs) => xs.flatMap((x) => (x.tagName === 'H4' ? [x.innerText] : [...x.children].map((y) => y.dataset.v))));
   await toca(a, 'res', 'corrida');
-  assert.deepEqual(await quien(), ['mau', 'nico', 'rodrigo', '|', 'pepe']);
-  // cada quien con el color de su lado: Ataque en azul (Nico), Defensa en el color del rival (Pepe, Panini), Los dos sin color (Mau y Rodrigo, que regresó)
-  assert.deepEqual(await a.locator('.hoja .pjs.lados .pj').evaluateAll((xs) => xs.map((x) => [x.dataset.v, getComputedStyle(x).backgroundImage !== 'none', getComputedStyle(x.querySelector('.foto')).boxShadow !== 'none'])),
-    [['mau', false, false], ['nico', true, true], ['rodrigo', false, false], ['pepe', true, true]]);
-  assert.equal(await a.locator('.hoja .pjs.lados').evaluate((x) => x.style.getPropertyValue('--rc')), await a.evaluate(() => R('panini').color)); // eslint-disable-line no-undef
+  assert.deepEqual(await quien(), ['ATAQUE', 'nico', 'DEFENSA', 'pepe', 'LOS DOS', 'mau', 'rodrigo']);
+  // cada quien con el color de su lado: Ataque en azul (Nico), Defensa en el color del rival (Pepe, Panini), Los dos sin color (Mau y Rodrigo, que regresó); las fotos sin aro
+  assert.deepEqual(await a.locator('.hoja .lados .pj').evaluateAll((xs) => xs.map((x) => [x.dataset.v, getComputedStyle(x).backgroundImage !== 'none', getComputedStyle(x.querySelector('.foto')).boxShadow !== 'none'])),
+    [['nico', true, false], ['pepe', true, false], ['mau', false, false], ['rodrigo', false, false]]);
+  assert.equal(await a.locator('.hoja .lados').evaluate((x) => x.style.getPropertyValue('--rc')), await a.evaluate(() => R('panini').color)); // eslint-disable-line no-undef
   await toca(a, 'quien', 'nico'); await toca(a, 'sinyd');
   await toca(a, 'lado', 'D'); await toca(a, 'res', 'bandera');
-  assert.deepEqual(await quien(), ['mau', 'rodrigo', 'pepe', '|', 'nico']);
+  assert.deepEqual(await quien(), ['DEFENSA', 'pepe', 'ATAQUE', 'nico', 'LOS DOS', 'mau', 'rodrigo']);
   await toca(a, 'quien', 'pepe'); await toca(a, 'sinyd');
-  // Corregir la corrida (de ataque): Pepe va después de la rayita
+  // Corregir la corrida (de ataque): también por grupos, Ataque primero
   await a.evaluate(() => { A.fila(st.partido.jugadas.findIndex((j) => j.k === 'corrida')); pintar(); }); // eslint-disable-line no-undef
-  assert.deepEqual(await quien(), ['nico', 'mau', 'rodrigo', '|', 'pepe']);
+  assert.deepEqual(await quien(), ['ATAQUE', 'nico', 'DEFENSA', 'pepe', 'LOS DOS', 'mau', 'rodrigo']);
   await a.waitForTimeout(800); // la temporada sube 300 ms después del último cambio
   const enNube = Object.fromEntries(nube.db[clave + '-cel'].datos.plantel.map((x) => [x.id, x.lado || '']));
   assert.deepEqual(enNube, { mau: '', nico: 'O', rodrigo: '', pepe: 'D' });
