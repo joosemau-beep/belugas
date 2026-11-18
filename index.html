@@ -595,7 +595,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* Marcar (Iker, 17-nov): las 6 más usadas en botones grandes de solo texto, el TD y «Más opciones» con el resto; sin pestañas: «Lo que pasó» está a la derecha, se llega deslizando a la izquierda y los puntos dicen dónde vas */
 .mk-tiras { display: grid; gap: 6px; }
 .mk-grandes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
-.mk-grande { min-height: 98px; border-radius: var(--radio); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
+.mk-grande { min-height: 117px; border-radius: var(--radio); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 12px 14px 13px; text-align: left; font: 800 19px/1.15 Inter; }
 .mk-tira { gap: 12px; justify-content: flex-start; }
 /* los botones grandes (la C de Iker, 17-nov: «más fácil de usar y de entender»): enteros del color de su jugada (--c, de ICONOS_C),
    oscurecido para que el blanco se lea al sol, con el glifo grande al centro y el nombre abajo */
@@ -627,6 +627,13 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .hoja.vidrio { background: rgba(248,251,255,.74); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border-top-color: rgba(255,255,255,.6); }
 .hoja.vidrio .mk-tira { background: rgba(255,255,255,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
 .mk-tiras .mk-td { margin-top: 0; height: 60px; gap: 12px; }
+/* todos los botones cuadrados del mismo alto, el de la fila de «Intercepción lanzada» (Iker, 18-nov). En una pantalla baja (el SE) no cabría
+   hasta el TD: ahí van a 110, con el ícono y el relleno un poco más chicos (el nombre de dos renglones sigue cabiendo), el TD 10 px más bajo
+   y menos aire arriba */
+@media (max-height: 700px) {
+  .mk-grande { min-height: 110px; gap: 6px; padding-top: 10px; padding-bottom: 10px; } .mk-gi svg { width: 34px; height: 34px; }
+  .mk-cuerpo { padding-top: 12px; } .mk-grandes { gap: 8px; } .mk-tiras .mk-td { height: 50px; }
+}
 .mk-tira:active, .mk-td:active { transform: scale(.98); }
 .mk-puntos { display: flex; justify-content: center; margin: -15px 0 -1px; position: relative; }
 .mk-puntos button { width: 26px; height: 16px; display: grid; place-items: center; }
