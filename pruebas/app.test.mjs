@@ -681,8 +681,8 @@ test('cómo funciona la app: si la nube contesta a media práctica, los jugadore
   await pg.context().close();
 });
 
-// Iker, 17-nov: en la ficha cada quien es de Ataque, de Defensa o de los dos; en «¿Quién?» salen primero los del lado que se marca
-test('el lado de cada jugador ordena «¿Quién?» y viaja a la nube y al otro celular', async () => {
+// Iker, 17-nov: en la ficha cada quien es de Ataque, de Defensa o de los dos; «¿Quién?» va por grupos con su título, primero el lado que se marca y Los dos al final
+test('el lado de cada jugador agrupa «¿Quién?» y viaja a la nube y al otro celular', async () => {
   const clave = 'prueba-lado-0123456789abcdef', nube = nubeFalsa(clave, ['Mau', 'Nico', 'Rodrigo', 'Pepe']);
   const a = await telefono(srv.url, { nube, clave });
   await a.waitForFunction(() => PLANTEL.length === 4); // eslint-disable-line no-undef
@@ -698,20 +698,20 @@ test('el lado de cada jugador ordena «¿Quién?» y viaja a la nube y al otro c
   assert.deepEqual(await van(), ['ATAQUE', 'nico', 'DEFENSA', 'pepe', 'LOS DOS', 'mau', 'rodrigo']);
   for (const id of ['mau', 'nico', 'rodrigo', 'pepe']) await toca(a, 'vantoggle', id);
   await toca(a, 'vanlisto');
-  const quien = () => a.locator('.hoja .pjs > *').evaluateAll((xs) => xs.map((x) => (x.classList.contains('pj-sep') ? '|' : x.dataset.v)));
+  const quien = () => a.locator('.hoja .lados > *').evaluateAll((xs) => xs.flatMap((x) => (x.tagName === 'H4' ? [x.innerText] : [...x.children].map((y) => y.dataset.v))));
   await toca(a, 'res', 'corrida');
-  assert.deepEqual(await quien(), ['mau', 'nico', 'rodrigo', '|', 'pepe']);
-  // cada quien con el color de su lado: Ataque en azul (Nico), Defensa en el color del rival (Pepe, Panini), Los dos sin color (Mau y Rodrigo, que regresó)
-  assert.deepEqual(await a.locator('.hoja .pjs.lados .pj').evaluateAll((xs) => xs.map((x) => [x.dataset.v, getComputedStyle(x).backgroundImage !== 'none', getComputedStyle(x.querySelector('.foto')).boxShadow !== 'none'])),
-    [['mau', false, false], ['nico', true, true], ['rodrigo', false, false], ['pepe', true, true]]);
-  assert.equal(await a.locator('.hoja .pjs.lados').evaluate((x) => x.style.getPropertyValue('--rc')), await a.evaluate(() => R('panini').color)); // eslint-disable-line no-undef
+  assert.deepEqual(await quien(), ['ATAQUE', 'nico', 'DEFENSA', 'pepe', 'LOS DOS', 'mau', 'rodrigo']);
+  // cada quien con el color de su lado: Ataque en azul (Nico), Defensa en el color del rival (Pepe, Panini), Los dos sin color (Mau y Rodrigo, que regresó); las fotos sin aro
+  assert.deepEqual(await a.locator('.hoja .lados .pj').evaluateAll((xs) => xs.map((x) => [x.dataset.v, getComputedStyle(x).backgroundImage !== 'none', getComputedStyle(x.querySelector('.foto')).boxShadow !== 'none'])),
+    [['nico', true, false], ['pepe', true, false], ['mau', false, false], ['rodrigo', false, false]]);
+  assert.equal(await a.locator('.hoja .lados').evaluate((x) => x.style.getPropertyValue('--rc')), await a.evaluate(() => R('panini').color)); // eslint-disable-line no-undef
   await toca(a, 'quien', 'nico'); await toca(a, 'sinyd');
   await toca(a, 'lado', 'D'); await toca(a, 'res', 'bandera');
-  assert.deepEqual(await quien(), ['mau', 'rodrigo', 'pepe', '|', 'nico']);
+  assert.deepEqual(await quien(), ['DEFENSA', 'pepe', 'ATAQUE', 'nico', 'LOS DOS', 'mau', 'rodrigo']);
   await toca(a, 'quien', 'pepe'); await toca(a, 'sinyd');
-  // Corregir la corrida (de ataque): Pepe va después de la rayita
+  // Corregir la corrida (de ataque): también por grupos, Ataque primero
   await a.evaluate(() => { A.fila(st.partido.jugadas.findIndex((j) => j.k === 'corrida')); pintar(); }); // eslint-disable-line no-undef
-  assert.deepEqual(await quien(), ['nico', 'mau', 'rodrigo', '|', 'pepe']);
+  assert.deepEqual(await quien(), ['ATAQUE', 'nico', 'DEFENSA', 'pepe', 'LOS DOS', 'mau', 'rodrigo']);
   await a.waitForTimeout(800); // la temporada sube 300 ms después del último cambio
   const enNube = Object.fromEntries(nube.db[clave + '-cel'].datos.plantel.map((x) => [x.id, x.lado || '']));
   assert.deepEqual(enNube, { mau: '', nico: 'O', rodrigo: '', pepe: 'D' });

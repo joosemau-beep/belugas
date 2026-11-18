@@ -630,10 +630,12 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .pjs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .pj { background: var(--bg); border-radius: 16px; min-height: 104px; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 8px 4px; font: 700 13px/1.1 Inter; min-width: 0; }
 .pj .foto { width: 50px; height: 50px; }
-.pj-sep { grid-column: 1 / -1; height: 1px; background: var(--linea); margin: 4px 6px; }
-/* «¿Quién?»: cada quien con el color de su lado (Iker, 17-nov): Ataque en azul Belugas, Defensa en el color del rival, Los dos sin color */
-.lados .pj.lO { background: linear-gradient(180deg, #eef4fc, #e1ebf8); } .lados .pj.lO .foto { box-shadow: 0 0 0 3px var(--azul); }
-.lados .pj.lD { background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 8%, #fff), color-mix(in srgb, var(--rc) 18%, #fff)); } .lados .pj.lD .foto { box-shadow: 0 0 0 3px color-mix(in srgb, var(--rc) 75%, #000); }
+.hoja .lados h4.sub { display: flex; align-items: center; gap: 8px; color: var(--ink); } .hoja .lados h4.sub:first-child { margin-top: 2px; }
+.lados h4.sub i { width: 4px; height: 16px; border-radius: 2px; background: #8a97a8; } .lados h4.sub.lO i { background: var(--azul); } .lados h4.sub.lD i { background: color-mix(in srgb, var(--rc) 75%, #000); }
+/* «¿Quién?»: cada quien con el color de su lado (Iker, 17-nov): Ataque en azul Belugas, Defensa en el color del rival, Los dos sin color; las fotos sin aro de color (Iker, 17-nov) */
+.lados .pj.lO { background: linear-gradient(180deg, #eef4fc, #e1ebf8); }
+.lados .pj.lD { background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 8%, #fff), color-mix(in srgb, var(--rc) 18%, #fff)); }
+.lados .pj .ini { border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--linea); }
 .pj .corta { max-width: 100%; }
 .pj small { color: var(--mut); font: 600 11px/1 Inter; }
 .ops { display: grid; gap: 10px; }
@@ -1584,9 +1586,11 @@ const AYUDA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9.2a3
 // quién: una sola lista, los que vinieron hoy en el orden del plantel (Mau, 16-nov: sin titulares ni banca)
 const botonPj = (id, accion, actual) => { const p = P(id); return `<button class="pj${actual ? ' actual' : ''}${p.lado ? ' l' + p.lado : ''}" data-a="${accion}" data-v="${id}">${foto(p)}<span class="corta">${p.corto}</span>${chico(p)}</button>`; };
 // ¿Quién?: primero los que han jugado de este lado (sin la marca «última»: Iker, 17-nov)
-const pjsRecientes = (lado, accion, fuera) => conSep(recientes(lado).filter((id) => id !== fuera), lado, (id) => botonPj(id, accion, false));
-// una rayita entre los de este lado (y los de los dos) y los que solo juegan del otro
-const conSep = (ids, lado, boton) => ids.map((id, i) => (i && otroLado(id, lado) && !otroLado(ids[i - 1], lado) ? '<i class="pj-sep" aria-hidden="true"></i>' : '') + boton(id)).join('');
+const pjsRecientes = (lado, accion, fuera) => porLados(recientes(lado).filter((id) => id !== fuera), lado, (id) => botonPj(id, accion, false));
+// «¿Quién?» por grupos con su título, como en la comparación que aprobó Iker (17-nov): el lado de la jugada primero, luego el otro y Los dos al final;
+// dentro de cada grupo el orden de siempre, y si nadie tiene lado, una sola lista
+const porLados = (ids, lado, boton, cls = '') => `<div class="lados" style="--rc:${R(HOY).color}">${!ids.some((id) => ladoDe(id)) ? `<div class="pjs${cls}">${ids.map(boton).join('')}</div>`
+  : [[lado, lado === 'O' ? 'Ataque' : 'Defensa'], lado === 'O' ? ['D', 'Defensa'] : ['O', 'Ataque'], ['', 'Los dos']].map(([l, n]) => { const g = ids.filter((id) => ladoDe(id) === l); return g.length ? `<h4 class="sub l${l}"><i></i>${n}</h4><div class="pjs${cls}">${g.map(boton).join('')}</div>` : ''; }).join('')}</div>`;
 // «¿Quiénes vinieron hoy?» por grupos, Ataque, Defensa y Los dos (Iker, 17-nov); si nadie tiene lado, la lista de siempre
 const porGrupo = (fila) => !PLANTEL.some((p) => p.lado) ? PLANTEL.map(fila).join('')
   : [['O', 'Ataque'], ['D', 'Defensa'], [undefined, 'Los dos']].map(([l, n]) => { const ps = PLANTEL.filter((p) => p.lado === l); return ps.length ? `<h4 class="sub">${n}</h4>${ps.map(fila).join('')}` : ''; }).join('');
@@ -1617,7 +1621,7 @@ function hoja() {
     // TD: ya se escogió pase o corrida en «¿Cómo fue el TD?»; el de pase deja cambiar quién lanzó
     const lz = pasa ? campoLanzo(q, 'jugada') : '';
     const tit = st.sel === 'incompleto' ? '¿Quién soltó el pase?' : td ? (st.corre ? 'TD por corrida: ¿quién anotó?' : 'TD de pase: ¿quién la atrapó?') : x[3];
-    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${lz}<div class="pjs lados" style="--rc:${r.color}">${pjsRecientes(st.partido.lado, 'quien', pasa ? q : null)}</div>`;
+    h = `${barra(`<h3>${tit}</h3>`, 'cerrar')}${lz}${pjsRecientes(st.partido.lado, 'quien', pasa ? q : null)}`;
   }
   // pase incompleto: solo castiga si se le cayó (al que la soltó); el mal pase o el que no se podía agarrar no le quita a nadie, tampoco al QB
   if (st.hoja === 'inc') h = '<div class="ops"><button class="op prim" data-a="inc" data-v="cayo">Pase soltado (era atrapable)</button><button class="op" data-a="inc" data-v="mal">Mal pase o no atrapable</button></div>';
@@ -1640,7 +1644,7 @@ function hoja() {
         ${conYardas(j) ? `<button class="campo" data-a="cyd" style="margin-top:12px"><div><span class="l">Yardas</span><b>${j.yd == null ? 'Sin yardas' : fmtYd(j.yd) + ' yd'}</b></div><u>Cambiar</u></button>` : ''}
         ${['td', 'pick6', 'tdr', 'pick6c'].includes(j.k) ? `<button class="campo" data-a="cconv" style="margin-top:12px"><div><span class="l">Conversión</span><b>${!j.conv ? 'No se intentó' : `De ${j.conv[0]} · ${j.conv[1] ? 'buena' + (!['tdr', 'pick6c'].includes(j.k) ? `, atrapó ${nom(j.convId)}` : '') : 'fallida'}`}</b></div><u>Cambiar</u></button>` : ''}
         ${j.k === 'castigo' ? `<h4 class="sub">Castigo</h4><div class="ops dos acc"><button class="op${j.v === 'favor' ? ' prim' : ''}" data-a="ccast" data-v="favor">Al rival</button><button class="op${j.v === 'contra' ? ' prim' : ''}" data-a="ccast" data-v="contra">A Belugas</button></div>` : ''}
-        ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4><div class="pjs chicos">${conSep(cuantos, j.lado, (id) => botonPj(id, 'cquien', id === j.id))}</div>` : ''}`;
+        ${cuantos ? `<h4 class="sub">${pregunta(j.k)}</h4>${porLados(cuantos, j.lado, (id) => botonPj(id, 'cquien', id === j.id), ' chicos')}` : ''}`;
     }
   }
   if (st.hoja === 'mas') h = `<h3>Más opciones</h3><div class="mk-tiras">${MK_MAS[st.partido.lado].map((k) => mkBoton(k, 'mk-tira')).join('')}</div>`;
@@ -1652,7 +1656,7 @@ function hoja() {
   if (st.hoja === 'conv') {
     const c = st.conv, j = c && porUid(c.uid);
     if (j && c.paso) { const q = lanzo();
-      h = `<h3>¿Quién la atrapó?</h3>${campoLanzo(q, 'conv')}<div class="pjs">${pjsRecientes(j.lado, 'convq', q)}</div>`; }
+      h = `<h3>¿Quién la atrapó?</h3>${campoLanzo(q, 'conv')}${pjsRecientes(j.lado, 'convq', q)}`; }
     else if (j) h = `<h3>${['tdr', 'pick6c'].includes(j.k) ? `Conversión de ${r.corto}` : 'Conversión'}</h3>
       <div class="convf">${[1, 2].map((n) => `<div class="cf"><div class="cn">De ${n}</div><button class="op prim" data-a="conv" data-v="${n}-1">Buena</button><button class="op" data-a="conv" data-v="${n}-0">Fallida</button></div>`).join('')}</div>
       <div class="ops" style="margin-top:4px"><button class="op sec" data-a="conv" data-v="0">No se intentó</button></div>`;
@@ -1741,8 +1745,9 @@ const YARDAS = ['pase', 'corrida', 'sackr', 'td']; // las que preguntan «¿Cuá
 const conYardas = (j) => (j.lado === 'O' ? YARDAS.includes(j.k) : j.k === 'bandera');
 const pregunta = (k) => ([...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?'], ['presion', '', '', '¿Quién hizo la presión?']].find((y) => y[0] === k) || [])[3] || '¿Quién?';
 const recientes = (lado) => { const v = new Set(); [...st.partido.jugadas].reverse().forEach((j) => { if (j.lado === lado && j.id && st.van.includes(j.id) && !borrada(st.partido, j)) v.add(j.id); }); st.van.forEach((id) => v.add(id)); return [...v].sort((a, b) => otroLado(a, lado) - otroLado(b, lado)); };
-// en su ficha cada jugador es de Ataque (O), de Defensa (D) o de los dos (sin lado): en «¿Quién?» salen primero los del lado que se marca (Iker, 17-nov)
-const otroLado = (id, lado) => { const l = (P(id) || {}).lado; return !!l && l !== lado; };
+// en su ficha cada jugador es de Ataque (O), de Defensa (D) o de los dos (sin lado, ''): los del otro lado al final (en el aviso de arriba, por ejemplo)
+const otroLado = (id, lado) => !!ladoDe(id) && ladoDe(id) !== lado;
+const ladoDe = (id) => (P(id) || {}).lado || '';
 const fmtYd = (y) => (y > 0 ? '+' : '') + y;
 const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `pase incompleto para ${n}` : 'pase incompleto, mal pase'), parada: (n) => (n ? `${n} detenido` : 'jugada detenida'), buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera quitada por ${n}`, tapado: (n) => `pase tapado por ${n}`, presion: (n) => `presión de ${n}, incompleto`, fallo: () => 'pase incompleto', intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
 function textoDe(j) {
@@ -2122,7 +2127,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117174738';
+const VERSION = '20261117180053';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
