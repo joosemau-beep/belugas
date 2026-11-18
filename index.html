@@ -628,7 +628,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .inicio .heroe .eq img, .inicio .heroe .eq .rlogo { width: 44px; height: 44px; }
 .inicio .heroe .mid strong { font-size: 40px; }
 .inicio .btn-blanco { height: 42px; font-size: 16px; }
-.inicio h2 { margin: 10px 2px 6px; }
+.inicio h2 { margin: 18px 2px 6px; }
 .inicio .cats { padding-bottom: 6px; } .inicio .cat { height: 32px; font-size: 12.5px; }
 .inicio .podio { padding-top: 8px; }
 .inicio .pcol .foto { width: 52px; height: 52px; } .inicio .pcol.p1 .foto { width: 64px; height: 64px; }
@@ -2131,7 +2131,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117190423';
+const VERSION = '20261117192522';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
