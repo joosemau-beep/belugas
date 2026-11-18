@@ -338,7 +338,7 @@ test('las pantallas: quiénes vinieron, sin rebote, Marcar con guantes, ✓ y �
   // yardas: sin regla a la vista, abajo 5, 10, 20 y 30 yd (ponen ese número, no suman ni guardan) y el + y el − afinan; ✕ a la izquierda, el título al centro y ✓ a la derecha, sin texto abajo
   assert.deepEqual(await pg.locator('.hoja.cuanto .hbar > *').evaluateAll((xs) => xs.map((x) => x.className || x.tagName)), ['hb no', 'H3', 'hb si']);
   assert.equal(await pg.locator('.hoja.cuanto .hbar small, .hoja.cuanto p').count(), 0);
-  assert.deepEqual(await pg.locator('.rg-saltos button').allInnerTexts(), ['+5yd', '+10yd', '+20yd', '+30yd']);
+  assert.deepEqual(await pg.locator('.rg-saltos button').allInnerTexts(), ['5yd', '10yd', '20yd', '30yd']);
   assert.equal(await pg.locator('#rgth').isVisible(), false);
   await pg.locator('[data-salto="10"]').click(); await pg.locator('[data-salto="5"]').click();
   for (let i = 0; i < 3; i++) await pg.locator('.rg-b[data-pm="1"]').click();
