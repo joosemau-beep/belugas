@@ -632,9 +632,10 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .pj .foto { width: 50px; height: 50px; }
 .hoja .lados h4.sub { display: flex; align-items: center; gap: 8px; color: var(--ink); } .hoja .lados h4.sub:first-child { margin-top: 2px; }
 .lados h4.sub i { width: 4px; height: 16px; border-radius: 2px; background: #8a97a8; } .lados h4.sub.lO i { background: var(--azul); } .lados h4.sub.lD i { background: color-mix(in srgb, var(--rc) 75%, #000); }
-/* «¿Quién?»: cada quien con el color de su lado (Iker, 17-nov): Ataque en azul Belugas, Defensa en el color del rival, Los dos sin color */
-.lados .pj.lO { background: linear-gradient(180deg, #eef4fc, #e1ebf8); } .lados .pj.lO .foto { box-shadow: 0 0 0 3px var(--azul); }
-.lados .pj.lD { background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 8%, #fff), color-mix(in srgb, var(--rc) 18%, #fff)); } .lados .pj.lD .foto { box-shadow: 0 0 0 3px color-mix(in srgb, var(--rc) 75%, #000); }
+/* «¿Quién?»: cada quien con el color de su lado (Iker, 17-nov): Ataque en azul Belugas, Defensa en el color del rival, Los dos sin color; las fotos sin aro de color (Iker, 17-nov) */
+.lados .pj.lO { background: linear-gradient(180deg, #eef4fc, #e1ebf8); }
+.lados .pj.lD { background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 8%, #fff), color-mix(in srgb, var(--rc) 18%, #fff)); }
+.lados .pj .ini { border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--linea); }
 .pj .corta { max-width: 100%; }
 .pj small { color: var(--mut); font: 600 11px/1 Inter; }
 .ops { display: grid; gap: 10px; }

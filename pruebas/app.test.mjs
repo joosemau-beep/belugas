@@ -701,9 +701,9 @@ test('el lado de cada jugador agrupa «¿Quién?» y viaja a la nube y al otro c
   const quien = () => a.locator('.hoja .lados > *').evaluateAll((xs) => xs.flatMap((x) => (x.tagName === 'H4' ? [x.innerText] : [...x.children].map((y) => y.dataset.v))));
   await toca(a, 'res', 'corrida');
   assert.deepEqual(await quien(), ['ATAQUE', 'nico', 'DEFENSA', 'pepe', 'LOS DOS', 'mau', 'rodrigo']);
-  // cada quien con el color de su lado: Ataque en azul (Nico), Defensa en el color del rival (Pepe, Panini), Los dos sin color (Mau y Rodrigo, que regresó)
+  // cada quien con el color de su lado: Ataque en azul (Nico), Defensa en el color del rival (Pepe, Panini), Los dos sin color (Mau y Rodrigo, que regresó); las fotos sin aro
   assert.deepEqual(await a.locator('.hoja .lados .pj').evaluateAll((xs) => xs.map((x) => [x.dataset.v, getComputedStyle(x).backgroundImage !== 'none', getComputedStyle(x.querySelector('.foto')).boxShadow !== 'none'])),
-    [['nico', true, true], ['pepe', true, true], ['mau', false, false], ['rodrigo', false, false]]);
+    [['nico', true, false], ['pepe', true, false], ['mau', false, false], ['rodrigo', false, false]]);
   assert.equal(await a.locator('.hoja .lados').evaluate((x) => x.style.getPropertyValue('--rc')), await a.evaluate(() => R('panini').color)); // eslint-disable-line no-undef
   await toca(a, 'quien', 'nico'); await toca(a, 'sinyd');
   await toca(a, 'lado', 'D'); await toca(a, 'res', 'bandera');
