@@ -517,6 +517,8 @@ test('desde el ícono del iPhone la barra se ve entera abajo, aunque iOS 26 le d
     await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'nico'); await revisa('ficha de jugador');
     await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); await toca(pg, 'vantoggle', 'mau'); await toca(pg, 'vanlisto');
     await revisa('Marcar');
+    // QB y Terminar bajan como el encabezado de las otras pantallas: pegados a la hora, iOS 26 los difumina (Iker, 17-nov)
+    assert.equal(await pg.evaluate(() => document.querySelector('.mcab > .estado').offsetHeight), 24);
     await toca(pg, 'terminar'); await pg.evaluate(() => { A.juego(JUEGOS[0].id); pintar(); }); await revisa('ficha de partido'); // eslint-disable-line no-undef
     assert.deepEqual(pg.errores, []);
     await pg.context().close();
