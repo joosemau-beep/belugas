@@ -7,7 +7,7 @@ const C = 'belugas';
 const EQUIPOS = ['belugas', 'only-fins', 'triple-t', 'bucaneros', 'destroyers', 'kickass', 'bulldogs', 'lobos-its', 'kaffies', 'ultimos-aztecas', 'los-fantasmas', 'panini'];
 const FIJOS = ['./', 'logo.webp', 'letras.webp', 'icon.png', 'archivos/balon-3d.png', 'archivos/corona-3d.png',
   'archivos/fuentes/inter-var.woff2', 'archivos/fuentes/barlowcondensed-800.woff2', 'archivos/fuentes/barlowcondensed-900.woff2',
-  ...EQUIPOS.map(x => `archivos/equipos/${x}-256.png`), ...['nico', 'rodrigo', 'mau', 'iker', 'mario', 'jaime', 'uri', 'ian', 'patrick', 'juanpi', 'leo', 'jose', 'juancho'].map(x => `archivos/jugadores/${x}.jpg`), 'ipad.html'];
+  ...EQUIPOS.map(x => `archivos/equipos/${x}-256.png`), ...['nico', 'rodrigo', 'mau', 'iker', 'mario', 'jaime', 'uri', 'ian', 'patrick', 'juanpi', 'leo', 'jose', 'juancho', 'jj'].map(x => `archivos/jugadores/${x}.jpg`), 'ipad.html'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(FIJOS))); self.skipWaiting() });
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
 self.addEventListener('fetch', e => {
