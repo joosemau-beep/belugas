@@ -966,10 +966,10 @@ const ANTES = {
   jaime: {intn: 2, td: 2}, nicolas: {td: 1, rec: 1}, uri: {rec: 1, ryd: 25, conv: 2}, patrick: {rec: 2},
 };
 // fantasy (tabla de Mau, con lo decidido el 12-nov en la tarde): [campo, cómo se dice, puntos]; los de ataque primero. Pick 6 = intercepción + TD.
-// Yardas como en el fantasy de la NFL: 0.1 por yarda atrapada o corrida y 0.04 por yarda lanzada (1 punto cada 25; Mau, 20-nov); la recepción da 0.5 y el pase completo no da nada; el sack quita 0.1 por yarda.
+// Yardas como en el fantasy de la NFL: 0.1 por yarda atrapada o corrida y 0.04 por yarda lanzada (1 punto cada 25; Mau, 20-nov); la recepción da 1 (Mau, 20-nov; antes 0.5) y el pase completo no da nada; el sack quita 0.1 por yarda.
 // No cuentan: fumble (el balón queda muerto) ni "se le fue". Sin bono de defensa por equipo: casi todos juegan de los dos lados.
 const PUNTOS = [
-  ['ryd', 'Yarda atrapada', .1], ['ruyd', 'Yarda corrida', .1], ['pyd', 'Yarda por pase (QB)', .04], ['rec', 'Recepción', .5], ['td', 'Touchdown', 6], ['tdp', 'TD de pase (QB)', 4],
+  ['ryd', 'Yarda atrapada', .1], ['ruyd', 'Yarda corrida', .1], ['pyd', 'Yarda por pase (QB)', .04], ['rec', 'Recepción', 1], ['td', 'Touchdown', 6], ['tdp', 'TD de pase (QB)', 4],
   ['conv', 'Conversión, por punto (receptor)', 1], ['convp', 'Conversión, por punto (QB)', 1],
   ['intl', 'Intercepción lanzada', -2], ['skyd', 'Yarda perdida en sack (QB)', -.1], ['drop', 'Pase soltado', -.5], ['safc', 'Safety en contra (portador)', -2],
   ['band', 'Bandera quitada', 2], ['tap', 'Pase tapado', 2], ['pres', 'Presión al QB con incompleto', 1],
@@ -2156,7 +2156,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261120011941';
+const VERSION = '20261120013319';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
