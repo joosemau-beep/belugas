@@ -781,6 +781,11 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
 .pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: #d6453d; font-weight: 700; }
 .pp.pp2 { min-height: 72px; }
+/* puntos de fantasy de un partido: el renglón de cada quien se abre y enseña de dónde sale cada punto */
+.fp { border-top: 1px solid var(--linea); } .fp:first-child { border-top: 0; } .fp[open] { padding-bottom: 10px; }
+.fp > summary { list-style: none; cursor: pointer; border-top: 0; } .fp > summary::-webkit-details-marker { display: none; }
+.fp .rg { display: grid; grid-template-columns: 1fr 40px 52px; gap: 8px; padding: 6px 16px 6px 70px; font-size: 13.5px; color: var(--mut); }
+.fp .rg i { font-style: normal; text-align: right; } .fp .rg b { text-align: right; font-weight: 800; color: var(--navy); } .fp .rg b.neg { color: #c2362d; }
 .pp2 small { display: block; }
 .pp2 small .punto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5483f; margin-right: 6px; vertical-align: 1px; }
 .pp2 .der2 { flex: none; display: grid; grid-template-columns: 22px 60px; gap: 8px; align-items: center; justify-items: end; }
@@ -955,9 +960,9 @@ const PASADOS = [['p1', 'kaffies', '5 oct', 13, 20], ['p2', 'only-fins', '12 oct
   .map(([id, rival, fecha, nos, ellos]) => ({ id, rival, fecha, nos, ellos, solo: true, jugadas: 0, funcion: 0, perdidas: 0, convs: [0, 0], tds: [], conv: [], st: {} }));
 let JUEGOS = PASADOS.slice();
 // lo que hizo cada quien en esos 6 partidos (lo pasó Mau el 17-nov), sumado por jugador: entra en sus stats (ficha, Líderes, Jugadores)
-// pero NO da puntos de fantasy, no se liga a ningún partido y no cuenta partidos jugados. Pick 6 = intercepción + TD
+// y desde el 19-nov también da puntos de fantasy (Mau); no se liga a ningún partido y no cuenta partidos jugados. Pick 6 = intercepción + TD
 const ANTES = {
-  mau: {td: 2, rec: 3, ryd: 50, conv: 2}, mario: {td: 1, conv: 2}, juancho: {td: 1, rec: 1, tap: 1}, rodrigo: {td: 1, car: 1, intl: 1}, leo: {td: 1},
+  mau: {td: 2, rec: 3, conv: 2}, mario: {td: 1, conv: 2}, juancho: {td: 1, rec: 1, tap: 1}, rodrigo: {td: 1, car: 1, intl: 1}, leo: {td: 1},
   jaime: {intn: 2, td: 2}, nicolas: {td: 1, rec: 1}, uri: {rec: 1, ryd: 25, conv: 2}, patrick: {rec: 2},
 };
 // fantasy (tabla de Mau, con lo decidido el 12-nov en la tarde): [campo, cómo se dice, puntos]; los de ataque primero. Pick 6 = intercepción + TD.
@@ -965,22 +970,22 @@ const ANTES = {
 // No cuentan: fumble (el balón queda muerto) ni "se le fue". Sin bono de defensa por equipo: casi todos juegan de los dos lados.
 const PUNTOS = [
   ['ryd', 'Yarda atrapada', .1], ['ruyd', 'Yarda corrida', .1], ['pyd', 'Yarda por pase (QB)', .1], ['rec', 'Recepción', .5], ['td', 'Touchdown', 6], ['tdp', 'TD de pase (QB)', 4],
-  ['pd', 'Primero y diez', 1], ['conv', 'Conversión, por punto (receptor)', 1], ['convp', 'Conversión, por punto (QB)', 1],
+  ['conv', 'Conversión, por punto (receptor)', 1], ['convp', 'Conversión, por punto (QB)', 1],
   ['intl', 'Intercepción lanzada', -2], ['skyd', 'Yarda perdida en sack (QB)', -.1], ['drop', 'Pase soltado', -.5], ['safc', 'Safety en contra (portador)', -2],
-  ['band', 'Bandera quitada', 1], ['bandx', 'Extra: bandera sin avance rival', 1], ['tap', 'Pase tapado', 2], ['pres', 'Presión al QB con incompleto', 1],
+  ['band', 'Bandera quitada', 2], ['tap', 'Pase tapado', 2], ['pres', 'Presión al QB con incompleto', 1],
   ['intn', 'Intercepción', 5], ['sack', 'Sack', 3], ['saf', 'Safety a favor', 3]];
-const PUNTOS_DEF = 13; // desde aquí, defensa
+const PUNTOS_DEF = 12; // desde aquí, defensa
 const CAMPOS = ['att', 'comp', 'car', ...PUNTOS.map(([k]) => k)];
 const puntosDe = (x) => Math.round(PUNTOS.reduce((a, [k, , w]) => a + ((x && x[k]) || 0) * w, 0) * 10) / 10;
 const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
 const tablaPuntos = () => `<details class="card reglas"><summary>Sistema de puntos</summary>
-  ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.filter(([k]) => k !== 'pd').map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
+  ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
   <p>El pase completo no da puntos: el QB gana por las yardas que lanza. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni la bandera fallada. No hay puntos de defensa por equipo, porque casi todos juegan en ataque y en defensa.</p></details>`;
 // vino: está en «quiénes vinieron» o hizo alguna jugada (los partidos sin esa lista cuentan solo lo segundo)
 const vino = (g, id) => !!g.st[id] || !!(g.partido && (g.partido.van || []).includes(id));
 // el QB del partido: el marcado; si no hay, el que más lanzó
 const qbDe = (g) => (g.partido && g.partido.qb) || Object.keys(g.st).filter((id) => g.st[id].att).sort((a, b) => g.st[b].att - g.st[a].att)[0];
-const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0, qbs: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (vino(g, p.id)) t.pj++; if (qbDe(g) === p.id) t.qbs++; if (x) CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); }); t.pts = puntosDe(t); Object.entries(ANTES[p.id] || {}).forEach(([k, v]) => { t[k] += v; }); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
+const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0, qbs: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (vino(g, p.id)) t.pj++; if (qbDe(g) === p.id) t.qbs++; if (x) CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); }); Object.entries(ANTES[p.id] || {}).forEach(([k, v]) => { t[k] += v; }); t.pts = puntosDe(t); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
 const TEMP = {};
 const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][k]]));
 const CATS = [['puntos', 'Puntos', 'pts', {}], ['td', 'TD', 'TD', {}], ['yds', 'Yardas', 'yd', {}], ['rec', 'Recepciones', 'rec', {}], ['band', 'Banderas', 'band.', {}]];
@@ -1450,7 +1455,7 @@ function jugador() {
   <div class="lado" style="--n:3" role="group" aria-label="De qué lado juega">${[['O', 'Ataque'], ['D', 'Defensa'], ['', 'Los dos']].map(([v, n]) => `<button data-a="ladoj" data-v="${v}" aria-pressed="${(p.lado || '') === v}"${(p.lado || '') === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div>
   ${tiles.length ? `<h2>Temporada</h2><div class="tiles">${tiles.map(([k, v, e]) => `<div class="tile"><strong class="num">${v}</strong><span>${k}</span>${e ? `<em>${e}</em>` : ''}</div>`).join('')}</div>` : ''}
   ${lanza.length ? `<h2>Conexiones</h2><div class="card">${conexiones(lanza, p.id)}</div>` : ''}
-  ${con.length ? `<h2>Partido por partido</h2><div class="card">${con.slice().reverse().map((g) => { const x = g.st[p.id], r = R(g.rival), pt = puntosDe(x); return `<button class="pp" data-a="juego" data-v="${g.id}">${rlogo(r)}<div><b class="corta">vs ${r.corto} · ${g.fecha}</b><small class="corta" style="display:block">${lineaDe(vino(g, p.id) ? x || {} : null, qbDe(g) === p.id)}</small></div><div class="der"><strong class="num">${pt}</strong><small>pts</small></div></button>`; }).join('')}</div>` : ''}
+  ${con.length || ANTES[p.id] ? `<h2>Partido por partido</h2><div class="card">${con.slice().reverse().map((g) => { const x = g.st[p.id], r = R(g.rival), pt = puntosDe(x); return `<button class="pp" data-a="juego" data-v="${g.id}">${rlogo(r)}<div><b class="corta">vs ${r.corto} · ${g.fecha}</b><small class="corta" style="display:block">${lineaDe(vino(g, p.id) ? x || {} : null, qbDe(g) === p.id)}</small></div><div class="der"><strong class="num">${pt}</strong><small>pts</small></div></button>`; }).join('')}${ANTES[p.id] ? `<div class="pp"><span class="rlogo"><img src="${LOGO}" alt=""></span><div><b class="corta">Antes de la app · 6 partidos</b><small class="corta" style="display:block">${lineaDe(ANTES[p.id])}</small></div><div class="der"><strong class="num">${puntosDe(ANTES[p.id])}</strong><small>pts</small></div></div>` : ''}</div>` : ''}
   ${pieJugador(p)}
   </div>${nav()}</div>`;
 }
@@ -1482,8 +1487,15 @@ function partido() {
     </details></div>
   ${c && c.lista.length ? `<h2>Conexiones</h2><div class="card">${conexiones(c.lista.slice(0, 4))}</div>` : ''}
   <h2>Estadísticas individuales</h2>${tablaPartido(g)}
+  <h2>Puntos de fantasy<small>toca a un jugador</small></h2>${fantasyPartido(g)}
   <div class="ops acc" style="margin-top:22px"><button class="op borrar" data-a="eliminarver" data-v="${g.id}">Eliminar partido</button></div>
   </div>${nav()}</div>`;
+}
+// los puntos de fantasy de un partido: todos, del que más hizo al que menos; al tocar a uno, lo que hizo, cuántas veces y cuánto le dio
+function fantasyPartido(g) {
+  const ids = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a]));
+  return `<div class="card">${ids.map((id) => { const x = g.st[id], p = P(id), filas = PUNTOS.filter(([k]) => x[k]).map(([k, n, w]) => { const v = Math.round(x[k] * w * 10) / 10; return `<div class="rg"><span>${n}</span><i class="num">${x[k]}</i><b class="num${v < 0 ? ' neg' : ''}">${fmtPts(v)}</b></div>`; });
+    return `<details class="fp"><summary class="pp">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(x, qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(x)}</strong><small>pts</small></div></summary>${filas.join('') || '<div class="rg"><span>Nada que dé puntos</span></div>'}</details>`; }).join('')}</div>`;
 }
 // tres tablas cortas por lo que hizo cada quien, con su rostro a la izquierda (o sus iniciales, sin aro)
 function tablaPartido(g) {
@@ -1769,7 +1781,7 @@ function textoDe(j) {
   if (j.k === 'incompleto' && j.drop) return `pase soltado por ${nom(j.id)}`;
   return (TXT[j.k] || (() => String(j.k)))(SIN_QUIEN.includes(j.k) ? (j.id && P(j.id) ? P(j.id).corto : '') : nom(j.id)) + (j.drop ? ' · soltado' : '') + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '');
 }
-// 1ª y 10: ya no se marca (Iker, 17-nov: la serie se acaba con Ataque/Defensa); las jugadas viejas que la traen siguen contando sus puntos
+// 1ª y 10: ya no se marca (Iker, 17-nov: la serie se acaba con Ataque/Defensa); ya no da puntos (Mau, 19-nov), tampoco en las jugadas viejas que la traen
 const pdDe = (j) => !!j.pd && j.lado === 'O' && ['pase', 'corrida'].includes(j.k);
 const pdEllos = (j) => !!j.pd && j.lado === 'D' && j.k === 'bandera'; // 1ª y 10 que ellos lograron (estadística del equipo, sin puntos)
 // puntos de cada jugada y si cambia de lado (pick 6: después de nuestra conversión ellos reciben, seguimos en defensa)
@@ -1887,11 +1899,11 @@ function juegoDe(p) {
     if (j.k === 'sackr') { s(j.id || qb0, 'sackr'); if (y != null && y < 0) s(j.id || qb0, 'skyd', -y); } // el sack resta sus yardas
     if (j.k === 'safetyc') s(j.id, 'safc');
     if (['pase', 'corrida', 'td'].includes(j.k) && y != null) s(j.id, j.k === 'pase' || pasTD ? 'ryd' : 'ruyd', y);
-    if (pdDe(j)) { prim++; s(j.id, 'pd'); } // +1 al que llevaba el balón
+    if (pdDe(j)) prim++;
     if (pdEllos(j)) primEllos++;
     if (j.k === 'td' || j.k === 'pick6') { s(j.id, 'td'); if (pasTD) s(j.qb, 'tdp'); if (j.k === 'pick6') s(j.id, 'intn'); tds.push([j.id, pasTD ? 'pase' : j.k === 'td' ? 'corrida' : null, pasTD ? j.qb : null, j.conv && j.conv[1] ? [j.convId, j.conv[0]] : null]);
       if (j.conv) { convs[1]++; if (j.conv[1]) { convs[0]++; s(j.convId, 'conv', j.conv[0]); s(j.convQb || qb0, 'convp', j.conv[0]); } } }
-    if (j.k === 'bandera') { s(j.id, 'band'); if (j.yd != null && j.yd <= 0) s(j.id, 'bandx'); }
+    if (j.k === 'bandera') s(j.id, 'band');
     if (j.k === 'tapado') s(j.id, 'tap');
     if (j.k === 'presion') s(j.id, 'pres');
     if (j.k === 'intn') s(j.id, 'intn');
@@ -2135,7 +2147,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261117193718';
+const VERSION = '20261120002902';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
