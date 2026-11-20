@@ -254,18 +254,6 @@ details.mas[open] > summary { color: var(--mut); }
 .mrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--linea); }
 .mrow b { display: block; font: 700 14px/1.2 Inter; } .mrow small { color: var(--mut); font: 500 12px/1.3 Inter; }
 .mrow strong { font: italic 900 30px/1 var(--disp); flex: none; } .mrow strong i { font: 700 14px/1 Inter; color: var(--mut); margin-left: 2px; }
-/* los números de cada quien: columnas de ancho fijo, título y cifra en el mismo eje, cifras tabulares */
-.tbs { margin-bottom: 12px; padding: 2px 0 6px; overflow: hidden; }
-table.bs { width: 100%; border-collapse: collapse; table-layout: fixed; }
-table.bs th { font: 700 11px/1 Inter; letter-spacing: .04em; text-transform: uppercase; color: var(--mut); text-align: center; padding: 12px 0 8px; white-space: nowrap; }
-table.bs th:first-child { text-align: left; padding-left: 14px; font: 800 13.5px/1.15 Inter; color: var(--navy); letter-spacing: 0; text-transform: none; }
-table.bs td { text-align: center; padding: 7px 0; font: 600 14px/1.2 Inter; font-variant-numeric: tabular-nums; border-top: 1px solid var(--linea); white-space: nowrap; }
-table.bs td:first-child { text-align: left; padding-left: 14px; }
-table.bs th:last-child, table.bs td:last-child { padding-right: 8px; }
-table.bs td.v { color: #b8c2cf; }
-.nm { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.nm .foto { width: 28px; height: 28px; }
-.nm b { font: 600 14px/1.2 Inter; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .relevo { margin-top: 12px; background: var(--bg); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; line-height: 1.4; color: var(--mut); }
 .relevo b { color: var(--ink); }
 .convs .op { display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -781,11 +769,41 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .pp .der strong { display: block; font: italic 900 22px/1 var(--disp); color: var(--navy); }
 .pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: #d6453d; font-weight: 700; }
 .pp.pp2 { min-height: 72px; }
-/* puntos de fantasy de un partido: el renglón de cada quien se abre y enseña de dónde sale cada punto */
-.fp { border-top: 1px solid var(--linea); } .fp:first-child { border-top: 0; } .fp[open] { padding-bottom: 10px; }
-.fp > summary { list-style: none; cursor: pointer; border-top: 0; } .fp > summary::-webkit-details-marker { display: none; }
-.fp .rg { display: grid; grid-template-columns: 1fr auto 52px; gap: 8px; padding: 6px 16px 6px 70px; font-size: 13.5px; color: var(--mut); }
-.fp .rg i { font-style: normal; text-align: right; } .fp .rg b { text-align: right; font-weight: 800; color: var(--navy); } .fp .rg b.neg { color: #c2362d; }
+/* ficha de un partido · anotaciones a dos lados: nosotros a la izquierda, el rival a la derecha y al centro el marcador como iba quedando */
+.an2 { padding: 6px 0; position: relative; }
+.an2::before { content: ''; position: absolute; left: 50%; top: 18px; bottom: 18px; width: 2px; margin-left: -1px; background: var(--linea); }
+.an2 .r { display: grid; grid-template-columns: 1fr 54px 1fr; align-items: center; padding: 7px 8px; position: relative; }
+.an2 .l { display: flex; align-items: center; gap: 7px; min-width: 0; text-align: left; }
+.an2 .l.n { flex-direction: row-reverse; text-align: right; justify-self: end; }
+.an2 .l .foto, .an2 .l .rlogo { width: 32px; height: 32px; }
+.an2 .l div { min-width: 0; }
+.an2 b { display: block; font: 800 13px/1.2 Inter; }
+.an2 small { display: block; color: var(--mut); font: 500 11.5px/1.3 Inter; margin-top: 1px; }
+.an2 small.cv { color: var(--azul); font-weight: 700; }
+.an2 .riv b { color: var(--mut); }
+.an2 .mc { justify-self: center; min-width: 50px; text-align: center; font: italic 900 18px/1 var(--disp); padding: 7px 6px 6px; border-radius: 8px; background: var(--navy); color: #fff; box-shadow: inset 0 -3px 0 rgba(0,0,0,.22); }
+.an2 .mc i { font-style: inherit; opacity: .55; }
+.an2 .riv .mc { background: #dfe4eb; color: #4b5563; box-shadow: inset 0 -3px 0 rgba(0,0,0,.07); }
+/* ficha de un partido · jugadores: el primero es el jugador del partido; en la pantalla de cada quien, los puntos que le dio cada cosa */
+.jgs { overflow: hidden; }
+.pp.mvp { background: linear-gradient(90deg, #fff8e1, #fff 70%); } .pp.mvp .foto { box-shadow: 0 0 0 2.5px #f2b632; } .pp.mvp .der strong { font-size: 27px; }
+.pp .eti { display: inline-block; font: 800 9.5px/1 Inter; letter-spacing: .08em; text-transform: uppercase; color: #8a5a00; background: #ffe7a3; border-radius: 5px; padding: 3px 6px; margin-bottom: 4px; }
+.tjp { border-radius: 24px; overflow: hidden; box-shadow: 0 14px 30px rgba(13,35,71,.28); margin-top: 2px; background: #0d1730; color: #fff; }
+.tjp .tj { border-radius: 0; box-shadow: none; margin-top: 0; }
+.tjp .con { display: flex; justify-content: space-between; gap: 10px; padding: 13px 18px; background: #131f3b; font: 700 13px/1.2 Inter; color: rgba(214,228,247,.8); }
+.tjp .con b { color: #fff; font-weight: 800; } .tjp .con .g { color: #4ade80; } .tjp .con .p { color: #ff8a80; }
+.hz { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px 4px; padding: 20px 10px 22px; text-align: center; }
+.hz strong { display: block; font: italic 900 26px/1 var(--disp); }
+.dp { border-top: 1px solid rgba(255,255,255,.09); }
+.dp > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 16px; font: 700 13.5px/1 Inter; color: #9cc8ff; }
+.dp > summary::-webkit-details-marker { display: none; }
+.dp > summary svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .2s; }
+.dp[open] > summary svg { transform: rotate(180deg); }
+.dp .rg { display: flex; justify-content: space-between; gap: 10px; margin: 0 18px; padding: 9px 0; border-top: 1px solid rgba(255,255,255,.07); font: 600 14px/1.2 Inter; color: rgba(232,240,252,.92); }
+.dp .rg i { font-style: normal; color: rgba(214,228,247,.6); margin-left: 4px; }
+.dp .rg b { font: italic 900 19px/1 var(--disp); color: #fff; } .dp .rg b.neg { color: #ff8a80; }
+.dp .rg.tot { margin-bottom: 10px; padding-top: 12px; border-top-color: rgba(255,255,255,.22); font-weight: 800; color: #fff; } .dp .rg.tot b { font-size: 24px; }
+.hz span { display: block; font: 700 10px/1.2 Inter; letter-spacing: .05em; text-transform: uppercase; color: rgba(214,228,247,.66); margin-top: 5px; }
 .pp2 small { display: block; }
 .pp2 small .punto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5483f; margin-right: 6px; vertical-align: 1px; }
 .pp2 .der2 { flex: none; display: grid; grid-template-columns: 22px 60px; gap: 8px; align-items: center; justify-items: end; }
@@ -794,11 +812,6 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .rs { width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font: 800 11px/1 Inter; justify-self: start; }
 .rs.g { background: #e3f5eb; color: #13854b; } .rs.p { background: #fdecea; color: #c2372f; } .rs.e { background: #eceff3; color: #56647a; }
 .btn-m { height: 34px; padding: 0 16px; border-radius: 17px; background: var(--boton); color: #fff; font: 700 13px/34px Inter; }
-.jfila.td2 { min-height: 60px; }
-.td2 .txt { flex: 1; min-width: 0; display: grid; gap: 3px; }
-.td2 .txt b { font: 600 14.5px/1.2 Inter; }
-.td2 .txt small { font: 500 12.5px/1.25 Inter; color: var(--mut); }
-.td2 strong { flex: none; font: italic 900 20px/1 var(--disp); color: var(--navy); min-width: 30px; text-align: right; }
 .barra { height: 6px; border-radius: 3px; background: #e6ebf2; margin-top: 6px; overflow: hidden; }
 .barra i { display: block; height: 100%; background: var(--boton); border-radius: 3px; }
 .grafica { background: #fff; border-radius: 16px; box-shadow: var(--sombra); padding: 14px 12px 8px; }
@@ -1009,8 +1022,8 @@ function renglonesNombre(n) {
   if (resto.length <= 11) r.push(resto); else { const m = w.slice(1); let a = ''; m.forEach((x) => { if ((a + ' ' + x).trim().length > 11 && a) { r.push(a); a = x; } else a = (a + ' ' + x).trim(); }); r.push(a); }
   return r;
 }
-function tarjetaJ(p) {
-  const s = statsTarjeta(p), r = renglonesNombre(p.nombre), largo = Math.max(...r.map((x) => x.length), 6);
+function tarjetaJ(p, s = statsTarjeta(p)) {
+  const r = renglonesNombre(p.nombre), largo = Math.max(...r.map((x) => x.length), 6);
   // con foto real el nombre ocupa menos ancho, para no taparle la cara
   const fs = Math.max(30, Math.min(p.img ? 46 : 54, Math.floor((p.img ? 150 : 196) / (0.47 * largo))));
   return `<div class="tj${p.img ? ' real' : ' sinfoto'}">
@@ -1051,7 +1064,7 @@ const TABS = ['inicio', 'partidos', '+', 'jugadores', 'metricas'];
 const TAB_NOM = {inicio: 'Inicio', partidos: 'Partidos', jugadores: 'Jugadores', metricas: 'Métricas'};
 const TAB_ICO = {inicio: 'inicio', partidos: 'partidos', jugadores: 'jug', metricas: 'met'};
 // la pestaña encendida: las fichas cuentan como su lista
-const tabDe = (pant) => ({jugador: 'jugadores', partido: 'partidos', resumen: 'partidos'}[pant] || pant);
+const tabDe = (pant) => ({jugador: 'jugadores', partido: 'partidos', jugp: 'partidos', resumen: 'partidos'}[pant] || pant);
 // con partido y sin señal, «En vivo» pasa a «Sin señal» y su punto se pone amarillo (lo marcado queda en el teléfono y sube al volver)
 const centro = (fx = '') => { const aj = !st.partido && vivoAjeno(), p = (st.partido && !st.partido.corrige && st.partido) || (aj && previa(aj)), sin = p && clave && !sync.ok;
   return `<button class="centro2${p ? ' vivo' : ''}${sin ? ' sin' : ''}${st.pant === 'marcar' ? ' on' : ''}" data-a="marcar" aria-label="${p ? 'Seguir marcando' : 'Marcar'}"><span class="nv-ico"${fx}>${p ? `<span class="pill num">${p.nos}–${p.ellos}</span></span><span class="nom">${sin ? 'Sin señal' : 'En vivo'}</span>` : '<span class="pill"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span></span><span class="nom">Marcar</span>'}</button>`; };
@@ -1464,59 +1477,73 @@ function jugador() {
 const anotDe = (g) => g.tds.map(([id, como, qb, cv], i) => { const c = g.nuevo ? cv : g.conv[i];
   return { id, tit: `TD de ${nom(id)}`, pts: 6 + (c ? c[1] : 0), sub: [como === 'pase' && qb ? `Pase de ${nom(qb)}` : como === 'corrida' ? 'Por corrida' : como ? '' : 'Pick 6', c ? `+${c[1]}${c[0] ? ` de ${nom(c[0])}` : ''}` : ''].filter(Boolean).join(' · ') }; });
 // ficha de un partido jugado
+// las anotaciones en orden, las del rival también, con el marcador como iba quedando
+const anotFicha = (g) => { let nos = 0, ellos = 0;
+  return g.partido.jugadas.map((j) => { const e = efecto(j); if (!e.nos && !e.ellos) return null; nos += e.nos || 0; ellos += e.ellos || 0;
+    const riv = !e.nos, y = ydDe(j), que = { td: 'TD', tdr: 'TD', pick6: 'Pick 6', pick6c: 'Pick 6' }[j.k] || 'Safety';
+    return { id: riv ? null : j.id, riv, nos, ellos, tit: `${que} de ${riv ? R(g.rival).largo : nom(j.id)}`,
+      como: j.k !== 'td' ? '' : j.qb ? (y > 0 ? `${y} yd de ${nom(j.qb)}` : `Pase de ${nom(j.qb)}`) : y > 0 ? `Corrida de ${y} yd` : 'Por corrida',
+      cv: j.conv && j.conv[1] ? `+${j.conv[0]}${!riv && j.convId ? ` de ${nom(j.convId)}` : ''}` : '' }; }).filter(Boolean); };
+const anotaciones = (g) => { const r = R(g.rival), l = anotFicha(g), txt = (a) => `<div><b>${a.tit}</b>${a.como ? `<small>${a.como}</small>` : ''}${a.cv ? `<small class="cv">${a.cv}</small>` : ''}</div>`;
+  return l.length ? `<div class="card an2">${l.map((a) => `<div class="r${a.riv ? ' riv' : ''}">${a.riv ? '<span></span>' : `<button class="l n" data-a="jugp" data-v="${a.id}">${foto(P(a.id))}${txt(a)}</button>`}<span class="mc num">${a.riv ? `<i>${a.nos}</i>–${a.ellos}` : `${a.nos}–<i>${a.ellos}</i>`}</span>${a.riv ? `<div class="l">${rlogo(r)}${txt(a)}</div>` : ''}</div>`).join('')}</div>` : '<div class="card"><div class="pp">Sin anotaciones</div></div>'; };
+// un jugador en un partido: su tarjeta con lo mejor que hizo y, abajo, todo lo que hizo con los puntos que le dio cada cosa
+const ydTxt = (n) => String(n).replace('-', '−');
+function statsJuego(x, qb) {
+  const pts = ['Puntos', puntosDe(x)], n = (k) => x[k] || 0;
+  if (x.att && (qb || x.att > n('rec') + n('car'))) return {k: 'Yardas de pase', v: ydTxt(n('pyd')), tira: [['Completos', `${n('comp')}/${x.att}`], ['TD de pase', n('tdp')], pts]};
+  if (n('band') + n('intn') + n('sack') + n('tap') > n('rec') + n('car')) return {k: 'Banderas', v: n('band'), tira: [['INT', n('intn')], ['Tapados', n('tap')], pts]};
+  if (n('car') > n('rec')) return {k: 'Yardas corridas', v: ydTxt(n('ruyd')), tira: [['Corridas', n('car')], ['TD', n('td')], pts]};
+  return {k: 'Recepciones', v: recDe(x), tira: [['Yardas', ydTxt(n('ryd'))], ['TD', n('td')], pts]};
+}
+// recepciones «de cuántas»: las que atrapó de los pases que le lanzaron (7/8), como los pases del QB
+const recDe = (x) => (x.tgt ? `${x.rec || 0}/${x.tgt}` : x.rec || 0);
+// [campo, cómo se dice, cómo se escribe]; primero el ataque y luego la defensa
+const HIZO = [['att', 'Pases', (x) => `${x.comp || 0}/${x.att}`], ['pyd', 'Yd de pase'], ['tdp', 'TD de pase'], ['convp', 'Conv. lanzada', (x) => `+${x.convp}`], ['intl', 'INT lanzadas'], ['skyd', 'Yd en sack'],
+  ['rec', 'Recepciones', (x) => recDe(x)], ['ryd', 'Yd atrapadas'], ['drop', 'Soltados'], ['car', 'Corridas'], ['ruyd', 'Yd corridas'],
+  ['td', 'TD'], ['conv', 'Conv. atrapada', (x) => `+${x.conv}`], ['safc', 'Safety en contra'],
+  ['band', 'Banderas'], ['tap', 'Tapados'], ['pres', 'Presiones'], ['intn', 'INT'], ['sack', 'Sacks'], ['saf', 'Safeties']];
+// lo que hizo, dentro de su tarjeta: una rejilla de números con su nombre, primero el ataque y luego la defensa (solo lo que sí hizo)
+const hizoJuego = (x) => HIZO.filter(([k]) => x[k] || (k === 'rec' && x.tgt)).map(([k, n, f]) => `<div><strong class="num">${f ? f(x) : ydTxt(x[k])}</strong><span>${n}</span></div>`).join('');
+// de dónde salen sus puntos: solo lo que le dio (o le quitó) puntos, con su cuenta, y el total
+const PESO = Object.fromEntries(PUNTOS.map(([k, , w]) => [k, w]));
+const puntosJuego = (x) => HIZO.map(([k, n]) => { const v = Math.round((x[k] || 0) * (PESO[k] || 0) * 10) / 10;
+  return v ? `<div class="rg"><span>${n}${['conv', 'convp'].includes(k) ? '' : ` <i class="num">${ydTxt(x[k])}</i>`}</span><b class="num${v < 0 ? ' neg' : ''}">${fmtPts(v)}</b></div>` : ''; }).join('') + `<div class="rg tot"><span>Total</span><b class="num">${puntosDe(x)}</b></div>`;
+function jugpartido() {
+  const g = JUEGOS.find((x) => x.id === st.juego), r = R(g.rival), p = P(st.jug), x = g.st[p.id];
+  const [res, , resTxt] = resDe(g.nos, g.ellos);
+  return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta"><button class="volver" data-a="juego" data-v="${g.id}">‹ Partido</button></div>
+  <div class="tjp">${tarjetaJ(p, statsJuego(x, qbDe(g) === p.id))}
+    <div class="con"><span>vs <b>${r.largo}</b> · ${g.fecha}</span><span class="${res}">${resTxt} <b class="num">${g.nos}–${g.ellos}</b></span></div>
+    <div class="hz">${hizoJuego(x)}</div>
+    <details class="dp"><summary>Cómo sumó sus ${puntosDe(x)} puntos<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>${puntosJuego(x)}</details></div>
+  <div class="ops acc" style="margin-top:22px"><button class="op" data-a="jug" data-v="${p.id}">Ver su temporada</button></div>
+  </div>${nav()}</div>`;
+}
 function partido() {
   const g = JUEGOS.find((x) => x.id === st.juego), r = R(g.rival);
   const cabeza = `<div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>`;
   // de los partidos de antes de la app solo se sabe el marcador: no se inventan ceros
   if (g.solo) return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}${btnCompartir(g.id)}</div>${cabeza}<div class="card" style="margin-top:12px"><div class="pp">De este partido solo se registró el marcador.</div></div></div>${nav()}</div>`;
-  const anot = anotDe(g).map((a) => `<button class="jfila td2" data-a="jug" data-v="${a.id}">${ic('td', true)}<span class="txt"><b class="corta">${a.tit}</b>${a.sub ? `<small class="corta">${a.sub}</small>` : ''}</span><strong class="num">+${a.pts}</strong></button>`);
-  const c = g.partido ? cuentas([g.partido]) : null;
-  const top = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a])).slice(0, 3);
+  const c = cuentas([g.partido]), enVivo = st.partido && !st.partido.corrige;
+  // todos, del que más puntos hizo al que menos; el primero es el jugador del partido
+  const ids = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a]));
   const band = Object.values(g.st).reduce((a, x) => a + (x.band || 0), 0), intn = Object.values(g.st).reduce((a, x) => a + (x.intn || 0), 0), robaron = Object.keys(g.st).filter((id) => g.st[id].intn && P(id));
   return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}${btnCompartir(g.id)}</div>
-  <div class="heroe"><img class="balon" src="${BALON}" alt=""><div class="eti">${resDe(g.nos, g.ellos)[2]} · ${g.fecha}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${g.nos} – ${g.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
-  ${st.partido && !st.partido.corrige ? '<div class="sinquerer"><span>Para corregir este partido, primero termina el de hoy.</span></div>' : `<div class="sinquerer"><span>¿Hay un error?</span><button data-a="corregirp" data-v="${g.id}">Corregir</button></div>`}
-  <h2>Anotaciones</h2><div class="jlista" style="margin-top:0">${anot.join('') || '<div class="jfila">Sin touchdowns</div>'}</div>
-  <h2>Destacados</h2><div class="card">${top.map((id) => { const p = P(id); return `<button class="pp" data-a="jug" data-v="${id}">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(g.st[id], qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(g.st[id])}</strong><small>pts</small></div></button>`; }).join('')}</div>
+  ${cabeza}
+  <h2>Anotaciones</h2>${anotaciones(g)}
+  <h2>Jugadores<small>toca a uno para ver su partido</small></h2><div class="card jgs">${ids.map((id, i) => { const x = g.st[id], p = P(id), mvp = !i && puntosDe(x) > 0;
+    return `<button class="pp${mvp ? ' mvp' : ''}" data-a="jugp" data-v="${id}">${foto(p)}<div>${mvp ? '<span class="eti">Jugador del partido</span>' : ''}<b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(x, qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(x)}</strong><small>pts</small></div></button>`; }).join('') || '<div class="pp">Sin jugadas por jugador</div>'}</div>
   <h2>Equipo</h2><div class="card"><div class="franja3"><div><span>Touchdowns</span><strong class="num">${g.tds.length}</strong></div><div><span>Conversiones</span><strong class="num">${g.convs[1] ? `${g.convs[0]} de ${g.convs[1]}` : '—'}</strong></div><div><span>Banderas</span><strong class="num">${band}</strong></div></div>
     <details class="mas"><summary>Ver todos los números</summary>
       <div class="mrow"><div><b>Jugadas exitosas</b><small>${g.funcion} de ${g.jugadas}</small></div><strong class="num">${g.jugadas ? Math.round(g.funcion / g.jugadas * 100) : '—'}<i>%</i></strong></div>
       <div class="mrow"><div><b>Intercepciones lanzadas</b></div><strong class="num">${g.perdidas}</strong></div>
       <div class="mrow"><div><b>Intercepciones</b><small>${robaron.length ? `de ${robaron.map(nom).join(' y ')}` : 'balones recuperados'}</small></div><strong class="num">${intn}</strong></div>
-      ${c ? filasYd(c) : ''}
+      ${filasYd(c)}
     </details></div>
-  ${c && c.lista.length ? `<h2>Conexiones</h2><div class="card">${conexiones(c.lista.slice(0, 4))}</div>` : ''}
-  <h2>Estadísticas individuales</h2>${tablaPartido(g)}
-  <h2>Puntos de fantasy<small>toca a un jugador</small></h2>${fantasyPartido(g)}
-  <div class="ops acc" style="margin-top:22px"><button class="op borrar" data-a="eliminarver" data-v="${g.id}">Eliminar partido</button></div>
+  ${c.lista.length ? `<h2>Conexiones</h2><div class="card">${conexiones(c.lista.slice(0, 4))}</div>` : ''}
+  ${enVivo ? '<div class="sinquerer" style="margin-top:22px"><span>Para corregir este partido, primero termina el de hoy.</span></div>' : ''}
+  <div class="ops ${enVivo ? '' : 'dos '}acc" style="margin-top:${enVivo ? 10 : 22}px">${enVivo ? '' : `<button class="op" data-a="corregirp" data-v="${g.id}">Corregir</button>`}<button class="op borrar" data-a="eliminarver" data-v="${g.id}">Eliminar partido</button></div>
   </div>${nav()}</div>`;
-}
-// los puntos de fantasy de un partido: todos, del que más hizo al que menos; al tocar a uno, todo lo que hizo en el orden en que se cuenta
-// (pasar, atrapar, correr, anotar, defender), con «de cuántas» en pases y recepciones, y cuánto le dio cada cosa (lo que no da puntos va sin número)
-const FANT_ORDEN = ['att', 'pyd', 'tdp', 'convp', 'intl', 'skyd', 'rec', 'ryd', 'drop', 'car', 'ruyd', 'td', 'conv', 'safc', 'band', 'tap', 'pres', 'intn', 'sack', 'saf'];
-function fantasyPartido(g) {
-  const ids = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a]));
-  const de = Object.fromEntries(PUNTOS.map(([k, n, w]) => [k, [n, w]])), orden = [...FANT_ORDEN, ...PUNTOS.map(([k]) => k).filter((k) => !FANT_ORDEN.includes(k))];
-  const fila = (n, c, v) => `<div class="rg"><span>${n}</span><i class="num">${c}</i><b class="num${v < 0 ? ' neg' : ''}">${v ? fmtPts(v) : ''}</b></div>`;
-  return `<div class="card">${ids.map((id) => { const x = g.st[id], p = P(id);
-    const filas = orden.map((k) => { const c = x[k] || 0;
-      if (k === 'att') return c ? fila('Pases completos', `${x.comp || 0} de ${c}`) : '';
-      if (k === 'car') return c ? fila('Corridas', c) : '';
-      if (k === 'rec') return c || x.tgt ? fila('Recepciones', x.tgt ? `${c} de ${x.tgt}` : c, Math.round(c * de.rec[1] * 10) / 10) : '';
-      return c ? fila(de[k][0], c, Math.round(c * de[k][1] * 10) / 10) : ''; }).join('');
-    return `<details class="fp"><summary class="pp">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(x, qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(x)}</strong><small>pts</small></div></summary>${filas || '<div class="rg"><span>Nada que dé puntos</span></div>'}</details>`; }).join('')}</div>`;
-}
-// tres tablas cortas por lo que hizo cada quien, con su rostro a la izquierda (o sus iniciales, sin aro)
-function tablaPartido(g) {
-  const ids = Object.keys(g.st).filter((id) => P(id)), x = (id) => g.st[id];
-  const c0 = (v, txt) => (v ? `<td>${txt === undefined ? v : txt}</td>` : '<td class="v">·</td>');
-  const grupo = (titulo, cols, filtro, orden, celdas) => {
-    const l = ids.filter((id) => filtro(x(id))).sort((a, b) => orden(x(b)) - orden(x(a)));
-    return l.length ? `<div class="card tbs"><table class="bs"><colgroup><col>${cols.map(([, w]) => `<col style="width:${w}px">`).join('')}</colgroup><tr><th>${titulo}</th>${cols.map(([c]) => `<th>${c}</th>`).join('')}</tr>${l.map((id) => `<tr><td><div class="nm">${foto(P(id))}<b>${P(id).corto}</b></div></td>${celdas(x(id))}</tr>`).join('')}</table></div>` : '';
-  };
-  return grupo('Pasadores', [['Pases', 76], ['TD', 44], ['INT', 48]], (s) => s.att, (s) => s.att, (s) => `<td>${s.comp || 0} de ${s.att}</td>${c0(s.tdp)}${c0(s.intl)}`)
-    + grupo('Recepción y corrida', [['Rec.', 46], ['Corr.', 48], ['TD', 40], ['Conv.', 50]], (s) => s.rec || s.car || s.td || s.conv, (s) => (s.rec || 0) * 100 + (s.car || 0), (s) => `${c0(s.rec)}${c0(s.car)}${c0(s.td)}${c0(s.conv, '+' + s.conv)}`)
-    + grupo('Defensa', [['Band.', 48], ['Tap.', 42], ['Sacks', 50], ['INT', 44]], (s) => s.band || s.tap || s.sack || s.intn, (s) => (s.band || 0) * 100 + (s.tap || 0), (s) => `${c0(s.band)}${c0(s.tap)}${c0(s.sack)}${c0(s.intn)}`);
 }
 function resumen() {
   const u = st.final, r = R(u.rival), jg = JUEGOS.find((x) => x.id === u.gid);
@@ -1704,9 +1731,10 @@ function pintar() {
   if (st.pant === 'resumen' && !st.final) st.pant = 'inicio';
   if (st.pant === 'marcar' && !st.partido) st.pant = 'inicio';
   if (st.pant === 'jugador' && !P(st.jug)) st.pant = 'jugadores';
+  if (st.pant === 'jugp' && !(P(st.jug) && JUEGOS.some((g) => g.id === st.juego && g.st[st.jug]))) st.pant = 'partido';
   if (st.pant === 'partido' && !JUEGOS.some((g) => g.id === st.juego)) st.pant = 'partidos';
   if (st.hoja && ['corrige', 'cqp'].includes(st.hoja) && !(st.partido && st.partido.jugadas[st.edita])) st.hoja = null;
-  const p = { inicio: inicio1, marcar, partidos, jugadores, metricas, resumen, jugador, partido }[st.pant] || inicio1;
+  const p = { inicio: inicio1, marcar, partidos, jugadores, metricas, resumen, jugador, partido, jugp: jugpartido }[st.pant] || inicio1;
   const fl = st.anim === 'si' ? st.flash : null;
   t.classList.toggle('anim', st.anim === 'si');
   t.classList.toggle('entrada', st.entrar && ['inicio', 'partidos'].includes(st.pant));
@@ -2156,7 +2184,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261120013319';
+const VERSION = '20261120115319';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2285,8 +2313,9 @@ function recalcular() {
 // confeti del touchdown: 18 papelitos con dirección y color fijos (se arma una vez)
 const CONFETI = Array.from({length: 18}, (_, i) => { const a = (i / 18) * Math.PI * 2, d = 90 + (i % 3) * 38; return `<i style="--x:${Math.round(Math.cos(a) * d)}px;--y:${Math.round(Math.sin(a) * d * .8 + 40)}px;--r:${(i % 2 ? 1 : -1) * (160 + i * 23)}deg;--d:${(i % 4) * 18}ms;--k:${['#5aaeff', '#1d4f8f', '#ffffff', '#0d2347'][i % 4]}"></i>`; }).join('');
 const A = {
-  jug: (v) => { if (!['jugador', 'partido'].includes(st.pant)) st.desde = st.pant; st.jug = v; st.pant = 'jugador'; st.hoja = null; },
-  juego: (v) => { if (!['jugador', 'partido'].includes(st.pant)) st.desde = st.pant; st.juego = v; st.pant = 'partido'; st.hoja = null; },
+  jug: (v) => { if (!['jugador', 'partido', 'jugp'].includes(st.pant)) st.desde = st.pant; st.jug = v; st.pant = 'jugador'; st.hoja = null; },
+  juego: (v) => { if (!['jugador', 'partido', 'jugp'].includes(st.pant)) st.desde = st.pant; st.juego = v; st.pant = 'partido'; st.hoja = null; },
+  jugp: (v) => { st.jug = v; st.pant = 'jugp'; st.hoja = null; }, // un jugador en el partido que se está viendo
   volver: () => { st.pant = st.desde || 'inicio'; st.regresa = true; },
   cat: (v) => { st.cat = v; st.cambiaCat = true; },
   met: (v) => { st.met = v; },
