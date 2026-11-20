@@ -784,7 +784,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* puntos de fantasy de un partido: el renglón de cada quien se abre y enseña de dónde sale cada punto */
 .fp { border-top: 1px solid var(--linea); } .fp:first-child { border-top: 0; } .fp[open] { padding-bottom: 10px; }
 .fp > summary { list-style: none; cursor: pointer; border-top: 0; } .fp > summary::-webkit-details-marker { display: none; }
-.fp .rg { display: grid; grid-template-columns: 1fr 40px 52px; gap: 8px; padding: 6px 16px 6px 70px; font-size: 13.5px; color: var(--mut); }
+.fp .rg { display: grid; grid-template-columns: 1fr auto 52px; gap: 8px; padding: 6px 16px 6px 70px; font-size: 13.5px; color: var(--mut); }
 .fp .rg i { font-style: normal; text-align: right; } .fp .rg b { text-align: right; font-weight: 800; color: var(--navy); } .fp .rg b.neg { color: #c2362d; }
 .pp2 small { display: block; }
 .pp2 small .punto { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #e5483f; margin-right: 6px; vertical-align: 1px; }
@@ -966,10 +966,10 @@ const ANTES = {
   jaime: {intn: 2, td: 2}, nicolas: {td: 1, rec: 1}, uri: {rec: 1, ryd: 25, conv: 2}, patrick: {rec: 2},
 };
 // fantasy (tabla de Mau, con lo decidido el 12-nov en la tarde): [campo, cómo se dice, puntos]; los de ataque primero. Pick 6 = intercepción + TD.
-// Yardas como en la NFL: 0.1 por yarda lanzada, atrapada o corrida; la recepción da 0.5 y el pase completo no da nada; el sack quita 0.1 por yarda.
+// Yardas como en el fantasy de la NFL: 0.1 por yarda atrapada o corrida y 0.04 por yarda lanzada (1 punto cada 25; Mau, 20-nov); la recepción da 0.5 y el pase completo no da nada; el sack quita 0.1 por yarda.
 // No cuentan: fumble (el balón queda muerto) ni "se le fue". Sin bono de defensa por equipo: casi todos juegan de los dos lados.
 const PUNTOS = [
-  ['ryd', 'Yarda atrapada', .1], ['ruyd', 'Yarda corrida', .1], ['pyd', 'Yarda por pase (QB)', .1], ['rec', 'Recepción', .5], ['td', 'Touchdown', 6], ['tdp', 'TD de pase (QB)', 4],
+  ['ryd', 'Yarda atrapada', .1], ['ruyd', 'Yarda corrida', .1], ['pyd', 'Yarda por pase (QB)', .04], ['rec', 'Recepción', .5], ['td', 'Touchdown', 6], ['tdp', 'TD de pase (QB)', 4],
   ['conv', 'Conversión, por punto (receptor)', 1], ['convp', 'Conversión, por punto (QB)', 1],
   ['intl', 'Intercepción lanzada', -2], ['skyd', 'Yarda perdida en sack (QB)', -.1], ['drop', 'Pase soltado', -.5], ['safc', 'Safety en contra (portador)', -2],
   ['band', 'Bandera quitada', 2], ['tap', 'Pase tapado', 2], ['pres', 'Presión al QB con incompleto', 1],
@@ -980,7 +980,7 @@ const puntosDe = (x) => Math.round(PUNTOS.reduce((a, [k, , w]) => a + ((x && x[k
 const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
 const tablaPuntos = () => `<details class="card reglas"><summary>Sistema de puntos</summary>
   ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
-  <p>El pase completo no da puntos: el QB gana por las yardas que lanza. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni la bandera fallada. No hay puntos de defensa por equipo, porque casi todos juegan en ataque y en defensa.</p></details>`;
+  <p>El pase completo no da puntos: el QB gana por las yardas que lanza, 1 punto cada 25 yardas. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni la bandera fallada. No hay puntos de defensa por equipo, porque casi todos juegan en ataque y en defensa.</p></details>`;
 // vino: está en «quiénes vinieron» o hizo alguna jugada (los partidos sin esa lista cuentan solo lo segundo)
 const vino = (g, id) => !!g.st[id] || !!(g.partido && (g.partido.van || []).includes(id));
 // el QB del partido: el marcado; si no hay, el que más lanzó
@@ -1491,11 +1491,20 @@ function partido() {
   <div class="ops acc" style="margin-top:22px"><button class="op borrar" data-a="eliminarver" data-v="${g.id}">Eliminar partido</button></div>
   </div>${nav()}</div>`;
 }
-// los puntos de fantasy de un partido: todos, del que más hizo al que menos; al tocar a uno, lo que hizo, cuántas veces y cuánto le dio
+// los puntos de fantasy de un partido: todos, del que más hizo al que menos; al tocar a uno, todo lo que hizo en el orden en que se cuenta
+// (pasar, atrapar, correr, anotar, defender), con «de cuántas» en pases y recepciones, y cuánto le dio cada cosa (lo que no da puntos va sin número)
+const FANT_ORDEN = ['att', 'pyd', 'tdp', 'convp', 'intl', 'skyd', 'rec', 'ryd', 'drop', 'car', 'ruyd', 'td', 'conv', 'safc', 'band', 'tap', 'pres', 'intn', 'sack', 'saf'];
 function fantasyPartido(g) {
   const ids = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a]));
-  return `<div class="card">${ids.map((id) => { const x = g.st[id], p = P(id), filas = PUNTOS.filter(([k]) => x[k]).map(([k, n, w]) => { const v = Math.round(x[k] * w * 10) / 10; return `<div class="rg"><span>${n}</span><i class="num">${x[k]}</i><b class="num${v < 0 ? ' neg' : ''}">${fmtPts(v)}</b></div>`; });
-    return `<details class="fp"><summary class="pp">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(x, qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(x)}</strong><small>pts</small></div></summary>${filas.join('') || '<div class="rg"><span>Nada que dé puntos</span></div>'}</details>`; }).join('')}</div>`;
+  const de = Object.fromEntries(PUNTOS.map(([k, n, w]) => [k, [n, w]])), orden = [...FANT_ORDEN, ...PUNTOS.map(([k]) => k).filter((k) => !FANT_ORDEN.includes(k))];
+  const fila = (n, c, v) => `<div class="rg"><span>${n}</span><i class="num">${c}</i><b class="num${v < 0 ? ' neg' : ''}">${v ? fmtPts(v) : ''}</b></div>`;
+  return `<div class="card">${ids.map((id) => { const x = g.st[id], p = P(id);
+    const filas = orden.map((k) => { const c = x[k] || 0;
+      if (k === 'att') return c ? fila('Pases completos', `${x.comp || 0} de ${c}`) : '';
+      if (k === 'car') return c ? fila('Corridas', c) : '';
+      if (k === 'rec') return c || x.tgt ? fila('Recepciones', x.tgt ? `${c} de ${x.tgt}` : c, Math.round(c * de.rec[1] * 10) / 10) : '';
+      return c ? fila(de[k][0], c, Math.round(c * de[k][1] * 10) / 10) : ''; }).join('');
+    return `<details class="fp"><summary class="pp">${foto(p)}<div><b class="corta">${p.nombre}</b><small class="corta" style="display:block">${lineaDe(x, qbDe(g) === id)}</small></div><div class="der"><strong class="num">${puntosDe(x)}</strong><small>pts</small></div></summary>${filas || '<div class="rg"><span>Nada que dé puntos</span></div>'}</details>`; }).join('')}</div>`;
 }
 // tres tablas cortas por lo que hizo cada quien, con su rostro a la izquierda (o sus iniciales, sin aro)
 function tablaPartido(g) {
@@ -1892,8 +1901,8 @@ function juegoDe(p) {
     const y = ydDe(j);
     if (['pase', 'corrida', 'incompleto', 'parada', 'sackr', 'int', 'pick6c', 'td'].includes(j.k)) jug++;
     if (['pase', 'corrida', 'td'].includes(j.k)) fun++;
-    if (j.k === 'pase' || pasTD) { s(j.id, 'rec'); s(qb, 'comp'); s(qb, 'att'); if (y != null) s(qb, 'pyd', y); }
-    if (j.k === 'incompleto') { s(qb, 'att'); if (j.drop) s(j.id, 'drop'); }
+    if (j.k === 'pase' || pasTD) { s(j.id, 'rec'); s(j.id, 'tgt'); s(qb, 'comp'); s(qb, 'att'); if (y != null) s(qb, 'pyd', y); }
+    if (j.k === 'incompleto') { s(qb, 'att'); s(j.id, 'tgt'); if (j.drop) s(j.id, 'drop'); } // tgt: los pases que le lanzaron (atrapados o no); el mal pase sin nombre no es de nadie
     if (j.k === 'int' || j.k === 'pick6c') { per++; s(qb, 'att'); s(qb, 'intl'); }
     if (j.k === 'corrida' || (j.k === 'td' && !j.qb)) s(j.id, 'car'); // el TD corriendo también es una corrida (como el de pase es recepción)
     if (j.k === 'sackr') { s(j.id || qb0, 'sackr'); if (y != null && y < 0) s(j.id || qb0, 'skyd', -y); } // el sack resta sus yardas
@@ -2147,7 +2156,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261120002902';
+const VERSION = '20261120011941';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {

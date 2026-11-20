@@ -11,7 +11,7 @@ test('los puntos de la tabla', async () => {
   const pts = (x) => pg.evaluate((x) => puntosDe(x), x); // eslint-disable-line no-undef
   assert.equal(await pts({ intn: 1, td: 1 }), 11); // pick 6
   assert.equal(await pts({ rec: 2, ryd: 8, pd: 1, td: 1, saf: 1 }), 10.8); // la 1ª y 10 ya no da puntos
-  assert.equal(await pts({ pyd: 8, tdp: 1, convp: 1, intl: 2, tap: 1, safc: 1 }), 1.8);
+  assert.equal(await pts({ pyd: 8, tdp: 1, convp: 1, intl: 2, tap: 1, safc: 1 }), 1.3); // yarda de pase 0.04: 8 yd = 0.32
   assert.equal(await pts({ drop: 1, band: 3, bandx: 1 }), 5.5); // bandera +2; ya no hay extra por «sin avance»
   assert.equal(await pts({ skyd: 3 }), -0.3);
   await pg.context().close();
@@ -102,10 +102,10 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
 
   // las cuentas del partido, cada jugador
   const st = await pg.evaluate(() => { const g = JUEGOS[JUEGOS.length - 1]; return Object.fromEntries(Object.entries(g.st).map(([id, x]) => [id, { ...x, pts: puntosDe(x) }])); }); // eslint-disable-line no-undef
-  assert.deepEqual(st.mau, { comp: 2, att: 6, pyd: 8, tdp: 1, convp: 1, intl: 2, tap: 1, td: 1, intn: 1, safc: 1, pts: 12.8 });
-  assert.deepEqual(st.nico, { rec: 2, ryd: 8, td: 1, pres: 1, saf: 1, car: 1, pts: 11.8 }); // sin 1ª y 10: ya no se marca
+  assert.deepEqual(st.mau, { comp: 2, att: 6, pyd: 8, tdp: 1, convp: 1, intl: 2, tap: 1, td: 1, intn: 1, safc: 1, pts: 12.3 });
+  assert.deepEqual(st.nico, { rec: 2, tgt: 2, ryd: 8, td: 1, pres: 1, saf: 1, car: 1, pts: 11.8 }); // sin 1ª y 10: ya no se marca
   assert.deepEqual(st.rodrigo, { car: 1, conv: 1, sack: 1, pts: 4 });
-  assert.deepEqual(st.pepe, { drop: 1, band: 1, pts: 1.5 }); // bandera +2
+  assert.deepEqual(st.pepe, { tgt: 1, drop: 1, band: 1, pts: 1.5 }); // tgt: le lanzaron 1 y lo soltó; // bandera +2
   assert.equal(await pg.evaluate(() => RECORD), '5–2'); // eslint-disable-line no-undef
 
   // Métricas, Partidos y Jugadores
@@ -122,7 +122,7 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   assert.doesNotMatch(await texto(pg), /Posiciones|Tabla de la liga/);
   await toca(pg, 'ir', 'inicio'); assert.doesNotMatch(await texto(pg), /Tabla de la liga|Ver la tabla|equipos/);
   await toca(pg, 'ir', 'jugadores');
-  assert.match(await texto(pg), /Mau .*28\.3 pts/); // 12.8 del partido + 15.5 de antes de la app
+  assert.match(await texto(pg), /Mau .*27\.8 pts/); // 12.3 del partido + 15.5 de antes de la app
   // la 1ª y 10 ya no se muestra en ningún lado (ni en Métricas, ni en la tabla de puntos, ni en la ficha de un jugador)
   assert.doesNotMatch(met, /1ª y 10/);
   assert.doesNotMatch(await pg.evaluate(() => document.querySelector('#tel').textContent), /Primero y diez|1ª y 10/);
@@ -585,7 +585,7 @@ test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga
   await pg.evaluate(() => { A.juego(JUEGOS[JUEGOS.length - 1].id); pintar(); }); await sinPd('ficha de partido'); // eslint-disable-line no-undef
   // puntos de fantasy del partido: cada quien con lo que hizo, cuántas veces y cuánto le dio (la bandera +2, sin 1ª y 10)
   assert.deepEqual(await pg.locator('.fp').evaluateAll((xs) => xs.map((d) => [d.querySelector('summary b').textContent, d.querySelector('summary strong').textContent, ...[...d.querySelectorAll('.rg')].map((r) => [...r.children].map((c) => c.textContent).join(' '))])),
-    [['Mau', '2', 'Bandera quitada 1 +2'], ['Nico', '0.5', 'Recepción 1 +0.5']]);
+    [['Mau', '2', 'Pases completos 1 de 2 ', 'Bandera quitada 1 +2'], ['Nico', '0.5', 'Recepciones 1 de 1 +0.5']]);
   await toca(pg, 'ir', 'metricas'); await sinPd('Métricas · ataque'); await toca(pg, 'met', 'defensa'); await sinPd('Métricas · defensa');
   // la jugada vieja sigue con su 1ª y 10 guardada, pero ya no da puntos: a Nico solo le cuenta la recepción
   assert.equal(await pg.evaluate(() => puntosDe(JUEGOS[JUEGOS.length - 1].st.nico)), 0.5); // eslint-disable-line no-undef
