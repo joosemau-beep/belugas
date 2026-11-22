@@ -1419,7 +1419,6 @@ function metricas() {
     ${mrow('Intercepciones lanzadas', '', c.perd)}
     ${c.drops ? mrow('Pases soltados', 'atrapables, no retenidos', c.drops) : ''}${c.sackr ? mrow('Sacks recibidos', '', c.sackr) : ''}</div>`;
   const defensa = `<div class="card"><div class="franja3"><div><span>Series detenidas</span><strong class="num">${pct(c.fren, c.seriesD)}%</strong><em>${c.fren} de ${c.seriesD}</em></div><div><span>Banderas</span><strong class="num">${c.band}</strong></div><div><span>Intercepciones</span><strong class="num">${c.rob}</strong></div></div>
-    ${mrow('Puntos en contra por partido', 'partidos marcados', prom(c.ellos, c.pj))}
     ${mrow('Pases tapados', '', c.tap)}${mrow('Sacks', '', c.sack)}
     ${c.saf ? mrow('Safeties', '', c.saf) : ''}</div>`;
   return `<div class="pant"><div class="cuerpo">${est()}${cab('Métricas', `Temporada 2026 · ${RECORD}`)}

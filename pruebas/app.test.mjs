@@ -820,3 +820,13 @@ test('Líderes › Yardas: atrapadas y corridas para todos; las lanzadas van apa
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+test('Métricas: «por partido» es uno solo, el del Resumen (entre todos los partidos jugados)', async () => {
+  const pg = await telefono(srv.url); await siembra(pg);
+  await toca(pg, 'ir', 'metricas'); await toca(pg, 'met', 'defensa');
+  // 6 partidos de antes + 2 marcados: 139 a favor y 117 en contra. Defensa decía «15» (solo los marcados) junto a «14.6» del Resumen
+  assert.deepEqual((await texto(pg)).match(/[\d.]+ por partido/g), ['17.4 por partido', '14.6 por partido']);
+  assert.doesNotMatch(await texto(pg), /Puntos en contra por partido/);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
