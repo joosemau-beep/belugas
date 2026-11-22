@@ -885,3 +885,21 @@ test('los sacks recibidos suman en la temporada y salen en la ficha', async () =
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+test('lo que ya no se marca no se ofrece (presión al QB, jugada detenida), pero las jugadas viejas siguen contando', async () => {
+  const pg = await telefono(srv.url);
+  await siembra(pg, [['panini', 16, [{ lado: 'O', k: 'parada', id: 'rodrigo' }, { lado: 'D', k: 'presion', id: 'jaime' }]]]);
+  assert.deepEqual(await pg.evaluate(() => [TEMP.jaime.pres, TEMP.jaime.pts, TEMP.rodrigo.pj]), [1, 1, 1]); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'jugadores');
+  assert.doesNotMatch(await pg.locator('.reglas').innerHTML(), /Presión/);
+  // «Cambiar jugada» de un pase ya no trae «Jugada detenida»
+  await juega(pg, 'kaffies', ['mau', 'nicolas'], async () => {
+    await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nicolas'); await toca(pg, 'sinyd');
+    await fila(pg, await idxDe(pg, 'pase')); await toca(pg, 'cqp');
+    const ops = await pg.locator('.hoja .op').allInnerTexts();
+    assert.ok(ops.includes('Corrida') && !ops.includes('Jugada detenida'), ops.join(', '));
+    await toca(pg, 'cerrar');
+  });
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
