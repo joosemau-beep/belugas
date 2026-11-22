@@ -812,7 +812,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .pp .der small.g { color: var(--ok); font-weight: 700; } .pp .der small.p { color: var(--mal); font-weight: 700; }
 .pp.pp2 { min-height: 72px; }
 /* ficha de un partido · anotaciones a dos lados: nosotros a la izquierda, el rival a la derecha y al centro el marcador como iba quedando */
-.an2 { padding: 6px 0; position: relative; }
+.an2 { padding: 12px 8px; position: relative; } /* con 38 px de radio, el primer y el último renglón se alejan de la curva */
 .an2::before { content: ''; position: absolute; left: 50%; top: 18px; bottom: 18px; width: 2px; margin-left: -1px; background: var(--linea); }
 .an2 .r { display: grid; grid-template-columns: 1fr 54px 1fr; align-items: center; padding: 7px 8px; position: relative; }
 .an2 .l { display: flex; align-items: center; gap: 7px; min-width: 0; text-align: left; }
@@ -826,6 +826,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .an2 .mc { justify-self: center; min-width: 50px; text-align: center; font: italic 900 18px/1 var(--disp); padding: 7px 6px 6px; border-radius: 8px; background: var(--navy); color: #fff; box-shadow: inset 0 -3px 0 rgba(0,0,0,.22); }
 .an2 .mc i { font-style: inherit; opacity: .55; }
 .an2 .riv .mc { background: #dfe4eb; color: #4b5563; box-shadow: inset 0 -3px 0 rgba(0,0,0,.07); }
+.an2 .riv .mc i { opacity: 1; color: #5c6573; } /* sobre el gris claro, a .55 no se leía (2.4:1); así da 4.6:1 */
 /* ficha de un partido · jugadores: el primero es el jugador del partido; en la pantalla de cada quien, los puntos que le dio cada cosa */
 .jgs { overflow: hidden; }
 .pp.mvp { background: linear-gradient(90deg, #fff8e1, #fff 70%); } .pp.mvp .foto { box-shadow: 0 0 0 2.5px #f2b632; } .pp.mvp .der strong { font-size: 27px; }
