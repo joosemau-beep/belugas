@@ -876,3 +876,12 @@ test('los puntos de la temporada son la suma de los de cada partido, como se ven
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+test('los sacks recibidos suman en la temporada y salen en la ficha', async () => {
+  const pg = await telefono(srv.url); await siembra(pg);
+  assert.equal(await pg.evaluate(() => TEMP.mau.sackr), 1); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'jugadores'); await toca(pg, 'jug', 'mau');
+  assert.match(await pg.locator('.tiles').innerText(), /1\s+Sacks recibidos/i);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
