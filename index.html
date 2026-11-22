@@ -1539,17 +1539,16 @@ function statsJuego(x, qb) {
   if (x.att && (qb || x.att > n('rec') + n('car'))) return {k: 'Yardas de pase', v: ydTxt(n('pyd')), tira: [['Completos', `${n('comp')}/${x.att}`], ['TD de pase', n('tdp')], pts]};
   if (n('band') + n('intn') + n('sack') + n('tap') > n('rec') + n('car')) return {k: 'Banderas', v: n('band'), tira: [['INT', n('intn')], ['Tapados', n('tap')], pts]};
   if (n('car') > n('rec')) return {k: 'Yardas corridas', v: ydTxt(n('ruyd')), tira: [['Corridas', n('car')], ['TD', n('td')], pts]};
-  return {k: 'Recepciones', v: recDe(x), tira: [['Yardas', ydTxt(n('ryd'))], ['TD', n('td')], pts]};
+  return {k: 'Recepciones', v: n('rec'), tira: [['Yardas', ydTxt(n('ryd'))], ['TD', n('td')], pts]};
 }
-// recepciones «de cuántas»: las que atrapó de los pases que le lanzaron (7/8), como los pases del QB
-const recDe = (x) => (x.tgt ? `${x.rec || 0}/${x.tgt}` : x.rec || 0);
-// [campo, cómo se dice, cómo se escribe]; primero el ataque y luego la defensa
-const HIZO = [['att', 'Pases', (x) => `${x.comp || 0}/${x.att}`], ['pyd', 'Yd de pase'], ['tdp', 'TD de pase'], ['convp', 'Conv. lanzada', (x) => `+${x.convp}`], ['intl', 'INT lanzadas'], ['skyd', 'Yd en sack'],
-  ['rec', 'Recepciones', (x) => recDe(x)], ['ryd', 'Yd atrapadas'], ['drop', 'Soltados'], ['car', 'Corridas'], ['ruyd', 'Yd corridas'],
-  ['td', 'TD'], ['conv', 'Conv. atrapada', (x) => `+${x.conv}`], ['safc', 'Safety en contra'],
+// [campo, cómo se dice, cómo se escribe]; primero el ataque y luego la defensa. Con palabras, no abreviaturas (la regla de textos, 22-nov).
+// Las recepciones ya no van «de cuántas» (7/8): el mal pase no tiene receptor desde el PR 9, así que ese «de cuántas» engañaba; los soltados van aparte
+const HIZO = [['att', 'Pases', (x) => `${x.comp || 0}/${x.att}`], ['pyd', 'Yardas de pase'], ['tdp', 'TD de pase'], ['convp', 'Conversión lanzada', (x) => `+${x.convp}`], ['intl', 'INT lanzadas'], ['skyd', 'Yardas en sack'],
+  ['rec', 'Recepciones'], ['ryd', 'Yardas atrapadas'], ['drop', 'Soltados'], ['car', 'Corridas'], ['ruyd', 'Yardas corridas'],
+  ['td', 'TD'], ['conv', 'Conversión atrapada', (x) => `+${x.conv}`], ['safc', 'Safety en contra'],
   ['band', 'Banderas'], ['tap', 'Tapados'], ['pres', 'Presiones'], ['intn', 'INT'], ['sack', 'Sacks'], ['saf', 'Safeties']];
 // lo que hizo, dentro de su tarjeta: una rejilla de números con su nombre, primero el ataque y luego la defensa (solo lo que sí hizo)
-const hizoJuego = (x) => HIZO.filter(([k]) => x[k] || (k === 'rec' && x.tgt)).map(([k, n, f]) => `<div><strong class="num">${f ? f(x) : ydTxt(x[k])}</strong><span>${n}</span></div>`).join('');
+const hizoJuego = (x) => HIZO.filter(([k]) => x[k]).map(([k, n, f]) => `<div><strong class="num">${f ? f(x) : ydTxt(x[k])}</strong><span>${n}</span></div>`).join('');
 // de dónde salen sus puntos: solo lo que le dio (o le quitó) puntos, con su cuenta, y el total
 const PESO = Object.fromEntries(PUNTOS.map(([k, , w]) => [k, w]));
 const puntosJuego = (x) => HIZO.map(([k, n]) => { const v = Math.round((x[k] || 0) * (PESO[k] || 0) * 10) / 10;

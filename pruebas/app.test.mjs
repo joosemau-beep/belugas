@@ -592,7 +592,7 @@ test('la 1ª y 10 no sale en ninguna pantalla, aunque una jugada vieja la traiga
   await toca(pg, 'jugp', 'mau'); await sinPd('jugador en el partido');
   assert.deepEqual([await cuadros(), await suma()], [['1/2 Pases', '1 Banderas'], ['Banderas 1 +2', 'Total 2']]);
   await toca(pg, 'juego', await pg.evaluate(() => st.juego)); await toca(pg, 'jugp', 'nico'); // eslint-disable-line no-undef
-  assert.deepEqual([await cuadros(), await suma()], [['1/1 Recepciones'], ['Recepciones 1 +1', 'Total 1']]);
+  assert.deepEqual([await cuadros(), await suma()], [['1 Recepciones'], ['Recepciones 1 +1', 'Total 1']]); // sin «de cuántas» (1/1): el mal pase no tiene receptor (revisión de números #7)
   await toca(pg, 'ir', 'metricas'); await sinPd('Métricas · ataque'); await toca(pg, 'met', 'defensa'); await sinPd('Métricas · defensa');
   // la jugada vieja sigue con su 1ª y 10 guardada, pero ya no da puntos: a Nico solo le cuenta la recepción
   assert.equal(await pg.evaluate(() => puntosDe(JUEGOS[JUEGOS.length - 1].st.nico)), 1); // eslint-disable-line no-undef
