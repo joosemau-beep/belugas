@@ -792,3 +792,31 @@ test('el retrato se liga por id o por el nombre de hoy', async () => {
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+// la revisión de los números (22-nov): los dos partidos de jugadas conocidas de la revisión del 17-nov, vs Panini 22–17 y vs Kaffies 6–13
+const PAN = [{ lado: 'O', k: 'pase', id: 'nicolas', qb: 'mau', yd: 8 }, { lado: 'O', k: 'corrida', id: 'rodrigo', yd: 5 }, { lado: 'O', k: 'incompleto', id: 'juancho', qb: 'mau', drop: true }, { lado: 'O', k: 'incompleto', qb: 'mau' }, { lado: 'O', k: 'td', id: 'iker', qb: 'mau', yd: 12, conv: [1, 1], convId: 'nicolas', convQb: 'mau' }, { lado: 'D', k: 'bandera', id: 'juancho', yd: 3 }, { lado: 'D', k: 'tapado', id: 'mau' }, { lado: 'D', k: 'sack', id: 'rodrigo' }, { lado: 'D', k: 'bandera', id: 'iker', yd: -2 }, { lado: 'D', k: 'tdr', conv: [2, 1] },
+  { lado: 'O', k: 'pase', id: 'mario', qb: 'nicolas', yd: 15 }, { lado: 'O', k: 'sackr', id: 'mau', yd: -4 }, { lado: 'O', k: 'int', qb: 'mau' }, { lado: 'D', k: 'intn', id: 'mario' }, { lado: 'O', k: 'corrida', id: 'rodrigo', yd: -2 }, { lado: 'O', k: 'td', id: 'rodrigo', qb: null, yd: 20, conv: [2, 0] }, { lado: 'D', k: 'pick6', id: 'iker', conv: [1, 1], convId: 'juancho', convQb: 'mau' }, { lado: 'D', k: 'safety', id: 'juancho' }, { lado: 'O', k: 'pase', id: 'juancho', qb: 'mau', yd: 6 }, { lado: 'O', k: 'pick6c', qb: 'mau', conv: [1, 1] }, { lado: 'O', k: 'safetyc', id: 'rodrigo' }, { lado: 'D', k: 'bandera', id: 'nicolas' }, { lado: 'O', k: 'pase', id: 'nicolas', qb: 'mau', yd: 4 }];
+const KAF = [{ lado: 'O', k: 'pase', id: 'nicolas', qb: 'mau', yd: 10 }, { lado: 'O', k: 'td', id: 'nicolas', qb: 'mau', conv: [1, 0] }, { lado: 'D', k: 'tdr' }, { lado: 'O', k: 'incompleto', qb: 'mau' }, { lado: 'O', k: 'int', qb: 'mau' }, { lado: 'D', k: 'bandera', id: 'juancho', yd: 0 }, { lado: 'D', k: 'tdr', conv: [1, 1] }, { lado: 'O', k: 'corrida', id: 'iker', yd: 7 }];
+// los partidos ya terminados, sin lo de antes de la app (ANTES): [rival, día de noviembre, jugadas]
+async function siembra(pg, partidos = [['panini', 16, PAN], ['kaffies', 17, KAF]]) {
+  await pg.evaluate((partidos) => {
+    const ids = ['mau', 'nicolas', 'rodrigo', 'iker', 'mario', 'jaime', 'juancho'];
+    T.plantel = ids.map((id, n) => ({ id, nombre: id[0].toUpperCase() + id.slice(1), n, ver: 1 })); T.linea.qb = 'mau'; // eslint-disable-line no-undef
+    Object.keys(ANTES).forEach((k) => { delete ANTES[k]; }); // eslint-disable-line no-undef
+    T.juegos = Object.fromEntries(partidos.map(([rival, d, js], i) => { const t0 = new Date(2026, 10, d, 19).getTime(); // eslint-disable-line no-undef
+      return [`g${i}`, { id: `g${i}`, inicio: t0, dia: t0, rival, van: ids, qb: 'mau', jugadas: js.map((j, k) => ({ uid: `u${i}-${k}`, t: t0 + k * 60000, ver: 1, por: 'x', id: null, ...j })), borradas: {}, cambios: [], terminado: true }]; }));
+    recalcular(); pintar(); // eslint-disable-line no-undef
+  }, partidos);
+}
+
+test('Líderes › Yardas: atrapadas y corridas para todos; las lanzadas van aparte', async () => {
+  const pg = await telefono(srv.url); await siembra(pg);
+  // Mau solo lanza (75 yd) y ya no gana Yardas; Nicolás atrapó 57 y lanzó 15: antes salía con 72 «de pase»
+  assert.deepEqual(await pg.evaluate(() => [TEMP.mau.yds, TEMP.nicolas.yds, TEMP.rodrigo.yds, TEMP.iker.yds]), [0, 57, 23, 19]); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'inicio'); await toca(pg, 'cat', 'yds');
+  const nico = await pg.locator('.pcol.p1').innerText();
+  assert.match(nico, /Nicolas/); assert.match(nico.replace(/\s+/g, ' '), /57 atrapadas 15 lanzadas, aparte/);
+  assert.doesNotMatch(await texto(pg), /de pase/);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});

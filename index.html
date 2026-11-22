@@ -1041,7 +1041,7 @@ const tablaPuntos = () => `<details class="card reglas"><summary>Sistema de punt
 const vino = (g, id) => !!g.st[id] || !!(g.partido && (g.partido.van || []).includes(id));
 // el QB del partido: el marcado; si no hay, el que más lanzó
 const qbDe = (g) => (g.partido && g.partido.qb) || Object.keys(g.st).filter((id) => g.st[id].att).sort((a, b) => g.st[b].att - g.st[a].att)[0];
-const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0, qbs: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (vino(g, p.id)) t.pj++; if (qbDe(g) === p.id) t.qbs++; if (x) CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); }); Object.entries(ANTES[p.id] || {}).forEach(([k, v]) => { t[k] += v; }); t.pts = puntosDe(t); t.yds = t.pyd + t.ryd + t.ruyd; return [p.id, t]; }));
+const calcTemp = () => Object.fromEntries(PLANTEL.map((p) => { const t = {pj: 0, qbs: 0}; CAMPOS.forEach((k) => { t[k] = 0; }); JUEGOS.forEach((g) => { const x = g.st[p.id]; if (vino(g, p.id)) t.pj++; if (qbDe(g) === p.id) t.qbs++; if (x) CAMPOS.forEach((k) => { t[k] += x[k] || 0; }); }); Object.entries(ANTES[p.id] || {}).forEach(([k, v]) => { t[k] += v; }); t.pts = puntosDe(t); t.yds = t.ryd + t.ruyd; return [p.id, t]; }));
 const TEMP = {};
 const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][k]]));
 const CATS = [['puntos', 'Puntos', 'pts', {}], ['td', 'TD', 'TD', {}], ['yds', 'Yardas', 'yd', {}], ['rec', 'Recepciones', 'rec', {}], ['band', 'Banderas', 'band.', {}]];
@@ -1280,8 +1280,8 @@ function ranking() {
   return Object.entries(vals).sort((a, b) => b[1] - a[1]).map(([id, v]) => [P(id), v, unidad]);
 }
 const val = (v, u) => `<span class="valor num">${v}<small>${u}</small></span>`;
-// solo en Yardas: cuántas fueron de pase (lanzadas o atrapadas) y cuántas de corrida
-const desg = (p) => { if (st.cat !== 'yds') return ''; const t = TEMP[p.id], o = [[t.pyd + t.ryd, 'de pase'], [t.ruyd, 'de corrida']].filter(([v]) => v);
+// solo en Yardas: cuántas atrapó y cuántas corrió (eso suma); las que lanzó se dicen aparte, porque el QB no gana Yardas por lanzar
+const desg = (p) => { if (st.cat !== 'yds') return ''; const t = TEMP[p.id], o = [[t.ryd, 'atrapadas'], [t.ruyd, 'corridas'], [t.pyd, 'lanzadas, aparte']].filter(([v]) => v);
   return o.length ? `<span class="desg">${o.map(([v, x]) => `<span><em class="num">${v}</em> ${x}</span>`).join('')}</span>` : ''; };
 function podio(top) {
   const [a, b, c] = top;
