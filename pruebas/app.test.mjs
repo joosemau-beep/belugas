@@ -851,3 +851,16 @@ test('jugadas exitosas: la corrida para atrás no cuenta', async () => {
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+test('series con TD: la última serie del partido, cortada por el silbatazo, no cuenta', async () => {
+  const pg = await telefono(srv.url); await siembra(pg);
+  // los dos partidos acaban a media serie de ataque (vs Panini un pase de 4 yd, vs Kaffies una corrida de 7): antes 3 de 9 (33 %)
+  assert.deepEqual(await pg.evaluate(() => { const c = cuentas(JUEGOS.filter((g) => !g.solo).map((g) => g.partido)); return [c.seriesTD, c.seriesO, c.fren, c.seriesD]; }), [3, 7, 4, 7]); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'metricas');
+  assert.match(await texto(pg), /Series con TD 43% 3 de 7/);
+  // la que sí acabó cuenta: si el último es un TD, esa serie entra
+  await siembra(pg, [['kaffies', 17, [...KAF, { lado: 'O', k: 'td', id: 'iker', qb: null, yd: 3 }]]]);
+  assert.deepEqual(await pg.evaluate(() => { const c = cuentas([JUEGOS.at(-1).partido]); return [c.seriesTD, c.seriesO]; }), [2, 3]); // eslint-disable-line no-undef
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});

@@ -1373,7 +1373,10 @@ function cuentas(ps) {
     seriesD: 0, fren: 0, band: 0, tap: 0, rob: 0, sack: 0, saf: 0, con: {} };
   ps.forEach((p) => {
     c.nos += p.nos || 0; c.ellos += p.ellos || 0;
-    seriesDe(p.jugadas).forEach((s) => { if (s.lado === 'O') { c.seriesO++; if (s.js.some((y) => y.k === 'td')) c.seriesTD++; } else { c.seriesD++; if (!s.js.some((y) => y.k === 'tdr')) c.fren++; } });
+    // la última serie del partido no cuenta si no acabó en anotación, robo o cambio de lado: la cortó el silbatazo
+    const ss = seriesDe(p.jugadas), f = ss.length && efecto(ss[ss.length - 1].js.slice(-1)[0]);
+    if (f && !(f.cambia || f.serie || f.reinicia)) ss.pop();
+    ss.forEach((s) => { if (s.lado === 'O') { c.seriesO++; if (s.js.some((y) => y.k === 'td')) c.seriesTD++; } else { c.seriesD++; if (!s.js.some((y) => y.k === 'tdr')) c.fren++; } });
     p.jugadas.forEach((j) => {
       const pas = j.k === 'pase' || (j.k === 'td' && !!j.qb), cor = j.k === 'corrida' || (j.k === 'td' && !j.qb), y = ydDe(j), qb = j.qb || p.qb;
       if (pas) { c.comp++; c.att++; if (y != null) { c.ydP += y; c.nP++; } if (j.k === 'td') c.tdP++;
