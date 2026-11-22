@@ -1983,7 +1983,7 @@ function juegoDe(p) {
     const qb = j.qb || qb0, pasTD = j.k === 'td' && j.qb; // TD de pase: también es recepción y pase completo
     const y = ydDe(j);
     if (['pase', 'corrida', 'incompleto', 'parada', 'sackr', 'int', 'pick6c', 'td'].includes(j.k)) jug++;
-    if (['pase', 'corrida', 'td'].includes(j.k)) fun++;
+    if (['pase', 'td'].includes(j.k) || (j.k === 'corrida' && !(y < 0))) fun++; // la corrida para atrás no salió bien
     if (j.k === 'pase' || pasTD) { s(j.id, 'rec'); s(j.id, 'tgt'); s(qb, 'comp'); s(qb, 'att'); if (y != null) s(qb, 'pyd', y); }
     if (j.k === 'incompleto') { s(qb, 'att'); s(j.id, 'tgt'); if (j.drop) s(j.id, 'drop'); } // tgt: los pases que le lanzaron (atrapados o no); el mal pase sin nombre no es de nadie
     if (j.k === 'int' || j.k === 'pick6c') { per++; s(qb, 'att'); s(qb, 'intl'); }

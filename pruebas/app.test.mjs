@@ -841,3 +841,13 @@ test('Métricas dice «TD del ataque»: la ficha del partido cuenta también el 
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+test('jugadas exitosas: la corrida para atrás no cuenta', async () => {
+  const pg = await telefono(srv.url); await siembra(pg);
+  // vs Panini: la corrida de Rodrigo de −2 yd. Antes 8 de 13 (62 %)
+  assert.deepEqual(await pg.evaluate(() => [JUEGOS.find((g) => g.id === 'g0').funcion, JUEGOS.find((g) => g.id === 'g0').jugadas]), [7, 13]); // eslint-disable-line no-undef
+  await pg.evaluate(() => { A.juego('g0'); pintar(); document.querySelector('details.mas').open = true; }); // eslint-disable-line no-undef
+  assert.match(await texto(pg), /Jugadas exitosas 7 de 13 54%/);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
