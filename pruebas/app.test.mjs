@@ -864,3 +864,15 @@ test('series con TD: la última serie del partido, cortada por el silbatazo, no 
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+test('los puntos de la temporada son la suma de los de cada partido, como se ven', async () => {
+  const pg = await telefono(srv.url);
+  // tres partidos con un pase de 2 yd de Mau: 0.08 por partido, que se ve 0.1; antes la temporada redondeaba 0.24 y decía 0.2
+  const uno = [{ lado: 'O', k: 'pase', id: 'nicolas', qb: 'mau', yd: 2 }];
+  await siembra(pg, [['panini', 10, uno], ['kaffies', 11, uno], ['bucaneros', 12, uno]]);
+  assert.deepEqual(await pg.evaluate(() => [JUEGOS.filter((g) => !g.solo).map((g) => puntosDe(g.st.mau)), TEMP.mau.pts]), [[0.1, 0.1, 0.1], 0.3]); // eslint-disable-line no-undef
+  await siembra(pg); // y con los dos de la revisión cuadra con lo de cada partido
+  assert.deepEqual(await pg.evaluate(() => PLANTEL.filter((p) => Math.round(JUEGOS.reduce((a, g) => a + puntosDe(g.st[p.id]), 0) * 10) / 10 !== TEMP[p.id].pts).map((p) => p.id)), []); // eslint-disable-line no-undef
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
