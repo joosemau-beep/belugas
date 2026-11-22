@@ -830,3 +830,14 @@ test('Métricas: «por partido» es uno solo, el del Resumen (entre todos los pa
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+
+test('Métricas dice «TD del ataque»: la ficha del partido cuenta también el pick 6', async () => {
+  const pg = await telefono(srv.url); await siembra(pg);
+  await toca(pg, 'ir', 'metricas');
+  assert.match(await texto(pg), /TD del ataque 3 2 de pase · 1 corr\./);
+  assert.doesNotMatch(await texto(pg), /Touchdowns/);
+  await pg.evaluate(() => { A.juego('g0'); pintar(); }); // eslint-disable-line no-undef
+  assert.match(await texto(pg), /Touchdowns 3/); // vs Panini: 2 del ataque y el pick 6 de Iker
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
