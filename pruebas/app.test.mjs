@@ -115,7 +115,8 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   assert.match(met, /Pases completos 33% 2 de 6/); assert.match(met, /Conversiones De 1: 1 de 1/);
   await toca(pg, 'met', 'defensa');
   assert.match(await texto(pg), /Series detenidas 67% 2 de 3/);
-  assert.match(await texto(pg), /Puntos en contra por partido/); assert.doesNotMatch(met + await texto(pg), coloquial);
+  assert.match(met, /Puntos en contra 103 14.7 por partido/); assert.doesNotMatch(await texto(pg), /Puntos en contra por partido/); // un solo «por partido», el del Resumen
+  assert.doesNotMatch(met + await texto(pg), coloquial);
   await toca(pg, 'ir', 'partidos');
   assert.match(await texto(pg), /Kaffies Hoy P 15–16/);
   // sin la tabla de la liga (Iker, 17-nov): ni pestaña de Posiciones en Partidos ni tarjeta en Inicio
