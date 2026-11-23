@@ -5,7 +5,7 @@ const C = 'belugas';
 // retratos reencuadrados el 17-nov: al cambiar este archivo el teléfono vuelve a bajar todo lo de abajo
 // lo que la app del teléfono necesita para abrir sin señal: la página, las fuentes, los logos y los retratos. ipad.html es la app de antes (respaldo)
 const EQUIPOS = ['belugas', 'only-fins', 'triple-t', 'bucaneros', 'destroyers', 'kickass', 'bulldogs', 'lobos-its', 'kaffies', 'ultimos-aztecas', 'los-fantasmas', 'panini'];
-const FIJOS = ['./', 'logo.webp', 'letras.webp', 'icon.png', 'archivos/balon-3d.png', 'archivos/corona-3d.png',
+const FIJOS = ['./', 'logo.webp', 'letras.webp', 'icon.png', 'archivos/corona-3d.png',
   'archivos/fuentes/inter-var.woff2', 'archivos/fuentes/barlowcondensed-800.woff2', 'archivos/fuentes/barlowcondensed-900.woff2',
   ...EQUIPOS.map(x => `archivos/equipos/${x}-256.png`), ...['nico', 'rodrigo', 'mau', 'iker', 'mario', 'jaime', 'uri', 'ian', 'patrick', 'juanpi', 'leo', 'jose', 'juancho', 'jj'].map(x => `archivos/jugadores/${x}.jpg`), 'ipad.html'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(C).then(c => c.addAll(FIJOS))); self.skipWaiting() });
