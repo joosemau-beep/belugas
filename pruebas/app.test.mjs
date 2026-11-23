@@ -1291,3 +1291,24 @@ test('los textos de los widgets siguen la regla: Yd/recepción, Lugar · Promedi
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+// 10. los rivales con nombre largo salían como «Lobos ITSZ» y «Últimos Aztecas» en Partidos, en «¿Contra quién?», en las tarjetas de Inicio y en los avisos, mientras los
+// widgets ya decían «Lobos» y «Aztecas» (2.1.5: siempre el nombre corto)
+test('el rival va siempre con su nombre corto: Partidos, Inicio, ¿Contra quién?, el Final y los avisos', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  const nunca = async (donde) => { const t = await texto(pg); assert.doesNotMatch(t, /Lobos ITSZ|Últimos Aztecas|Los Fantas\b/, donde); return t; };
+  await toca(pg, 'ir', 'partidos'); assert.match(await nunca('Partidos'), /Lobos 2 nov G 33–12[\s\S]*Aztecas 19 oct G 21–20/);
+  await pg.evaluate(() => { HOY = 'lobos-its'; A.ir('inicio'); pintar(); }); assert.match(await nunca('Inicio'), /PRÓXIMO PARTIDO · VS LOBOS: 1–0 Belugas VS Lobos/); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'partidos'); assert.match(await nunca('Partidos con próximo'), /Lobos Próximo partido/);
+  await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); // ya hay rival: la hoja de quiénes vinieron
+  await pg.evaluate(() => { A.rivalver('empezar'); pintar(); }); assert.match(await nunca('¿Contra quién?'), /Lobos Kaffies Aztecas Fantasmas Panini/); // eslint-disable-line no-undef
+  await toca(pg, 'rival', 'ultimos-aztecas'); for (const id of ['mau', 'nicolas']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+  assert.match(await pg.locator('.pant > .pregunta.aviso .txt').innerText(), /^Empezó vs Aztecas · vinieron 2/);
+  await toca(pg, 'ir', 'inicio'); assert.match(await nunca('Inicio en vivo'), /EN VIVO Belugas 0 – 0 Aztecas/);
+  await toca(pg, 'ir', 'partidos'); assert.match(await nunca('Partidos en vivo'), /Aztecas En vivo · En ataque/);
+  await toca(pg, 'marcar'); await toca(pg, 'editar'); assert.match(await nunca('Partido'), /Rival Aztecas Cambiar/); await toca(pg, 'cerrar');
+  await toca(pg, 'res', 'corrida'); await toca(pg, 'quien', 'nicolas'); await toca(pg, 'sinyd'); await toca(pg, 'terminar');
+  assert.match(await nunca('Final'), /Final vs Aztecas · hoy/);
+  await toca(pg, 'juego'); await pg.evaluate(() => { A.eliminarver(st.juego); pintar(); }); // «Ver el partido» del Final assert.match(await nunca('Eliminar'), /vs Aztecas · Hoy · 0–0/); // eslint-disable-line no-undef
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});

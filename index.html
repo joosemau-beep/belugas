@@ -1473,13 +1473,13 @@ const contraHoy = () => { const gs = JUEGOS.filter((g) => g.rival === HOY); if (
 function heroeHoy() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = R(aj ? aj.rival : p ? p.rival : HOY);
   return p ? `<div class="heroe hoy" style="${colores(r)}"><div class="eti"><i></i>En vivo${aj ? ' · desde otro celular' : ''}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong></div><div class="eq">${rlogo(r)}${r.nombre}</div></div>
       <button class="btn-blanco" data-a="marcar">Seguir marcando</button></div>`
     : st.final ? `<div class="heroe hoy" style="${colores(R(st.final.rival))}"><div class="eti">Final · hoy · ${resDe(st.final.nos, st.final.ellos)[2]}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).largo}</div></div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).nombre}</div></div>
       <button class="btn-blanco" data-a="juego" data-v="${st.final.gid}">Ver el partido</button></div>`
     : `<div class="heroe hoy" style="${colores(r)}"><div class="eti">Próximo partido${contraHoy()}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.nombre}</div></div>
       <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
 }
 function inicio1() {
@@ -1733,12 +1733,12 @@ const pastilla = (a, b) => { const [c, l, txt] = resDe(a, b); return `<span clas
 const filaP = (logo, nombre, sub, der, attrs) => `<button class="pp pp2" ${attrs}>${logo}<div><b class="corta">${nombre}</b><small class="corta">${sub}</small></div><div class="der2">${der}</div></button>`;
 function partidos() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = R(aj ? aj.rival : p ? p.rival : HOY);
-  const hoy = p ? filaP(rlogo(r), r.largo, `<i class="punto"></i>En vivo · ${oportunidad(p)}`, `<strong class="num solo">${p.nos}–${p.ellos}</strong>`, 'data-a="marcar"')
-    : st.final ? '' : filaP(rlogo(r), r.largo, 'Próximo partido', '<span class="btn-m solo">Marcar</span>', 'data-a="marcar"');
+  const hoy = p ? filaP(rlogo(r), r.nombre, `<i class="punto"></i>En vivo · ${oportunidad(p)}`, `<strong class="num solo">${p.nos}–${p.ellos}</strong>`, 'data-a="marcar"')
+    : st.final ? '' : filaP(rlogo(r), r.nombre, 'Próximo partido', '<span class="btn-m solo">Marcar</span>', 'data-a="marcar"');
   return `<div class="pant"><div class="cuerpo">${est()}${cab('Partidos', `Temporada 2026 · ${RECORD}`)}
   ${hoy ? `<div class="card">${hoy}</div>` : ''}
   <h2>Resultados</h2>
-  <div class="card">${RESULTADOS.map(([rid, f, a, b, gid]) => { const x = R(rid); return filaP(rlogo(x), x.largo, f, `${pastilla(a, b)}<strong class="num">${a}–${b}</strong>`, `data-a="juego" data-v="${gid}"`); }).join('')}</div>
+  <div class="card">${RESULTADOS.map(([rid, f, a, b, gid]) => { const x = R(rid); return filaP(rlogo(x), x.nombre, f, `${pastilla(a, b)}<strong class="num">${a}–${b}</strong>`, `data-a="juego" data-v="${gid}"`); }).join('')}</div>
   </div>${nav()}</div>`;
 }
 const rankPts = () => PLANTEL.slice().sort((a, b) => TEMP[b.id].pts - TEMP[a.id].pts);
@@ -1863,7 +1863,7 @@ function partido() {
 function resumen() {
   const u = st.final, r = R(u.rival), jg = JUEGOS.find((x) => x.id === u.gid);
   const top = jg ? Object.keys(jg.st).filter((id) => P(id)).sort((a, b) => puntosDe(jg.st[b]) - puntosDe(jg.st[a])).slice(0, 4) : [];
-  return `<div class="pant"><div class="cuerpo">${est()}${cab('Final', `vs ${r.largo} · hoy${avisoFinal && avisoFinal[0] === u.gid ? ' · ' + avisoFinal[1] : ''}`, jg ? btnCompartir(u.gid) : '')}
+  return `<div class="pant"><div class="cuerpo">${est()}${cab('Final', `vs ${r.nombre} · hoy${avisoFinal && avisoFinal[0] === u.gid ? ' · ' + avisoFinal[1] : ''}`, jg ? btnCompartir(u.gid) : '')}
   <div class="heroe" style="${colores(r)}"><div class="eti">${resDe(u.nos, u.ellos)[2]}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${u.nos} – ${u.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
   ${u.partido ? '<div class="sinquerer"><span>¿Lo terminaste por error?</span><button data-a="seguir">Seguir marcando</button></div>' : ''}
   ${u.partido && u.partido.jugadas.length ? loQueMarcamos(u.partido) : ''}
@@ -1967,7 +1967,7 @@ function hoja() {
   if (!st.hoja) return '';
   let h = '';
   const r = R(HOY);
-  const campos = (accion) => `<button class="campo" data-a="rivalver" data-v="${accion}"><div class="izq">${rlogo(r)}<div style="min-width:0"><span class="l">Rival</span><b class="corta" style="display:block">${r.largo}</b></div></div><u>Cambiar</u></button>
+  const campos = (accion) => `<button class="campo" data-a="rivalver" data-v="${accion}"><div class="izq">${rlogo(r)}<div style="min-width:0"><span class="l">Rival</span><b class="corta" style="display:block">${r.nombre}</b></div></div><u>Cambiar</u></button>
     <button class="campo" data-a="vanver" data-v="${accion}"><div style="min-width:0"><span class="l">Vinieron · ${st.van.length} de ${PLANTEL.length}</span>${pila(st.van, 6)}</div><u>Cambiar</u></button>`;
   if (st.hoja === 'editar') {
     const otros = st.partido ? Object.keys(st.partido.aparatos || {}).filter((a) => a !== APARATO).length : 0;
@@ -1981,9 +1981,9 @@ function hoja() {
   if (st.hoja === 'fecha') h = `<h3>¿Qué día fue?</h3><input class="nombre" type="date" id="fecha" style="width:100%" value="${ymd(st.partido.dia || st.partido.inicio)}" max="${ymd(Date.now())}">
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="fechaya">Listo</button></div>`;
   if (st.hoja === 'eliminar') { const g = JUEGOS.find((x) => x.id === st.juego);
-    if (g) h = `<h3>¿Eliminar el partido?</h3><p>vs ${R(g.rival).largo} · ${g.fecha} · ${g.nos}–${g.ellos}. Se borra de la temporada en todos los celulares, con sus puntos y estadísticas. No se puede deshacer.</p>
+    if (g) h = `<h3>¿Eliminar el partido?</h3><p>vs ${R(g.rival).nombre} · ${g.fecha} · ${g.nos}–${g.ellos}. Se borra de la temporada en todos los celulares, con sus puntos y estadísticas. No se puede deshacer.</p>
       <div class="ops dos acc"><button class="op" data-a="cerrar">Cancelar</button><button class="op rojo" data-a="eliminarp" data-v="${g.id}">Eliminar</button></div>`; }
-  if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.largo}</span></button>`).join('')}</div>`;
+  if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.nombre}</span></button>`).join('')}</div>`;
   if (st.hoja === 'quien') {
     const x = [...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === st.sel);
     const td = st.sel === 'td', pasa = st.sel === 'pase' || (td && !st.corre), q = lanzo();
@@ -2303,7 +2303,7 @@ function empezar(vino) {
   if (!esRival(HOY)) { st.vanDe = 'empezar'; st.hoja = 'rival'; return; }
   if (!vino) { vanTodos = false; st.van = []; st.vanDe = 'empezar'; st.hoja = 'van'; return; }
   nuevoPartido(); st.final = null; st.hoja = null; st.pant = 'marcar';
-  avisar({ txt: `Empezó vs ${R(HOY).largo} · vinieron ${st.van.length}`, accion: ['editar', 'Cambiar'] }, 5000);
+  avisar({ txt: `Empezó vs ${R(HOY).nombre} · vinieron ${st.van.length}`, accion: ['editar', 'Cambiar'] }, 5000);
   subir();
 }
 let avisoFinal = null; // [partido, «Lo terminó el otro celular.»]
@@ -2511,7 +2511,7 @@ function unirse(s) {
   HOY = esRival(s.rival) ? s.rival : null; const v = (s.van || []).filter((id) => P(id)); if (v.length) { st.van = v; vanTodos = false; }
   rehacer(st.partido); st.final = null; st.hoja = null; st.pant = 'marcar'; subir();
 }
-function unirseSiHay() { const s = vivoAjeno(); if (!s || st.partido) return false; unirse(s); avisar({ txt: `Sigues marcando vs ${R(HOY).largo}: ${st.partido.nos}–${st.partido.ellos}`, accion: null }); return true; }
+function unirseSiHay() { const s = vivoAjeno(); if (!s || st.partido) return false; unirse(s); avisar({ txt: `Sigues marcando vs ${R(HOY).nombre}: ${st.partido.nos}–${st.partido.ellos}`, accion: null }); return true; }
 // el partido de otro día que se quedó abierto en este teléfono: se da por terminado y pasa a la lista
 function cierraViejo() {
   const p = st.partido;
