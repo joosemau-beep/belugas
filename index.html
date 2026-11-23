@@ -89,7 +89,7 @@
   --radio: 38px; --r-tile: 26px; --r-hoja: 40px; --r-in: 24px; --r-seg: 19px;
   /* las barras de los widgets («Degradado», decidido el 22-nov): riel ligero y translúcido, relleno del azul del equipo a uno luminoso en la punta, rojo solo para lo malo; planas, sin efecto 3D */
   --b-h: 8px; --b-riel: rgba(11,27,51,.07);
-  --b-fill: linear-gradient(90deg, #163f75 0%, #1d4f8f 55%, #3f8fe6 100%); --b-mal: linear-gradient(90deg, #8f1d14 0%, #b42318 55%, #e0483e 100%);
+  --b-fill: linear-gradient(90deg, #163f75 0%, #1d4f8f 55%, #3f8fe6 100%); --b-mal: linear-gradient(90deg, #8f1d14 0%, #b42318 55%, #d63a30 100%); /* el rojo de la punta deja el blanco en 4.8:1 */
   --b-col: linear-gradient(180deg, #3f8fe6 0%, #1d4f8f 60%, #163f75 100%); /* planas (Iker, 22-nov): el degradado solo a lo largo, sin brillo, sombra ni resplandor */
   font-synthesis: none;
   --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
@@ -968,6 +968,7 @@ button.rs.sel::before { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); }
 .mrow .forma:has(button.rs) { gap: 0; }
 [data-sel]:focus-visible { outline: 2px solid var(--azul); outline-offset: 3px; border-radius: 12px; }
 [data-grupo].hay-sel [data-sel]:not(.sel) { opacity: .38; transition: opacity .2s; }
+.partida.hay-sel > button:not(.sel) { opacity: 1; } /* el otro tramo no se atenúa: su texto blanco dejaría de leerse */
 .col.sel i { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); } .col.sel em { color: var(--azul); transform: scale(1.15); }
 .riel.sel > i, .partida > .sel, .cara.sel .foto, .chip.sel { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); }
 .pp.sel, .rvf.sel { background: rgba(29,79,143,.09); }
