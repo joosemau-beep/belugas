@@ -919,7 +919,7 @@ test('El partido en 4 números y Mi partido, con lo que se toca (8 partidos)', a
   const t = await texto(pg);
   // las anotaciones con la regla de textos: «Pase de Mau · 12 yd», «Corrida · 20 yd», el rival con su nombre corto
   assert.match(t, /TD de Iker Pase de Mau · 12 yd \+1 de Nicolás 7–0/); assert.match(t, /TD de Rodrigo Corrida · 20 yd 13–8/); assert.match(t, /TD de Panini \+2/);
-  assert.match(t, /SERIES CON TD 2 de 5 temporada 56% SERIES PARADAS 4 de 5 temporada 52% EL BALÓN 0 robó 2 · perdió 2 COMPLETOS 5 de 9 temporada 67%/);
+  assert.match(t, /SERIES CON TD 2 de 5 temporada 56% SERIES PARADAS 4 de 5 temporada 52% EL BALÓN 0 temporada −3 COMPLETOS 5 de 9 temporada 67%/);
   assert.doesNotMatch(t, /Ver todos los números|Jugadas exitosas|Touchdowns/);
   // tocar un cuadro: se selecciona, los demás se atenúan y sale su etiqueta con el enlace
   const cuadros = pg.locator('.g4 button'); assert.equal(await cuadros.count(), 4);
@@ -953,7 +953,7 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   await toca(pg, 'ir', 'metricas'); await abreMas(pg);
   const t = await texto(pg);
   assert.match(t, /Cómo vamos 6–2 \+2.8 por partido Partidos P G G G G G G P Más 139 puntos a favor, 117 en contra. 3 de las 6 victorias fueron por 3 puntos o menos. ATAQUE 56% DEFENSA 52% QB 68%/);
-  assert.match(t, /Ataque 56% series con TD 2\/4 KAF 2\/4 ONF 3\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 2\/5 PAN 1\/2 KAF MEJORES · YD DE ATAQUE 1 Nicolás 283 yd 5 TD · 15 recepciones 2 Iker 157 yd 1 TD · 7 recepciones 3 Uri 136 yd 5 recepciones Más 19 de 34 series. Después del TD: de 1, 58% \(7 de 12\); de 2, 63% \(5 de 8\). Pases completos 67% \(46 de 69\), 7 soltados. Yardas de ataque: atrapadas más corridas./);
+  assert.match(t, /Ataque 56% series con TD 2\/4 KAF 2\/4 ONF 3\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 2\/5 PAN 1\/2 KAF LOS MEJORES · YARDAS 1 Nicolás 283 yd 5 TD · 15 recepciones 2 Iker 157 yd 1 TD · 7 recepciones 3 Uri 136 yd 5 recepciones Más 19 de 34 series. Después del TD: de 1, 58% \(7 de 12\); de 2, 63% \(5 de 8\). Pases completos 67% \(46 de 69\), 7 soltados. Yardas de ataque: atrapadas más corridas./);
   assert.match(t, /El balón −3 más perdidos que robados 5 robados 8 perdidos/);
   assert.match(t, /Quién viene 6 vienen a todos José 5 de 8 Leo 5 de 8 Patrick 6 de 8 Uri 7 de 8 Más Mau 8 de 8 · Nicolás 8 de 8 · Mario 8 de 8/);
   assert.match(t, /Contra cada rival Kaffies 1–2 · 33–46 −13 Lobos 1–0 · 33–12 \+21 Only Fins 1–0 · 14–8 \+6 Panini 1–0 · 22–17 \+5 Bucaneros 1–0 · 16–14 \+2 Aztecas 1–0 · 21–20 \+1/);
@@ -962,9 +962,9 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   assert.deepEqual(await pg.locator('.rvf .riel > i').evaluateAll((xs) => xs.slice(0, 2).map((i) => [i.className, i.style.right || i.style.left, Math.round(parseFloat(i.style.width))])), [['mal neg', '50%', 31], ['', '50%', 50]]);
   // Defensa: los empates de los mejores se ordenan por banderas y luego por nombre; «Más» con lo que permitió. QB con sus tres cifras y a quién le lanza
   await toca(pg, 'met', 'defensa'); await abreMas(pg);
-  assert.match(await texto(pg), /Defensa 52% series paradas 1\/4 KAF 2\/3 ONF 1\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 4\/5 PAN 0\/2 KAF MEJORES · DEFENSA 1 Ian 9 jugadas 6 banderas · 3 sacks 2 Jaime 9 jugadas 6 banderas · 3 tapados 3 Juancho 9 jugadas 6 banderas · 2 tapados · 1 INT Más 17 de 33 series. La defensa permitió 13.5 puntos por partido; aparte, 9 los regaló el ataque \(pick 6 y safety\). En total 37 banderas, 8 tapados, 7 sacks y 5 balones robados./);
+  assert.match(await texto(pg), /Defensa 52% series paradas 1\/4 KAF 2\/3 ONF 1\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 4\/5 PAN 0\/2 KAF LOS MEJORES · JUGADAS 1 Ian 9 jugadas 6 banderas · 3 sacks 2 Jaime 9 jugadas 6 banderas · 3 tapados 3 Juancho 9 jugadas 6 banderas · 2 tapados · 1 INT Más 17 de 33 series. La defensa permitió 13.5 puntos por partido; aparte, 9 los regaló el ataque \(pick 6 y safety\). En total 37 banderas, 8 tapados, 7 sacks y 5 balones robados./);
   await toca(pg, 'met', 'qb'); await abreMas(pg);
-  assert.match(await texto(pg), /QB Mau 65 pases en 8 partidos Completos 68% Yd por intento 11.2 TD : INT 10 : 8 57% KAF 50% ONF 89% AZT 64% KAF 91% LOB 71% BUC 50% PAN 50% KAF A QUIÉN LE LANZA 1 Nicolás 14 pases 238 yd · 4 TD 2 Iker 7 pases 131 yd · 1 TD 3 Uri 5 pases 136 yd Más 44 de 65 completos, 731 yardas, 10 TD y 8 INT en 8 partidos. 4 sacks recibidos. También lanzaron: Nicolás 1 de 1, José 1 de 3./);
+  assert.match(await texto(pg), /QB Mau 65 pases en 8 partidos Completos 68% Yd\/intento 11.2 TD : INT 10 : 8 57% KAF 50% ONF 89% AZT 64% KAF 91% LOB 71% BUC 50% PAN 50% KAF A QUIÉN LE LANZA 1 Nicolás 14 pases 238 yd · 4 TD 2 Iker 7 pases 131 yd · 1 TD 3 Uri 5 pases 136 yd Más 44 de 65 completos, 731 yardas, 10 TD y 8 INT en 8 partidos. 4 sacks recibidos. También lanzaron: Nicolás 1 de 1, José 1 de 3./);
   // tocar: una pastilla, una columna, un renglón de los mejores y un tramo del balón, cada uno con su etiqueta; otro toque cambia la selección
   await pg.locator('.rs[data-sel]').first().click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'vs Kaffies · 5 oct 13–20 Derrota Ver partido ›');
@@ -998,10 +998,10 @@ test('Mi temporada: Cómo voy, Lo mío, Partido a partido, Mi jugada más larga 
   const pg = await telefono(srv.url); await sembrar(pg);
   await abreJug(pg, 'nicolas'); await abreMas(pg);
   const t = await texto(pg);
-  assert.match(t, /NICOLÁS PUNTOS DE LA TEMPORADA 77.9 DEL EQUIPO 1º POR PARTIDO 9.7 MEJOR · LOB 37.2/);
-  assert.match(t, /Lo mío Recepciones 15 1º de 9 Yd por recepción 18.9yd 2º de 5 Manos seguras 88% 4º de 5 Más El punto de cada barra es el promedio del equipo: recepciones 5.1 · yd por recepción 18.5 yd · manos seguras 93%. Manos seguras: 15 de 17 pases que le llegaron. Para entrar al lugar en porcentajes y promedios hacen falta 5 intentos./);
+  assert.match(t, /NICOLÁS PUNTOS DE LA TEMPORADA 77.9 LUGAR 1º PROMEDIO 9.7 MEJOR 37.2/);
+  assert.match(t, /Lo mío Recepciones 15 1º de 9 Yd\/recepción 18.9yd 2º de 5 Manos seguras 88% 4º de 5 Más El punto de cada barra es el promedio del equipo: recepciones 5.1 · Yd\/recepción 18.5 yd · manos seguras 93%. Manos seguras: 15 de 17 pases que le llegaron. Su mejor partido: 37.2 puntos vs Lobos · 2 nov. Para entrar al lugar en porcentajes y promedios hacen falta 5 intentos./);
   assert.match(t, /Partido a partido 5.9 KAF 1.9 ONF 3.4 AZT −0.5 KAF 37.2 LOB 10.7 BUC 6.8 PAN 12.5 KAF puntos por partido/);
-  assert.match(t, /Mi jugada más larga 45yd Me la lanzó José · TD vs Lobos · 2 nov Más Las que siguen: 40 yd \(me la lanzó Mau · TD, vs Lobos\)/);
+  assert.match(t, /Mi jugada más larga 45yd Pase de José · TD vs Lobos · 2 nov Más Las que siguen: 40 yd \(Pase de Mau · TD, vs Lobos\)/);
   assert.match(t, /Conexiones De Mau 238 yd · 4 TD 14 pases De José 45 yd · 1 TD 1 pase A Mario 15 yd 1 pase/);
   assert.doesNotMatch(t, /Partido por partido|Yardas atrapadas|puntos 1º del equipo/);
   // el último partido entero y los anteriores tenues; la columna tocada enseña su partido
@@ -1021,12 +1021,12 @@ test('Mi temporada: Cómo voy, Lo mío, Partido a partido, Mi jugada más larga 
   assert.deepEqual(await centrado(), [[true, true], [true, true], [true, true]]);
   // Rodrigo (corredor) no vino a Kaffies del 17: un guion; Jaime (defensa) con empates; Mau (QB), el único con 5 pases, con sus sacks recibidos en «Más»
   await abreJug(pg, 'rodrigo');
-  assert.match(await texto(pg), /Lo mío Corridas 14 1º de 4 Yd por corrida 9.4yd 1º de 3 TD corriendo 5 1º de 4/);
+  assert.match(await texto(pg), /Lo mío Corridas 14 1º de 4 Yd\/corrida 9.4yd 1º de 3 TD corriendo 5 1º de 4/);
   assert.match(await texto(pg), /9.3 PAN — KAF puntos por partido · — no vino Mi jugada más larga 40yd Corriendo · TD vs Lobos · 2 nov/);
   await abreJug(pg, 'jaime');
   assert.match(await texto(pg), /Lo mío Banderas 6 2º de 10 \(empate\) Tapados y sacks 3 2º de 11 \(empate\) Intercepciones 0 7º de 11 \(empate\)/);
   await abreJug(pg, 'mau'); await abreMas(pg);
-  assert.match(await texto(pg), /PUNTOS DE LA TEMPORADA 71.1 DEL EQUIPO 2º POR PARTIDO 8.9 MEJOR · LOB 21 [\s\S]*Lo mío Pases completos 68% 1º de 1 Yd por intento 11.2yd 1º de 1 TD : INT 10 : 8 1º de 1 Más [\s\S]*Sacks recibidos: 4\./);
+  assert.match(await texto(pg), /PUNTOS DE LA TEMPORADA 71.1 LUGAR 2º PROMEDIO 8.9 MEJOR 21 [\s\S]*Lo mío Pases completos 68% 1º de 1 Yd\/intento 11.2yd 1º de 1 TD : INT 10 : 8 1º de 1 Más [\s\S]*Sacks recibidos: 4\./);
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
@@ -1267,4 +1267,27 @@ test('Los mejores de Defensa dicen cada cosa: «6 banderas · 2 tapados · 1 INT
     assert.deepEqual(pg.errores, []);
     await pg.context().close();
   }
+});
+// 9. textos que se apartaban de la regla de textos (2.1): «Yd por recepción» (la forma corta es «Yd/recepción», igual en todos lados), «MEJOR · LOB» con el código
+// de tres letras en la tira (va «Lugar · Promedio · Mejor» y el rival del mejor partido en «Más»), «Me la lanzó José · TD» («Pase de José · TD»), «robó 2 · perdió 2»
+// en los 4 números (el cuadro compara con la temporada y los robados y perdidos van en la etiqueta), «Mejores · yd de ataque» y «Mejores · defensa» con palabras
+test('los textos de los widgets siguen la regla: Yd/recepción, Lugar · Promedio · Mejor, Pase de José · TD, temporada en El balón, Los mejores · yardas', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await abreJug(pg, 'nicolas'); await abreMas(pg);
+  let t = await texto(pg);
+  assert.match(t, /LUGAR 1º PROMEDIO 9.7 MEJOR 37.2 /); assert.doesNotMatch(t, /MEJOR · |Yd por|Me la lanzó/); // el código LOB solo bajo las columnas
+  assert.match(t, /Yd\/recepción 18.9yd 2º de 5/); assert.match(t, /Yd\/recepción 18.5 yd/); assert.match(t, /Su mejor partido: 37.2 puntos vs Lobos · 2 nov\./);
+  assert.match(t, /Mi jugada más larga 45yd Pase de José · TD vs Lobos · 2 nov Más Las que siguen: 40 yd \(Pase de Mau · TD, vs Lobos\)/);
+  await abreJug(pg, 'rodrigo'); assert.match(await texto(pg), /Yd\/corrida 9.4yd/); assert.match(await texto(pg), /Mi jugada más larga 40yd Corriendo · TD/);
+  await abreJug(pg, 'mau'); assert.match(await texto(pg), /Yd\/intento 11.2yd/);
+  await pg.evaluate(() => { st.met = 'qb'; A.ir('metricas'); pintar(); }); t = await texto(pg); // eslint-disable-line no-undef
+  assert.match(t, /Completos 68% Yd\/intento 11.2 TD : INT/); assert.doesNotMatch(t, /Yd por/);
+  await toca(pg, 'met', 'ataque'); assert.match(await texto(pg), /LOS MEJORES · YARDAS 1 Nicolás 283 yd/);
+  await toca(pg, 'met', 'defensa'); assert.match(await texto(pg), /LOS MEJORES · JUGADAS 1 Ian 9 jugadas/);
+  await pg.evaluate(() => { A.juego('g6'); pintar(); }); // eslint-disable-line no-undef
+  assert.match(await texto(pg), /EL BALÓN 0 temporada −3 COMPLETOS 5 de 9/);
+  await pg.locator('.g4 button').nth(2).click(); await pg.waitForTimeout(100);
+  assert.equal(await tip(pg), 'El balón 0 2 robados · 2 perdidos · temporada −3 Ver El balón ›');
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
 });

@@ -1190,7 +1190,7 @@ const lineaDe = (x, qb) => { if (!x) return 'No jugó'; const o = [], pas = qb ?
 function statsTarjeta(p) {
   const t = TEMP[p.id], lugar = rankPts().findIndex((x) => x.id === p.id) + 1, pp = porPartido(p.id);
   const mejor = JUEGOS.filter((g) => !g.solo && vino(g, p.id)).sort((a, b) => puntosDe(b.st[p.id]) - puntosDe(a.st[p.id]))[0];
-  return { k: 'Puntos de la temporada', v: t.pts, tira: [['Del equipo', ord(lugar)], ['Por partido', pp ?? '—'], [`Mejor${mejor ? ` · ${R(mejor.rival).corto}` : ''}`, mejor ? puntosDe(mejor.st[p.id]) : '—']] };
+  return { k: 'Puntos de la temporada', v: t.pts, tira: [['Lugar', ord(lugar)], ['Promedio', pp ?? '—'], ['Mejor', mejor ? puntosDe(mejor.st[p.id]) : '—']], mejor: mejor ? `${puntosDe(mejor.st[p.id])} puntos vs ${R(mejor.rival).nombre} · ${mejor.fecha}` : '' };
 }
 // lo que más hace cada quien dice su rol: QB, defensa, corredor o receptor
 const rolDe = (t) => (t.att && t.qbs ? 'qb' : t.band + t.intn + t.sack + t.tap > t.rec + t.car ? 'defensa' : t.car > t.rec ? 'corredor' : 'receptor');
@@ -1200,16 +1200,16 @@ const MIN = 5;
 const pctTxt = (v) => `${Math.round(v)}%`;
 const MET = {
   receptor: ['ataque', [{ k: 'Recepciones', v: (t) => t.rec, f: String, quien: (t) => t.rec > 0 },
-    { k: 'Yd por recepción', u: 'yd', v: (t) => t.ryd / t.rec, f: n1, quien: (t) => t.rec >= MIN, min: `${MIN} recepciones` },
+    { k: 'Yd/recepción', u: 'yd', v: (t) => t.ryd / t.rec, f: n1, quien: (t) => t.rec >= MIN, min: `${MIN} recepciones` },
     { k: 'Manos seguras', v: (t) => t.rec / (t.rec + t.drop) * 100, f: pctTxt, quien: (t) => t.rec + t.drop >= MIN, sub: (t) => `${t.rec} de ${t.rec + t.drop} pases que le llegaron`, min: `${MIN} pases` }]],
   corredor: ['ataque', [{ k: 'Corridas', v: (t) => t.car, f: String, quien: (t) => t.car > 0 },
-    { k: 'Yd por corrida', u: 'yd', v: (t) => t.ruyd / t.car, f: n1, quien: (t) => t.car >= MIN, min: `${MIN} corridas` },
+    { k: 'Yd/corrida', u: 'yd', v: (t) => t.ruyd / t.car, f: n1, quien: (t) => t.car >= MIN, min: `${MIN} corridas` },
     { k: 'TD corriendo', v: (t, id) => tdDe(id, 'corrida'), f: String, quien: (t) => t.car > 0 }]],
   defensa: ['defensa', [{ k: 'Banderas', v: (t) => t.band, f: String, quien: (t) => t.band > 0 },
     { k: 'Tapados y sacks', v: (t) => t.tap + t.sack, f: String, quien: (t) => t.band + t.tap + t.sack + t.intn > 0 },
     { k: 'Intercepciones', v: (t) => t.intn, f: String, quien: (t) => t.band + t.tap + t.sack + t.intn > 0 }]],
   qb: ['qb', [{ k: 'Pases completos', v: (t) => t.comp / t.att * 100, f: pctTxt, quien: (t) => t.att >= MIN, sub: (t) => `${t.comp} de ${t.att} pases`, min: `${MIN} pases` },
-    { k: 'Yd por intento', u: 'yd', v: (t) => t.pyd / t.att, f: n1, quien: (t) => t.att >= MIN, min: `${MIN} pases` },
+    { k: 'Yd/intento', u: 'yd', v: (t) => t.pyd / t.att, f: n1, quien: (t) => t.att >= MIN, min: `${MIN} pases` },
     { k: 'TD : INT', v: (t) => t.tdp - t.intl, f: (v, t) => `${t.tdp} : ${t.intl}`, quien: (t) => t.att >= MIN, min: `${MIN} pases`, sinProm: true }]],
 };
 function contraEquipo(id) {
@@ -1659,19 +1659,19 @@ function metricas() {
   const mejAt = PLANTEL.map((p) => { const t = TEMP[p.id], td = tdDe(p.id); return { id: p.id, v: t.ryd + t.ruyd, sub: [td && `${td} TD`, t.rec && plural(t.rec, 'recepción', 'recepciones'), t.car && plural(t.car, 'corrida')].filter(Boolean).slice(0, 2).join(' · ') }; }).filter((x) => x.v > 0).sort((a, b) => b.v - a.v);
   const ataque = `<div class="card"><div class="big"><strong class="num">${pct(c.seriesTD, c.seriesO)}%</strong><div><b>series con TD</b></div></div>
     ${columnas(con, porG.map((x) => ({ n: pct(x.seriesTD, x.seriesO), t: `${x.seriesTD}/${x.seriesO}` })), con.map((g, i) => selPartido(g, `${porG[i].seriesTD} de ${porG[i].seriesO} series con TD (${pct(porG[i].seriesTD, porG[i].seriesO)}%)`)), { max: 100, alto: 56 })}
-    ${mejAt.length ? `<h5>Mejores · yd de ataque</h5>${mejores(mejAt, () => 'yd')}` : ''}
+    ${mejAt.length ? `<h5>Los mejores · yardas</h5>${mejores(mejAt, () => 'yd')}` : ''}
     ${det(`${c.seriesTD} de ${plural(c.seriesO, 'serie')}.${cvTxt} Pases completos ${pct(c.comp, c.att)}% (${c.comp} de ${c.att})${c.drops ? `, ${plural(c.drops, 'soltado')}` : ''}. Yardas de ataque: atrapadas más corridas.`)}</div>`;
   // Defensa: series paradas, partido a partido, y los mejores por jugadas de defensa; en «Más», los puntos que permitió (sin el pick 6 ni el safety en contra, que son del ataque)
   const mejDef = PLANTEL.map((p) => { const t = TEMP[p.id]; return { id: p.id, v: t.band + t.tap + t.sack + t.intn, band: t.band, sub: [t.band && plural(t.band, 'bandera'), t.tap && plural(t.tap, 'tapado'), t.sack && plural(t.sack, 'sack'), t.intn && `${t.intn} INT`].filter(Boolean).join(' · ') }; }).filter((x) => x.v > 0).sort((a, b) => b.v - a.v || b.band - a.band || (nom(a.id) < nom(b.id) ? -1 : 1));
   const puntosDe2 = (ks) => con.reduce((a, g) => a + g.partido.jugadas.filter((j) => ks.includes(j.k)).reduce((b, j) => b + (efecto(j).ellos || 0), 0), 0), permitio = puntosDe2(['tdr']), regalados = puntosDe2(['pick6c', 'safetyc']);
   const defensa = `<div class="card"><div class="big"><strong class="num">${pct(c.fren, c.seriesD)}%</strong><div><b>series paradas</b></div></div>
     ${columnas(con, porG.map((x) => ({ n: pct(x.fren, x.seriesD), t: `${x.fren}/${x.seriesD}` })), con.map((g, i) => selPartido(g, `${porG[i].fren} de ${porG[i].seriesD} series paradas (${pct(porG[i].fren, porG[i].seriesD)}%)`)), { max: 100, alto: 56 })}
-    ${mejDef.length ? `<h5>Mejores · defensa</h5>${mejores(mejDef, (v) => (v === 1 ? 'jugada' : 'jugadas'))}` : ''}
+    ${mejDef.length ? `<h5>Los mejores · jugadas</h5>${mejores(mejDef, (v) => (v === 1 ? 'jugada' : 'jugadas'))}` : ''}
     ${det(`${c.fren} de ${plural(c.seriesD, 'serie')}. La defensa permitió ${n1(permitio / con.length)} puntos por partido${regalados ? `; aparte, ${regalados} los regaló el ataque (pick 6 y safety)` : ''}. En total ${plural(c.band, 'bandera')}, ${plural(c.tap, 'tapado')}, ${plural(c.sack, 'sack')} y ${c.rob === 1 ? '1 balón robado' : `${c.rob} balones robados`}.`)}</div>`;
   // QB: el del partido más reciente; completos, yardas por intento y TD : INT, partido a partido, y a quién le lanza
   const aQuien = qb ? c.lista.filter((x) => x.qb === qb).slice(0, 3) : [], otros = PLANTEL.filter((p) => p.id !== qb && TEMP[p.id].att).map((p) => `${p.nombre} ${TEMP[p.id].comp} de ${TEMP[p.id].att}`);
   const qbW = !tq || !tq.att ? '<div class="card"><div class="pp">Todavía nadie ha lanzado un pase.</div></div>' : `<div class="card"><div class="qbw">${foto(P(qb))}<div><b>${P(qb).nombre}</b><small>${plural(tq.att, 'pase')} en ${plural(tq.pj, 'partido')}</small></div></div>
-    <div class="franja3"><div><span>Completos</span><strong class="num">${pct(tq.comp, tq.att)}%</strong></div><div><span>Yd por intento</span><strong class="num">${n1(tq.pyd / tq.att)}</strong></div><div><span>TD : INT</span><strong class="num">${tq.tdp} : ${tq.intl}</strong></div></div>
+    <div class="franja3"><div><span>Completos</span><strong class="num">${pct(tq.comp, tq.att)}%</strong></div><div><span>Yd/intento</span><strong class="num">${n1(tq.pyd / tq.att)}</strong></div><div><span>TD : INT</span><strong class="num">${tq.tdp} : ${tq.intl}</strong></div></div>
     ${columnas(con, con.map((g) => { const x = g.st[qb] || {}; return x.att ? { n: pct(x.comp, x.att), t: `${pct(x.comp, x.att)}%` } : null; }), con.map((g) => { const x = g.st[qb] || {}; return selPartido(g, x.att ? `${x.comp || 0} de ${x.att} pases completos (${pct(x.comp, x.att)}%)` : 'no lanzó'); }), { max: 100, alto: 48 })}
     ${aQuien.length ? `<h5>A quién le lanza</h5>${mejores(aQuien.map((x) => ({ id: x.id, v: x.n, sub: [x.yd ? `${x.yd} yd` : '', x.td ? `${x.td} TD` : ''].filter(Boolean).join(' · ') })), (v) => (v === 1 ? 'pase' : 'pases'))}` : ''}
     ${det(`${tq.comp} de ${tq.att} completos, ${plural(tq.pyd, 'yarda')}, ${tq.tdp} TD y ${tq.intl} INT en ${plural(tq.pj, 'partido')}.${tq.sackr ? ` ${plural(tq.sackr, 'sack recibido', 'sacks recibidos')}.` : ''}${otros.length ? ` También lanzaron: ${otros.join(', ')}.` : ''}`)}</div>`;
@@ -1767,7 +1767,7 @@ function jugador() {
   // lo mío: tres números según el rol, con su lugar y la barra con el punto del promedio del equipo; cada barra se toca y brinca a los mejores de su área
   const ce = t.pj || ANTES[p.id] ? contraEquipo(p.id) : null;
   const lomio = ce ? widget('lomio', 'Lo mío', `<div class="card"><div data-grupo>${ce.map((m) => `<div class="ce"><div><b>${m.k}</b></div><div class="ce-v"><strong class="num">${m.txt}${m.u ? `<i>${m.u}</i>` : ''}</strong>${m.lugar ? `<span class="lugar">${m.lugar}</span>` : ''}</div><div class="ce-b">${riel(m.barra, { prom: m.promBarra, promTxt: m.promTxt, datos: { t: m.k, v: `${m.txt}${m.u ? ' ' + m.u : ''}`, s: [m.lugar, m.promTxt ? `promedio del equipo ${m.promTxt}` : ''].filter(Boolean).join(' · '), l: ['metir', ce.area], lt: 'Ver a los mejores' } })}</div></div>`).join('')}</div>
-    ${det(`${ce.some((m) => m.promTxt) ? `El punto de cada barra es el promedio del equipo: ${ce.filter((m) => m.promTxt).map((m) => `${m.k.replace(/^[A-ZÁÉÍÓÚ](?![A-Z])/, (c) => c.toLowerCase())} ${m.promTxt}`).join(' · ')}.` : ''}${ce.filter((m) => m.sub).map((m) => ` ${m.k}: ${m.sub}.`).join('')}${ce.area === 'qb' && t.sackr ? ` Sacks recibidos: ${t.sackr}.` : ''} Para entrar al lugar en porcentajes y promedios hacen falta ${MIN} intentos.`)}</div>`) : '';
+    ${det(`${ce.some((m) => m.promTxt) ? `El punto de cada barra es el promedio del equipo: ${ce.filter((m) => m.promTxt).map((m) => `${m.k.startsWith('Yd/') ? m.k : m.k.replace(/^[A-ZÁÉÍÓÚ](?![A-Z])/, (c) => c.toLowerCase())} ${m.promTxt}`).join(' · ')}.` : ''}${ce.filter((m) => m.sub).map((m) => ` ${m.k}: ${m.sub}.`).join('')}${ce.area === 'qb' && t.sackr ? ` Sacks recibidos: ${t.sackr}.` : ''}${statsTarjeta(p).mejor ? ` Su mejor partido: ${statsTarjeta(p).mejor}.` : ''} Para entrar al lugar en porcentajes y promedios hacen falta ${MIN} intentos.`)}</div>`) : '';
   // partido a partido: sus puntos en columnas, un guion en los que no vino; lo de antes de la app, como un renglón más
   const antes = ANTES[p.id] ? `<div class="pp"><span class="rlogo"><img src="${LOGO}" alt=""></span><div><b class="corta">Antes de la app · 6 partidos</b><small class="corta" style="display:block">${lineaDe(ANTES[p.id])}</small></div><div class="der"><strong class="num">${puntosDe(ANTES[p.id])}</strong><small>pts</small></div></div>` : '';
   const pts = (g) => puntosDe(g.st[p.id]);
@@ -1775,8 +1775,8 @@ function jugador() {
     : antes ? widget('pap', 'Partido a partido', `<div class="card">${antes}</div>`) : '';
   // mi jugada más larga: entre sus recepciones, corridas y TD con yardas
   const largas = con.flatMap((g) => g.partido.jugadas.filter((j) => j.id === p.id && ydDe(j) != null && ['pase', 'td', 'corrida'].includes(j.k)).map((j) => ({ j, g, yd: ydDe(j) }))).sort((a, b) => b.yd - a.yd);
-  const como = (x, min) => `${x.j.qb ? `${min ? 'me' : 'Me'} la lanzó ${nom(x.j.qb)}` : min ? 'corriendo' : 'Corriendo'}${x.j.k === 'td' ? ' · TD' : ''}`;
-  const larga = largas.length ? widget('larga', 'Mi jugada más larga', `<div class="card"><div class="big"><strong class="num">${ydTxt(largas[0].yd)}<i>yd</i></strong><div><b>${como(largas[0])}</b><small>${vsTxt(largas[0].g)}</small></div></div>${largas.length > 1 ? det(`Las que siguen: ${largas.slice(1, 4).map((x) => `${ydTxt(x.yd)} yd (${como(x, true)}, vs ${R(x.g.rival).nombre})`).join(' · ')}.`) : ''}</div>`) : '';
+  const como = (x) => `${x.j.qb ? `Pase de ${nom(x.j.qb)}` : 'Corriendo'}${x.j.k === 'td' ? ' · TD' : ''}`;
+  const larga = largas.length ? widget('larga', 'Mi jugada más larga', `<div class="card"><div class="big"><strong class="num">${ydTxt(largas[0].yd)}<i>yd</i></strong><div><b>${como(largas[0])}</b><small>${vsTxt(largas[0].g)}</small></div></div>${largas.length > 1 ? det(`Las que siguen: ${largas.slice(1, 4).map((x) => `${ydTxt(x.yd)} yd (${como(x)}, vs ${R(x.g.rival).nombre})`).join(' · ')}.`) : ''}</div>`) : '';
   return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}</div>
   ${widget('tj', '', tarjetaJ(p) + lado)}
   ${lomio}${pap}${larga}
@@ -1846,9 +1846,9 @@ function partido() {
   // todos, del que más puntos hizo al que menos; el primero es el jugador del partido
   const ids = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a]));
   // el partido en 4 números (22-nov): cada uno contra la temporada; se tocan y brincan a su área de Métricas
-  const cuadro = (tit, v, de, tempo, area, lt, mal) => `<button${sel({ t: tit, v: de ? `${v} de ${de} (${pct(v, de)}%)` : v, s: tempo, l: ['metir', area], lt })}><span>${tit}</span><strong class="num${mal ? ' mal' : ''}">${v}${de ? ` <i>de ${de}</i>` : ''}</strong><em>${tempo}</em></button>`;
+  const cuadro = (tit, v, de, tempo, area, lt, mal, linea = tempo) => `<button${sel({ t: tit, v: de ? `${v} de ${de} (${pct(v, de)}%)` : v, s: linea, l: ['metir', area], lt })}><span>${tit}</span><strong class="num${mal ? ' mal' : ''}">${v}${de ? ` <i>de ${de}</i>` : ''}</strong><em>${tempo}</em></button>`;
   const g4 = `<div class="card"><div class="g4" data-grupo>${cuadro('Series con TD', c.seriesTD, c.seriesO, `temporada ${pct(ct.seriesTD, ct.seriesO)}%`, 'ataque', 'Ver Ataque')}${cuadro('Series paradas', c.fren, c.seriesD, `temporada ${pct(ct.fren, ct.seriesD)}%`, 'defensa', 'Ver Defensa')}
-    ${cuadro('El balón', conSigno(bal), 0, `robó ${c.rob} · perdió ${c.perd}`, '', 'Ver El balón', bal < 0)}${cuadro('Completos', c.comp, c.att, `temporada ${pct(ct.comp, ct.att)}%`, 'qb', 'Ver QB')}</div></div>`;
+    ${cuadro('El balón', conSigno(bal), 0, `temporada ${conSigno(ct.rob - ct.perd)}`, '', 'Ver El balón', bal < 0, `${plural(c.rob, 'robado')} · ${plural(c.perd, 'perdido')} · temporada ${conSigno(ct.rob - ct.perd)}`)}${cuadro('Completos', c.comp, c.att, `temporada ${pct(ct.comp, ct.att)}%`, 'qb', 'Ver QB')}</div></div>`;
   return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}${btnCompartir(g.id)}</div>
   ${cabeza}
   ${widget('anot', 'Anotaciones', anotaciones(g))}
