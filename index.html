@@ -202,7 +202,7 @@ h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
 .ic svg { width: 26px; height: 26px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .ic.linea { background: color-mix(in srgb, var(--c) 12%, #fff); }
 .ic.linea svg { stroke: var(--c); stroke-width: 1.9; }
-.ic.relleno { background: var(--c); box-shadow: inset 0 -4px 0 rgba(0,0,0,.2), 0 2px 0 rgba(0,0,0,.06); }
+.ic.relleno { background: var(--c); }
 .ic.relleno svg { stroke: #fff; stroke-width: 2.7; }
 .ic.relleno svg .f { fill: rgba(255,255,255,.95); stroke: none; }
 .ic.linea svg .f { fill: color-mix(in srgb, var(--c) 30%, transparent); stroke: none; }
@@ -302,7 +302,7 @@ details.mas[open] > summary { color: var(--mut); }
 
 /* la tarjeta del partido: el degradado de los dos equipos (Iker, 18-nov; intensidad media), Belugas a la izquierda y el rival (--rq) a la derecha.
    Los colores van ya calculados (sin oklch(from …)) y sin desenfoque: el fondo es opaco y el desenfoque solo costaba. El grano es una capa que se repite */
-.heroe, .mcab { --eq-bel: #005ead; --eq-riv: var(--rq, #515e74); color: #fff; border: .5px solid var(--borde); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 40px rgba(0,0,0,.35);
+.heroe, .mcab { --eq-bel: #005ead; --eq-riv: var(--rq, #515e74); color: #fff; border: .5px solid var(--borde); box-shadow: 0 18px 40px rgba(0,0,0,.35);
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E"),
     radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 70%),
     linear-gradient(90deg, color-mix(in srgb, var(--eq-bel) 50%, #08090d) 0%, color-mix(in srgb, var(--eq-bel) 35%, #08090d) 14%, color-mix(in srgb, var(--eq-bel) 19%, #08090d) 30%, color-mix(in srgb, var(--eq-bel) 6%, #08090d) 44%, #08090d 50%,
@@ -325,7 +325,7 @@ details.mas[open] > summary { color: var(--mut); }
 /* «Seguir marcando», «Empezar a marcar» y «Ver el partido»: una píldora de liquid glass más corta, al 63 % de la tarjeta (Iker, 18-nov) */
 .btn-blanco { width: 63%; margin: 0 auto; height: 60px; border-radius: 999px; font: 800 18px/1 Inter; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative;
   background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3); border: .5px solid rgba(255,255,255,.34);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 8px 22px rgba(0,0,0,.3); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
+  box-shadow: 0 8px 22px rgba(0,0,0,.3); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
 .btn-blanco:active, .gigante:active, .res:active, .pj:active, .op:active, .cat:active { transform: scale(.98); }
 /* último y próximo partido */
 .pmini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -337,7 +337,9 @@ details.mas[open] > summary { color: var(--mut); }
 .pm .g { color: var(--ok); }
 
 /* ---------- líderes ---------- */
-.cats { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 12px; scrollbar-width: none; }
+/* la fila de categorías sale hasta la orilla y se desvanece a la derecha: así se ve que sigue y se desliza (revisión, 22-nov: «Banderas» quedaba cortada en seco); al final deja aire */
+.cats { display: flex; gap: 6px; overflow-x: auto; margin: 0 -20px; padding: 0 0 12px 20px; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 32px), transparent); }
+.cats::after { content: ''; flex: none; width: 32px; }
 .cat { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px rgba(11,27,51,.18); font: 700 13px/1 Inter; color: rgba(11,27,51,.92); }
 .cat.on { background: var(--boton); color: #fff; box-shadow: none; }
 .lideres { border-radius: var(--radio); overflow: hidden; }
@@ -358,7 +360,7 @@ details.mas[open] > summary { color: var(--mut); }
 .pcol .corona { width: 62px; margin-bottom: -16px; }
 .pcol b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 7px; }
 .pcol .valor { margin-top: 2px; }
-.escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); box-shadow: inset 0 5px 0 rgba(255,255,255,.35); }
+.escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); }
 .p1 .escalon { height: 104px; background: var(--grad); color: #fff; }
 .p2 .escalon { height: 78px; background: var(--plata); color: #5b6676; }
 .p3 .escalon { height: 60px; background: var(--bronce); color: #4a2508; }
@@ -486,10 +488,10 @@ html:not(.app) .nav { background: transparent; }
 .mk-cuerpo::after { content: ''; flex: none; height: calc(var(--navh) + 14px); } /* el aire de abajo de .cuerpo: WebKit no cuenta el padding de una columna flex al bajar y lo último quedaba bajo la barra */
 .mk-cuerpo > * { flex-shrink: 0; }
 .mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
-.mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: var(--radio); background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+.mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: var(--radio); background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; }
 /* en defensa el encabezado y el TD de ellos toman el color del rival (--rc, de EQUIPOS), en degradado como el nuestro */
 .mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
-.mk-td.riv { box-shadow: 0 8px 18px color-mix(in srgb, var(--rc) 35%, transparent); text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.mk-td.riv { text-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .pregunta { font: 800 22px/1.2 Inter; margin: 14px 2px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
 /* el aviso de cada jugada va en este renglón y con la misma altura: el marcador queda a la vista y ninguna tira se mueve */
 .pregunta.aviso { height: 40px; margin: 14px 0 10px; background: rgba(10,16,30,.9); color: #fff; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
@@ -505,7 +507,9 @@ html:not(.app) .nav { background: transparent; }
 .pregunta.aviso .si { height: 30px; padding: 0 10px; border-radius: 999px; background: rgba(255,255,255,.16); color: #fff; font: 700 12.5px/1 Inter; flex: none; }
 @keyframes avisoIn { from { transform: scale(.97); opacity: 0; } }
 /* abajo del TD: el aviso de la jugada, o «Última · Corregir · Deshacer» si no hay aviso (mismo alto, nada brinca) */
-.ultima { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--mut); padding: 0 2px; min-height: 44px; }
+/* «Última: …» en su propio renglón a lo ancho, con Corregir y Deshacer debajo: así la jugada se lee entera (revisión, 22-nov) */
+.ultima { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; font-size: 13.5px; color: var(--mut); padding: 0 2px; min-height: 44px; }
+.ultima .txt { flex: 1 0 100%; }
 .ultima b { color: var(--ink); font-weight: 600; }
 .ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; min-height: 44px; padding: 0 0 0 6px; flex: none; }
 .ultima button + button { margin-left: 0; padding-left: 11px; border-left: 1px solid var(--linea); }
@@ -527,7 +531,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .res .ic { grid-row: span 2; }
 .res b { font: 800 16px/1.15 Inter; }
 .res small { color: var(--mut); font-size: 12px; margin-top: 3px; }
-.res.td { grid-column: span 2; background: var(--boton); color: #fff; min-height: 76px; box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+.res.td { grid-column: span 2; background: var(--boton); color: #fff; min-height: 76px; }
 .res.td small { color: inherit; opacity: .8; }
 .res.tdr { grid-column: span 2; background: linear-gradient(135deg, #374151, #6b7280 60%, #a3acb9); color: #fff; min-height: 76px; }
 .res.tdr small { color: rgba(255,255,255,.88); }
@@ -588,13 +592,11 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .mk-tira { gap: 12px; justify-content: flex-start; }
 /* los botones grandes (la C de Iker, 17-nov: «más fácil de usar y de entender»): enteros del color de su jugada (--c, de ICONOS_C),
    oscurecido para que el blanco se lea al sol, con el glifo grande al centro y el nombre abajo */
-.mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
-/* «Profundo con brillo» (Iker, 17-nov): el mismo color, más profundo y menos saturado, en dos tonos cercanos, con filo de luz arriba
-   y brillo en la esquina; el blanco queda en 4.8:1 o más (el ámbar de safety estaba en 3:1). Sin oklch relativo (iOS 17) queda el plano de arriba */
-.mk-grande { position: relative; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,.22); background: linear-gradient(160deg, oklch(from var(--c) .54 calc(c * .78) h), oklch(from var(--c) .42 calc(c * .72) h));
-  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.07), 0 8px 16px -4px color-mix(in srgb, var(--c) 45%, transparent); }
+.mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
+/* «Profundo» (Iker, 17-nov): el mismo color, más profundo y menos saturado, en dos tonos cercanos; el blanco queda en 4.8:1 o más (el ámbar de safety
+   estaba en 3:1). Sin oklch relativo (iOS 17) queda el plano de arriba. Plano (Iker y revisión, 22-nov): sin filo de luz, sin brillo en la esquina y sin resplandor */
+.mk-grande { position: relative; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,.22); background: linear-gradient(160deg, oklch(from var(--c) .54 calc(c * .78) h), oklch(from var(--c) .42 calc(c * .72) h)); }
 .mk-grande[data-v=incompleto] { background: linear-gradient(160deg, oklch(from var(--c) .53 calc(c * .9) h), oklch(from var(--c) .43 calc(c * .85) h)); }
-.mk-grande::before { content: ''; position: absolute; inset: 0; background: radial-gradient(90% 70% at 15% 0%, rgba(255,255,255,.16), transparent 60%); pointer-events: none; }
 .mk-grande > span { position: relative; }
 /* al tocar: se hunde, rebota y el filo de luz destella (~190 ms); con «reducir movimiento» solo se hunde */
 .mk-grande::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 2px 0 rgba(255,255,255,.85), inset 0 0 0 1.5px rgba(255,255,255,.5); opacity: 0; pointer-events: none; }
@@ -614,7 +616,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* «Más opciones» sube en liquid glass (Iker, 18-nov): se alcanza a ver Marcar detrás, desenfocado; con .74 de blanco y las tiras más claras
    el texto queda en 4.5:1 o más aunque el desenfoque no se pinte */
 .hoja.vidrio { background: rgba(248,251,255,.74); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border-top-color: rgba(255,255,255,.6); }
-.hoja.vidrio .mk-tira { background: rgba(255,255,255,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
+.hoja.vidrio .mk-tira { background: rgba(255,255,255,.62); }
 .mk-tiras .mk-td { margin-top: 0; height: 60px; gap: 12px; }
 /* todos los botones cuadrados del mismo alto, el de la fila de «Intercepción lanzada» (Iker, 18-nov). En una pantalla baja (el SE) no cabría
    hasta el TD: ahí van a 110, con el ícono y el relleno un poco más chicos (el nombre de dos renglones sigue cabiendo), el TD 10 px más bajo
@@ -771,7 +773,6 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .tj-tira small { display: block; font: 700 11.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .85; white-space: nowrap; }
 .tj-tira strong { display: block; font: italic 900 38px/1 var(--disp); margin-top: 5px; }
 .reglas { margin-top: 14px; padding: 4px 16px; }
-.reglas summary { padding: 12px 0; font: 700 15px/1.2 Inter; color: var(--acento); cursor: pointer; }
 .reglas h4 { margin: 10px 0 4px; font: 700 12px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
 .reglas .rg { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--linea); font-size: 14px; }
 .reglas .rg b { font-weight: 800; color: var(--navy); flex: none; }
@@ -807,7 +808,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* ficha de un partido · anotaciones a dos lados: nosotros a la izquierda, el rival a la derecha y al centro el marcador como iba quedando */
 .an2 { padding: 12px 8px; position: relative; } /* con 38 px de radio, el primer y el último renglón se alejan de la curva */
 .an2::before { content: ''; position: absolute; left: 50%; top: 18px; bottom: 18px; width: 2px; margin-left: -1px; background: var(--linea); }
-.an2 .r { display: grid; grid-template-columns: 1fr 44px 1fr; align-items: center; padding: 7px 8px; position: relative; }
+.an2 .r { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 7px 8px; position: relative; } /* el marcador al tamaño de su texto: «22–15» en un renglón (revisión, 22-nov) */
 .an2 .l { display: flex; align-items: center; gap: 4px; min-width: 0; text-align: left; }
 .an2 .l.n { flex-direction: row-reverse; text-align: right; justify-self: end; }
 .an2 .l .foto, .an2 .l .rlogo { width: 26px; height: 26px; }
@@ -816,9 +817,9 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .an2 small { display: block; color: var(--mut); font: 500 10.5px/1.3 Inter; margin-top: 1px; white-space: nowrap; }
 .an2 small.cv { color: var(--azul); font-weight: 700; }
 .an2 .riv b { color: var(--mut); }
-.an2 .mc { justify-self: center; min-width: 44px; text-align: center; font: italic 900 18px/1 var(--disp); padding: 7px 6px 6px; border-radius: 8px; background: var(--navy); color: #fff; box-shadow: inset 0 -3px 0 rgba(0,0,0,.22); }
+.an2 .mc { justify-self: center; min-width: 44px; text-align: center; white-space: nowrap; font: italic 900 18px/1 var(--disp); padding: 7px 8px 6px; border-radius: 8px; background: var(--navy); color: #fff; } /* plano, sin bisel (Iker, 22-nov) */
 .an2 .mc i { font-style: inherit; opacity: .55; }
-.an2 .riv .mc { background: #dfe4eb; color: #4b5563; box-shadow: inset 0 -3px 0 rgba(0,0,0,.07); }
+.an2 .riv .mc { background: #dfe4eb; color: #4b5563; }
 .an2 .riv .mc i { opacity: 1; color: #5c6573; } /* sobre el gris claro, a .55 no se leía (2.4:1); así da 4.6:1 */
 /* ficha de un partido · jugadores: el primero es el jugador del partido; en la pantalla de cada quien, los puntos que le dio cada cosa */
 .jgs { overflow: hidden; }
@@ -890,6 +891,10 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .card h5 { margin: 10px 22px 2px; font: 800 11px/1.2 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--mut); white-space: nowrap; }
 .card > [data-grupo] > .pp, .card > .ce { padding-left: 22px; padding-right: 22px; }
 .pp .rk { width: 16px; flex: none; text-align: center; font: 800 13px/1 Inter; color: var(--mut); }
+/* los mejores (2.7): rejilla con el lugar, la foto a dos filas, el nombre y la cifra con su unidad al lado en la primera fila y la línea gris a lo ancho en la segunda */
+.pp.mj { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "rk foto nom der" "rk foto lin lin"; gap: 2px 12px; align-items: center; }
+.pp.mj .rk { grid-area: rk; } .pp.mj .foto { grid-area: foto; } .pp.mj > b { grid-area: nom; align-self: baseline; } .pp.mj > small { grid-area: lin; display: block; white-space: nowrap; }
+.pp.mj .der { grid-area: der; align-self: baseline; } .pp.mj .der strong { display: inline; } .pp.mj .der small { margin-left: 3px; }
 .nota { padding: 4px 22px 12px; font: 500 12px/1.3 Inter; color: var(--mut); }
 /* «Más»: el detalle, cerrado por omisión, al pie de la tarjeta */
 .det { padding: 0 22px 10px; }
@@ -1165,7 +1170,7 @@ const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
 const n1 = (x) => String(Math.round(x * 10) / 10).replace('-', '−');
 const conSigno = (x) => (x > 0 ? '+' : x < 0 ? '−' : '') + String(Math.abs(Math.round(x * 10) / 10));
 const ord = (n) => `${n}º`;
-const tablaPuntos = () => `<details class="card reglas"><summary>Sistema de puntos</summary>
+const tablaPuntos = () => `<details class="card reglas det"><summary>Sistema de puntos</summary>
   ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.filter(([k]) => k !== 'pres').map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
   <p>El pase completo no da puntos: el QB gana por las yardas que lanza, 1 punto cada 25 yardas. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni la bandera fallada. No hay puntos de defensa por equipo, porque casi todos juegan en ataque y en defensa.</p></details>`;
 // vino: está en «quiénes vinieron» o hizo alguna jugada (los partidos sin esa lista cuentan solo lo segundo)
@@ -1178,7 +1183,7 @@ const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][
 const CATS = [['puntos', 'Puntos', 'pts', {}], ['td', 'TD', 'TD', {}], ['yds', 'Yardas', 'yd', {}], ['rec', 'Recepciones', 'rec', {}], ['band', 'Banderas', 'band.', {}]];
 // cómo se resume a cada quien en una línea
 const lineaDe = (x, qb) => { if (!x) return 'No jugó'; const o = [], pas = qb ? o : []; // al que no es QB sus pases van al final
-  if (x.att) pas.push(`${x.comp}/${x.att} pases`); if (x.intl) pas.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.pyd) pas.push(`${x.pyd} yd de pase`); if (x.tdp) pas.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`); if (!qb && (x.ryd || x.ruyd)) o.push(`${(x.ryd || 0) + (x.ruyd || 0)} yd`);
+  if (x.att) pas.push(`${x.comp}/${x.att} pases`); if (x.intl) pas.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.pyd) pas.push(`${x.pyd} yd${qb ? '' : ' de pase'}`); if (x.tdp) pas.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`); if (!qb && (x.ryd || x.ruyd)) o.push(`${(x.ryd || 0) + (x.ruyd || 0)} yd`);
   if (x.band) o.push(`${x.band} bandera${x.band > 1 ? 's' : ''}`); if (x.intn) o.push(`${x.intn} INT`); if (x.sack) o.push(`${x.sack} sack${x.sack > 1 ? 's' : ''}`); if (x.tap) o.push(`${x.tap} pase${x.tap > 1 ? 's' : ''} tapado${x.tap > 1 ? 's' : ''}`); if (x.conv) o.push(`conv. +${x.conv}`);
   return (qb ? o : o.concat(pas)).filter((s) => !/INT lanzada/.test(s)).slice(0, 2).join(' · ') || 'Sin jugadas'; };
 
@@ -1186,7 +1191,7 @@ const lineaDe = (x, qb) => { if (!x) return 'No jugó'; const o = [], pas = qb ?
 function statsTarjeta(p) {
   const t = TEMP[p.id], lugar = rankPts().findIndex((x) => x.id === p.id) + 1, pp = porPartido(p.id);
   const mejor = JUEGOS.filter((g) => !g.solo && vino(g, p.id)).sort((a, b) => puntosDe(b.st[p.id]) - puntosDe(a.st[p.id]))[0];
-  return { k: 'Puntos de la temporada', v: t.pts, tira: [['Del equipo', ord(lugar)], ['Por partido', pp ?? '—'], [`Mejor${mejor ? ` · ${R(mejor.rival).corto}` : ''}`, mejor ? puntosDe(mejor.st[p.id]) : '—']] };
+  return { k: 'Puntos de la temporada', v: t.pts, tira: [['Lugar', ord(lugar)], ['Promedio', pp ?? '—'], ['Mejor', mejor ? puntosDe(mejor.st[p.id]) : '—']], mejor: mejor ? `${puntosDe(mejor.st[p.id])} puntos vs ${R(mejor.rival).nombre} · ${mejor.fecha}` : '' };
 }
 // lo que más hace cada quien dice su rol: QB, defensa, corredor o receptor
 const rolDe = (t) => (t.att && t.qbs ? 'qb' : t.band + t.intn + t.sack + t.tap > t.rec + t.car ? 'defensa' : t.car > t.rec ? 'corredor' : 'receptor');
@@ -1196,16 +1201,16 @@ const MIN = 5;
 const pctTxt = (v) => `${Math.round(v)}%`;
 const MET = {
   receptor: ['ataque', [{ k: 'Recepciones', v: (t) => t.rec, f: String, quien: (t) => t.rec > 0 },
-    { k: 'Yd por recepción', u: 'yd', v: (t) => t.ryd / t.rec, f: n1, quien: (t) => t.rec >= MIN, min: `${MIN} recepciones` },
+    { k: 'Yd/recepción', u: 'yd', v: (t) => t.ryd / t.rec, f: n1, quien: (t) => t.rec >= MIN, min: `${MIN} recepciones` },
     { k: 'Manos seguras', v: (t) => t.rec / (t.rec + t.drop) * 100, f: pctTxt, quien: (t) => t.rec + t.drop >= MIN, sub: (t) => `${t.rec} de ${t.rec + t.drop} pases que le llegaron`, min: `${MIN} pases` }]],
   corredor: ['ataque', [{ k: 'Corridas', v: (t) => t.car, f: String, quien: (t) => t.car > 0 },
-    { k: 'Yd por corrida', u: 'yd', v: (t) => t.ruyd / t.car, f: n1, quien: (t) => t.car >= MIN, min: `${MIN} corridas` },
+    { k: 'Yd/corrida', u: 'yd', v: (t) => t.ruyd / t.car, f: n1, quien: (t) => t.car >= MIN, min: `${MIN} corridas` },
     { k: 'TD corriendo', v: (t, id) => tdDe(id, 'corrida'), f: String, quien: (t) => t.car > 0 }]],
   defensa: ['defensa', [{ k: 'Banderas', v: (t) => t.band, f: String, quien: (t) => t.band > 0 },
     { k: 'Tapados y sacks', v: (t) => t.tap + t.sack, f: String, quien: (t) => t.band + t.tap + t.sack + t.intn > 0 },
     { k: 'Intercepciones', v: (t) => t.intn, f: String, quien: (t) => t.band + t.tap + t.sack + t.intn > 0 }]],
   qb: ['qb', [{ k: 'Pases completos', v: (t) => t.comp / t.att * 100, f: pctTxt, quien: (t) => t.att >= MIN, sub: (t) => `${t.comp} de ${t.att} pases`, min: `${MIN} pases` },
-    { k: 'Yd por intento', u: 'yd', v: (t) => t.pyd / t.att, f: n1, quien: (t) => t.att >= MIN, min: `${MIN} pases` },
+    { k: 'Yd/intento', u: 'yd', v: (t) => t.pyd / t.att, f: n1, quien: (t) => t.att >= MIN, min: `${MIN} pases` },
     { k: 'TD : INT', v: (t) => t.tdp - t.intl, f: (v, t) => `${t.tdp} : ${t.intl}`, quien: (t) => t.att >= MIN, min: `${MIN} pases`, sinProm: true }]],
 };
 function contraEquipo(id) {
@@ -1469,13 +1474,13 @@ const contraHoy = () => { const gs = JUEGOS.filter((g) => g.rival === HOY); if (
 function heroeHoy() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = R(aj ? aj.rival : p ? p.rival : HOY);
   return p ? `<div class="heroe hoy" style="${colores(r)}"><div class="eti"><i></i>En vivo${aj ? ' · desde otro celular' : ''}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${p.nos} – ${p.ellos}</strong></div><div class="eq">${rlogo(r)}${r.nombre}</div></div>
       <button class="btn-blanco" data-a="marcar">Seguir marcando</button></div>`
     : st.final ? `<div class="heroe hoy" style="${colores(R(st.final.rival))}"><div class="eti">Final · hoy · ${resDe(st.final.nos, st.final.ellos)[2]}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).largo}</div></div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong class="num">${st.final.nos} – ${st.final.ellos}</strong></div><div class="eq">${rlogo(R(st.final.rival))}${R(st.final.rival).nombre}</div></div>
       <button class="btn-blanco" data-a="juego" data-v="${st.final.gid}">Ver el partido</button></div>`
     : `<div class="heroe hoy" style="${colores(r)}"><div class="eti">Próximo partido${contraHoy()}</div>
-      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.largo}</div></div>
+      <div class="vs"><div class="eq"><img src="${LOGO}" alt="">Belugas</div><div class="mid"><strong>VS</strong></div><div class="eq">${rlogo(r)}${r.nombre}</div></div>
       <button class="btn-blanco" data-a="empezar">Empezar a marcar</button></div>`;
 }
 function inicio1() {
@@ -1520,7 +1525,7 @@ const FIN_SERIE = { td: 'TD', pick6: 'Pick 6', safety: 'Safety a favor', intn: '
 const finDeSerie = (s, enJuego, r) => { const u = s.js[s.js.length - 1];
   return u.k === 'tdr' ? `TD de ${r.corto}` : u.k === 'pick6c' ? `Pick 6 de ${r.corto}` : FIN_SERIE[u.k] || (enJuego ? 'En curso' : s.lado === 'O' ? 'Sin anotar' : 'Serie detenida'); };
 // el renglón de una jugada: en marcar se toca para corregirla; la que marcaron los dos celulares se pinta y trae «Quitar la repetida»
-const filaJ = (x, i, tocable) => `<${tocable ? `button class="jfila en${x.repe ? ' repe' : ''}" data-a="fila" data-v="${i}"` : 'div class="jfila en"'}>${ic(x.tipo, true)}<span class="corta">${x.txt}</span>${x.por && x.por !== APARATO ? '<small><span class="otro">otro cel.</span></small>' : ''}${x.antes && x.marc !== `${x.antes.nos}–${x.antes.ellos}` ? `<span class="mk num">${x.marc}</span>` : ''}</${tocable ? 'button' : 'div'}>`
+const filaJ = (x, i, tocable) => `<${tocable ? `button class="jfila en${x.repe ? ' repe' : ''}" data-a="fila" data-v="${i}"` : 'div class="jfila en"'}>${ic(x.tipo, true)}<span class="corta txt" data-alt="${esc(JSON.stringify(x.alt))}">${x.txt}</span>${x.por && x.por !== APARATO ? '<small><span class="otro">otro cel.</span></small>' : ''}${x.antes && x.marc !== `${x.antes.nos}–${x.antes.ellos}` ? `<span class="mk num">${x.marc}</span>` : ''}</${tocable ? 'button' : 'div'}>`
   + (tocable && x.repe ? `<div class="repe-av"><span>Duplicada en dos celulares</span><button data-a="quitarrep" data-v="${x.uid}">Quitar duplicada</button></div>` : '');
 // un renglón por serie; la que va en juego, abierta; las demás se abren con un toque
 function jlista(p, tocable) {
@@ -1573,7 +1578,7 @@ const riel = (p, { mal = false, prom: pr = null, promTxt = '', datos = null, cls
 // columnas por partido (gs: los partidos; vals: { n, t } o null si no vino; sels: los datos de cada columna): el valor encima, el código del rival debajo
 const columnas = (gs, vals, sels, { max = Math.max(...vals.map((v) => (v ? v.n : 0)), 1), alto = 64 } = {}) => `<div class="cols" data-grupo>${vals.map((v, i) => `<button class="col${i === vals.length - 1 ? ' ult' : ''}"${sel(sels[i])}><em class="num">${v ? v.t : '—'}</em><i style="height:${v ? Math.max(3, v.n / max * alto) : 2}px"></i><small>${R(gs[i].rival).corto}</small></button>`).join('')}</div>`;
 // los mejores de un área: los 3 primeros con foto, cifra y una línea; cada renglón se toca y brinca a la ficha. unidad: (v) => 'yd' | 'jugadas' | 'pases'
-const mejores = (lista, unidad) => `<div data-grupo>${lista.slice(0, 3).map((x, i) => `<button class="pp"${sel({ t: nom(x.id), v: `${x.v} ${unidad(x.v)}`, s: [`${ord(i + 1)} de ${lista.length}`, x.sub].filter(Boolean).join(' · '), l: ['jug', x.id], lt: 'Ver ficha' })}><span class="rk">${i + 1}</span>${foto(P(x.id))}<div><b class="corta">${nom(x.id)}</b>${x.sub ? `<small class="uno">${x.sub}</small>` : ''}</div><div class="der"><strong class="num">${x.v}</strong><small>${unidad(x.v)}</small></div></button>`).join('')}</div>`; // la línea en un renglón, con dos datos a lo más (Iker, 22-nov: nada en doble renglón)
+const mejores = (lista, unidad) => `<div data-grupo>${lista.slice(0, 3).map((x, i) => `<button class="pp mj"${sel({ t: nom(x.id), v: `${x.v} ${unidad(x.v)}`, s: [`${ord(i + 1)} de ${lista.length}`, x.sub].filter(Boolean).join(' · '), l: ['jug', x.id], lt: 'Ver ficha' })}><span class="rk">${i + 1}</span>${foto(P(x.id))}<b class="corta">${nom(x.id)}</b><div class="der"><strong class="num">${x.v}</strong> <small>${unidad(x.v)}</small></div>${x.sub ? `<small class="uno">${x.sub}</small>` : ''}</button>`).join('')}</div>`; // la línea en un renglón a lo ancho, debajo del nombre y la cifra (2.7): así cabe cada cosa que tenga (revisión, 22-nov: a Juancho se le caía «· 1 INT»)
 // la etiqueta de lo tocado: título, cifra, línea y el enlace. Se abre en el flujo, debajo del renglón tocado o debajo de la gráfica entera, así no tapa
 // lo seleccionado ni a sus vecinos ni se corta en las orillas (Iker, 22-nov); la flechita apunta a lo tocado. pintar() la quita con todo lo demás
 function etiqueta(el) {
@@ -1584,6 +1589,9 @@ function etiqueta(el) {
   sitio.after(tip);
   const r = el.getBoundingClientRect(), q = tip.getBoundingClientRect();
   tip.style.setProperty('--ax', `${Math.max(14, Math.min(q.width - 14, r.left + r.width / 2 - q.left))}px`);
+  // nunca fuera de la pantalla ni bajo la barra de pestañas (revisión, 22-nov): si queda abajo, la página sube lo justo para verla entera
+  const c = sitio.closest('.cuerpo'), nv = t.querySelector('.nav'), lim = (nv ? nv.getBoundingClientRect().top : c ? c.getBoundingClientRect().bottom : innerHeight) - 8;
+  if (c && q.bottom > lim) c.scrollBy({ top: q.bottom - lim, behavior: 'smooth' });
 }
 // seleccionar uno (o ninguno): la clase .sel, los demás de su grupo atenuados y la etiqueta; la selección vive en st.gsel para sobrevivir al repintado
 function seleccion(el) {
@@ -1602,7 +1610,7 @@ document.addEventListener('click', (e) => {
   const t = $('#tel'); if (!t.contains(e.target)) return;
   const el = e.target.closest('[data-sel]'), pr = e.target.closest('.prom');
   t.querySelectorAll('.prom.on').forEach((p) => { if (p !== pr) p.classList.remove('on'); });
-  if (pr) { pr.classList.toggle('on'); return; }
+  if (pr) { pr.classList.toggle('on'); const riel = pr.parentElement.querySelector('[data-sel]'); if (riel) seleccion(pr.classList.contains('on') ? riel : null); return; } // el punto del promedio también selecciona su barra (revisión, 22-nov: con el promedio a la mitad, tocar la barra por el centro caía en el punto)
   if (el) { seleccion(el.classList.contains('sel') ? null : el); return; }
   if (e.target.closest('.tip')) { st.gsel = null; return; }
   if (st.gsel) seleccion(null);
@@ -1652,19 +1660,19 @@ function metricas() {
   const mejAt = PLANTEL.map((p) => { const t = TEMP[p.id], td = tdDe(p.id); return { id: p.id, v: t.ryd + t.ruyd, sub: [td && `${td} TD`, t.rec && plural(t.rec, 'recepción', 'recepciones'), t.car && plural(t.car, 'corrida')].filter(Boolean).slice(0, 2).join(' · ') }; }).filter((x) => x.v > 0).sort((a, b) => b.v - a.v);
   const ataque = `<div class="card"><div class="big"><strong class="num">${pct(c.seriesTD, c.seriesO)}%</strong><div><b>series con TD</b></div></div>
     ${columnas(con, porG.map((x) => ({ n: pct(x.seriesTD, x.seriesO), t: `${x.seriesTD}/${x.seriesO}` })), con.map((g, i) => selPartido(g, `${porG[i].seriesTD} de ${porG[i].seriesO} series con TD (${pct(porG[i].seriesTD, porG[i].seriesO)}%)`)), { max: 100, alto: 56 })}
-    ${mejAt.length ? `<h5>Mejores · yd de ataque</h5>${mejores(mejAt, () => 'yd')}` : ''}
+    ${mejAt.length ? `<h5>Los mejores · yardas</h5>${mejores(mejAt, () => 'yd')}` : ''}
     ${det(`${c.seriesTD} de ${plural(c.seriesO, 'serie')}.${cvTxt} Pases completos ${pct(c.comp, c.att)}% (${c.comp} de ${c.att})${c.drops ? `, ${plural(c.drops, 'soltado')}` : ''}. Yardas de ataque: atrapadas más corridas.`)}</div>`;
   // Defensa: series paradas, partido a partido, y los mejores por jugadas de defensa; en «Más», los puntos que permitió (sin el pick 6 ni el safety en contra, que son del ataque)
-  const mejDef = PLANTEL.map((p) => { const t = TEMP[p.id]; return { id: p.id, v: t.band + t.tap + t.sack + t.intn, band: t.band, sub: [t.band && plural(t.band, 'bandera'), t.tap && plural(t.tap, 'tapado'), t.sack && plural(t.sack, 'sack'), t.intn && `${t.intn} INT`].filter(Boolean).slice(0, 2).join(' · ') }; }).filter((x) => x.v > 0).sort((a, b) => b.v - a.v || b.band - a.band || (nom(a.id) < nom(b.id) ? -1 : 1));
+  const mejDef = PLANTEL.map((p) => { const t = TEMP[p.id]; return { id: p.id, v: t.band + t.tap + t.sack + t.intn, band: t.band, sub: [t.band && plural(t.band, 'bandera'), t.tap && plural(t.tap, 'tapado'), t.sack && plural(t.sack, 'sack'), t.intn && `${t.intn} INT`].filter(Boolean).join(' · ') }; }).filter((x) => x.v > 0).sort((a, b) => b.v - a.v || b.band - a.band || (nom(a.id) < nom(b.id) ? -1 : 1));
   const puntosDe2 = (ks) => con.reduce((a, g) => a + g.partido.jugadas.filter((j) => ks.includes(j.k)).reduce((b, j) => b + (efecto(j).ellos || 0), 0), 0), permitio = puntosDe2(['tdr']), regalados = puntosDe2(['pick6c', 'safetyc']);
   const defensa = `<div class="card"><div class="big"><strong class="num">${pct(c.fren, c.seriesD)}%</strong><div><b>series paradas</b></div></div>
     ${columnas(con, porG.map((x) => ({ n: pct(x.fren, x.seriesD), t: `${x.fren}/${x.seriesD}` })), con.map((g, i) => selPartido(g, `${porG[i].fren} de ${porG[i].seriesD} series paradas (${pct(porG[i].fren, porG[i].seriesD)}%)`)), { max: 100, alto: 56 })}
-    ${mejDef.length ? `<h5>Mejores · defensa</h5>${mejores(mejDef, (v) => (v === 1 ? 'jugada' : 'jugadas'))}` : ''}
+    ${mejDef.length ? `<h5>Los mejores · jugadas</h5>${mejores(mejDef, (v) => (v === 1 ? 'jugada' : 'jugadas'))}` : ''}
     ${det(`${c.fren} de ${plural(c.seriesD, 'serie')}. La defensa permitió ${n1(permitio / con.length)} puntos por partido${regalados ? `; aparte, ${regalados} los regaló el ataque (pick 6 y safety)` : ''}. En total ${plural(c.band, 'bandera')}, ${plural(c.tap, 'tapado')}, ${plural(c.sack, 'sack')} y ${c.rob === 1 ? '1 balón robado' : `${c.rob} balones robados`}.`)}</div>`;
   // QB: el del partido más reciente; completos, yardas por intento y TD : INT, partido a partido, y a quién le lanza
   const aQuien = qb ? c.lista.filter((x) => x.qb === qb).slice(0, 3) : [], otros = PLANTEL.filter((p) => p.id !== qb && TEMP[p.id].att).map((p) => `${p.nombre} ${TEMP[p.id].comp} de ${TEMP[p.id].att}`);
   const qbW = !tq || !tq.att ? '<div class="card"><div class="pp">Todavía nadie ha lanzado un pase.</div></div>' : `<div class="card"><div class="qbw">${foto(P(qb))}<div><b>${P(qb).nombre}</b><small>${plural(tq.att, 'pase')} en ${plural(tq.pj, 'partido')}</small></div></div>
-    <div class="franja3"><div><span>Completos</span><strong class="num">${pct(tq.comp, tq.att)}%</strong></div><div><span>Yd por intento</span><strong class="num">${n1(tq.pyd / tq.att)}</strong></div><div><span>TD : INT</span><strong class="num">${tq.tdp} : ${tq.intl}</strong></div></div>
+    <div class="franja3"><div><span>Completos</span><strong class="num">${pct(tq.comp, tq.att)}%</strong></div><div><span>Yd/intento</span><strong class="num">${n1(tq.pyd / tq.att)}</strong></div><div><span>TD : INT</span><strong class="num">${tq.tdp} : ${tq.intl}</strong></div></div>
     ${columnas(con, con.map((g) => { const x = g.st[qb] || {}; return x.att ? { n: pct(x.comp, x.att), t: `${pct(x.comp, x.att)}%` } : null; }), con.map((g) => { const x = g.st[qb] || {}; return selPartido(g, x.att ? `${x.comp || 0} de ${x.att} pases completos (${pct(x.comp, x.att)}%)` : 'no lanzó'); }), { max: 100, alto: 48 })}
     ${aQuien.length ? `<h5>A quién le lanza</h5>${mejores(aQuien.map((x) => ({ id: x.id, v: x.n, sub: [x.yd ? `${x.yd} yd` : '', x.td ? `${x.td} TD` : ''].filter(Boolean).join(' · ') })), (v) => (v === 1 ? 'pase' : 'pases'))}` : ''}
     ${det(`${tq.comp} de ${tq.att} completos, ${plural(tq.pyd, 'yarda')}, ${tq.tdp} TD y ${tq.intl} INT en ${plural(tq.pj, 'partido')}.${tq.sackr ? ` ${plural(tq.sackr, 'sack recibido', 'sacks recibidos')}.` : ''}${otros.length ? ` También lanzaron: ${otros.join(', ')}.` : ''}`)}</div>`;
@@ -1694,13 +1702,13 @@ function loQueMarcamos(p) {
 function filaPregunta(conUltima) {
   const p = st.partido, ta = st.toast;
   const u = p.jugadas[p.jugadas.length - 1];
-  if (!ta) return u && conUltima ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer" data-v="${u.uid}">Deshacer</button></div>` : '';
+  if (!ta) return u && conUltima ? `<div class="ultima"><span class="corta txt" data-alt="${esc(JSON.stringify(u.alt.map((x) => `Última: <b>${x}</b>`)))}">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer" data-v="${u.uid}">Deshacer</button></div>` : '';
   const fila = ta.uid ? p.jugadas.findIndex((j) => j.uid === ta.uid) : -1, btn = ta.accion !== undefined ? ta.accion : fila >= 0 || ta.snap ? ['deshacer', 'Deshacer'] : null;
-  const txt = ta.txt.charAt(0).toUpperCase() + ta.txt.slice(1);
+  const may = (s) => s.charAt(0).toUpperCase() + s.slice(1), txt = may(ta.txt), alt = ta.alt ? ` data-alt="${esc(JSON.stringify(ta.alt.map(may)))}"` : '';
   // las caras opcionales (a quién iba, a quién le hicieron el sack) caben en el renglón sin el ícono: 4 de 30 px
   const ids = ta.opc && !ta.opc.cayo ? ta.opc.ids.filter((id) => id !== ta.id).slice(0, 4) : [];
   const opc = ta.opc && ta.opc.cayo ? '<button class="si" data-a="cayo">Pase soltado</button>' : ids.map((id) => `<button class="cara" data-a="ponquien" data-v="${id}" aria-label="${P(id).nombre}">${foto(P(id))}</button>`).join('');
-  return `<div class="pregunta aviso${ta.nuevo ? ' nuevo' : ''}${ids.length ? ' caras' : ''}">${ids.length ? '' : ta.id && P(ta.id) ? foto(P(ta.id)) : ta.tipo ? ic(ta.tipo, true) : ''}${fila >= 0 ? `<button class="corta txt" data-a="fila" data-v="${fila}">${txt}</button>` : `<span class="corta txt">${txt}</span>`}${opc}${btn ? `<button class="acc" data-a="${btn[0]}" data-v="${btn[2] || 'aviso'}">${btn[1]}</button>` : ''}</div>`;
+  return `<div class="pregunta aviso${ta.nuevo ? ' nuevo' : ''}${ids.length ? ' caras' : ''}">${ids.length ? '' : ta.id && P(ta.id) ? foto(P(ta.id)) : ta.tipo ? ic(ta.tipo, true) : ''}${fila >= 0 ? `<button class="corta txt" data-a="fila" data-v="${fila}"${alt}>${txt}</button>` : `<span class="corta txt"${alt}>${txt}</span>`}${opc}${btn ? `<button class="acc" data-a="${btn[0]}" data-v="${btn[2] || 'aviso'}">${btn[1]}</button>` : ''}</div>`;
 }
 function marcar() {
   const p = st.partido, O = p.lado === 'O', r = R(HOY);
@@ -1715,7 +1723,7 @@ function marcar() {
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas')}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto)}</button>
     <div class="mk-lado" style="--p:${ladoAntes ?? +(p.lado === 'D')}" role="group" aria-label="Quién trae el balón">${[['O', 'Ataque'], ['D', 'Defensa']].map(([v, n]) => `<button data-a="lado" data-v="${v}" aria-pressed="${p.lado === v}"${p.lado === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div></div>
     <div class="cuerpo mk-cuerpo">
-      ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Insertar después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
+      ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta txt" data-alt="${esc(JSON.stringify(porUid(st.ins).alt.map((x) => `Insertar después de: <b>${x}</b>`)))}">Insertar después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
       ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}${MK_MAS[p.lado].length ? '<button class="mk-tira mas" data-a="mas">Más opciones</button>' : ''}</div></div>`}
     </div>${ver === 'marcar' ? filaPregunta() : ''}${nav()}</div>`;
 }
@@ -1726,12 +1734,12 @@ const pastilla = (a, b) => { const [c, l, txt] = resDe(a, b); return `<span clas
 const filaP = (logo, nombre, sub, der, attrs) => `<button class="pp pp2" ${attrs}>${logo}<div><b class="corta">${nombre}</b><small class="corta">${sub}</small></div><div class="der2">${der}</div></button>`;
 function partidos() {
   const aj = !st.partido && vivoAjeno(), p = st.partido || (aj && previa(aj)), r = R(aj ? aj.rival : p ? p.rival : HOY);
-  const hoy = p ? filaP(rlogo(r), r.largo, `<i class="punto"></i>En vivo · ${oportunidad(p)}`, `<strong class="num solo">${p.nos}–${p.ellos}</strong>`, 'data-a="marcar"')
-    : st.final ? '' : filaP(rlogo(r), r.largo, 'Próximo partido', '<span class="btn-m solo">Marcar</span>', 'data-a="marcar"');
+  const hoy = p ? filaP(rlogo(r), r.nombre, `<i class="punto"></i>En vivo · ${oportunidad(p)}`, `<strong class="num solo">${p.nos}–${p.ellos}</strong>`, 'data-a="marcar"')
+    : st.final ? '' : filaP(rlogo(r), r.nombre, 'Próximo partido', '<span class="btn-m solo">Marcar</span>', 'data-a="marcar"');
   return `<div class="pant"><div class="cuerpo">${est()}${cab('Partidos', `Temporada 2026 · ${RECORD}`)}
   ${hoy ? `<div class="card">${hoy}</div>` : ''}
   <h2>Resultados</h2>
-  <div class="card">${RESULTADOS.map(([rid, f, a, b, gid]) => { const x = R(rid); return filaP(rlogo(x), x.largo, f, `${pastilla(a, b)}<strong class="num">${a}–${b}</strong>`, `data-a="juego" data-v="${gid}"`); }).join('')}</div>
+  <div class="card">${RESULTADOS.map(([rid, f, a, b, gid]) => { const x = R(rid); return filaP(rlogo(x), x.nombre, f, `${pastilla(a, b)}<strong class="num">${a}–${b}</strong>`, `data-a="juego" data-v="${gid}"`); }).join('')}</div>
   </div>${nav()}</div>`;
 }
 const rankPts = () => PLANTEL.slice().sort((a, b) => TEMP[b.id].pts - TEMP[a.id].pts);
@@ -1760,7 +1768,7 @@ function jugador() {
   // lo mío: tres números según el rol, con su lugar y la barra con el punto del promedio del equipo; cada barra se toca y brinca a los mejores de su área
   const ce = t.pj || ANTES[p.id] ? contraEquipo(p.id) : null;
   const lomio = ce ? widget('lomio', 'Lo mío', `<div class="card"><div data-grupo>${ce.map((m) => `<div class="ce"><div><b>${m.k}</b></div><div class="ce-v"><strong class="num">${m.txt}${m.u ? `<i>${m.u}</i>` : ''}</strong>${m.lugar ? `<span class="lugar">${m.lugar}</span>` : ''}</div><div class="ce-b">${riel(m.barra, { prom: m.promBarra, promTxt: m.promTxt, datos: { t: m.k, v: `${m.txt}${m.u ? ' ' + m.u : ''}`, s: [m.lugar, m.promTxt ? `promedio del equipo ${m.promTxt}` : ''].filter(Boolean).join(' · '), l: ['metir', ce.area], lt: 'Ver a los mejores' } })}</div></div>`).join('')}</div>
-    ${det(`${ce.some((m) => m.promTxt) ? `El punto de cada barra es el promedio del equipo: ${ce.filter((m) => m.promTxt).map((m) => `${m.k.replace(/^[A-ZÁÉÍÓÚ](?![A-Z])/, (c) => c.toLowerCase())} ${m.promTxt}`).join(' · ')}.` : ''}${ce.filter((m) => m.sub).map((m) => ` ${m.k}: ${m.sub}.`).join('')}${ce.area === 'qb' && t.sackr ? ` Sacks recibidos: ${t.sackr}.` : ''} Para entrar al lugar en porcentajes y promedios hacen falta ${MIN} intentos.`)}</div>`) : '';
+    ${det(`${ce.some((m) => m.promTxt) ? `El punto de cada barra es el promedio del equipo: ${ce.filter((m) => m.promTxt).map((m) => `${m.k.startsWith('Yd/') ? m.k : m.k.replace(/^[A-ZÁÉÍÓÚ](?![A-Z])/, (c) => c.toLowerCase())} ${m.promTxt}`).join(' · ')}.` : ''}${ce.filter((m) => m.sub).map((m) => ` ${m.k}: ${m.sub}.`).join('')}${ce.area === 'qb' && t.sackr ? ` Sacks recibidos: ${t.sackr}.` : ''}${statsTarjeta(p).mejor ? ` Su mejor partido: ${statsTarjeta(p).mejor}.` : ''} Para entrar al lugar en porcentajes y promedios hacen falta ${MIN} intentos.`)}</div>`) : '';
   // partido a partido: sus puntos en columnas, un guion en los que no vino; lo de antes de la app, como un renglón más
   const antes = ANTES[p.id] ? `<div class="pp"><span class="rlogo"><img src="${LOGO}" alt=""></span><div><b class="corta">Antes de la app · 6 partidos</b><small class="corta" style="display:block">${lineaDe(ANTES[p.id])}</small></div><div class="der"><strong class="num">${puntosDe(ANTES[p.id])}</strong><small>pts</small></div></div>` : '';
   const pts = (g) => puntosDe(g.st[p.id]);
@@ -1768,8 +1776,8 @@ function jugador() {
     : antes ? widget('pap', 'Partido a partido', `<div class="card">${antes}</div>`) : '';
   // mi jugada más larga: entre sus recepciones, corridas y TD con yardas
   const largas = con.flatMap((g) => g.partido.jugadas.filter((j) => j.id === p.id && ydDe(j) != null && ['pase', 'td', 'corrida'].includes(j.k)).map((j) => ({ j, g, yd: ydDe(j) }))).sort((a, b) => b.yd - a.yd);
-  const como = (x, min) => `${x.j.qb ? `${min ? 'me' : 'Me'} la lanzó ${nom(x.j.qb)}` : min ? 'corriendo' : 'Corriendo'}${x.j.k === 'td' ? ' · TD' : ''}`;
-  const larga = largas.length ? widget('larga', 'Mi jugada más larga', `<div class="card"><div class="big"><strong class="num">${ydTxt(largas[0].yd)}<i>yd</i></strong><div><b>${como(largas[0])}</b><small>${vsTxt(largas[0].g)}</small></div></div>${largas.length > 1 ? det(`Las que siguen: ${largas.slice(1, 4).map((x) => `${ydTxt(x.yd)} yd (${como(x, true)}, vs ${R(x.g.rival).nombre})`).join(' · ')}.`) : ''}</div>`) : '';
+  const como = (x) => `${x.j.qb ? `Pase de ${nom(x.j.qb)}` : 'Corriendo'}${x.j.k === 'td' ? ' · TD' : ''}`;
+  const larga = largas.length ? widget('larga', 'Mi jugada más larga', `<div class="card"><div class="big"><strong class="num">${ydTxt(largas[0].yd)}<i>yd</i></strong><div><b>${como(largas[0])}</b><small>${vsTxt(largas[0].g)}</small></div></div>${largas.length > 1 ? det(`Las que siguen: ${largas.slice(1, 4).map((x) => `${ydTxt(x.yd)} yd (${como(x)}, vs ${R(x.g.rival).nombre})`).join(' · ')}.`) : ''}</div>`) : '';
   return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}</div>
   ${widget('tj', '', tarjetaJ(p) + lado)}
   ${lomio}${pap}${larga}
@@ -1839,9 +1847,9 @@ function partido() {
   // todos, del que más puntos hizo al que menos; el primero es el jugador del partido
   const ids = Object.keys(g.st).filter((id) => P(id)).sort((a, b) => puntosDe(g.st[b]) - puntosDe(g.st[a]));
   // el partido en 4 números (22-nov): cada uno contra la temporada; se tocan y brincan a su área de Métricas
-  const cuadro = (tit, v, de, tempo, area, lt, mal) => `<button${sel({ t: tit, v: de ? `${v} de ${de} (${pct(v, de)}%)` : v, s: tempo, l: ['metir', area], lt })}><span>${tit}</span><strong class="num${mal ? ' mal' : ''}">${v}${de ? ` <i>de ${de}</i>` : ''}</strong><em>${tempo}</em></button>`;
+  const cuadro = (tit, v, de, tempo, area, lt, mal, linea = tempo) => `<button${sel({ t: tit, v: de ? `${v} de ${de} (${pct(v, de)}%)` : v, s: linea, l: ['metir', area], lt })}><span>${tit}</span><strong class="num${mal ? ' mal' : ''}">${v}${de ? ` <i>de ${de}</i>` : ''}</strong><em>${tempo}</em></button>`;
   const g4 = `<div class="card"><div class="g4" data-grupo>${cuadro('Series con TD', c.seriesTD, c.seriesO, `temporada ${pct(ct.seriesTD, ct.seriesO)}%`, 'ataque', 'Ver Ataque')}${cuadro('Series paradas', c.fren, c.seriesD, `temporada ${pct(ct.fren, ct.seriesD)}%`, 'defensa', 'Ver Defensa')}
-    ${cuadro('El balón', conSigno(bal), 0, `robó ${c.rob} · perdió ${c.perd}`, '', 'Ver El balón', bal < 0)}${cuadro('Completos', c.comp, c.att, `temporada ${pct(ct.comp, ct.att)}%`, 'qb', 'Ver QB')}</div></div>`;
+    ${cuadro('El balón', conSigno(bal), 0, `temporada ${conSigno(ct.rob - ct.perd)}`, '', 'Ver El balón', bal < 0, `${plural(c.rob, 'robado')} · ${plural(c.perd, 'perdido')} · temporada ${conSigno(ct.rob - ct.perd)}`)}${cuadro('Completos', c.comp, c.att, `temporada ${pct(ct.comp, ct.att)}%`, 'qb', 'Ver QB')}</div></div>`;
   return `<div class="pant"><div class="cuerpo">${est()}<div class="fila-v vuelta">${volver()}${btnCompartir(g.id)}</div>
   ${cabeza}
   ${widget('anot', 'Anotaciones', anotaciones(g))}
@@ -1856,7 +1864,7 @@ function partido() {
 function resumen() {
   const u = st.final, r = R(u.rival), jg = JUEGOS.find((x) => x.id === u.gid);
   const top = jg ? Object.keys(jg.st).filter((id) => P(id)).sort((a, b) => puntosDe(jg.st[b]) - puntosDe(jg.st[a])).slice(0, 4) : [];
-  return `<div class="pant"><div class="cuerpo">${est()}${cab('Final', `vs ${r.largo} · hoy${avisoFinal && avisoFinal[0] === u.gid ? ' · ' + avisoFinal[1] : ''}`, jg ? btnCompartir(u.gid) : '')}
+  return `<div class="pant"><div class="cuerpo">${est()}${cab('Final', `vs ${r.nombre} · hoy${avisoFinal && avisoFinal[0] === u.gid ? ' · ' + avisoFinal[1] : ''}`, jg ? btnCompartir(u.gid) : '')}
   <div class="heroe" style="${colores(r)}"><div class="eti">${resDe(u.nos, u.ellos)[2]}</div><div class="vs" style="margin-bottom:4px"><div class="eq"><img src="${LOGO}" alt="">BEL</div><div class="mid"><strong class="num">${u.nos} – ${u.ellos}</strong></div><div class="eq">${rlogo(r)}${r.corto}</div></div></div>
   ${u.partido ? '<div class="sinquerer"><span>¿Lo terminaste por error?</span><button data-a="seguir">Seguir marcando</button></div>' : ''}
   ${u.partido && u.partido.jugadas.length ? loQueMarcamos(u.partido) : ''}
@@ -1960,7 +1968,7 @@ function hoja() {
   if (!st.hoja) return '';
   let h = '';
   const r = R(HOY);
-  const campos = (accion) => `<button class="campo" data-a="rivalver" data-v="${accion}"><div class="izq">${rlogo(r)}<div style="min-width:0"><span class="l">Rival</span><b class="corta" style="display:block">${r.largo}</b></div></div><u>Cambiar</u></button>
+  const campos = (accion) => `<button class="campo" data-a="rivalver" data-v="${accion}"><div class="izq">${rlogo(r)}<div style="min-width:0"><span class="l">Rival</span><b class="corta" style="display:block">${r.nombre}</b></div></div><u>Cambiar</u></button>
     <button class="campo" data-a="vanver" data-v="${accion}"><div style="min-width:0"><span class="l">Vinieron · ${st.van.length} de ${PLANTEL.length}</span>${pila(st.van, 6)}</div><u>Cambiar</u></button>`;
   if (st.hoja === 'editar') {
     const otros = st.partido ? Object.keys(st.partido.aparatos || {}).filter((a) => a !== APARATO).length : 0;
@@ -1974,9 +1982,9 @@ function hoja() {
   if (st.hoja === 'fecha') h = `<h3>¿Qué día fue?</h3><input class="nombre" type="date" id="fecha" style="width:100%" value="${ymd(st.partido.dia || st.partido.inicio)}" max="${ymd(Date.now())}">
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="fechaya">Listo</button></div>`;
   if (st.hoja === 'eliminar') { const g = JUEGOS.find((x) => x.id === st.juego);
-    if (g) h = `<h3>¿Eliminar el partido?</h3><p>vs ${R(g.rival).largo} · ${g.fecha} · ${g.nos}–${g.ellos}. Se borra de la temporada en todos los celulares, con sus puntos y estadísticas. No se puede deshacer.</p>
+    if (g) h = `<h3>¿Eliminar el partido?</h3><p>vs ${R(g.rival).nombre} · ${g.fecha} · ${g.nos}–${g.ellos}. Se borra de la temporada en todos los celulares, con sus puntos y estadísticas. No se puede deshacer.</p>
       <div class="ops dos acc"><button class="op" data-a="cerrar">Cancelar</button><button class="op rojo" data-a="eliminarp" data-v="${g.id}">Eliminar</button></div>`; }
-  if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.largo}</span></button>`).join('')}</div>`;
+  if (st.hoja === 'rival') h = `<h3>¿Contra quién?</h3><div class="rivales">${RIVALES.map((x) => `<button class="rv${x.id === HOY ? ' on' : ''}" data-a="rival" data-v="${x.id}">${rlogo(x)}<span>${x.nombre}</span></button>`).join('')}</div>`;
   if (st.hoja === 'quien') {
     const x = [...RES.O, ...RES.D, ['td', '', '', '¿Quién anotó?']].find((y) => y[0] === st.sel);
     const td = st.sel === 'td', pasa = st.sel === 'pase' || (td && !st.corre), q = lanzo();
@@ -2033,6 +2041,15 @@ function hoja() {
 }
 // quién lanzó (el QB del partido por omisión); se cambia solo para esta jugada
 const campoLanzo = (q, de) => `<button class="campo" data-a="lanzover" data-v="${de}"><div class="izq">${q && P(q) ? foto(P(q)) : ''}<div style="min-width:0"><span class="l">Lanzó</span><b class="corta" style="display:block">${nom(q)}${q === st.partido.qb ? ' · QB' : ''}</b></div></div><u>Cambiar</u></button>`;
+// un texto de jugada que no cabe en su renglón (el aviso, «Última», las listas) se cambia por su versión más corta, de data-alt, hasta que quepa; solo si ni la
+// más corta cabe se recorta con puntos (revisión, 22-nov: nada importante cortado y nada en dos renglones). Mide todos y luego cambia: pocas pasadas de layout
+function encoge(t) {
+  let es = [...t.querySelectorAll('[data-alt]')];
+  for (let i = 0; es.length && i < 3; i++) {
+    es = es.filter((e) => e.scrollWidth > e.clientWidth + 1);
+    es = es.filter((e) => { const a = JSON.parse(e.dataset.alt); if (!a.length) return false; e.innerHTML = a.shift(); e.dataset.alt = JSON.stringify(a); return true; });
+  }
+}
 let ladoAntes = null; // dónde quedó el indicador de Ataque/Defensa en el último repintado
 let mcabHtml = null; // cómo se armó el último encabezado de Marcar
 function pintar() {
@@ -2088,6 +2105,7 @@ function pintar() {
   if (st.aArea) { st.aArea = false; const a = t.querySelector('.areas'); if (a && cu1) cu1.scrollTop = a.offsetTop - 8; }
   if (st.toast) st.toast.nuevo = false;
   if (st.hoja === 'cuanto') montarCuanto();
+  encoge(t);
   st.flash = null;
   // el botón que se acaba de tocar rebota una vez (al repintar es otro botón: la clase va en el nuevo)
   if (st.toque) { const b = t.querySelector(`.mk-grande[data-v="${st.toque}"]`); if (b) b.classList.add('toque'); st.toque = null; }
@@ -2130,15 +2148,18 @@ const otroLado = (id, lado) => !!ladoDe(id) && ladoDe(id) !== lado;
 const ladoDe = (id) => (P(id) || {}).lado || '';
 const fmtYd = (y) => (y > 0 ? '+' : '') + y;
 const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `pase incompleto para ${n}` : 'pase incompleto, mal pase'), parada: (n) => (n ? `${n} detenido` : 'jugada detenida'), buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera quitada por ${n}`, tapado: (n) => `pase tapado por ${n}`, presion: (n) => `presión de ${n}, incompleto`, fallo: () => 'pase incompleto', intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
-function textoDe(j) {
-  const cv = !j.conv ? '' : !j.conv[1] ? ` · conversión de ${j.conv[0]} fallida` : ['tdr', 'pick6c'].includes(j.k) ? ` + ${j.conv[0]}` : ` + ${j.conv[0]} (atrapó ${nom(j.convId)})`;
+// n: qué tan corto (revisión, 22-nov: el aviso y las listas van en un renglón sin cortar lo que importa, las yardas y la conversión): 0 completo;
+// 1 sin quién lanzó ni «en su zona» y la conversión como «+1 de Rodrigo»; 2 además sin quién atrapó la conversión
+function textoDe(j, n = 0) {
+  const c = j.conv, riv = ['tdr', 'pick6c'].includes(j.k);
+  const cv = !c ? '' : n ? (c[1] ? ` · +${c[0]}${n < 2 && !riv && j.convId ? ` de ${nom(j.convId)}` : ''}` : ` · +${c[0]} fallida`) : !c[1] ? ` · conversión de ${c[0]} fallida` : riv ? ` + ${c[0]}` : ` + ${c[0]} (atrapó ${nom(j.convId)})`;
   if (j.k === 'castigo') return `castigo ${j.v === 'favor' ? 'a favor' : 'en contra'}`;
-  if (j.k === 'td') return `TD de ${nom(j.id)}${j.qb ? `, pase de ${nom(j.qb)}` : ', por corrida'}${j.yd != null ? ` · ${j.yd} yd` : ''}${cv}`;
+  if (j.k === 'td') return `TD de ${nom(j.id)}${n ? '' : j.qb ? `, pase de ${nom(j.qb)}` : ', por corrida'}${j.yd != null ? ` · ${j.yd} yd` : ''}${cv}`;
   if (j.k === 'sackr') return `sack a ${nom(j.id)}` + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '');
   if (j.k === 'pick6') return `Pick 6 de ${nom(j.id)}${cv}`;
   if (j.k === 'tdr') return `TD de ${R(HOY).corto}${cv}`;
-  if (j.k === 'pick6c') return `pick 6 de ${R(HOY).corto}, lanzada por ${nom(j.qb)}${cv}`;
-  if (j.k === 'safetyc') return j.id ? `safety en contra, ${nom(j.id)} en su zona` : 'safety en contra';
+  if (j.k === 'pick6c') return `pick 6 de ${R(HOY).corto}${n ? '' : `, lanzada por ${nom(j.qb)}`}${cv}`;
+  if (j.k === 'safetyc') return j.id && !n ? `safety en contra, ${nom(j.id)} en su zona` : 'safety en contra';
   if (j.k === 'int') return `intercepción lanzada por ${nom(j.qb)}`;
   if (j.k === 'incompleto' && j.drop) return `pase soltado por ${nom(j.id)}`;
   return (TXT[j.k] || (() => String(j.k)))(SIN_QUIEN.includes(j.k) ? (j.id && P(j.id) ? P(j.id).corto : '') : nom(j.id)) + (j.drop ? ' · soltado' : '') + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '');
@@ -2183,7 +2204,7 @@ function rehacer0(p) {
       if (dy == null) sabe = false; else spot = Math.max(1, Math.min(CAMPO - 1, spot + dy));
     }
     const pd = pdDe(j); if (pd) primera = true;
-    j.txt = textoDe(j);
+    j.txt = textoDe(j); j.alt = [textoDe(j, 1), textoDe(j, 2)]; // las versiones cortas, para donde el texto entero no cabe en un renglón
     if (f.cambia) serie(lado === 'O' ? 'D' : 'O');
     else if (f.serie || f.reinicia) serie(lado); // pick 6 (nuestro o de ellos): después de la conversión patean y el mismo lado empieza en su 5
     else if (pd) down = 1;
@@ -2202,9 +2223,12 @@ function avisar(toast, ms = 4000) { st.toast = { ...toast, nuevo: true }; clearT
 function quitarAviso() { st.toast = null; if (st.hoja === 'cuanto') { const e = document.querySelector('#tel .pregunta'); if (e && st.partido) e.outerHTML = filaPregunta(); } else pintar(); }
 const conMarcador = (j) => { const f = efecto(j); return f.nos || f.ellos ? ` · ${st.partido.nos}–${st.partido.ellos}` : ''; };
 const porUid = (uid) => (st.partido ? st.partido.jugadas.find((x) => x.uid === uid) : null);
-// el aviso de una jugada: la jugada y su cambio en el marcador
-function avisoDe(x, opc) {
-  return { txt: x.txt + conMarcador(x), id: x.id, tipo: x.tipo, uid: x.uid, opc };
+// las versiones cada vez más cortas de un texto de jugada (con su prefijo y el marcador); la última, sin el marcador, que ya está arriba
+const alts = (j, pref = '', m = '') => [pref + j.alt[0] + m, pref + j.alt[1] + m, pref + j.alt[1]];
+// el aviso de una jugada: la jugada y su cambio en el marcador; alt: lo mismo más corto, por si no cabe en el renglón (revisión, 22-nov)
+function avisoDe(x, opc, pref = '') {
+  const m = conMarcador(x);
+  return { txt: pref + x.txt + m, alt: alts(x, pref, m), id: x.id, tipo: x.tipo, uid: x.uid, opc };
 }
 function guarda(j) {
   const p = st.partido, t = Date.now(), i = st.ins ? p.jugadas.findIndex((x) => x.uid === st.ins) : -1;
@@ -2226,7 +2250,7 @@ function guarda(j) {
 function corrige(j, cambio, como = 'Corregida') {
   const p = st.partido, antes = [JSON.parse(JSON.stringify(j))];
   cambio(j); j.ver = sube(j.ver); rehacer(p);
-  const a = como === 'Guardado' ? avisoDe(j) : { txt: `${como}: ${j.txt}${conMarcador(j)}`, id: j.id, tipo: j.tipo, uid: j.uid };
+  const a = avisoDe(j, null, como === 'Guardado' ? '' : `${como}: `);
   avisar({ ...a, snap: como === 'Guardado' ? null : antes }, a.accion ? 6000 : 4000);
   subir();
 }
@@ -2280,7 +2304,7 @@ function empezar(vino) {
   if (!esRival(HOY)) { st.vanDe = 'empezar'; st.hoja = 'rival'; return; }
   if (!vino) { vanTodos = false; st.van = []; st.vanDe = 'empezar'; st.hoja = 'van'; return; }
   nuevoPartido(); st.final = null; st.hoja = null; st.pant = 'marcar';
-  avisar({ txt: `Empezó vs ${R(HOY).largo} · vinieron ${st.van.length}`, accion: ['editar', 'Cambiar'] }, 5000);
+  avisar({ txt: `Empezó vs ${R(HOY).nombre} · vinieron ${st.van.length}`, accion: ['editar', 'Cambiar'] }, 5000);
   subir();
 }
 let avisoFinal = null; // [partido, «Lo terminó el otro celular.»]
@@ -2473,7 +2497,7 @@ function bajar(srv, pasa) {
     if (m.terminado && (m.terminadoVer || 0) > (p.terminadoVer || 0)) { p.terminado = true; p.terminadoVer = m.terminadoVer; rehacer(p); cerrarPartido(p, viejo(p) ? '' : 'Lo terminó otro celular.'); pintar(); return; }
     rehacer(p);
     const rp = p.jugadas.find((j) => j.repe && !avisadas.has(j.uid));
-    if (rp) { avisadas.add(rp.uid); avisar({ txt: `Duplicada en dos celulares: ${rp.txt}`, tipo: rp.tipo, uid: rp.uid, accion: ['quitarrep', 'Quitar', rp.uid] }, 6000); pintar(); return; }
+    if (rp) { avisadas.add(rp.uid); avisar({ txt: `Duplicada en dos celulares: ${rp.txt}`, alt: alts(rp, 'Duplicada en dos celulares: '), tipo: rp.tipo, uid: rp.uid, accion: ['quitarrep', 'Quitar', rp.uid] }, 6000); pintar(); return; }
     if (fp(p) !== antes) pintar();
     return;
   }
@@ -2488,7 +2512,7 @@ function unirse(s) {
   HOY = esRival(s.rival) ? s.rival : null; const v = (s.van || []).filter((id) => P(id)); if (v.length) { st.van = v; vanTodos = false; }
   rehacer(st.partido); st.final = null; st.hoja = null; st.pant = 'marcar'; subir();
 }
-function unirseSiHay() { const s = vivoAjeno(); if (!s || st.partido) return false; unirse(s); avisar({ txt: `Sigues marcando vs ${R(HOY).largo}: ${st.partido.nos}–${st.partido.ellos}`, accion: null }); return true; }
+function unirseSiHay() { const s = vivoAjeno(); if (!s || st.partido) return false; unirse(s); avisar({ txt: `Sigues marcando vs ${R(HOY).nombre}: ${st.partido.nos}–${st.partido.ellos}`, accion: null }); return true; }
 // el partido de otro día que se quedó abierto en este teléfono: se da por terminado y pasa a la lista
 function cierraViejo() {
   const p = st.partido;
@@ -2509,7 +2533,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261122194722';
+const VERSION = '20261122204431';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
@@ -2527,7 +2551,7 @@ async function revisarVersion() {
 // Es opcional: la jugada ya quedó guardada al escoger quién; si nadie toca la regla en 10 s, se cierra sola y el aviso
 // dice «sin yardas · Ponerlas».
 const FMIN = -10, FMAX = 60;
-const RG = { pm: 70, sim: 40, trazo: 3, sep: 15, alto: 34, ancho: 4, barra: 84, etiquetas: 12, borde: 1, hecho: '#1d4f8f', gana: '#5aaeff', pierde: '#f08a7e' };
+const RG = { pm: 70, sim: 40, trazo: 3, sep: 15, alto: 34, ancho: 4, barra: 84, etiquetas: 12, borde: 1, hecho: '#1d4f8f', gana: '#1d4f8f', pierde: '#b42318' }; // gana y pierde: los colores de la cifra «+8 yd», legibles al sol (revisión, 22-nov: el azul claro quedaba en 2.3:1)
 // lo visible de cada logo dentro de su PNG de 256 (sin el aire), para centrarlo en el eje de las marcas
 const CAJA = { belugas: [12, 54, 244, 204], 'only-fins': [11, 39, 244, 216], 'triple-t': [10, 45, 245, 212], bucaneros: [9, 38, 247, 218], destroyers: [9, 12, 247, 246], kickass: [12, 24, 244, 231], bulldogs: [12, 46, 244, 210], 'lobos-its': [11, 34, 245, 223], kaffies: [11, 38, 245, 218], 'ultimos-aztecas': [11, 28, 244, 228], 'los-fantasmas': [8, 49, 247, 208], panini: [12, 51, 244, 210] };
 const signo = (mas) => { const L = 20, t = RG.trazo, m = L / 2, e = t / 2; return `<svg width="${L}" height="${L}" viewBox="0 0 ${L} ${L}" aria-hidden="true"><path d="M${e} ${m}H${L - e}${mas ? `M${m} ${e}V${L - e}` : ''}" stroke="currentColor" stroke-width="${t}" stroke-linecap="round" fill="none"/></svg>`; };
@@ -2694,7 +2718,7 @@ const A = {
   // desde el aviso: poner las yardas que se saltaron, o la conversión que se cerró tocando fuera
   ponerconv: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); abrirConv(j); },
   // la jugada que marcaron los dos celulares: se quita la repetida (con Deshacer) o se deja como dos
-  quitarrep: (uid) => { const p = st.partido, j = porUid(uid); if (!j) return; const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); p.borradas[uid] = tb; rehacer(p); avisar({ txt: 'Duplicada quitada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb }); subir(); },
+  quitarrep: (uid) => { const p = st.partido, j = porUid(uid); if (!j) return; const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); p.borradas[uid] = tb; rehacer(p); avisar({ txt: 'Duplicada quitada: ' + j.txt, alt: alts(j, 'Duplicada quitada: '), tipo: j.tipo, snap: antes, revive: tb }); subir(); },
   unica: () => { const j = st.partido.jugadas[st.edita]; st.hoja = null; corrige(j, (x) => { x.unica = true; }); },
   // abrir o cerrar una serie de la lista
   serie: (v) => { const p = st.partido || (st.final && st.final.partido); if (!p) return; const k = `${p.id}:${v}`, enJuego = p === st.partido && +v === p.ns && p.nsUsada; st.abre[k] = !(st.abre[k] ?? enJuego); },
@@ -2737,7 +2761,7 @@ const A = {
     if (conYardas(j)) abrirCuanto(j);
   },
   // el nombre desde el aviso (sack a nuestro QB, safety en contra)
-  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = sube(j.ver); rehacer(st.partido); avisar({ ...ta, txt: j.txt + conMarcador(j), id, opc: null }, 5000); subir(); },
+  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = sube(j.ver); rehacer(st.partido); avisar({ ...ta, ...avisoDe(j), id, opc: null }, 5000); subir(); },
   tdr: () => { st.sel = 'tdr'; st.lanzo = null; const j = guarda({ k: 'tdr' }); abrirConv(j); },
   conv: (v) => {
     const c = st.conv, j = c && porUid(c.uid); if (!j) { st.hoja = null; return; }
@@ -2764,7 +2788,7 @@ const A = {
     st.hoja = ['td', 'pick6'].includes(k) ? null : CON_NOMBRE.includes(k) && !SIN_QUIEN.includes(k) && !j.id ? 'corrige' : null;
     if (['td', 'pick6', 'tdr', 'pick6c'].includes(k)) abrirConv(j);
   },
-  borrar: () => { const p = st.partido, j = p.jugadas[st.edita], antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); st.hoja = null; p.borradas[j.uid] = tb; rehacer(p); avisar({ txt: 'Borrada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb }); subir(); },
+  borrar: () => { const p = st.partido, j = p.jugadas[st.edita], antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); st.hoja = null; p.borradas[j.uid] = tb; rehacer(p); avisar({ txt: 'Borrada: ' + j.txt, alt: alts(j, 'Borrada: '), tipo: j.tipo, snap: antes, revive: tb }); subir(); },
   // Deshacer: desde el aviso, regresa lo último que se hizo (guardar, corregir o borrar); sin aviso, quita la última jugada
   deshacer: (v) => {
     const p = st.partido; if (!p) return;
@@ -2776,7 +2800,7 @@ const A = {
     const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva);
     p.borradas[j.uid] = tb; rehacer(p); st.toast = null; clearTimeout(tToast); if (st.hoja === 'cuanto' || st.hoja === 'conv') st.hoja = null;
     // desde «Última» se quita una jugada que ya no estaba a la vista en el aviso: se dice cuál fue, con Deshacer
-    if (v !== 'aviso' && !st.practicando) avisar({ txt: 'Borrada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb });
+    if (v !== 'aviso' && !st.practicando) avisar({ txt: 'Borrada: ' + j.txt, alt: alts(j, 'Borrada: '), tipo: j.tipo, snap: antes, revive: tb });
     subir();
   },
   // corregir un partido terminado: se abre en Marcar sin dejar de estar terminado

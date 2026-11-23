@@ -69,11 +69,11 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   await paso('13–8', /Defensa/); // después del pick 6 ellos vuelven a atacar
   await toca(pg, 'res', 'safety'); await toca(pg, 'quien', 'nico');
   await paso('15–8', /Ataque/);
-  await toca(pg, 'mas'); await toca(pg, 'res', 'safetyc');
+  await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'safetyc');
   await paso('15–10', /Defensa/);
   await toca(pg, 'lado', 'O'); // el lado a mano
   await paso('15–10', /Ataque/);
-  await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0');
+  await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0');
   await paso('15–16', /Ataque/);
   // sack a nuestro QB con yardas perdidas, y se deshace
   await toca(pg, 'res', 'sackr'); await pg.locator('.rg-b[data-pm="-1"]').click(); await pg.locator('.rg-b[data-pm="-1"]').click(); await toca(pg, 'rgok');
@@ -840,7 +840,7 @@ test('Métricas: «por partido» es uno solo, el de Cómo vamos; la defensa dice
 test('Métricas ya no dice «Touchdowns»: los TD de cada quien van en los mejores del ataque y la ficha del partido cuenta el pick 6 como anotación', async () => {
   const pg = await telefono(srv.url); await siembra(pg);
   await toca(pg, 'ir', 'metricas');
-  assert.match(await texto(pg), /1 Nicolas 1 TD · 4 recepciones 57 yd 2 Rodrigo 1 TD · 3 corridas 23 yd 3 Iker 1 TD · 1 recepción 19 yd/); // los TD de ataque (el TD corriendo también es corrida), sin el pick 6 de Iker
+  assert.match(await texto(pg), /1 Nicolas 57 yd 1 TD · 4 recepciones 2 Rodrigo 23 yd 1 TD · 3 corridas 3 Iker 19 yd 1 TD · 1 recepción/); // los TD de ataque (el TD corriendo también es corrida), sin el pick 6 de Iker
   assert.doesNotMatch(await texto(pg), /Touchdowns|TD del ataque/);
   await pg.evaluate(() => { A.juego('g0'); pintar(); }); // eslint-disable-line no-undef
   assert.equal(((await texto(pg)).match(/TD de |Pick 6 de /g) || []).length, 5); // vs Panini: 2 TD del ataque, el pick 6 de Iker y los 2 del rival
@@ -919,7 +919,7 @@ test('El partido en 4 números y Mi partido, con lo que se toca (8 partidos)', a
   const t = await texto(pg);
   // las anotaciones con la regla de textos: «Pase de Mau · 12 yd», «Corrida · 20 yd», el rival con su nombre corto
   assert.match(t, /TD de Iker Pase de Mau · 12 yd \+1 de Nicolás 7–0/); assert.match(t, /TD de Rodrigo Corrida · 20 yd 13–8/); assert.match(t, /TD de Panini \+2/);
-  assert.match(t, /SERIES CON TD 2 de 5 temporada 56% SERIES PARADAS 4 de 5 temporada 52% EL BALÓN 0 robó 2 · perdió 2 COMPLETOS 5 de 9 temporada 67%/);
+  assert.match(t, /SERIES CON TD 2 de 5 temporada 56% SERIES PARADAS 4 de 5 temporada 52% EL BALÓN 0 temporada −3 COMPLETOS 5 de 9 temporada 67%/);
   assert.doesNotMatch(t, /Ver todos los números|Jugadas exitosas|Touchdowns/);
   // tocar un cuadro: se selecciona, los demás se atenúan y sale su etiqueta con el enlace
   const cuadros = pg.locator('.g4 button'); assert.equal(await cuadros.count(), 4);
@@ -953,7 +953,7 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   await toca(pg, 'ir', 'metricas'); await abreMas(pg);
   const t = await texto(pg);
   assert.match(t, /Cómo vamos 6–2 \+2.8 por partido Partidos P G G G G G G P Más 139 puntos a favor, 117 en contra. 3 de las 6 victorias fueron por 3 puntos o menos. ATAQUE 56% DEFENSA 52% QB 68%/);
-  assert.match(t, /Ataque 56% series con TD 2\/4 KAF 2\/4 ONF 3\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 2\/5 PAN 1\/2 KAF MEJORES · YD DE ATAQUE 1 Nicolás 5 TD · 15 recepciones 283 yd 2 Iker 1 TD · 7 recepciones 157 yd 3 Uri 5 recepciones 136 yd Más 19 de 34 series. Después del TD: de 1, 58% \(7 de 12\); de 2, 63% \(5 de 8\). Pases completos 67% \(46 de 69\), 7 soltados. Yardas de ataque: atrapadas más corridas./);
+  assert.match(t, /Ataque 56% series con TD 2\/4 KAF 2\/4 ONF 3\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 2\/5 PAN 1\/2 KAF LOS MEJORES · YARDAS 1 Nicolás 283 yd 5 TD · 15 recepciones 2 Iker 157 yd 1 TD · 7 recepciones 3 Uri 136 yd 5 recepciones Más 19 de 34 series. Después del TD: de 1, 58% \(7 de 12\); de 2, 63% \(5 de 8\). Pases completos 67% \(46 de 69\), 7 soltados. Yardas de ataque: atrapadas más corridas./);
   assert.match(t, /El balón −3 más perdidos que robados 5 robados 8 perdidos/);
   assert.match(t, /Quién viene 6 vienen a todos José 5 de 8 Leo 5 de 8 Patrick 6 de 8 Uri 7 de 8 Más Mau 8 de 8 · Nicolás 8 de 8 · Mario 8 de 8/);
   assert.match(t, /Contra cada rival Kaffies 1–2 · 33–46 −13 Lobos 1–0 · 33–12 \+21 Only Fins 1–0 · 14–8 \+6 Panini 1–0 · 22–17 \+5 Bucaneros 1–0 · 16–14 \+2 Aztecas 1–0 · 21–20 \+1/);
@@ -962,9 +962,9 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   assert.deepEqual(await pg.locator('.rvf .riel > i').evaluateAll((xs) => xs.slice(0, 2).map((i) => [i.className, i.style.right || i.style.left, Math.round(parseFloat(i.style.width))])), [['mal neg', '50%', 31], ['', '50%', 50]]);
   // Defensa: los empates de los mejores se ordenan por banderas y luego por nombre; «Más» con lo que permitió. QB con sus tres cifras y a quién le lanza
   await toca(pg, 'met', 'defensa'); await abreMas(pg);
-  assert.match(await texto(pg), /Defensa 52% series paradas 1\/4 KAF 2\/3 ONF 1\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 4\/5 PAN 0\/2 KAF MEJORES · DEFENSA 1 Ian 6 banderas · 3 sacks 9 jugadas 2 Jaime 6 banderas · 3 tapados 9 jugadas 3 Juancho 6 banderas · 2 tapados 9 jugadas Más 17 de 33 series. La defensa permitió 13.5 puntos por partido; aparte, 9 los regaló el ataque \(pick 6 y safety\). En total 37 banderas, 8 tapados, 7 sacks y 5 balones robados./);
+  assert.match(await texto(pg), /Defensa 52% series paradas 1\/4 KAF 2\/3 ONF 1\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 4\/5 PAN 0\/2 KAF LOS MEJORES · JUGADAS 1 Ian 9 jugadas 6 banderas · 3 sacks 2 Jaime 9 jugadas 6 banderas · 3 tapados 3 Juancho 9 jugadas 6 banderas · 2 tapados · 1 INT Más 17 de 33 series. La defensa permitió 13.5 puntos por partido; aparte, 9 los regaló el ataque \(pick 6 y safety\). En total 37 banderas, 8 tapados, 7 sacks y 5 balones robados./);
   await toca(pg, 'met', 'qb'); await abreMas(pg);
-  assert.match(await texto(pg), /QB Mau 65 pases en 8 partidos Completos 68% Yd por intento 11.2 TD : INT 10 : 8 57% KAF 50% ONF 89% AZT 64% KAF 91% LOB 71% BUC 50% PAN 50% KAF A QUIÉN LE LANZA 1 Nicolás 238 yd · 4 TD 14 pases 2 Iker 131 yd · 1 TD 7 pases 3 Uri 136 yd 5 pases Más 44 de 65 completos, 731 yardas, 10 TD y 8 INT en 8 partidos. 4 sacks recibidos. También lanzaron: Nicolás 1 de 1, José 1 de 3./);
+  assert.match(await texto(pg), /QB Mau 65 pases en 8 partidos Completos 68% Yd\/intento 11.2 TD : INT 10 : 8 57% KAF 50% ONF 89% AZT 64% KAF 91% LOB 71% BUC 50% PAN 50% KAF A QUIÉN LE LANZA 1 Nicolás 14 pases 238 yd · 4 TD 2 Iker 7 pases 131 yd · 1 TD 3 Uri 5 pases 136 yd Más 44 de 65 completos, 731 yardas, 10 TD y 8 INT en 8 partidos. 4 sacks recibidos. También lanzaron: Nicolás 1 de 1, José 1 de 3./);
   // tocar: una pastilla, una columna, un renglón de los mejores y un tramo del balón, cada uno con su etiqueta; otro toque cambia la selección
   await pg.locator('.rs[data-sel]').first().click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'vs Kaffies · 5 oct 13–20 Derrota Ver partido ›');
@@ -998,10 +998,10 @@ test('Mi temporada: Cómo voy, Lo mío, Partido a partido, Mi jugada más larga 
   const pg = await telefono(srv.url); await sembrar(pg);
   await abreJug(pg, 'nicolas'); await abreMas(pg);
   const t = await texto(pg);
-  assert.match(t, /NICOLÁS PUNTOS DE LA TEMPORADA 77.9 DEL EQUIPO 1º POR PARTIDO 9.7 MEJOR · LOB 37.2/);
-  assert.match(t, /Lo mío Recepciones 15 1º de 9 Yd por recepción 18.9yd 2º de 5 Manos seguras 88% 4º de 5 Más El punto de cada barra es el promedio del equipo: recepciones 5.1 · yd por recepción 18.5 yd · manos seguras 93%. Manos seguras: 15 de 17 pases que le llegaron. Para entrar al lugar en porcentajes y promedios hacen falta 5 intentos./);
+  assert.match(t, /NICOLÁS PUNTOS DE LA TEMPORADA 77.9 LUGAR 1º PROMEDIO 9.7 MEJOR 37.2/);
+  assert.match(t, /Lo mío Recepciones 15 1º de 9 Yd\/recepción 18.9yd 2º de 5 Manos seguras 88% 4º de 5 Más El punto de cada barra es el promedio del equipo: recepciones 5.1 · Yd\/recepción 18.5 yd · manos seguras 93%. Manos seguras: 15 de 17 pases que le llegaron. Su mejor partido: 37.2 puntos vs Lobos · 2 nov. Para entrar al lugar en porcentajes y promedios hacen falta 5 intentos./);
   assert.match(t, /Partido a partido 5.9 KAF 1.9 ONF 3.4 AZT −0.5 KAF 37.2 LOB 10.7 BUC 6.8 PAN 12.5 KAF puntos por partido/);
-  assert.match(t, /Mi jugada más larga 45yd Me la lanzó José · TD vs Lobos · 2 nov Más Las que siguen: 40 yd \(me la lanzó Mau · TD, vs Lobos\)/);
+  assert.match(t, /Mi jugada más larga 45yd Pase de José · TD vs Lobos · 2 nov Más Las que siguen: 40 yd \(Pase de Mau · TD, vs Lobos\)/);
   assert.match(t, /Conexiones De Mau 238 yd · 4 TD 14 pases De José 45 yd · 1 TD 1 pase A Mario 15 yd 1 pase/);
   assert.doesNotMatch(t, /Partido por partido|Yardas atrapadas|puntos 1º del equipo/);
   // el último partido entero y los anteriores tenues; la columna tocada enseña su partido
@@ -1011,8 +1011,11 @@ test('Mi temporada: Cómo voy, Lo mío, Partido a partido, Mi jugada más larga 
   // el punto del promedio: al tocarlo, «prom. 5.1»; la barra: su etiqueta con el lugar y el promedio, y se toca en 44 px aunque mida 8
   await pg.locator('.prom').first().click(); await pg.waitForTimeout(250);
   assert.deepEqual(await pg.locator('.prom').first().evaluate((p) => [p.classList.contains('on'), getComputedStyle(p, '::after').content, getComputedStyle(p, '::after').opacity]), [true, '"prom. 5.1"', '1']);
+  assert.equal(await tip(pg), 'Recepciones 15 1º de 9 · promedio del equipo 5.1 Ver a los mejores ›'); // el punto también selecciona su barra (revisión 12)
+  await pg.locator('.riel[data-sel]').first().click(); await pg.waitForTimeout(100); assert.equal(await pg.locator('#tel .tip').count(), 0); // tocar la barra ya seleccionada la quita
   await pg.locator('.riel[data-sel]').first().click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'Recepciones 15 1º de 9 · promedio del equipo 5.1 Ver a los mejores ›');
+
   assert.ok(await pg.locator('.riel[data-sel]').first().evaluate((e) => parseFloat(getComputedStyle(e, '::after').height) >= 44));
   // el punto del promedio va centrado en el eje del riel (±1 px) y nunca se sale por los extremos, tampoco en 0 % ni en 100 % (Iker, 22-nov: en el iPhone quedaba descolgado)
   const centrado = () => pg.evaluate(() => [...document.querySelectorAll('.rielc')].map((c) => { const r = c.querySelector('.riel').getBoundingClientRect(), p = c.querySelector('.prom').getBoundingClientRect(); return [Math.abs((p.top + p.height / 2) - (r.top + r.height / 2)) <= 1, p.left >= r.left && p.right <= r.right]; }));
@@ -1021,12 +1024,12 @@ test('Mi temporada: Cómo voy, Lo mío, Partido a partido, Mi jugada más larga 
   assert.deepEqual(await centrado(), [[true, true], [true, true], [true, true]]);
   // Rodrigo (corredor) no vino a Kaffies del 17: un guion; Jaime (defensa) con empates; Mau (QB), el único con 5 pases, con sus sacks recibidos en «Más»
   await abreJug(pg, 'rodrigo');
-  assert.match(await texto(pg), /Lo mío Corridas 14 1º de 4 Yd por corrida 9.4yd 1º de 3 TD corriendo 5 1º de 4/);
+  assert.match(await texto(pg), /Lo mío Corridas 14 1º de 4 Yd\/corrida 9.4yd 1º de 3 TD corriendo 5 1º de 4/);
   assert.match(await texto(pg), /9.3 PAN — KAF puntos por partido · — no vino Mi jugada más larga 40yd Corriendo · TD vs Lobos · 2 nov/);
   await abreJug(pg, 'jaime');
   assert.match(await texto(pg), /Lo mío Banderas 6 2º de 10 \(empate\) Tapados y sacks 3 2º de 11 \(empate\) Intercepciones 0 7º de 11 \(empate\)/);
   await abreJug(pg, 'mau'); await abreMas(pg);
-  assert.match(await texto(pg), /PUNTOS DE LA TEMPORADA 71.1 DEL EQUIPO 2º POR PARTIDO 8.9 MEJOR · LOB 21 [\s\S]*Lo mío Pases completos 68% 1º de 1 Yd por intento 11.2yd 1º de 1 TD : INT 10 : 8 1º de 1 Más [\s\S]*Sacks recibidos: 4\./);
+  assert.match(await texto(pg), /PUNTOS DE LA TEMPORADA 71.1 LUGAR 2º PROMEDIO 8.9 MEJOR 21 [\s\S]*Lo mío Pases completos 68% 1º de 1 Yd\/intento 11.2yd 1º de 1 TD : INT 10 : 8 1º de 1 Más [\s\S]*Sacks recibidos: 4\./);
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
@@ -1122,6 +1125,235 @@ test('un renglón por etiqueta, cifras hermanas alineadas y radios concéntricos
     const pg = await telefono(srv.url, app ? { app: { ancho: w, pantalla: h } } : { ancho: w, alto: h }); await sembrar(pg);
     for (const [nom, js] of ESC) { await pg.evaluate(js); await pg.evaluate(() => document.querySelectorAll('#tel .w').forEach((x) => x.classList.add('vio'))); await pg.waitForTimeout(150);
       assert.deepEqual(await pg.evaluate(MEDIR), [], `${w} × ${h} · ${nom}`); }
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+
+// ---------- la revisión final de la app (22-nov, belugas-revision-final): un caso por hallazgo, con lo que midió el revisor ----------
+// 1. la etiqueta de una gráfica tocada cerca del borde de abajo quedaba bajo la barra de pestañas o fuera de la pantalla (WebKit 390: de 765 a 878 en Contra cada
+// rival; Chromium 375: de 645 a 757); ahora la página sube lo justo para verla entera, encima de la barra
+test('la etiqueta de lo tocado nunca queda bajo la barra de pestañas ni fuera de la pantalla', async () => {
+  for (const [w, h] of [[390, 844], [375, 667]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    const abajo = (sel) => pg.evaluate((sel) => { const c = document.querySelector('#tel .cuerpo'), e = document.querySelector(sel), nav = document.querySelector('#tel .nav').getBoundingClientRect();
+      c.scrollTop += e.getBoundingClientRect().bottom - (nav.top - 6); return e.getBoundingClientRect().bottom <= nav.top; }, sel); // el elemento pegado a la barra, como lo tocó el revisor
+    const mide = () => pg.evaluate(() => { const t = document.querySelector('#tel .tip').getBoundingClientRect(), nav = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo').getBoundingClientRect();
+      return [Math.round(t.bottom) <= Math.round(nav.top) - 8, t.top >= c.top, t.bottom <= innerHeight]; });
+    for (const [js, sel] of [[() => { st.met = 'qb'; A.ir('metricas'); pintar(); }, '.cols .col'], [null, '.partida .b2'], [null, '.rvf:nth-child(2)'], [() => { st.pant = 'jugadores'; A.jug('nicolas'); pintar(); }, '.cols .col'], [() => { A.juego('g6'); pintar(); }, '.w[data-w=conex] .pp[data-sel]']]) { // eslint-disable-line no-undef
+      if (js) { await pg.evaluate(js); await pg.evaluate(() => document.querySelectorAll('#tel .w').forEach((x) => x.classList.add('vio'))); }
+      assert.ok(await abajo(sel), `${w}: ${sel} a la vista`);
+      await pg.locator(sel).first().click(); await pg.waitForTimeout(700);
+      assert.deepEqual(await mide(), [true, true, true], `${w} × ${h} · ${sel}`);
+      await pg.keyboard.press('Escape');
+    }
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 2. en Anotaciones los marcadores de dos cifras del lado del rival se partían en dos renglones («15–» / «10»: una caja de 44 px para un texto de 18 px); ahora cada
+// marcador va en un renglón, al ancho de su texto, y las cifras hermanas de un mismo renglón a la misma altura; sin bisel
+test('los marcadores de Anotaciones van en un renglón, también los del rival, y sin bisel', async () => {
+  for (const w of [390, 375]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: 844 }); await sembrar(pg);
+    await pg.evaluate(() => { A.juego('g6'); pintar(); }); // vs Panini: 22–15 y 22–17 del lado de Panini // eslint-disable-line no-undef
+    assert.match(await texto(pg), /22–15 Pick 6 de Panini/);
+    const m = await pg.locator('.an2 .mc').evaluateAll((xs) => xs.map((x) => { const r = document.createRange(); r.selectNodeContents(x); const cs = getComputedStyle(x);
+      return [x.textContent, [...r.getClientRects()].filter((q) => q.width > 1).map((q) => Math.round(q.top)).filter((v, i, a) => a.indexOf(v) === i).length, Math.round(x.getBoundingClientRect().height), cs.boxShadow]; }));
+    assert.ok(m.length >= 7);
+    for (const [t, lineas, alto, sombra] of m) { assert.equal(lineas, 1, `${w}: «${t}» en ${lineas} renglones`); assert.equal(alto, m[0][2], `${w}: «${t}» de ${alto} px`); assert.equal(sombra, 'none', t); }
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 3. el aviso de la jugada guardada cortaba el texto con puntos y se perdían las yardas y la conversión (texto de 407 px en una caja de 255 en iPad y de 200 en el SE);
+// ahora, si el texto entero no cabe, el aviso dice lo mismo más corto (sin quién lanzó, luego sin quién atrapó la conversión, al final sin el marcador, que ya está arriba)
+const salto = async (pg, v) => { await pg.locator(`#tel [data-salto="${v}"]`).click(); await pg.waitForTimeout(150); };
+test('el aviso de la jugada guardada cabe en su renglón con las yardas y la conversión, en 390, 375 e iPad', async () => {
+  for (const [w, h, app] of [[390, 844, 0], [375, 667, 0], [820, 1180, 1]]) {
+    const pg = await telefono(srv.url, app ? { app: { ancho: w, pantalla: h } } : { ancho: w, alto: h }); await sembrar(pg);
+    await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+    const aviso = () => pg.locator('.pant > .pregunta.aviso .txt').evaluate((e) => [e.innerText.replace(/\s+/g, ' '), e.scrollWidth <= e.clientWidth + 1]);
+    // TD de pase de 10 yd con conversión de 1 buena de Rodrigo: el aviso trae las yardas y el +1 enteros
+    await toca(pg, 'res', 'td'); await toca(pg, 'como', 'pase'); await toca(pg, 'quien', 'nicolas'); await salto(pg, 10); await toca(pg, 'rgok'); await toca(pg, 'conv', '1-1'); await toca(pg, 'convq', 'rodrigo');
+    let [t, cabe] = await aviso();
+    assert.ok(cabe && /^TD de Nicolás · 10 yd · \+1/.test(t), `${w}: «${t}» ${cabe ? 'cabe' : 'no cabe'}`);
+    // safety en contra y pick 6 en contra (Más opciones): lo mismo
+    await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'safetyc'); [t, cabe] = await aviso(); assert.ok(cabe && /^Safety en contra/.test(t), `${w}: «${t}» ${cabe ? 'cabe' : 'no cabe'}`);
+    await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0'); [t, cabe] = await aviso(); assert.ok(cabe && /^Pick 6 de KAF · \+1 fallida/.test(t), `${w}: «${t}» ${cabe ? 'cabe' : 'no cabe'}`);
+    // con sitio, el aviso dice todo: en iPad (el aviso mide 255 px) sigue sin caber el texto entero, pero la jugada corta sí lleva a quién atrapó
+    await toca(pg, 'res', 'corrida'); await toca(pg, 'quien', 'rodrigo'); await salto(pg, 5); await toca(pg, 'rgok'); [t, cabe] = await aviso(); assert.deepEqual([t, cabe], ['Corrida de Rodrigo · +5 yd', true]);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 4. en «Lo que pasó», «Última: pick 6 de KAF, lanz…» se cortaba con puntos y en el SE su negrita se salía de la pantalla (hasta 431 px en 375); ahora la jugada va en
+// su propio renglón a lo ancho, con la versión corta si la entera no cabe, y Corregir y Deshacer debajo
+test('«Última» en Lo que pasó se lee entera en un renglón, con Corregir y Deshacer debajo', async () => {
+  for (const [w, h, app] of [[390, 844, 0], [375, 667, 0], [820, 1180, 1]]) {
+    const pg = await telefono(srv.url, app ? { app: { ancho: w, pantalla: h } } : { ancho: w, alto: h }); await sembrar(pg);
+    await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+    await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0'); await toca(pg, 'mkver', 'paso');
+    const m = await pg.locator('.ultima').evaluate((u) => { const t = u.querySelector('.txt'), b = u.querySelector('b').getBoundingClientRect(), bt = [...u.querySelectorAll('button')].map((x) => x.getBoundingClientRect());
+      return [t.innerText.replace(/\s+/g, ' '), t.scrollWidth <= t.clientWidth + 1, b.right <= innerWidth - 16, bt.every((r) => r.top >= t.getBoundingClientRect().bottom - 1), bt.map((r) => r.height >= 44).every(Boolean)]; });
+    assert.deepEqual(m, ['Última: pick 6 de KAF · +1 fallida', true, true, true, true], `${w} × ${h}`);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 5. en Jugadores la línea del QB se cortaba en el SE («44/65 pases · 731 yd de p…», 236 px en 211) y las listas de jugadas del Final y de Lo que pasó también («TD de
+// Nicolás, pase de Mau · conversión de 1 falli…»); ahora la línea del QB dice «731 yd» (para el QB todas son de pase) y las listas usan la versión corta de la jugada si la entera no cabe
+test('Jugadores en 375 y las listas de jugadas del Final y de Lo que pasó no se cortan con puntos', async () => {
+  const fuera = (pg, sel) => pg.locator(sel).evaluateAll((xs) => xs.filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.innerText.trim()));
+  for (const [w, h] of [[375, 667], [390, 844]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    await toca(pg, 'ir', 'jugadores');
+    assert.match(await texto(pg), /Mau 44\/65 pases · 731 yd 71.1/);
+    assert.deepEqual(await fuera(pg, '#tel .corta'), [], `${w}: Jugadores`);
+    // un partido con jugadas largas: TD de pase con conversión atrapada, pick 6 en contra con conversión fallida
+    await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+    await toca(pg, 'res', 'td'); await toca(pg, 'como', 'pase'); await toca(pg, 'quien', 'nicolas'); await salto(pg, 10); await toca(pg, 'rgok'); await toca(pg, 'conv', '1-1'); await toca(pg, 'convq', 'rodrigo');
+    await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0');
+    await toca(pg, 'mkver', 'paso'); await pg.evaluate(() => { seriesDe(st.partido.jugadas).forEach((x) => { st.abre[`${st.partido.id}:${x.ns}`] = true; }); pintar(); }); // todas las series abiertas // eslint-disable-line no-undef
+    const filas = () => pg.locator('.jfila .txt').evaluateAll((xs) => xs.map((e) => [e.innerText.trim(), e.scrollWidth <= e.clientWidth + 1]));
+    let f = await filas(); assert.ok(f.length >= 2 && f.every((x) => x[1]), `${w}: Lo que pasó ${JSON.stringify(f)}`);
+    assert.ok(f.some(([t]) => /^TD de Nicolás · 10 yd · \+1/.test(t)) && f.some(([t]) => /^pick 6 de KAF · \+1 fallida/.test(t)), JSON.stringify(f));
+    await toca(pg, 'terminar');
+    f = await filas(); assert.ok(f.length >= 2 && f.every((x) => x[1]), `${w}: Final ${JSON.stringify(f)}`);
+    assert.deepEqual(await fuera(pg, '#tel .corta'), [], `${w}: Final`);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 6. relieve que quedaba (Iker, 22-nov: plano, sin brillo, bisel, sombra interior ni resplandor): los botones de jugada con resplandor de su color, filo de luz y
+// brillo en la esquina; el Touchdown con sombra; los escalones del podio con bisel de 5 px; «Empezar a marcar» y la tarjeta del partido con línea de brillo de 1 px; los íconos de jugada con bisel
+test('botones de Marcar, podio, héroe e íconos planos: sin bisel, sin sombra interior ni resplandor', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await pg.evaluate(() => { HOY = 'kaffies'; A.ir('inicio'); pintar(); }); // eslint-disable-line no-undef
+  const sombras = (sel) => pg.locator(sel).evaluateAll((xs) => xs.map((x) => [x.className.split(' ')[0], getComputedStyle(x).boxShadow, getComputedStyle(x, '::before').content]));
+  const planos = (l, todo) => { assert.ok(l.length, 'nada que medir'); for (const [c, s, b] of l) { assert.ok(!/inset/.test(s), `${c}: ${s}`); if (todo) { assert.equal(s, 'none', c); assert.equal(b, 'none', `${c}::before`); } } };
+  planos(await sombras('.escalon'), true); planos(await sombras('.heroe.hoy, .btn-blanco'));
+  await toca(pg, 'empezar'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+  planos(await sombras('.mk-grande, .mk-td, .ic.relleno'), true); planos(await sombras('.mcab'));
+  await toca(pg, 'lado', 'D'); planos(await sombras('.mk-grande, .mk-td'), true);
+  await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); planos(await sombras('.hoja .mk-tira, .hoja .ic.relleno'), true);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+// 7. la cifra «+8 yd» de «¿Cuánto avanzó?» iba en azul claro sobre la hoja blanca (2.27:1); el mínimo para texto grande es 3:1 y lo que se lee al sol pide 4.5:1
+test('la cifra de «¿Cuánto avanzó?» se lee al sol: 4.5:1 o más en azul (ganó) y en rojo (perdió)', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nicolas');
+  const contraste = async () => { await pg.waitForTimeout(300); return pg.evaluate(() => { const v = document.querySelector('#rgv'), lin = (c) => { c /= 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; }, L = (s) => { const m = s.match(/[\d.]+/g).map(Number); return .2126 * lin(m[0]) + .7152 * lin(m[1]) + .0722 * lin(m[2]); };
+    const f = L(getComputedStyle(v).color), h = L(getComputedStyle(document.querySelector('.hoja')).backgroundColor); return [v.innerText.replace(/\s/g, ''), Math.round((Math.max(f, h) + .05) / (Math.min(f, h) + .05) * 10) / 10]; }); }; // 300 ms: el color hace una transición de .15 s
+  const pm = async (v, n) => { for (let i = 0; i < n; i++) { const b = pg.locator(`.rg-b[data-pm="${v}"]`); await b.dispatchEvent('pointerdown'); await b.dispatchEvent('pointerup'); } };
+  await pm(1, 8); // el reporte: «+» ocho veces
+  let [t, c] = await contraste(); assert.equal(t, '+8yd'); assert.ok(c >= 4.5, `+8: ${c}:1`);
+  await pm(-1, 10);
+  [t, c] = await contraste(); assert.equal(t, '-2yd'); assert.ok(c >= 4.5, `−2: ${c}:1`);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+// 8. en Los mejores de Defensa la línea de Juancho decía «6 banderas · 2 tapados» (suman 8) con la cifra «9 jugadas»: se cayó «· 1 INT». La línea va ahora a lo ancho
+// del renglón, debajo del nombre y la cifra, y trae cada cosa; en un renglón también en 375 y 320
+test('Los mejores de Defensa dicen cada cosa: «6 banderas · 2 tapados · 1 INT» cuadra con las 9 jugadas, en un renglón', async () => {
+  for (const [w, h] of [[390, 844], [375, 667], [320, 568]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    await pg.evaluate(() => { st.met = 'defensa'; A.ir('metricas'); pintar(); }); // eslint-disable-line no-undef
+    assert.match(await texto(pg), /(1 )?Ian 9 jugadas 6 banderas · 3 sacks (2 )?Jaime 9 jugadas 6 banderas · 3 tapados (3 )?Juancho 9 jugadas 6 banderas · 2 tapados · 1 INT/); // en 320 sin el número de lugar
+    const m = await pg.locator('.pp.mj').evaluateAll((xs) => xs.map((x) => { const l = x.querySelector('small.uno'), b = x.querySelector('b').getBoundingClientRect(), d = x.querySelector('.der').getBoundingClientRect(), r = x.getBoundingClientRect();
+      return [l.scrollWidth <= l.clientWidth + 1, l.getBoundingClientRect().right <= r.right - 8, Math.abs(b.bottom - d.bottom) <= 4, l.getBoundingClientRect().top >= b.bottom - 2]; }));
+    assert.deepEqual(m, [[true, true, true, true], [true, true, true, true], [true, true, true, true]], `${w}`); // la línea cabe, el nombre y la cifra en la misma fila, la línea debajo
+    await pg.locator('.pp.mj').nth(2).click(); await pg.waitForTimeout(100);
+    assert.equal(await tip(pg), 'Juancho 9 jugadas 3º de 11 · 6 banderas · 2 tapados · 1 INT Ver ficha ›');
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 9. textos que se apartaban de la regla de textos (2.1): «Yd por recepción» (la forma corta es «Yd/recepción», igual en todos lados), «MEJOR · LOB» con el código
+// de tres letras en la tira (va «Lugar · Promedio · Mejor» y el rival del mejor partido en «Más»), «Me la lanzó José · TD» («Pase de José · TD»), «robó 2 · perdió 2»
+// en los 4 números (el cuadro compara con la temporada y los robados y perdidos van en la etiqueta), «Mejores · yd de ataque» y «Mejores · defensa» con palabras
+test('los textos de los widgets siguen la regla: Yd/recepción, Lugar · Promedio · Mejor, Pase de José · TD, temporada en El balón, Los mejores · yardas', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await abreJug(pg, 'nicolas'); await abreMas(pg);
+  let t = await texto(pg);
+  assert.match(t, /LUGAR 1º PROMEDIO 9.7 MEJOR 37.2 /); assert.doesNotMatch(t, /MEJOR · |Yd por|Me la lanzó/); // el código LOB solo bajo las columnas
+  assert.match(t, /Yd\/recepción 18.9yd 2º de 5/); assert.match(t, /Yd\/recepción 18.5 yd/); assert.match(t, /Su mejor partido: 37.2 puntos vs Lobos · 2 nov\./);
+  assert.match(t, /Mi jugada más larga 45yd Pase de José · TD vs Lobos · 2 nov Más Las que siguen: 40 yd \(Pase de Mau · TD, vs Lobos\)/);
+  await abreJug(pg, 'rodrigo'); assert.match(await texto(pg), /Yd\/corrida 9.4yd/); assert.match(await texto(pg), /Mi jugada más larga 40yd Corriendo · TD/);
+  await abreJug(pg, 'mau'); assert.match(await texto(pg), /Yd\/intento 11.2yd/);
+  await pg.evaluate(() => { st.met = 'qb'; A.ir('metricas'); pintar(); }); t = await texto(pg); // eslint-disable-line no-undef
+  assert.match(t, /Completos 68% Yd\/intento 11.2 TD : INT/); assert.doesNotMatch(t, /Yd por/);
+  await toca(pg, 'met', 'ataque'); assert.match(await texto(pg), /LOS MEJORES · YARDAS 1 Nicolás 283 yd/);
+  await toca(pg, 'met', 'defensa'); assert.match(await texto(pg), /LOS MEJORES · JUGADAS 1 Ian 9 jugadas/);
+  await pg.evaluate(() => { A.juego('g6'); pintar(); }); // eslint-disable-line no-undef
+  assert.match(await texto(pg), /EL BALÓN 0 temporada −3 COMPLETOS 5 de 9/);
+  await pg.locator('.g4 button').nth(2).click(); await pg.waitForTimeout(100);
+  assert.equal(await tip(pg), 'El balón 0 2 robados · 2 perdidos · temporada −3 Ver El balón ›');
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+// 10. los rivales con nombre largo salían como «Lobos ITSZ» y «Últimos Aztecas» en Partidos, en «¿Contra quién?», en las tarjetas de Inicio y en los avisos, mientras los
+// widgets ya decían «Lobos» y «Aztecas» (2.1.5: siempre el nombre corto)
+test('el rival va siempre con su nombre corto: Partidos, Inicio, ¿Contra quién?, el Final y los avisos', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  const nunca = async (donde) => { const t = await texto(pg); assert.doesNotMatch(t, /Lobos ITSZ|Últimos Aztecas|Los Fantas\b/, donde); return t; };
+  await toca(pg, 'ir', 'partidos'); assert.match(await nunca('Partidos'), /Lobos 2 nov G 33–12[\s\S]*Aztecas 19 oct G 21–20/);
+  await pg.evaluate(() => { HOY = 'lobos-its'; A.ir('inicio'); pintar(); }); assert.match(await nunca('Inicio'), /PRÓXIMO PARTIDO · VS LOBOS: 1–0 Belugas VS Lobos/); // eslint-disable-line no-undef
+  await toca(pg, 'ir', 'partidos'); assert.match(await nunca('Partidos con próximo'), /Lobos Próximo partido/);
+  await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); // ya hay rival: la hoja de quiénes vinieron
+  await pg.evaluate(() => { A.rivalver('empezar'); pintar(); }); assert.match(await nunca('¿Contra quién?'), /Lobos Kaffies Aztecas Fantasmas Panini/); // eslint-disable-line no-undef
+  await toca(pg, 'rival', 'ultimos-aztecas'); for (const id of ['mau', 'nicolas']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+  assert.match(await pg.locator('.pant > .pregunta.aviso .txt').innerText(), /^Empezó vs Aztecas · vinieron 2/);
+  await toca(pg, 'ir', 'inicio'); assert.match(await nunca('Inicio en vivo'), /EN VIVO Belugas 0 – 0 Aztecas/);
+  await toca(pg, 'ir', 'partidos'); assert.match(await nunca('Partidos en vivo'), /Aztecas En vivo · En ataque/);
+  await toca(pg, 'marcar'); await toca(pg, 'editar'); assert.match(await nunca('Partido'), /Rival Aztecas Cambiar/); await toca(pg, 'cerrar');
+  await toca(pg, 'res', 'corrida'); await toca(pg, 'quien', 'nicolas'); await toca(pg, 'sinyd'); await toca(pg, 'terminar');
+  assert.match(await nunca('Final'), /Final vs Aztecas · hoy/);
+  await toca(pg, 'juego'); await pg.evaluate(() => { A.eliminarver(st.juego); pintar(); }); // «Ver el partido» del Final assert.match(await nunca('Eliminar'), /vs Aztecas · Hoy · 0–0/); // eslint-disable-line no-undef
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+// 11. «Sistema de puntos» al pie de Jugadores se plegaba con el triángulo del navegador; ahora es el mismo plegable «Más ›» de los widgets (2.2), en azul y sin marcador
+test('«Sistema de puntos» se pliega como los widgets: sin el triángulo del navegador, con el «›» azul', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await toca(pg, 'ir', 'jugadores');
+  const m = () => pg.locator('.reglas > summary').evaluate((s) => { const c = getComputedStyle(s), a = getComputedStyle(s, '::after'); return [s.closest('details').className, c.listStyleType, a.content, c.color, Math.round(parseFloat(c.fontSize)), s.closest('details').open, Math.round(s.getBoundingClientRect().height) >= 44]; });
+  assert.deepEqual(await m(), ['card reglas det', 'none', '" ›"', 'rgb(29, 79, 143)', 13, false, true]);
+  await pg.locator('.reglas > summary').click(); await pg.waitForTimeout(100);
+  assert.deepEqual((await m()).slice(2, 3).concat((await m()).slice(5, 6)), ['" ‹"', true]);
+  assert.match(await texto(pg), /Sistema de puntos ATAQUE Yarda atrapada \+0.1/);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
+// 12. en la ficha de Rodrigo el promedio de corridas (7.3 de 14) pone el punto a la mitad de la barra: tocar la barra por el centro caía en el punto (su área de 44 px) y
+// salía «prom. 7.3» en vez de la etiqueta de la barra; ahora tocar el punto también selecciona su barra, con su etiqueta (que ya trae el promedio) y el enlace
+test('tocar el centro de una barra de «Lo mío» cuando el promedio está a la mitad enseña la etiqueta de la barra', async () => {
+  for (const [w, h] of [[390, 844], [375, 667]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    await abreJug(pg, 'rodrigo'); await pg.evaluate(() => document.querySelectorAll('#tel .w').forEach((x) => x.classList.add('vio')));
+    const riel = pg.locator('.riel[data-sel]').first(); await riel.scrollIntoViewIfNeeded();
+    const [cx, cy, enPunto] = await riel.evaluate((r) => { const q = r.getBoundingClientRect(), x = q.left + q.width / 2, y = q.top + q.height / 2; return [x, y, !!document.elementFromPoint(x, y).closest('.prom')]; });
+    assert.ok(enPunto, `${w}: el punto del promedio está en el centro de la barra`); // el caso del reporte
+    await pg.mouse.click(cx, cy); await pg.waitForTimeout(300);
+    assert.equal(await tip(pg), 'Corridas 14 1º de 4 · promedio del equipo 7.3 Ver a los mejores ›');
+    assert.deepEqual(await pg.evaluate(() => [document.querySelector('.riel[data-sel]').classList.contains('sel'), document.querySelector('.prom').classList.contains('on')]), [true, true]);
+    const [px, py] = await pg.locator('.prom').first().evaluate((p) => { const q = p.getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; }); // la página subió para enseñar la etiqueta
+    await pg.mouse.click(px, py); await pg.waitForTimeout(100); // otro toque la quita, como en cualquier gráfica
+    assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('#tel .tip').length, document.querySelector('.prom').classList.contains('on')]), [0, false]);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 13. las pastillas de Líderes no caben en 390 ni en 375 y «Banderas» quedaba cortada en seco en el borde, sin nada que dijera que se desliza; ahora la fila llega hasta
+// la orilla de la pantalla y se desvanece a la derecha, y al deslizar hasta el final la última pastilla queda entera con aire
+test('la fila de categorías de Líderes se desvanece a la derecha para que se vea que se desliza, y al final deja aire', async () => {
+  for (const [w, h] of [[390, 844], [375, 667]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    const m = await pg.locator('.cats').evaluate((c) => { const cs = getComputedStyle(c), r = c.getBoundingClientRect(), ult = c.querySelector('.cat:last-of-type'); const antes = ult.getBoundingClientRect().right > r.right;
+      c.scrollLeft = c.scrollWidth; const u = ult.getBoundingClientRect(); return [c.scrollWidth > c.clientWidth, antes, (cs.webkitMaskImage || cs.maskImage || 'none') !== 'none', Math.round(r.left), Math.round(r.right), u.right <= r.right - 24, u.right > r.right - 60]; });
+    assert.deepEqual(m, [true, true, true, 0, w, true, true], `${w}: [se desliza, la última cortada al inicio, con desvanecido, de orilla a orilla, al final entera y con aire]`);
     assert.deepEqual(pg.errores, []);
     await pg.context().close();
   }
