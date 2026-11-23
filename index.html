@@ -1608,7 +1608,7 @@ document.addEventListener('click', (e) => {
   const t = $('#tel'); if (!t.contains(e.target)) return;
   const el = e.target.closest('[data-sel]'), pr = e.target.closest('.prom');
   t.querySelectorAll('.prom.on').forEach((p) => { if (p !== pr) p.classList.remove('on'); });
-  if (pr) { pr.classList.toggle('on'); return; }
+  if (pr) { pr.classList.toggle('on'); const riel = pr.parentElement.querySelector('[data-sel]'); if (riel) seleccion(pr.classList.contains('on') ? riel : null); return; } // el punto del promedio también selecciona su barra (revisión, 22-nov: con el promedio a la mitad, tocar la barra por el centro caía en el punto)
   if (el) { seleccion(el.classList.contains('sel') ? null : el); return; }
   if (e.target.closest('.tip')) { st.gsel = null; return; }
   if (st.gsel) seleccion(null);

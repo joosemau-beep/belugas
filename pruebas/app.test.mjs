@@ -1011,8 +1011,11 @@ test('Mi temporada: Cómo voy, Lo mío, Partido a partido, Mi jugada más larga 
   // el punto del promedio: al tocarlo, «prom. 5.1»; la barra: su etiqueta con el lugar y el promedio, y se toca en 44 px aunque mida 8
   await pg.locator('.prom').first().click(); await pg.waitForTimeout(250);
   assert.deepEqual(await pg.locator('.prom').first().evaluate((p) => [p.classList.contains('on'), getComputedStyle(p, '::after').content, getComputedStyle(p, '::after').opacity]), [true, '"prom. 5.1"', '1']);
+  assert.equal(await tip(pg), 'Recepciones 15 1º de 9 · promedio del equipo 5.1 Ver a los mejores ›'); // el punto también selecciona su barra (revisión 12)
+  await pg.locator('.riel[data-sel]').first().click(); await pg.waitForTimeout(100); assert.equal(await pg.locator('#tel .tip').count(), 0); // tocar la barra ya seleccionada la quita
   await pg.locator('.riel[data-sel]').first().click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'Recepciones 15 1º de 9 · promedio del equipo 5.1 Ver a los mejores ›');
+
   assert.ok(await pg.locator('.riel[data-sel]').first().evaluate((e) => parseFloat(getComputedStyle(e, '::after').height) >= 44));
   // el punto del promedio va centrado en el eje del riel (±1 px) y nunca se sale por los extremos, tampoco en 0 % ni en 100 % (Iker, 22-nov: en el iPhone quedaba descolgado)
   const centrado = () => pg.evaluate(() => [...document.querySelectorAll('.rielc')].map((c) => { const r = c.querySelector('.riel').getBoundingClientRect(), p = c.querySelector('.prom').getBoundingClientRect(); return [Math.abs((p.top + p.height / 2) - (r.top + r.height / 2)) <= 1, p.left >= r.left && p.right <= r.right]; }));
@@ -1323,4 +1326,23 @@ test('«Sistema de puntos» se pliega como los widgets: sin el triángulo del na
   assert.match(await texto(pg), /Sistema de puntos ATAQUE Yarda atrapada \+0.1/);
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
+});
+// 12. en la ficha de Rodrigo el promedio de corridas (7.3 de 14) pone el punto a la mitad de la barra: tocar la barra por el centro caía en el punto (su área de 44 px) y
+// salía «prom. 7.3» en vez de la etiqueta de la barra; ahora tocar el punto también selecciona su barra, con su etiqueta (que ya trae el promedio) y el enlace
+test('tocar el centro de una barra de «Lo mío» cuando el promedio está a la mitad enseña la etiqueta de la barra', async () => {
+  for (const [w, h] of [[390, 844], [375, 667]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    await abreJug(pg, 'rodrigo'); await pg.evaluate(() => document.querySelectorAll('#tel .w').forEach((x) => x.classList.add('vio')));
+    const riel = pg.locator('.riel[data-sel]').first(); await riel.scrollIntoViewIfNeeded();
+    const [cx, cy, enPunto] = await riel.evaluate((r) => { const q = r.getBoundingClientRect(), x = q.left + q.width / 2, y = q.top + q.height / 2; return [x, y, !!document.elementFromPoint(x, y).closest('.prom')]; });
+    assert.ok(enPunto, `${w}: el punto del promedio está en el centro de la barra`); // el caso del reporte
+    await pg.mouse.click(cx, cy); await pg.waitForTimeout(300);
+    assert.equal(await tip(pg), 'Corridas 14 1º de 4 · promedio del equipo 7.3 Ver a los mejores ›');
+    assert.deepEqual(await pg.evaluate(() => [document.querySelector('.riel[data-sel]').classList.contains('sel'), document.querySelector('.prom').classList.contains('on')]), [true, true]);
+    const [px, py] = await pg.locator('.prom').first().evaluate((p) => { const q = p.getBoundingClientRect(); return [q.left + q.width / 2, q.top + q.height / 2]; }); // la página subió para enseñar la etiqueta
+    await pg.mouse.click(px, py); await pg.waitForTimeout(100); // otro toque la quita, como en cualquier gráfica
+    assert.deepEqual(await pg.evaluate(() => [document.querySelectorAll('#tel .tip').length, document.querySelector('.prom').classList.contains('on')]), [0, false]);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
 });
