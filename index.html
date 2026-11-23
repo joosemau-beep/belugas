@@ -2546,7 +2546,7 @@ async function revisarVersion() {
 // Es opcional: la jugada ya quedó guardada al escoger quién; si nadie toca la regla en 10 s, se cierra sola y el aviso
 // dice «sin yardas · Ponerlas».
 const FMIN = -10, FMAX = 60;
-const RG = { pm: 70, sim: 40, trazo: 3, sep: 15, alto: 34, ancho: 4, barra: 84, etiquetas: 12, borde: 1, hecho: '#1d4f8f', gana: '#5aaeff', pierde: '#f08a7e' };
+const RG = { pm: 70, sim: 40, trazo: 3, sep: 15, alto: 34, ancho: 4, barra: 84, etiquetas: 12, borde: 1, hecho: '#1d4f8f', gana: '#1d4f8f', pierde: '#b42318' }; // gana y pierde: los colores de la cifra «+8 yd», legibles al sol (revisión, 22-nov: el azul claro quedaba en 2.3:1)
 // lo visible de cada logo dentro de su PNG de 256 (sin el aire), para centrarlo en el eje de las marcas
 const CAJA = { belugas: [12, 54, 244, 204], 'only-fins': [11, 39, 244, 216], 'triple-t': [10, 45, 245, 212], bucaneros: [9, 38, 247, 218], destroyers: [9, 12, 247, 246], kickass: [12, 24, 244, 231], bulldogs: [12, 46, 244, 210], 'lobos-its': [11, 34, 245, 223], kaffies: [11, 38, 245, 218], 'ultimos-aztecas': [11, 28, 244, 228], 'los-fantasmas': [8, 49, 247, 208], panini: [12, 51, 244, 210] };
 const signo = (mas) => { const L = 20, t = RG.trazo, m = L / 2, e = t / 2; return `<svg width="${L}" height="${L}" viewBox="0 0 ${L} ${L}" aria-hidden="true"><path d="M${e} ${m}H${L - e}${mas ? `M${m} ${e}V${L - e}` : ''}" stroke="currentColor" stroke-width="${t}" stroke-linecap="round" fill="none"/></svg>`; };

@@ -1237,3 +1237,18 @@ test('botones de Marcar, podio, héroe e íconos planos: sin bisel, sin sombra i
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+// 7. la cifra «+8 yd» de «¿Cuánto avanzó?» iba en azul claro sobre la hoja blanca (2.27:1); el mínimo para texto grande es 3:1 y lo que se lee al sol pide 4.5:1
+test('la cifra de «¿Cuánto avanzó?» se lee al sol: 4.5:1 o más en azul (ganó) y en rojo (perdió)', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+  await toca(pg, 'res', 'pase'); await toca(pg, 'quien', 'nicolas');
+  const contraste = async () => { await pg.waitForTimeout(300); return pg.evaluate(() => { const v = document.querySelector('#rgv'), lin = (c) => { c /= 255; return c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4; }, L = (s) => { const m = s.match(/[\d.]+/g).map(Number); return .2126 * lin(m[0]) + .7152 * lin(m[1]) + .0722 * lin(m[2]); };
+    const f = L(getComputedStyle(v).color), h = L(getComputedStyle(document.querySelector('.hoja')).backgroundColor); return [v.innerText.replace(/\s/g, ''), Math.round((Math.max(f, h) + .05) / (Math.min(f, h) + .05) * 10) / 10]; }); }; // 300 ms: el color hace una transición de .15 s
+  const pm = async (v, n) => { for (let i = 0; i < n; i++) { const b = pg.locator(`.rg-b[data-pm="${v}"]`); await b.dispatchEvent('pointerdown'); await b.dispatchEvent('pointerup'); } };
+  await pm(1, 8); // el reporte: «+» ocho veces
+  let [t, c] = await contraste(); assert.equal(t, '+8yd'); assert.ok(c >= 4.5, `+8: ${c}:1`);
+  await pm(-1, 10);
+  [t, c] = await contraste(); assert.equal(t, '-2yd'); assert.ok(c >= 4.5, `−2: ${c}:1`);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});
