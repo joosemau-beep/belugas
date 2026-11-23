@@ -953,7 +953,7 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   await toca(pg, 'ir', 'metricas'); await abreMas(pg);
   const t = await texto(pg);
   assert.match(t, /Cómo vamos 6–2 \+2.8 por partido Partidos P G G G G G G P Más 139 puntos a favor, 117 en contra. 3 de las 6 victorias fueron por 3 puntos o menos. ATAQUE 56% DEFENSA 52% QB 68%/);
-  assert.match(t, /Ataque 56% series con TD 2\/4 KAF 2\/4 ONF 3\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 2\/5 PAN 1\/2 KAF MEJORES · YD DE ATAQUE 1 Nicolás 5 TD · 15 recepciones 283 yd 2 Iker 1 TD · 7 recepciones 157 yd 3 Uri 5 recepciones 136 yd Más 19 de 34 series. Después del TD: de 1, 58% \(7 de 12\); de 2, 63% \(5 de 8\). Pases completos 67% \(46 de 69\), 7 soltados. Yardas de ataque: atrapadas más corridas./);
+  assert.match(t, /Ataque 56% series con TD 2\/4 KAF 2\/4 ONF 3\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 2\/5 PAN 1\/2 KAF MEJORES · YD DE ATAQUE 1 Nicolás 283 yd 5 TD · 15 recepciones 2 Iker 157 yd 1 TD · 7 recepciones 3 Uri 136 yd 5 recepciones Más 19 de 34 series. Después del TD: de 1, 58% \(7 de 12\); de 2, 63% \(5 de 8\). Pases completos 67% \(46 de 69\), 7 soltados. Yardas de ataque: atrapadas más corridas./);
   assert.match(t, /El balón −3 más perdidos que robados 5 robados 8 perdidos/);
   assert.match(t, /Quién viene 6 vienen a todos José 5 de 8 Leo 5 de 8 Patrick 6 de 8 Uri 7 de 8 Más Mau 8 de 8 · Nicolás 8 de 8 · Mario 8 de 8/);
   assert.match(t, /Contra cada rival Kaffies 1–2 · 33–46 −13 Lobos 1–0 · 33–12 \+21 Only Fins 1–0 · 14–8 \+6 Panini 1–0 · 22–17 \+5 Bucaneros 1–0 · 16–14 \+2 Aztecas 1–0 · 21–20 \+1/);
@@ -962,9 +962,9 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   assert.deepEqual(await pg.locator('.rvf .riel > i').evaluateAll((xs) => xs.slice(0, 2).map((i) => [i.className, i.style.right || i.style.left, Math.round(parseFloat(i.style.width))])), [['mal neg', '50%', 31], ['', '50%', 50]]);
   // Defensa: los empates de los mejores se ordenan por banderas y luego por nombre; «Más» con lo que permitió. QB con sus tres cifras y a quién le lanza
   await toca(pg, 'met', 'defensa'); await abreMas(pg);
-  assert.match(await texto(pg), /Defensa 52% series paradas 1\/4 KAF 2\/3 ONF 1\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 4\/5 PAN 0\/2 KAF MEJORES · DEFENSA 1 Ian 6 banderas · 3 sacks 9 jugadas 2 Jaime 6 banderas · 3 tapados 9 jugadas 3 Juancho 6 banderas · 2 tapados 9 jugadas Más 17 de 33 series. La defensa permitió 13.5 puntos por partido; aparte, 9 los regaló el ataque \(pick 6 y safety\). En total 37 banderas, 8 tapados, 7 sacks y 5 balones robados./);
+  assert.match(await texto(pg), /Defensa 52% series paradas 1\/4 KAF 2\/3 ONF 1\/4 AZT 2\/4 KAF 5\/7 LOB 2\/4 BUC 4\/5 PAN 0\/2 KAF MEJORES · DEFENSA 1 Ian 9 jugadas 6 banderas · 3 sacks 2 Jaime 9 jugadas 6 banderas · 3 tapados 3 Juancho 9 jugadas 6 banderas · 2 tapados · 1 INT Más 17 de 33 series. La defensa permitió 13.5 puntos por partido; aparte, 9 los regaló el ataque \(pick 6 y safety\). En total 37 banderas, 8 tapados, 7 sacks y 5 balones robados./);
   await toca(pg, 'met', 'qb'); await abreMas(pg);
-  assert.match(await texto(pg), /QB Mau 65 pases en 8 partidos Completos 68% Yd por intento 11.2 TD : INT 10 : 8 57% KAF 50% ONF 89% AZT 64% KAF 91% LOB 71% BUC 50% PAN 50% KAF A QUIÉN LE LANZA 1 Nicolás 238 yd · 4 TD 14 pases 2 Iker 131 yd · 1 TD 7 pases 3 Uri 136 yd 5 pases Más 44 de 65 completos, 731 yardas, 10 TD y 8 INT en 8 partidos. 4 sacks recibidos. También lanzaron: Nicolás 1 de 1, José 1 de 3./);
+  assert.match(await texto(pg), /QB Mau 65 pases en 8 partidos Completos 68% Yd por intento 11.2 TD : INT 10 : 8 57% KAF 50% ONF 89% AZT 64% KAF 91% LOB 71% BUC 50% PAN 50% KAF A QUIÉN LE LANZA 1 Nicolás 14 pases 238 yd · 4 TD 2 Iker 7 pases 131 yd · 1 TD 3 Uri 5 pases 136 yd Más 44 de 65 completos, 731 yardas, 10 TD y 8 INT en 8 partidos. 4 sacks recibidos. También lanzaron: Nicolás 1 de 1, José 1 de 3./);
   // tocar: una pastilla, una columna, un renglón de los mejores y un tramo del balón, cada uno con su etiqueta; otro toque cambia la selección
   await pg.locator('.rs[data-sel]').first().click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'vs Kaffies · 5 oct 13–20 Derrota Ver partido ›');
@@ -1251,4 +1251,20 @@ test('la cifra de «¿Cuánto avanzó?» se lee al sol: 4.5:1 o más en azul (ga
   [t, c] = await contraste(); assert.equal(t, '-2yd'); assert.ok(c >= 4.5, `−2: ${c}:1`);
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
+});
+// 8. en Los mejores de Defensa la línea de Juancho decía «6 banderas · 2 tapados» (suman 8) con la cifra «9 jugadas»: se cayó «· 1 INT». La línea va ahora a lo ancho
+// del renglón, debajo del nombre y la cifra, y trae cada cosa; en un renglón también en 375 y 320
+test('Los mejores de Defensa dicen cada cosa: «6 banderas · 2 tapados · 1 INT» cuadra con las 9 jugadas, en un renglón', async () => {
+  for (const [w, h] of [[390, 844], [375, 667], [320, 568]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    await pg.evaluate(() => { st.met = 'defensa'; A.ir('metricas'); pintar(); }); // eslint-disable-line no-undef
+    assert.match(await texto(pg), /(1 )?Ian 9 jugadas 6 banderas · 3 sacks (2 )?Jaime 9 jugadas 6 banderas · 3 tapados (3 )?Juancho 9 jugadas 6 banderas · 2 tapados · 1 INT/); // en 320 sin el número de lugar
+    const m = await pg.locator('.pp.mj').evaluateAll((xs) => xs.map((x) => { const l = x.querySelector('small.uno'), b = x.querySelector('b').getBoundingClientRect(), d = x.querySelector('.der').getBoundingClientRect(), r = x.getBoundingClientRect();
+      return [l.scrollWidth <= l.clientWidth + 1, l.getBoundingClientRect().right <= r.right - 8, Math.abs(b.bottom - d.bottom) <= 4, l.getBoundingClientRect().top >= b.bottom - 2]; }));
+    assert.deepEqual(m, [[true, true, true, true], [true, true, true, true], [true, true, true, true]], `${w}`); // la línea cabe, el nombre y la cifra en la misma fila, la línea debajo
+    await pg.locator('.pp.mj').nth(2).click(); await pg.waitForTimeout(100);
+    assert.equal(await tip(pg), 'Juancho 9 jugadas 3º de 11 · 6 banderas · 2 tapados · 1 INT Ver ficha ›');
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
 });

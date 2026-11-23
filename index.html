@@ -890,6 +890,10 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .card h5 { margin: 10px 22px 2px; font: 800 11px/1.2 Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--mut); white-space: nowrap; }
 .card > [data-grupo] > .pp, .card > .ce { padding-left: 22px; padding-right: 22px; }
 .pp .rk { width: 16px; flex: none; text-align: center; font: 800 13px/1 Inter; color: var(--mut); }
+/* los mejores (2.7): rejilla con el lugar, la foto a dos filas, el nombre y la cifra con su unidad al lado en la primera fila y la línea gris a lo ancho en la segunda */
+.pp.mj { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; grid-template-areas: "rk foto nom der" "rk foto lin lin"; gap: 2px 12px; align-items: center; }
+.pp.mj .rk { grid-area: rk; } .pp.mj .foto { grid-area: foto; } .pp.mj > b { grid-area: nom; align-self: baseline; } .pp.mj > small { grid-area: lin; display: block; white-space: nowrap; }
+.pp.mj .der { grid-area: der; align-self: baseline; } .pp.mj .der strong { display: inline; } .pp.mj .der small { margin-left: 3px; }
 .nota { padding: 4px 22px 12px; font: 500 12px/1.3 Inter; color: var(--mut); }
 /* «Más»: el detalle, cerrado por omisión, al pie de la tarjeta */
 .det { padding: 0 22px 10px; }
@@ -1573,7 +1577,7 @@ const riel = (p, { mal = false, prom: pr = null, promTxt = '', datos = null, cls
 // columnas por partido (gs: los partidos; vals: { n, t } o null si no vino; sels: los datos de cada columna): el valor encima, el código del rival debajo
 const columnas = (gs, vals, sels, { max = Math.max(...vals.map((v) => (v ? v.n : 0)), 1), alto = 64 } = {}) => `<div class="cols" data-grupo>${vals.map((v, i) => `<button class="col${i === vals.length - 1 ? ' ult' : ''}"${sel(sels[i])}><em class="num">${v ? v.t : '—'}</em><i style="height:${v ? Math.max(3, v.n / max * alto) : 2}px"></i><small>${R(gs[i].rival).corto}</small></button>`).join('')}</div>`;
 // los mejores de un área: los 3 primeros con foto, cifra y una línea; cada renglón se toca y brinca a la ficha. unidad: (v) => 'yd' | 'jugadas' | 'pases'
-const mejores = (lista, unidad) => `<div data-grupo>${lista.slice(0, 3).map((x, i) => `<button class="pp"${sel({ t: nom(x.id), v: `${x.v} ${unidad(x.v)}`, s: [`${ord(i + 1)} de ${lista.length}`, x.sub].filter(Boolean).join(' · '), l: ['jug', x.id], lt: 'Ver ficha' })}><span class="rk">${i + 1}</span>${foto(P(x.id))}<div><b class="corta">${nom(x.id)}</b>${x.sub ? `<small class="uno">${x.sub}</small>` : ''}</div><div class="der"><strong class="num">${x.v}</strong><small>${unidad(x.v)}</small></div></button>`).join('')}</div>`; // la línea en un renglón, con dos datos a lo más (Iker, 22-nov: nada en doble renglón)
+const mejores = (lista, unidad) => `<div data-grupo>${lista.slice(0, 3).map((x, i) => `<button class="pp mj"${sel({ t: nom(x.id), v: `${x.v} ${unidad(x.v)}`, s: [`${ord(i + 1)} de ${lista.length}`, x.sub].filter(Boolean).join(' · '), l: ['jug', x.id], lt: 'Ver ficha' })}><span class="rk">${i + 1}</span>${foto(P(x.id))}<b class="corta">${nom(x.id)}</b><div class="der"><strong class="num">${x.v}</strong> <small>${unidad(x.v)}</small></div>${x.sub ? `<small class="uno">${x.sub}</small>` : ''}</button>`).join('')}</div>`; // la línea en un renglón a lo ancho, debajo del nombre y la cifra (2.7): así cabe cada cosa que tenga (revisión, 22-nov: a Juancho se le caía «· 1 INT»)
 // la etiqueta de lo tocado: título, cifra, línea y el enlace. Se abre en el flujo, debajo del renglón tocado o debajo de la gráfica entera, así no tapa
 // lo seleccionado ni a sus vecinos ni se corta en las orillas (Iker, 22-nov); la flechita apunta a lo tocado. pintar() la quita con todo lo demás
 function etiqueta(el) {
@@ -1658,7 +1662,7 @@ function metricas() {
     ${mejAt.length ? `<h5>Mejores · yd de ataque</h5>${mejores(mejAt, () => 'yd')}` : ''}
     ${det(`${c.seriesTD} de ${plural(c.seriesO, 'serie')}.${cvTxt} Pases completos ${pct(c.comp, c.att)}% (${c.comp} de ${c.att})${c.drops ? `, ${plural(c.drops, 'soltado')}` : ''}. Yardas de ataque: atrapadas más corridas.`)}</div>`;
   // Defensa: series paradas, partido a partido, y los mejores por jugadas de defensa; en «Más», los puntos que permitió (sin el pick 6 ni el safety en contra, que son del ataque)
-  const mejDef = PLANTEL.map((p) => { const t = TEMP[p.id]; return { id: p.id, v: t.band + t.tap + t.sack + t.intn, band: t.band, sub: [t.band && plural(t.band, 'bandera'), t.tap && plural(t.tap, 'tapado'), t.sack && plural(t.sack, 'sack'), t.intn && `${t.intn} INT`].filter(Boolean).slice(0, 2).join(' · ') }; }).filter((x) => x.v > 0).sort((a, b) => b.v - a.v || b.band - a.band || (nom(a.id) < nom(b.id) ? -1 : 1));
+  const mejDef = PLANTEL.map((p) => { const t = TEMP[p.id]; return { id: p.id, v: t.band + t.tap + t.sack + t.intn, band: t.band, sub: [t.band && plural(t.band, 'bandera'), t.tap && plural(t.tap, 'tapado'), t.sack && plural(t.sack, 'sack'), t.intn && `${t.intn} INT`].filter(Boolean).join(' · ') }; }).filter((x) => x.v > 0).sort((a, b) => b.v - a.v || b.band - a.band || (nom(a.id) < nom(b.id) ? -1 : 1));
   const puntosDe2 = (ks) => con.reduce((a, g) => a + g.partido.jugadas.filter((j) => ks.includes(j.k)).reduce((b, j) => b + (efecto(j).ellos || 0), 0), 0), permitio = puntosDe2(['tdr']), regalados = puntosDe2(['pick6c', 'safetyc']);
   const defensa = `<div class="card"><div class="big"><strong class="num">${pct(c.fren, c.seriesD)}%</strong><div><b>series paradas</b></div></div>
     ${columnas(con, porG.map((x) => ({ n: pct(x.fren, x.seriesD), t: `${x.fren}/${x.seriesD}` })), con.map((g, i) => selPartido(g, `${porG[i].fren} de ${porG[i].seriesD} series paradas (${pct(porG[i].fren, porG[i].seriesD)}%)`)), { max: 100, alto: 56 })}
