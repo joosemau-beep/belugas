@@ -765,8 +765,8 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .tj.sinfoto .tj-foto { right: 26px; bottom: 150px; width: 128px; height: 128px; border-radius: 50%; background: rgba(255,255,255,.14); display: grid; place-items: center; }
 .tj .ini { font: italic 900 46px/1 var(--disp); color: #fff; }
 .tj-main { position: absolute; left: 18px; bottom: 104px; z-index: 3; text-shadow: 0 2px 10px rgba(5,14,30,.35); }
-.tj-main small { display: block; font: 700 12.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .95; }
-.tj-main strong { display: block; font: italic 900 74px/.9 var(--disp); margin-top: 4px; }
+.tj-main small { display: block; font: 700 12.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .95; padding: 4px 10px 4px 0; margin-left: -2px; border-radius: 4px; background: linear-gradient(90deg, rgba(13,23,48,.78) 60%, rgba(13,23,48,0)); } /* una banda tenue del marino de la tarjeta detrás de la etiqueta: sobre la parte clara del retrato sigue en 4.5:1 */
+.tj-main strong { display: block; font: italic 900 74px/.9 var(--disp); margin-top: 14px; } /* la cifra se sale ~11 px de su renglón por arriba: aire para no pisar la etiqueta */
 .tj-tira { position: absolute; left: 0; right: 0; bottom: 0; height: 92px; z-index: 4; display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; text-align: center; background: rgba(0,0,0,.28); box-shadow: 0 -1px 0 rgba(255,255,255,.07); }
 .tj-tira small { display: block; font: 700 11.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .85; white-space: nowrap; }
 .tj-tira strong { display: block; font: italic 900 38px/1 var(--disp); margin-top: 5px; }
@@ -909,7 +909,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* columnas por partido: el valor encima y el código del rival debajo; el último partido entero, los anteriores tenues; con más de 8 se desliza de lado */
 .cols { display: flex; align-items: flex-end; overflow-x: auto; scrollbar-width: none; padding: 10px 14px 8px; }
 .cols::-webkit-scrollbar { display: none; }
-.col { flex: 1 0 38px; min-height: 44px; display: grid; justify-items: center; align-content: end; gap: 4px; padding: 4px 2px; border-radius: 10px; }
+.col { flex: 1 0 38px; min-height: 44px; display: grid; justify-items: center; align-content: end; gap: 8px; padding: 4px 2px; border-radius: 10px; } /* 8 px: el anillo de la columna tocada no roza sus letras */
 .col em { font: 800 11px/1 Inter; font-style: normal; color: var(--navy); white-space: nowrap; transition: transform .15s; }
 .col small { font: 600 10.5px/1 Inter; color: var(--mut); }
 .col i { display: block; width: 100%; max-width: 26px; border-radius: 5px 5px 3px 3px; background: var(--b-col); opacity: .38; }
@@ -920,8 +920,8 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* cada tramo al tamaño de su número, pero nunca más angosto que su texto (min-width auto): el texto no se encima ni se corta */
 .partida > button { min-width: auto; height: 38px; display: flex; align-items: center; justify-content: flex-start; padding: 0 14px; white-space: nowrap; color: #fff; }
 .partida i { font: italic 900 21px/1 var(--disp); margin-right: 2px; } /* número y palabra en un mismo renglón (span), en la misma línea base, centrados en el alto */
-.partida .b1 { border-radius: calc(var(--radio) - 22px) 0 0 calc(var(--radio) - 22px); background: var(--b-fill); } /* los extremos de afuera siguen la curva de la tarjeta: su radio menos los 22 px al borde (Iker, 22-nov); por dentro, rectos */
-.partida .b2 { border-radius: 0 calc(var(--radio) - 22px) calc(var(--radio) - 22px) 0; background: var(--b-mal); justify-content: flex-end; }
+.partida .b1 { border-radius: min(calc(var(--radio) - 22px), 16px) 0 0 min(calc(var(--radio) - 22px), 16px); background: var(--b-fill); } /* los extremos de afuera siguen la curva de la tarjeta: su radio menos los 22 px al borde (Iker, 22-nov); por dentro, rectos */
+.partida .b2 { border-radius: 0 min(calc(var(--radio) - 22px), 16px) min(calc(var(--radio) - 22px), 16px) 0; background: var(--b-mal); justify-content: flex-end; }
 /* la entrada a Ataque, Defensa y QB: tres tarjetitas en el vidrio de la app; la que se ve lleva el aro */
 .areas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
 .area { display: grid; gap: 4px; justify-items: center; padding: 12px 8px 10px; border-radius: var(--r-in); }
@@ -929,7 +929,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .area.on { box-shadow: var(--sombra), inset 0 0 0 2px var(--azul); }
 /* El partido en 4 números: rejilla 2 × 2 de cuadros */
 .g4 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 16px 16px; }
-.g4 > button { background: var(--bg); border-radius: calc(var(--radio) - 16px); padding: 12px 12px 10px; text-align: left; display: block; } /* concéntrico con la tarjeta: su radio menos los 16 px de relleno */
+.g4 > button { background: var(--bg); border-radius: min(calc(var(--radio) - 16px), 22px); padding: 12px 12px 10px; text-align: left; display: block; } /* concéntrico con la tarjeta: su radio menos los 16 px de relleno */
 .g4 span { display: block; font: 700 10.5px/1.2 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
 .g4 strong { display: block; font: italic 900 34px/1 var(--disp); color: var(--navy); margin-top: 6px; } .g4 strong i { font: 700 13px/1 Inter; font-style: normal; color: var(--mut); } .g4 strong.mal { color: var(--mal); }
 .g4 em { display: block; font: 600 11px/1.3 Inter; font-style: normal; color: var(--mut); margin-top: 4px; white-space: nowrap; }
@@ -969,16 +969,16 @@ button.rs.g::before { background: rgba(126,220,159,.12); } button.rs.p::before {
 button.rs.sel::before { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); }
 .mrow .forma:has(button.rs) { gap: 0; }
 [data-sel]:focus-visible { outline: 2px solid var(--azul); outline-offset: 3px; border-radius: 12px; }
-[data-grupo].hay-sel [data-sel]:not(.sel) :is(i, .foto, .rlogo, .riel), [data-grupo].hay-sel [data-sel].rs:not(.sel)::before { opacity: .38; transition: opacity .2s; } /* se atenúa lo gráfico, no el texto: así sigue en 4.5:1 */
+[data-grupo].hay-sel [data-sel]:not(.sel) :is(.riel > i, .col > i, .foto, .rlogo, .riel), [data-grupo].hay-sel [data-sel].rs:not(.sel)::before { opacity: .38; transition: opacity .2s; } /* se atenúa lo gráfico, no el texto: así sigue en 4.5:1 */
 .g4.hay-sel > button:not(.sel) { background: rgba(11,27,51,.02); }
 .col.sel i { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); } .col.sel em { color: var(--azul); transform: scale(1.15); }
 .riel.sel > i, .partida > .sel, .cara.sel .foto, .chip.sel { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); }
 .pp.sel, .rvf.sel { background: rgba(29,79,143,.09); }
-.tip { position: relative; margin: 10px 22px 12px; background: var(--navy); color: #fff; border-radius: calc(var(--radio) - 22px); padding: 10px 14px; font: 600 12px/1.35 Inter; }
+.tip { position: relative; margin: 10px 22px 12px; background: var(--navy); color: #fff; border-radius: min(calc(var(--radio) - 22px), 16px); padding: 12px 18px; font: 600 12px/1.35 Inter; }
 .tip b { display: block; font: 800 13px/1.2 Inter; } .tip em { display: block; font: italic 900 22px/1 var(--disp); margin: 3px 0 2px; } .tip span { display: block; opacity: .85; }
 .tip button { display: inline-flex; align-items: center; margin-top: 2px; color: #9fd0ff; font: 800 12px/1 Inter; min-height: 32px; }
 .tip::before { content: ''; position: absolute; left: var(--ax, 50%); top: -6px; margin-left: -6px; border: 6px solid transparent; border-top: 0; border-bottom-color: var(--navy); }
-.card > .tip { margin-left: 16px; margin-right: 16px; border-radius: calc(var(--radio) - 16px); }
+.card > .tip { margin-left: 16px; margin-right: 16px; border-radius: min(calc(var(--radio) - 16px), 22px); padding: 14px 22px; }
 /* las barras crecen desde 0 al verse la tarjeta por primera vez (.ve); al repintar la misma pantalla ya no (.vio); con «reducir movimiento», de una vez */
 .w:not(.ve):not(.vio) .riel > i, .w:not(.ve):not(.vio) .partida > button { transform: scaleX(0); } .w:not(.ve):not(.vio) .col i { transform: scaleY(0); }
 .w.ve .riel > i { animation: bx .7s cubic-bezier(.2,.8,.2,1) both; transform-origin: left center; } .w.ve .riel > i.neg { transform-origin: right center; }
@@ -2509,7 +2509,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261122191947';
+const VERSION = '20261122194722';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {
