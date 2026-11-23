@@ -1222,3 +1222,18 @@ test('Jugadores en 375 y las listas de jugadas del Final y de Lo que pasó no se
     await pg.context().close();
   }
 });
+// 6. relieve que quedaba (Iker, 22-nov: plano, sin brillo, bisel, sombra interior ni resplandor): los botones de jugada con resplandor de su color, filo de luz y
+// brillo en la esquina; el Touchdown con sombra; los escalones del podio con bisel de 5 px; «Empezar a marcar» y la tarjeta del partido con línea de brillo de 1 px; los íconos de jugada con bisel
+test('botones de Marcar, podio, héroe e íconos planos: sin bisel, sin sombra interior ni resplandor', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await pg.evaluate(() => { HOY = 'kaffies'; A.ir('inicio'); pintar(); }); // eslint-disable-line no-undef
+  const sombras = (sel) => pg.locator(sel).evaluateAll((xs) => xs.map((x) => [x.className.split(' ')[0], getComputedStyle(x).boxShadow, getComputedStyle(x, '::before').content]));
+  const planos = (l, todo) => { assert.ok(l.length, 'nada que medir'); for (const [c, s, b] of l) { assert.ok(!/inset/.test(s), `${c}: ${s}`); if (todo) { assert.equal(s, 'none', c); assert.equal(b, 'none', `${c}::before`); } } };
+  planos(await sombras('.escalon'), true); planos(await sombras('.heroe.hoy, .btn-blanco'));
+  await toca(pg, 'empezar'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+  planos(await sombras('.mk-grande, .mk-td, .ic.relleno'), true); planos(await sombras('.mcab'));
+  await toca(pg, 'lado', 'D'); planos(await sombras('.mk-grande, .mk-td'), true);
+  await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); planos(await sombras('.hoja .mk-tira, .hoja .ic.relleno'), true);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});

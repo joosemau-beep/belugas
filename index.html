@@ -202,7 +202,7 @@ h2 small { font: 600 12.5px/1 Inter; color: var(--mut); }
 .ic svg { width: 26px; height: 26px; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .ic.linea { background: color-mix(in srgb, var(--c) 12%, #fff); }
 .ic.linea svg { stroke: var(--c); stroke-width: 1.9; }
-.ic.relleno { background: var(--c); box-shadow: inset 0 -4px 0 rgba(0,0,0,.2), 0 2px 0 rgba(0,0,0,.06); }
+.ic.relleno { background: var(--c); }
 .ic.relleno svg { stroke: #fff; stroke-width: 2.7; }
 .ic.relleno svg .f { fill: rgba(255,255,255,.95); stroke: none; }
 .ic.linea svg .f { fill: color-mix(in srgb, var(--c) 30%, transparent); stroke: none; }
@@ -302,7 +302,7 @@ details.mas[open] > summary { color: var(--mut); }
 
 /* la tarjeta del partido: el degradado de los dos equipos (Iker, 18-nov; intensidad media), Belugas a la izquierda y el rival (--rq) a la derecha.
    Los colores van ya calculados (sin oklch(from …)) y sin desenfoque: el fondo es opaco y el desenfoque solo costaba. El grano es una capa que se repite */
-.heroe, .mcab { --eq-bel: #005ead; --eq-riv: var(--rq, #515e74); color: #fff; border: .5px solid var(--borde); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 40px rgba(0,0,0,.35);
+.heroe, .mcab { --eq-bel: #005ead; --eq-riv: var(--rq, #515e74); color: #fff; border: .5px solid var(--borde); box-shadow: 0 18px 40px rgba(0,0,0,.35);
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E"),
     radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.06), rgba(255,255,255,0) 70%),
     linear-gradient(90deg, color-mix(in srgb, var(--eq-bel) 50%, #08090d) 0%, color-mix(in srgb, var(--eq-bel) 35%, #08090d) 14%, color-mix(in srgb, var(--eq-bel) 19%, #08090d) 30%, color-mix(in srgb, var(--eq-bel) 6%, #08090d) 44%, #08090d 50%,
@@ -325,7 +325,7 @@ details.mas[open] > summary { color: var(--mut); }
 /* «Seguir marcando», «Empezar a marcar» y «Ver el partido»: una píldora de liquid glass más corta, al 63 % de la tarjeta (Iker, 18-nov) */
 .btn-blanco { width: 63%; margin: 0 auto; height: 60px; border-radius: 999px; font: 800 18px/1 Inter; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative;
   background: linear-gradient(180deg, rgba(255,255,255,.2), rgba(255,255,255,.06)); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.3); border: .5px solid rgba(255,255,255,.34);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 8px 22px rgba(0,0,0,.3); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
+  box-shadow: 0 8px 22px rgba(0,0,0,.3); -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%); }
 .btn-blanco:active, .gigante:active, .res:active, .pj:active, .op:active, .cat:active { transform: scale(.98); }
 /* último y próximo partido */
 .pmini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -358,7 +358,7 @@ details.mas[open] > summary { color: var(--mut); }
 .pcol .corona { width: 62px; margin-bottom: -16px; }
 .pcol b { display: block; max-width: 100%; font: 800 13.5px/1.2 Inter; margin-top: 7px; }
 .pcol .valor { margin-top: 2px; }
-.escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); box-shadow: inset 0 5px 0 rgba(255,255,255,.35); }
+.escalon { width: 100%; margin-top: 8px; border-radius: 14px 14px 0 0; display: grid; justify-items: center; align-content: start; padding-top: 8px; font: italic 900 36px/1 var(--disp); }
 .p1 .escalon { height: 104px; background: var(--grad); color: #fff; }
 .p2 .escalon { height: 78px; background: var(--plata); color: #5b6676; }
 .p3 .escalon { height: 60px; background: var(--bronce); color: #4a2508; }
@@ -486,10 +486,10 @@ html:not(.app) .nav { background: transparent; }
 .mk-cuerpo::after { content: ''; flex: none; height: calc(var(--navh) + 14px); } /* el aire de abajo de .cuerpo: WebKit no cuenta el padding de una columna flex al bajar y lo último quedaba bajo la barra */
 .mk-cuerpo > * { flex-shrink: 0; }
 .mk-vista + .ultima { margin-top: 18px; } /* 12-nov: la última jugada va justo debajo del TD, sin hueco */
-.mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: var(--radio); background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+.mk-td { width: 100%; margin-top: 14px; height: 74px; border-radius: var(--radio); background: var(--boton); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 18px; font: 800 21px/1 Inter; }
 /* en defensa el encabezado y el TD de ellos toman el color del rival (--rc, de EQUIPOS), en degradado como el nuestro */
 .mk-td.riv { background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--rc) 55%, #fff 45%) 0%, transparent 55%), linear-gradient(135deg, color-mix(in srgb, var(--rc) 45%, #000) 0%, color-mix(in srgb, var(--rc) 80%, #000) 62%, var(--rc) 100%); }
-.mk-td.riv { box-shadow: 0 8px 18px color-mix(in srgb, var(--rc) 35%, transparent); text-shadow: 0 1px 3px rgba(0,0,0,.35); }
+.mk-td.riv { text-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .pregunta { font: 800 22px/1.2 Inter; margin: 14px 2px 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; }
 /* el aviso de cada jugada va en este renglón y con la misma altura: el marcador queda a la vista y ninguna tira se mueve */
 .pregunta.aviso { height: 40px; margin: 14px 0 10px; background: rgba(10,16,30,.9); color: #fff; -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
@@ -529,7 +529,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .res .ic { grid-row: span 2; }
 .res b { font: 800 16px/1.15 Inter; }
 .res small { color: var(--mut); font-size: 12px; margin-top: 3px; }
-.res.td { grid-column: span 2; background: var(--boton); color: #fff; min-height: 76px; box-shadow: 0 8px 18px rgba(0,0,0,.3); }
+.res.td { grid-column: span 2; background: var(--boton); color: #fff; min-height: 76px; }
 .res.td small { color: inherit; opacity: .8; }
 .res.tdr { grid-column: span 2; background: linear-gradient(135deg, #374151, #6b7280 60%, #a3acb9); color: #fff; min-height: 76px; }
 .res.tdr small { color: rgba(255,255,255,.88); }
@@ -590,13 +590,11 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .mk-tira { gap: 12px; justify-content: flex-start; }
 /* los botones grandes (la C de Iker, 17-nov: «más fácil de usar y de entender»): enteros del color de su jugada (--c, de ICONOS_C),
    oscurecido para que el blanco se lea al sol, con el glifo grande al centro y el nombre abajo */
-.mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); box-shadow: 0 6px 14px color-mix(in srgb, var(--c) 30%, transparent); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
-/* «Profundo con brillo» (Iker, 17-nov): el mismo color, más profundo y menos saturado, en dos tonos cercanos, con filo de luz arriba
-   y brillo en la esquina; el blanco queda en 4.8:1 o más (el ámbar de safety estaba en 3:1). Sin oklch relativo (iOS 17) queda el plano de arriba */
-.mk-grande { position: relative; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,.22); background: linear-gradient(160deg, oklch(from var(--c) .54 calc(c * .78) h), oklch(from var(--c) .42 calc(c * .72) h));
-  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.28), inset 0 0 0 1px rgba(255,255,255,.07), 0 8px 16px -4px color-mix(in srgb, var(--c) 45%, transparent); }
+.mk-grande { align-items: center; justify-content: center; text-align: center; gap: 8px; color: #fff; background: color-mix(in srgb, var(--c) 84%, #000); text-shadow: 0 1px 2px rgba(0,0,0,.28); }
+/* «Profundo» (Iker, 17-nov): el mismo color, más profundo y menos saturado, en dos tonos cercanos; el blanco queda en 4.8:1 o más (el ámbar de safety
+   estaba en 3:1). Sin oklch relativo (iOS 17) queda el plano de arriba. Plano (Iker y revisión, 22-nov): sin filo de luz, sin brillo en la esquina y sin resplandor */
+.mk-grande { position: relative; overflow: hidden; text-shadow: 0 1px 2px rgba(0,0,0,.22); background: linear-gradient(160deg, oklch(from var(--c) .54 calc(c * .78) h), oklch(from var(--c) .42 calc(c * .72) h)); }
 .mk-grande[data-v=incompleto] { background: linear-gradient(160deg, oklch(from var(--c) .53 calc(c * .9) h), oklch(from var(--c) .43 calc(c * .85) h)); }
-.mk-grande::before { content: ''; position: absolute; inset: 0; background: radial-gradient(90% 70% at 15% 0%, rgba(255,255,255,.16), transparent 60%); pointer-events: none; }
 .mk-grande > span { position: relative; }
 /* al tocar: se hunde, rebota y el filo de luz destella (~190 ms); con «reducir movimiento» solo se hunde */
 .mk-grande::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 2px 0 rgba(255,255,255,.85), inset 0 0 0 1.5px rgba(255,255,255,.5); opacity: 0; pointer-events: none; }
@@ -616,7 +614,7 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 /* «Más opciones» sube en liquid glass (Iker, 18-nov): se alcanza a ver Marcar detrás, desenfocado; con .74 de blanco y las tiras más claras
    el texto queda en 4.5:1 o más aunque el desenfoque no se pinte */
 .hoja.vidrio { background: rgba(248,251,255,.74); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border-top-color: rgba(255,255,255,.6); }
-.hoja.vidrio .mk-tira { background: rgba(255,255,255,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.8); }
+.hoja.vidrio .mk-tira { background: rgba(255,255,255,.62); }
 .mk-tiras .mk-td { margin-top: 0; height: 60px; gap: 12px; }
 /* todos los botones cuadrados del mismo alto, el de la fila de «Intercepción lanzada» (Iker, 18-nov). En una pantalla baja (el SE) no cabría
    hasta el TD: ahí van a 110, con el ícono y el relleno un poco más chicos (el nombre de dos renglones sigue cabiendo), el TD 10 px más bajo
