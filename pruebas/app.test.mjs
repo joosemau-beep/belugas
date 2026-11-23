@@ -1198,3 +1198,27 @@ test('«Última» en Lo que pasó se lee entera en un renglón, con Corregir y D
     await pg.context().close();
   }
 });
+// 5. en Jugadores la línea del QB se cortaba en el SE («44/65 pases · 731 yd de p…», 236 px en 211) y las listas de jugadas del Final y de Lo que pasó también («TD de
+// Nicolás, pase de Mau · conversión de 1 falli…»); ahora la línea del QB dice «731 yd» (para el QB todas son de pase) y las listas usan la versión corta de la jugada si la entera no cabe
+test('Jugadores en 375 y las listas de jugadas del Final y de Lo que pasó no se cortan con puntos', async () => {
+  const fuera = (pg, sel) => pg.locator(sel).evaluateAll((xs) => xs.filter((e) => e.scrollWidth > e.clientWidth + 1).map((e) => e.innerText.trim()));
+  for (const [w, h] of [[375, 667], [390, 844]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    await toca(pg, 'ir', 'jugadores');
+    assert.match(await texto(pg), /Mau 44\/65 pases · 731 yd 71.1/);
+    assert.deepEqual(await fuera(pg, '#tel .corta'), [], `${w}: Jugadores`);
+    // un partido con jugadas largas: TD de pase con conversión atrapada, pick 6 en contra con conversión fallida
+    await toca(pg, 'ir', 'inicio'); await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+    await toca(pg, 'res', 'td'); await toca(pg, 'como', 'pase'); await toca(pg, 'quien', 'nicolas'); await salto(pg, 10); await toca(pg, 'rgok'); await toca(pg, 'conv', '1-1'); await toca(pg, 'convq', 'rodrigo');
+    await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0');
+    await toca(pg, 'mkver', 'paso'); await pg.evaluate(() => { seriesDe(st.partido.jugadas).forEach((x) => { st.abre[`${st.partido.id}:${x.ns}`] = true; }); pintar(); }); // todas las series abiertas // eslint-disable-line no-undef
+    const filas = () => pg.locator('.jfila .txt').evaluateAll((xs) => xs.map((e) => [e.innerText.trim(), e.scrollWidth <= e.clientWidth + 1]));
+    let f = await filas(); assert.ok(f.length >= 2 && f.every((x) => x[1]), `${w}: Lo que pasó ${JSON.stringify(f)}`);
+    assert.ok(f.some(([t]) => /^TD de Nicolás · 10 yd · \+1/.test(t)) && f.some(([t]) => /^pick 6 de KAF · \+1 fallida/.test(t)), JSON.stringify(f));
+    await toca(pg, 'terminar');
+    f = await filas(); assert.ok(f.length >= 2 && f.every((x) => x[1]), `${w}: Final ${JSON.stringify(f)}`);
+    assert.deepEqual(await fuera(pg, '#tel .corta'), [], `${w}: Final`);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});

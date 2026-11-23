@@ -1180,7 +1180,7 @@ const porCampo = (k) => Object.fromEntries(PLANTEL.map((p) => [p.id, TEMP[p.id][
 const CATS = [['puntos', 'Puntos', 'pts', {}], ['td', 'TD', 'TD', {}], ['yds', 'Yardas', 'yd', {}], ['rec', 'Recepciones', 'rec', {}], ['band', 'Banderas', 'band.', {}]];
 // cómo se resume a cada quien en una línea
 const lineaDe = (x, qb) => { if (!x) return 'No jugó'; const o = [], pas = qb ? o : []; // al que no es QB sus pases van al final
-  if (x.att) pas.push(`${x.comp}/${x.att} pases`); if (x.intl) pas.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.pyd) pas.push(`${x.pyd} yd de pase`); if (x.tdp) pas.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`); if (!qb && (x.ryd || x.ruyd)) o.push(`${(x.ryd || 0) + (x.ruyd || 0)} yd`);
+  if (x.att) pas.push(`${x.comp}/${x.att} pases`); if (x.intl) pas.push(`${x.intl} INT lanzada${x.intl > 1 ? 's' : ''}`); if (x.pyd) pas.push(`${x.pyd} yd${qb ? '' : ' de pase'}`); if (x.tdp) pas.push(`${x.tdp} TD de pase`); if (x.td) o.push(`${x.td} TD`); if (x.rec) o.push(`${x.rec} rec`); if (x.car) o.push(`${x.car} corrida${x.car > 1 ? 's' : ''}`); if (!qb && (x.ryd || x.ruyd)) o.push(`${(x.ryd || 0) + (x.ruyd || 0)} yd`);
   if (x.band) o.push(`${x.band} bandera${x.band > 1 ? 's' : ''}`); if (x.intn) o.push(`${x.intn} INT`); if (x.sack) o.push(`${x.sack} sack${x.sack > 1 ? 's' : ''}`); if (x.tap) o.push(`${x.tap} pase${x.tap > 1 ? 's' : ''} tapado${x.tap > 1 ? 's' : ''}`); if (x.conv) o.push(`conv. +${x.conv}`);
   return (qb ? o : o.concat(pas)).filter((s) => !/INT lanzada/.test(s)).slice(0, 2).join(' · ') || 'Sin jugadas'; };
 
@@ -1522,7 +1522,7 @@ const FIN_SERIE = { td: 'TD', pick6: 'Pick 6', safety: 'Safety a favor', intn: '
 const finDeSerie = (s, enJuego, r) => { const u = s.js[s.js.length - 1];
   return u.k === 'tdr' ? `TD de ${r.corto}` : u.k === 'pick6c' ? `Pick 6 de ${r.corto}` : FIN_SERIE[u.k] || (enJuego ? 'En curso' : s.lado === 'O' ? 'Sin anotar' : 'Serie detenida'); };
 // el renglón de una jugada: en marcar se toca para corregirla; la que marcaron los dos celulares se pinta y trae «Quitar la repetida»
-const filaJ = (x, i, tocable) => `<${tocable ? `button class="jfila en${x.repe ? ' repe' : ''}" data-a="fila" data-v="${i}"` : 'div class="jfila en"'}>${ic(x.tipo, true)}<span class="corta">${x.txt}</span>${x.por && x.por !== APARATO ? '<small><span class="otro">otro cel.</span></small>' : ''}${x.antes && x.marc !== `${x.antes.nos}–${x.antes.ellos}` ? `<span class="mk num">${x.marc}</span>` : ''}</${tocable ? 'button' : 'div'}>`
+const filaJ = (x, i, tocable) => `<${tocable ? `button class="jfila en${x.repe ? ' repe' : ''}" data-a="fila" data-v="${i}"` : 'div class="jfila en"'}>${ic(x.tipo, true)}<span class="corta txt" data-alt="${esc(JSON.stringify(x.alt))}">${x.txt}</span>${x.por && x.por !== APARATO ? '<small><span class="otro">otro cel.</span></small>' : ''}${x.antes && x.marc !== `${x.antes.nos}–${x.antes.ellos}` ? `<span class="mk num">${x.marc}</span>` : ''}</${tocable ? 'button' : 'div'}>`
   + (tocable && x.repe ? `<div class="repe-av"><span>Duplicada en dos celulares</span><button data-a="quitarrep" data-v="${x.uid}">Quitar duplicada</button></div>` : '');
 // un renglón por serie; la que va en juego, abierta; las demás se abren con un toque
 function jlista(p, tocable) {
