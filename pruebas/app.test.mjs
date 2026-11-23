@@ -1312,3 +1312,15 @@ test('el rival va siempre con su nombre corto: Partidos, Inicio, ¿Contra quién
   assert.deepEqual(pg.errores, []);
   await pg.context().close();
 });
+// 11. «Sistema de puntos» al pie de Jugadores se plegaba con el triángulo del navegador; ahora es el mismo plegable «Más ›» de los widgets (2.2), en azul y sin marcador
+test('«Sistema de puntos» se pliega como los widgets: sin el triángulo del navegador, con el «›» azul', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await toca(pg, 'ir', 'jugadores');
+  const m = () => pg.locator('.reglas > summary').evaluate((s) => { const c = getComputedStyle(s), a = getComputedStyle(s, '::after'); return [s.closest('details').className, c.listStyleType, a.content, c.color, Math.round(parseFloat(c.fontSize)), s.closest('details').open, Math.round(s.getBoundingClientRect().height) >= 44]; });
+  assert.deepEqual(await m(), ['card reglas det', 'none', '" ›"', 'rgb(29, 79, 143)', 13, false, true]);
+  await pg.locator('.reglas > summary').click(); await pg.waitForTimeout(100);
+  assert.deepEqual((await m()).slice(2, 3).concat((await m()).slice(5, 6)), ['" ‹"', true]);
+  assert.match(await texto(pg), /Sistema de puntos ATAQUE Yarda atrapada \+0.1/);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
+});

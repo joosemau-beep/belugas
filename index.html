@@ -771,7 +771,6 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .tj-tira small { display: block; font: 700 11.5px/1 Inter; text-transform: uppercase; letter-spacing: .04em; opacity: .85; white-space: nowrap; }
 .tj-tira strong { display: block; font: italic 900 38px/1 var(--disp); margin-top: 5px; }
 .reglas { margin-top: 14px; padding: 4px 16px; }
-.reglas summary { padding: 12px 0; font: 700 15px/1.2 Inter; color: var(--acento); cursor: pointer; }
 .reglas h4 { margin: 10px 0 4px; font: 700 12px/1 Inter; color: var(--mut); text-transform: uppercase; letter-spacing: .05em; }
 .reglas .rg { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid var(--linea); font-size: 14px; }
 .reglas .rg b { font-weight: 800; color: var(--navy); flex: none; }
@@ -1169,7 +1168,7 @@ const fmtPts = (w) => (w > 0 ? '+' : '−') + Math.abs(w);
 const n1 = (x) => String(Math.round(x * 10) / 10).replace('-', '−');
 const conSigno = (x) => (x > 0 ? '+' : x < 0 ? '−' : '') + String(Math.abs(Math.round(x * 10) / 10));
 const ord = (n) => `${n}º`;
-const tablaPuntos = () => `<details class="card reglas"><summary>Sistema de puntos</summary>
+const tablaPuntos = () => `<details class="card reglas det"><summary>Sistema de puntos</summary>
   ${[['Ataque', PUNTOS.slice(0, PUNTOS_DEF)], ['Defensa', PUNTOS.slice(PUNTOS_DEF)]].map(([t, l]) => `<h4>${t}</h4>${l.filter(([k]) => k !== 'pres').map(([, n, w]) => `<div class="rg"><span>${n}</span><b class="num${w < 0 ? ' neg' : ''}">${fmtPts(w)}</b></div>`).join('')}`).join('')}
   <p>El pase completo no da puntos: el QB gana por las yardas que lanza, 1 punto cada 25 yardas. Las yardas perdidas restan: en corrida, en pase completo y en sack. El pase incompleto no resta. Pick 6: intercepción y TD, +11. No cuentan el fumble (el balón queda muerto) ni la bandera fallada. No hay puntos de defensa por equipo, porque casi todos juegan en ataque y en defensa.</p></details>`;
 // vino: está en «quiénes vinieron» o hizo alguna jugada (los partidos sin esa lista cuentan solo lo segundo)
