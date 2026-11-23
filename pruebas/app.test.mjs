@@ -1148,3 +1148,18 @@ test('la etiqueta de lo tocado nunca queda bajo la barra de pestañas ni fuera d
     await pg.context().close();
   }
 });
+// 2. en Anotaciones los marcadores de dos cifras del lado del rival se partían en dos renglones («15–» / «10»: una caja de 44 px para un texto de 18 px); ahora cada
+// marcador va en un renglón, al ancho de su texto, y las cifras hermanas de un mismo renglón a la misma altura; sin bisel
+test('los marcadores de Anotaciones van en un renglón, también los del rival, y sin bisel', async () => {
+  for (const w of [390, 375]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: 844 }); await sembrar(pg);
+    await pg.evaluate(() => { A.juego('g6'); pintar(); }); // vs Panini: 22–15 y 22–17 del lado de Panini // eslint-disable-line no-undef
+    assert.match(await texto(pg), /22–15 Pick 6 de Panini/);
+    const m = await pg.locator('.an2 .mc').evaluateAll((xs) => xs.map((x) => { const r = document.createRange(); r.selectNodeContents(x); const cs = getComputedStyle(x);
+      return [x.textContent, [...r.getClientRects()].filter((q) => q.width > 1).map((q) => Math.round(q.top)).filter((v, i, a) => a.indexOf(v) === i).length, Math.round(x.getBoundingClientRect().height), cs.boxShadow]; }));
+    assert.ok(m.length >= 7);
+    for (const [t, lineas, alto, sombra] of m) { assert.equal(lineas, 1, `${w}: «${t}» en ${lineas} renglones`); assert.equal(alto, m[0][2], `${w}: «${t}» de ${alto} px`); assert.equal(sombra, 'none', t); }
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
