@@ -87,11 +87,10 @@
     conic-gradient(from 190deg at 0% 0%, #edf4fc 5%, #edf5fc 10%, #eef5fd 14%, #f0f6fd 19%, #f1f6fd 24%, #f1f7fd 28%, #f1f7fd 38%, #f1f6fd 43%, #eff5fd 48%, #edf4fc 52%, #ebf3fc 57%, #eaf3fc 62%, #eaf3fc 72%, #ebf3fc 76%, #ebf3fc 81%, #ecf4fc 86%, #ecf4fc 90%, #edf4fc 95%), #fbfdff;
   --franja: #ecf4fc;
   --radio: 38px; --r-tile: 26px; --r-hoja: 40px; --r-in: 24px; --r-seg: 19px;
-  /* las barras de los widgets («Degradado», decidido el 22-nov): riel ligero y translúcido, relleno del azul del equipo a uno luminoso en la punta, rojo solo para lo malo */
-  --b-h: 8px; --b-riel: rgba(11,27,51,.07); --b-riel-s: inset 0 0 0 .5px rgba(11,27,51,.05);
-  --b-fill: linear-gradient(90deg, #163f75 0%, #1d4f8f 55%, #3f8fe6 100%); --b-fill-s: inset 0 1px 0 rgba(255,255,255,.35), 0 0 8px rgba(63,143,230,.35);
-  --b-mal: linear-gradient(90deg, #8f1d14 0%, #b42318 55%, #e0483e 100%); --b-mal-s: inset 0 1px 0 rgba(255,255,255,.3), 0 0 8px rgba(224,72,62,.3);
-  --b-col: linear-gradient(180deg, #3f8fe6 0%, #1d4f8f 60%, #163f75 100%);
+  /* las barras de los widgets («Degradado», decidido el 22-nov): riel ligero y translúcido, relleno del azul del equipo a uno luminoso en la punta, rojo solo para lo malo; planas, sin efecto 3D */
+  --b-h: 8px; --b-riel: rgba(11,27,51,.07);
+  --b-fill: linear-gradient(90deg, #163f75 0%, #1d4f8f 55%, #3f8fe6 100%); --b-mal: linear-gradient(90deg, #8f1d14 0%, #b42318 55%, #e0483e 100%);
+  --b-col: linear-gradient(180deg, #3f8fe6 0%, #1d4f8f 60%, #163f75 100%); /* planas (Iker, 22-nov): el degradado solo a lo largo, sin brillo, sombra ni resplandor */
   font-synthesis: none;
   --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --oro: linear-gradient(180deg, #ffe38c 0%, #f6b73c 55%, #dd8d16 100%);
@@ -114,7 +113,7 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; }
 body { font: 16px/1.35 Inter, -apple-system, system-ui, sans-serif; color: var(--ink); background: var(--franja); -webkit-font-smoothing: antialiased; }
-button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; }
+button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; appearance: none; -webkit-appearance: none; } /* sin apariencia nativa: Gecko (Zen) ignoraba el relleno y el borde de las filas y de la barra partida (Iker, 22-nov) */
 .num { font-variant-numeric: tabular-nums; }
 .corta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
@@ -898,9 +897,9 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .det > div { font: 500 12.5px/1.45 Inter; color: var(--mut); padding: 0 0 6px; }
 /* barras: riel translúcido y relleno en degradado; el promedio del equipo es un punto con su etiqueta al tocarlo */
 .rielc { position: relative; display: block; height: var(--b-h); }
-.riel { position: relative; display: block; width: 100%; height: var(--b-h); border-radius: 999px; background: var(--b-riel); box-shadow: var(--b-riel-s); }
-.riel > i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 999px; background: var(--b-fill); box-shadow: var(--b-fill-s); }
-.riel > i.mal { background: var(--b-mal); box-shadow: var(--b-mal-s); }
+.riel { position: relative; display: block; width: 100%; height: var(--b-h); border-radius: 999px; background: var(--b-riel); }
+.riel > i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: 999px; background: var(--b-fill); }
+.riel > i.mal { background: var(--b-mal); }
 .prom { position: absolute; top: 50%; width: 12px; height: 12px; margin: 0; transform: translate(-50%, -50%); border: 1.5px solid #fff; border-radius: 50%; background: var(--navy); box-shadow: 0 1px 2px rgba(11,27,51,.25); z-index: 1; }
 .prom::before { content: ''; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); }
 .prom::after { content: attr(data-t); position: absolute; left: 50%; bottom: 15px; transform: translateX(-50%); white-space: nowrap; font: 700 10.5px/1 Inter; color: #fff; background: var(--navy); border-radius: 7px; padding: 5px 7px; opacity: 0; transition: opacity .15s; pointer-events: none; }
@@ -913,13 +912,14 @@ html.app .pant > .pregunta.aviso { top: calc(env(safe-area-inset-top) + 68px); }
 .col em { font: 800 11px/1 Inter; font-style: normal; color: var(--navy); white-space: nowrap; transition: transform .15s; }
 .col small { font: 600 10.5px/1 Inter; color: var(--mut); }
 .col i { display: block; width: 100%; max-width: 26px; border-radius: 5px 5px 3px 3px; background: var(--b-col); opacity: .38; }
-.col.ult i { opacity: 1; box-shadow: var(--b-fill-s); }
+.col.ult i { opacity: 1; }
 /* la barra partida (El balón): dos tramos casi juntos, esquinas de 10 px solo por fuera, cada tramo al tamaño de su número */
-.partida { display: flex; gap: 2px; padding: 8px 22px 16px; font: 700 12.5px/1 Inter; color: #fff; }
-.partida > button { height: 32px; min-width: 84px; display: flex; align-items: center; gap: 6px; padding: 0 12px; white-space: nowrap; color: #fff; }
-.partida i { font: italic 900 20px/1 var(--disp); }
-.partida .b1 { border-radius: 10px 2px 2px 10px; background: var(--b-fill); box-shadow: var(--b-fill-s); }
-.partida .b2 { border-radius: 2px 10px 10px 2px; background: var(--b-mal); box-shadow: var(--b-mal-s); justify-content: flex-end; }
+.partida { display: flex; gap: 2px; padding: 8px 22px 16px; font: 700 13px/1 Inter; color: #fff; }
+/* cada tramo al tamaño de su número, pero nunca más angosto que su texto (min-width auto): el texto no se encima ni se corta */
+.partida > button { min-width: auto; height: 38px; display: flex; align-items: center; justify-content: flex-start; padding: 0 14px; white-space: nowrap; color: #fff; }
+.partida i { font: italic 900 21px/1 var(--disp); margin-right: 2px; } /* número y palabra en un mismo renglón (span), en la misma línea base, centrados en el alto */
+.partida .b1 { border-radius: 10px 0 0 10px; background: var(--b-fill); }
+.partida .b2 { border-radius: 0 10px 10px 0; background: var(--b-mal); justify-content: flex-end; }
 /* la entrada a Ataque, Defensa y QB: tres tarjetitas en el vidrio de la app; la que se ve lleva el aro */
 .areas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
 .area { display: grid; gap: 4px; justify-items: center; padding: 12px 8px 10px; border-radius: var(--r-in); }
@@ -971,11 +971,11 @@ button.rs.sel::before { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); }
 .col.sel i { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); } .col.sel em { color: var(--azul); transform: scale(1.15); }
 .riel.sel > i, .partida > .sel, .cara.sel .foto, .chip.sel { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--azul); }
 .pp.sel, .rvf.sel { background: rgba(29,79,143,.09); }
-.tip { position: absolute; z-index: 60; background: var(--navy); color: #fff; border-radius: 12px; padding: 9px 12px; font: 600 12px/1.35 Inter; box-shadow: 0 10px 26px rgba(11,27,51,.32); max-width: 250px; min-width: 120px; }
+.tip { position: relative; margin: 10px 22px 12px; background: var(--navy); color: #fff; border-radius: 12px; padding: 10px 14px; font: 600 12px/1.35 Inter; }
 .tip b { display: block; font: 800 13px/1.2 Inter; } .tip em { display: block; font: italic 900 22px/1 var(--disp); margin: 3px 0 2px; } .tip span { display: block; opacity: .85; }
 .tip button { display: inline-flex; align-items: center; margin-top: 2px; color: #9fd0ff; font: 800 12px/1 Inter; min-height: 32px; }
-.tip::after { content: ''; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-bottom: 0; border-top-color: var(--navy); }
-.tip.abajo::after { bottom: auto; top: -6px; border-top: 0; border-bottom: 6px solid var(--navy); }
+.tip::before { content: ''; position: absolute; left: var(--ax, 50%); top: -6px; margin-left: -6px; border: 6px solid transparent; border-top: 0; border-bottom-color: var(--navy); }
+.card > .tip { margin-left: 16px; margin-right: 16px; }
 /* las barras crecen desde 0 al verse la tarjeta por primera vez (.ve); al repintar la misma pantalla ya no (.vio); con «reducir movimiento», de una vez */
 .w:not(.ve):not(.vio) .riel > i, .w:not(.ve):not(.vio) .partida > button { transform: scaleX(0); } .w:not(.ve):not(.vio) .col i { transform: scaleY(0); }
 .w.ve .riel > i { animation: bx .7s cubic-bezier(.2,.8,.2,1) both; transform-origin: left center; } .w.ve .riel > i.neg { transform-origin: right center; }
@@ -1557,24 +1557,23 @@ const riel = (p, { mal = false, prom: pr = null, promTxt = '', datos = null, cls
 const columnas = (gs, vals, sels, { max = Math.max(...vals.map((v) => (v ? v.n : 0)), 1), alto = 64 } = {}) => `<div class="cols" data-grupo>${vals.map((v, i) => `<button class="col${i === vals.length - 1 ? ' ult' : ''}"${sel(sels[i])}><em class="num">${v ? v.t : '—'}</em><i style="height:${v ? Math.max(3, v.n / max * alto) : 2}px"></i><small>${R(gs[i].rival).corto}</small></button>`).join('')}</div>`;
 // los mejores de un área: los 3 primeros con foto, cifra y una línea; cada renglón se toca y brinca a la ficha. unidad: (v) => 'yd' | 'jugadas' | 'pases'
 const mejores = (lista, unidad) => `<div data-grupo>${lista.slice(0, 3).map((x, i) => `<button class="pp"${sel({ t: nom(x.id), v: `${x.v} ${unidad(x.v)}`, s: [`${ord(i + 1)} de ${lista.length}`, x.sub].filter(Boolean).join(' · '), l: ['jug', x.id], lt: 'Ver ficha' })}><span class="rk">${i + 1}</span>${foto(P(x.id))}<div><b class="corta">${nom(x.id)}</b>${x.sub ? `<small class="corta" style="display:block">${x.sub}</small>` : ''}</div><div class="der"><strong class="num">${x.v}</strong><small>${unidad(x.v)}</small></div></button>`).join('')}</div>`;
-// la etiqueta de lo tocado: título, cifra, línea y el enlace; arriba del elemento, o abajo si arriba no cabe; vive en #tel (pintar la quita)
+// la etiqueta de lo tocado: título, cifra, línea y el enlace. Se abre en el flujo, debajo del renglón tocado o debajo de la gráfica entera, así no tapa
+// lo seleccionado ni a sus vecinos ni se corta en las orillas (Iker, 22-nov); la flechita apunta a lo tocado. pintar() la quita con todo lo demás
 function etiqueta(el) {
-  const o = JSON.parse(el.dataset.sel), t = $('#tel'); let tip = t.querySelector('.tip');
-  if (!tip) { tip = document.createElement('div'); tip.className = 'tip'; t.appendChild(tip); }
+  const o = JSON.parse(el.dataset.sel), t = $('#tel'); t.querySelectorAll('.tip').forEach((x) => x.remove());
+  const tip = document.createElement('div'); tip.className = 'tip';
   tip.innerHTML = `<b>${esc(o.t)}</b>${o.v ? `<em class="num">${esc(o.v)}</em>` : ''}${o.s ? `<span>${esc(o.s)}</span>` : ''}${o.l ? `<button data-a="${esc(o.l[0])}" data-v="${esc(o.l[1] ?? '')}">${esc(o.lt || 'Ver')} ›</button>` : ''}`;
-  const r = el.getBoundingClientRect(), tr = t.getBoundingClientRect();
-  tip.hidden = r.bottom < tr.top || r.top > tr.bottom; if (tip.hidden) return; // lo tocado se fue de la vista al desplazar
-  tip.classList.remove('abajo');
-  const tw = tip.offsetWidth, th = tip.offsetHeight; let x = r.left + r.width / 2 - tw / 2 - tr.left, y = r.top - th - 10 - tr.top;
-  if (r.top - th - 10 < tr.top + 4) { y = r.bottom + 10 - tr.top; tip.classList.add('abajo'); }
-  tip.style.left = `${Math.max(8, Math.min(x, tr.width - tw - 8))}px`; tip.style.top = `${y}px`;
+  const sitio = el.closest('.pp, .rvf, .ce, .mrow') || el.closest('[data-grupo]') || el;
+  sitio.after(tip);
+  const r = el.getBoundingClientRect(), q = tip.getBoundingClientRect();
+  tip.style.setProperty('--ax', `${Math.max(14, Math.min(q.width - 14, r.left + r.width / 2 - q.left))}px`);
 }
 // seleccionar uno (o ninguno): la clase .sel, los demás de su grupo atenuados y la etiqueta; la selección vive en st.gsel para sobrevivir al repintado
 function seleccion(el) {
   const t = $('#tel');
   t.querySelectorAll('[data-sel].sel').forEach((e) => { e.classList.remove('sel'); e.setAttribute('aria-pressed', 'false'); });
   t.querySelectorAll('[data-grupo].hay-sel').forEach((g) => g.classList.remove('hay-sel'));
-  const tip = t.querySelector('.tip'); if (tip) tip.hidden = true;
+  t.querySelectorAll('.tip').forEach((x) => x.remove());
   st.gsel = null;
   if (!el) return;
   el.classList.add('sel'); el.setAttribute('aria-pressed', 'true'); const g = el.closest('[data-grupo]'); if (g) g.classList.add('hay-sel');
@@ -1591,15 +1590,8 @@ document.addEventListener('click', (e) => {
   if (e.target.closest('.tip')) { st.gsel = null; return; }
   if (st.gsel) seleccion(null);
 });
-// con cursor (iPad con trackpad, laptop): al pasar o al enfocar sale la etiqueta sin seleccionar
-const asoma = (e) => { const el = e.target.closest && e.target.closest('#tel [data-sel]'); if (el && !st.gsel) etiqueta(el); };
-const esconde = (e) => { const el = e.target.closest && e.target.closest('#tel [data-sel]'); if (el && !st.gsel && !(e.relatedTarget && el.contains(e.relatedTarget))) { const tip = $('#tel .tip'); if (tip) tip.hidden = true; } };
-document.addEventListener('mouseover', (e) => { if (!matchMedia('(hover: none)').matches) asoma(e); });
-document.addEventListener('mouseout', esconde);
-document.addEventListener('focusin', asoma);
-document.addEventListener('focusout', esconde);
+// con cursor no se asoma nada al pasar: como la etiqueta abre en el flujo, al pasar el cursor movería la página. Con el teclado: Tab llega, Enter o espacio seleccionan
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && st.gsel) seleccion(null); });
-document.addEventListener('scroll', () => { if (st.gsel) { const el = $('#tel [data-sel].sel'); if (el) etiqueta(el); } }, { capture: true, passive: true });
 // las barras entran cuando se ve su tarjeta, una vez por pantalla (vistos); al repintar la misma pantalla ya están (.vio)
 const vistos = new Set();
 const io = 'IntersectionObserver' in window ? new IntersectionObserver((es) => es.forEach((e) => { if (!e.isIntersecting) return; e.target.classList.add('ve'); io.unobserve(e.target); vistos.add(e.target.dataset.k); }), { threshold: .15 }) : null;
@@ -1662,7 +1654,7 @@ function metricas() {
   // El balón: robados contra perdidos, en una barra partida
   const bal = c.rob - c.perd;
   const balon = `<div class="card"><div class="big"><strong class="num${bal < 0 ? ' mal' : ''}">${conSigno(bal)}</strong><div><b>${c.rob < c.perd ? 'perdemos más balones de los que robamos' : c.rob > c.perd ? 'robamos más balones de los que perdemos' : 'robamos tantos balones como perdemos'}</b></div></div>
-    <div class="partida" data-grupo><button class="b1" style="flex:${Math.max(c.rob, 1)}"${sel({ t: 'Balones robados', v: String(c.rob), s: 'intercepciones y pick 6 de la defensa', l: ['metir', 'defensa'], lt: 'Ver Defensa' })}><i class="num">${c.rob}</i>robados</button><button class="b2" style="flex:${Math.max(c.perd, 1)}"${sel({ t: 'Balones perdidos', v: String(c.perd), s: 'intercepciones y pick 6 en contra del ataque', l: ['metir', 'qb'], lt: 'Ver QB' })}><i class="num">${c.perd}</i>perdidos</button></div></div>`;
+    <div class="partida" data-grupo><button class="b1" style="flex:${Math.max(c.rob, 1)} 1 0px"${sel({ t: 'Balones robados', v: String(c.rob), s: 'intercepciones y pick 6 de la defensa', l: ['metir', 'defensa'], lt: 'Ver Defensa' })}><span><i class="num">${c.rob}</i> robados</span></button><button class="b2" style="flex:${Math.max(c.perd, 1)} 1 0px"${sel({ t: 'Balones perdidos', v: String(c.perd), s: 'intercepciones y pick 6 en contra del ataque', l: ['metir', 'qb'], lt: 'Ver QB' })}><span><i class="num">${c.perd}</i> perdidos</span></button></div></div>`;
   // Quién viene: solo cuentan los partidos marcados (los de antes no tienen lista)
   const asis = PLANTEL.map((p) => ({ id: p.id, n: con.filter((g) => vino(g, p.id)).length })).sort((a, b) => b.n - a.n), siempre = asis.filter((a) => a.n === con.length), faltan = asis.filter((a) => a.n < con.length).reverse().slice(0, 4);
   const viene = `<div class="card"><div class="big"><strong class="num">${siempre.length}</strong><div><b>${siempre.length === 1 ? 'viene' : 'vienen'} a todos los partidos</b></div></div>
@@ -2499,7 +2491,7 @@ addEventListener('online', () => { sinc(filas.vivo); sinc(filas.temp); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { cierraViejo(); sinc(filas.vivo); sinc(filas.temp); revisarVersion(); } });
 // la app se actualiza sola: desde el ícono el teléfono no la recarga (solo la despierta), así que al volver se revisa si hay
 // versión nueva. publicar.sh sella VERSION y version.txt. Nunca a media hoja; lo marcado ya está guardado en el teléfono
-const VERSION = '20261122175750';
+const VERSION = '20261122183224';
 async function revisarVersion() {
   if (location.protocol !== 'https:') return;
   try {

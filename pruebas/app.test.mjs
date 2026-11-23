@@ -971,6 +971,7 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   assert.deepEqual([await pg.locator('.rs.sel').count(), await pg.locator('.col.sel').count()], [0, 1]);
   await pg.locator('.pp[data-sel]').first().click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'Nicolás 14 pases 1º de 3 · 238 yd · 4 TD Ver ficha ›');
+  await pg.evaluate(() => document.querySelector('.partida').scrollIntoView()); await pg.waitForTimeout(900); // las barras entran al verse la tarjeta (15 %): a la vista antes de tocar
   await pg.locator('.partida .b2').click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'Balones perdidos 8 intercepciones y pick 6 en contra del ataque Ver QB ›');
   // la pastilla se toca en 26 × 44 aunque su círculo mida 22, y no «desborda» su caja; teclado: Enter selecciona, aria-pressed lo dice, Escape quita
@@ -1044,4 +1045,35 @@ test('en iPad (700 px o más, con dedo) Métricas y las fichas van a 820 de anch
   await toca(mac, 'ir', 'metricas');
   assert.deepEqual(await mac.evaluate(() => [getComputedStyle(document.querySelector('#tel .cuerpo')).display, document.querySelector('#tel').offsetWidth]), ['block', 430]);
   await ctx.close();
+});
+
+// Iker (22-nov, capturas): fotos pegadas en Conexiones, texto pegado al borde en El balón, «1 pases». Nada toca el borde de su caja ni se sale de ella
+test('nada pegado en los widgets: el texto lejos del borde de la tarjeta y dentro de su botón, las fotos vecinas con aire y la barra partida con relleno y texto centrado (8 partidos)', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  const mide = () => pg.evaluate(() => {
+    const out = [], rect = (n) => { const r = document.createRange(); r.selectNodeContents(n); return [...r.getClientRects()].filter((q) => q.width > 1); };
+    for (const c of document.querySelectorAll('#tel .card')) { const cb = c.getBoundingClientRect(), w = document.createTreeWalker(c, NodeFilter.SHOW_TEXT);
+      for (let n; (n = w.nextNode());) { if (!n.data.trim()) continue; const el = n.parentElement, t = n.data.trim().slice(0, 22);
+        if (el.closest('details:not([open]) > :not(summary)') || el.classList.contains('corta')) continue; // lo plegado no se ve; .corta se recorta con puntos suspensivos
+        for (const q of rect(n)) { if (q.left < cb.left + 8 || q.right > cb.right - 8) out.push(`«${t}» pegado al borde de la tarjeta`);
+          const b = el.closest('button'); if (b && !b.classList.contains('col')) { const bb = b.getBoundingClientRect(); if (q.left < bb.left - 1 || q.right > bb.right + 1 || q.top < bb.top - 1 || q.bottom > bb.bottom + 1) out.push(`«${t}» fuera de su botón`); } } } }
+    for (const g of document.querySelectorAll('#tel [data-grupo]')) { const fs = [...g.querySelectorAll(':scope > .pp, :scope > .rvf')].map((r) => r.querySelector('.foto, .rlogo').getBoundingClientRect()); /* la primera foto de cada renglón: Conexiones del partido lleva dos en pila */ for (let i = 1; i < fs.length; i++) if (fs[i].top - fs[i - 1].bottom < 12) out.push(`fotos a ${Math.round(fs[i].top - fs[i - 1].bottom)} px en ${g.parentElement.className}`); }
+    for (const b of document.querySelectorAll('#tel .partida > button')) { const bb = b.getBoundingClientRect(), i = b.querySelector('i').getBoundingClientRect(), t = rect(b.lastChild)[0], izq = Math.min(i.left, t.left) - bb.left, der = bb.right - Math.max(i.right, t.right);
+      if (izq < 12 || der < 12) out.push(`tramo ${b.className}: ${Math.round(Math.min(izq, der))} px de relleno`);
+      if (Math.abs((i.top + i.bottom) / 2 - (bb.top + bb.bottom) / 2) > 4) out.push(`tramo ${b.className}: el número descentrado`); if (Math.abs(i.bottom - t.bottom) > 3) out.push(`tramo ${b.className}: número y palabra en distinta línea base`); }
+    for (const e of document.querySelectorAll('#tel .pp small, #tel .tip em')) if (/\b1 (pases|recepciones|partidos|corridas|jugadas|banderas)\b/.test(e.textContent)) out.push(`plural: «${e.textContent.trim()}»`);
+    return out; });
+  const ve = async (js) => { await pg.evaluate(js); await abreMas(pg); await pg.evaluate(() => document.querySelectorAll('#tel .w').forEach((w) => w.classList.add('vio'))); await pg.waitForTimeout(800); return mide(); }; // .vio: las barras ya entraron, como se ven al final
+  assert.deepEqual(await ve(() => { st.met = 'ataque'; A.ir('metricas'); pintar(); document.querySelectorAll('.col')[4].click(); }), [], 'Métricas · Ataque'); // eslint-disable-line no-undef
+  assert.deepEqual(await ve(() => { st.met = 'defensa'; pintar(); document.querySelector('.pp[data-sel]').click(); }), [], 'Métricas · Defensa'); // eslint-disable-line no-undef
+  assert.deepEqual(await ve(() => { st.met = 'qb'; pintar(); document.querySelector('.partida .b1').click(); }), [], 'Métricas · QB'); // eslint-disable-line no-undef
+  assert.deepEqual(await ve(() => { st.pant = 'jugadores'; A.jug('nicolas'); pintar(); document.querySelector('.w[data-w=conex] .pp[data-sel]').click(); }), [], 'ficha de Nicolás'); // eslint-disable-line no-undef
+  assert.deepEqual(await ve(() => { A.juego('g6'); pintar(); document.querySelectorAll('.g4 button')[2].click(); }), [], 'ficha del partido'); // eslint-disable-line no-undef
+  assert.deepEqual(await ve(() => { A.jugp('iker'); pintar(); }), [], 'Iker en el partido'); // eslint-disable-line no-undef
+  // la etiqueta abre en el flujo, debajo de lo tocado: no tapa nada y no se corta en las orillas
+  await pg.evaluate(() => { st.pant = 'jugadores'; A.jug('nicolas'); pintar(); document.querySelector('.w[data-w=conex] .pp[data-sel]').click(); }); // eslint-disable-line no-undef
+  assert.deepEqual(await pg.evaluate(() => { const tip = document.querySelector('#tel .tip'), fila = tip.previousElementSibling, tr = tip.getBoundingClientRect(), fr = fila.getBoundingClientRect(), tel = document.querySelector('#tel').getBoundingClientRect();
+    return [fila.classList.contains('sel'), tr.top >= fr.bottom, tr.left >= tel.left + 8 && tr.right <= tel.right - 8, getComputedStyle(tip).position]; }), [true, true, true, 'relative']);
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
 });
