@@ -1699,11 +1699,11 @@ function filaPregunta(conUltima) {
   const u = p.jugadas[p.jugadas.length - 1];
   if (!ta) return u && conUltima ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer" data-v="${u.uid}">Deshacer</button></div>` : '';
   const fila = ta.uid ? p.jugadas.findIndex((j) => j.uid === ta.uid) : -1, btn = ta.accion !== undefined ? ta.accion : fila >= 0 || ta.snap ? ['deshacer', 'Deshacer'] : null;
-  const txt = ta.txt.charAt(0).toUpperCase() + ta.txt.slice(1);
+  const may = (s) => s.charAt(0).toUpperCase() + s.slice(1), txt = may(ta.txt), alt = ta.alt ? ` data-alt="${esc(JSON.stringify(ta.alt.map(may)))}"` : '';
   // las caras opcionales (a quién iba, a quién le hicieron el sack) caben en el renglón sin el ícono: 4 de 30 px
   const ids = ta.opc && !ta.opc.cayo ? ta.opc.ids.filter((id) => id !== ta.id).slice(0, 4) : [];
   const opc = ta.opc && ta.opc.cayo ? '<button class="si" data-a="cayo">Pase soltado</button>' : ids.map((id) => `<button class="cara" data-a="ponquien" data-v="${id}" aria-label="${P(id).nombre}">${foto(P(id))}</button>`).join('');
-  return `<div class="pregunta aviso${ta.nuevo ? ' nuevo' : ''}${ids.length ? ' caras' : ''}">${ids.length ? '' : ta.id && P(ta.id) ? foto(P(ta.id)) : ta.tipo ? ic(ta.tipo, true) : ''}${fila >= 0 ? `<button class="corta txt" data-a="fila" data-v="${fila}">${txt}</button>` : `<span class="corta txt">${txt}</span>`}${opc}${btn ? `<button class="acc" data-a="${btn[0]}" data-v="${btn[2] || 'aviso'}">${btn[1]}</button>` : ''}</div>`;
+  return `<div class="pregunta aviso${ta.nuevo ? ' nuevo' : ''}${ids.length ? ' caras' : ''}">${ids.length ? '' : ta.id && P(ta.id) ? foto(P(ta.id)) : ta.tipo ? ic(ta.tipo, true) : ''}${fila >= 0 ? `<button class="corta txt" data-a="fila" data-v="${fila}"${alt}>${txt}</button>` : `<span class="corta txt"${alt}>${txt}</span>`}${opc}${btn ? `<button class="acc" data-a="${btn[0]}" data-v="${btn[2] || 'aviso'}">${btn[1]}</button>` : ''}</div>`;
 }
 function marcar() {
   const p = st.partido, O = p.lado === 'O', r = R(HOY);
@@ -2036,6 +2036,15 @@ function hoja() {
 }
 // quién lanzó (el QB del partido por omisión); se cambia solo para esta jugada
 const campoLanzo = (q, de) => `<button class="campo" data-a="lanzover" data-v="${de}"><div class="izq">${q && P(q) ? foto(P(q)) : ''}<div style="min-width:0"><span class="l">Lanzó</span><b class="corta" style="display:block">${nom(q)}${q === st.partido.qb ? ' · QB' : ''}</b></div></div><u>Cambiar</u></button>`;
+// un texto de jugada que no cabe en su renglón (el aviso, «Última», las listas) se cambia por su versión más corta, de data-alt, hasta que quepa; solo si ni la
+// más corta cabe se recorta con puntos (revisión, 22-nov: nada importante cortado y nada en dos renglones). Mide todos y luego cambia: pocas pasadas de layout
+function encoge(t) {
+  let es = [...t.querySelectorAll('[data-alt]')];
+  for (let i = 0; es.length && i < 3; i++) {
+    es = es.filter((e) => e.scrollWidth > e.clientWidth + 1);
+    es = es.filter((e) => { const a = JSON.parse(e.dataset.alt); if (!a.length) return false; e.innerHTML = a.shift(); e.dataset.alt = JSON.stringify(a); return true; });
+  }
+}
 let ladoAntes = null; // dónde quedó el indicador de Ataque/Defensa en el último repintado
 let mcabHtml = null; // cómo se armó el último encabezado de Marcar
 function pintar() {
@@ -2091,6 +2100,7 @@ function pintar() {
   if (st.aArea) { st.aArea = false; const a = t.querySelector('.areas'); if (a && cu1) cu1.scrollTop = a.offsetTop - 8; }
   if (st.toast) st.toast.nuevo = false;
   if (st.hoja === 'cuanto') montarCuanto();
+  encoge(t);
   st.flash = null;
   // el botón que se acaba de tocar rebota una vez (al repintar es otro botón: la clase va en el nuevo)
   if (st.toque) { const b = t.querySelector(`.mk-grande[data-v="${st.toque}"]`); if (b) b.classList.add('toque'); st.toque = null; }
@@ -2133,15 +2143,18 @@ const otroLado = (id, lado) => !!ladoDe(id) && ladoDe(id) !== lado;
 const ladoDe = (id) => (P(id) || {}).lado || '';
 const fmtYd = (y) => (y > 0 ? '+' : '') + y;
 const TXT = { pase: (n) => `pase a ${n}`, corrida: (n) => `corrida de ${n}`, incompleto: (n) => (n ? `pase incompleto para ${n}` : 'pase incompleto, mal pase'), parada: (n) => (n ? `${n} detenido` : 'jugada detenida'), buena: (n) => `buena jugada de ${n}`, bandera: (n) => `bandera quitada por ${n}`, tapado: (n) => `pase tapado por ${n}`, presion: (n) => `presión de ${n}, incompleto`, fallo: () => 'pase incompleto', intn: (n) => `intercepción de ${n}`, sack: (n) => `sack de ${n}`, safety: (n) => `safety de ${n}` };
-function textoDe(j) {
-  const cv = !j.conv ? '' : !j.conv[1] ? ` · conversión de ${j.conv[0]} fallida` : ['tdr', 'pick6c'].includes(j.k) ? ` + ${j.conv[0]}` : ` + ${j.conv[0]} (atrapó ${nom(j.convId)})`;
+// n: qué tan corto (revisión, 22-nov: el aviso y las listas van en un renglón sin cortar lo que importa, las yardas y la conversión): 0 completo;
+// 1 sin quién lanzó ni «en su zona» y la conversión como «+1 de Rodrigo»; 2 además sin quién atrapó la conversión
+function textoDe(j, n = 0) {
+  const c = j.conv, riv = ['tdr', 'pick6c'].includes(j.k);
+  const cv = !c ? '' : n ? (c[1] ? ` · +${c[0]}${n < 2 && !riv && j.convId ? ` de ${nom(j.convId)}` : ''}` : ` · +${c[0]} fallida`) : !c[1] ? ` · conversión de ${c[0]} fallida` : riv ? ` + ${c[0]}` : ` + ${c[0]} (atrapó ${nom(j.convId)})`;
   if (j.k === 'castigo') return `castigo ${j.v === 'favor' ? 'a favor' : 'en contra'}`;
-  if (j.k === 'td') return `TD de ${nom(j.id)}${j.qb ? `, pase de ${nom(j.qb)}` : ', por corrida'}${j.yd != null ? ` · ${j.yd} yd` : ''}${cv}`;
+  if (j.k === 'td') return `TD de ${nom(j.id)}${n ? '' : j.qb ? `, pase de ${nom(j.qb)}` : ', por corrida'}${j.yd != null ? ` · ${j.yd} yd` : ''}${cv}`;
   if (j.k === 'sackr') return `sack a ${nom(j.id)}` + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '');
   if (j.k === 'pick6') return `Pick 6 de ${nom(j.id)}${cv}`;
   if (j.k === 'tdr') return `TD de ${R(HOY).corto}${cv}`;
-  if (j.k === 'pick6c') return `pick 6 de ${R(HOY).corto}, lanzada por ${nom(j.qb)}${cv}`;
-  if (j.k === 'safetyc') return j.id ? `safety en contra, ${nom(j.id)} en su zona` : 'safety en contra';
+  if (j.k === 'pick6c') return `pick 6 de ${R(HOY).corto}${n ? '' : `, lanzada por ${nom(j.qb)}`}${cv}`;
+  if (j.k === 'safetyc') return j.id && !n ? `safety en contra, ${nom(j.id)} en su zona` : 'safety en contra';
   if (j.k === 'int') return `intercepción lanzada por ${nom(j.qb)}`;
   if (j.k === 'incompleto' && j.drop) return `pase soltado por ${nom(j.id)}`;
   return (TXT[j.k] || (() => String(j.k)))(SIN_QUIEN.includes(j.k) ? (j.id && P(j.id) ? P(j.id).corto : '') : nom(j.id)) + (j.drop ? ' · soltado' : '') + (j.yd != null ? ` · ${fmtYd(j.yd)} yd` : '');
@@ -2186,7 +2199,7 @@ function rehacer0(p) {
       if (dy == null) sabe = false; else spot = Math.max(1, Math.min(CAMPO - 1, spot + dy));
     }
     const pd = pdDe(j); if (pd) primera = true;
-    j.txt = textoDe(j);
+    j.txt = textoDe(j); j.alt = [textoDe(j, 1), textoDe(j, 2)]; // las versiones cortas, para donde el texto entero no cabe en un renglón
     if (f.cambia) serie(lado === 'O' ? 'D' : 'O');
     else if (f.serie || f.reinicia) serie(lado); // pick 6 (nuestro o de ellos): después de la conversión patean y el mismo lado empieza en su 5
     else if (pd) down = 1;
@@ -2205,9 +2218,12 @@ function avisar(toast, ms = 4000) { st.toast = { ...toast, nuevo: true }; clearT
 function quitarAviso() { st.toast = null; if (st.hoja === 'cuanto') { const e = document.querySelector('#tel .pregunta'); if (e && st.partido) e.outerHTML = filaPregunta(); } else pintar(); }
 const conMarcador = (j) => { const f = efecto(j); return f.nos || f.ellos ? ` · ${st.partido.nos}–${st.partido.ellos}` : ''; };
 const porUid = (uid) => (st.partido ? st.partido.jugadas.find((x) => x.uid === uid) : null);
-// el aviso de una jugada: la jugada y su cambio en el marcador
-function avisoDe(x, opc) {
-  return { txt: x.txt + conMarcador(x), id: x.id, tipo: x.tipo, uid: x.uid, opc };
+// las versiones cada vez más cortas de un texto de jugada (con su prefijo y el marcador); la última, sin el marcador, que ya está arriba
+const alts = (j, pref = '', m = '') => [pref + j.alt[0] + m, pref + j.alt[1] + m, pref + j.alt[1]];
+// el aviso de una jugada: la jugada y su cambio en el marcador; alt: lo mismo más corto, por si no cabe en el renglón (revisión, 22-nov)
+function avisoDe(x, opc, pref = '') {
+  const m = conMarcador(x);
+  return { txt: pref + x.txt + m, alt: alts(x, pref, m), id: x.id, tipo: x.tipo, uid: x.uid, opc };
 }
 function guarda(j) {
   const p = st.partido, t = Date.now(), i = st.ins ? p.jugadas.findIndex((x) => x.uid === st.ins) : -1;
@@ -2229,7 +2245,7 @@ function guarda(j) {
 function corrige(j, cambio, como = 'Corregida') {
   const p = st.partido, antes = [JSON.parse(JSON.stringify(j))];
   cambio(j); j.ver = sube(j.ver); rehacer(p);
-  const a = como === 'Guardado' ? avisoDe(j) : { txt: `${como}: ${j.txt}${conMarcador(j)}`, id: j.id, tipo: j.tipo, uid: j.uid };
+  const a = avisoDe(j, null, como === 'Guardado' ? '' : `${como}: `);
   avisar({ ...a, snap: como === 'Guardado' ? null : antes }, a.accion ? 6000 : 4000);
   subir();
 }
@@ -2476,7 +2492,7 @@ function bajar(srv, pasa) {
     if (m.terminado && (m.terminadoVer || 0) > (p.terminadoVer || 0)) { p.terminado = true; p.terminadoVer = m.terminadoVer; rehacer(p); cerrarPartido(p, viejo(p) ? '' : 'Lo terminó otro celular.'); pintar(); return; }
     rehacer(p);
     const rp = p.jugadas.find((j) => j.repe && !avisadas.has(j.uid));
-    if (rp) { avisadas.add(rp.uid); avisar({ txt: `Duplicada en dos celulares: ${rp.txt}`, tipo: rp.tipo, uid: rp.uid, accion: ['quitarrep', 'Quitar', rp.uid] }, 6000); pintar(); return; }
+    if (rp) { avisadas.add(rp.uid); avisar({ txt: `Duplicada en dos celulares: ${rp.txt}`, alt: alts(rp, 'Duplicada en dos celulares: '), tipo: rp.tipo, uid: rp.uid, accion: ['quitarrep', 'Quitar', rp.uid] }, 6000); pintar(); return; }
     if (fp(p) !== antes) pintar();
     return;
   }
@@ -2697,7 +2713,7 @@ const A = {
   // desde el aviso: poner las yardas que se saltaron, o la conversión que se cerró tocando fuera
   ponerconv: (uid) => { const j = porUid(uid); if (!j) return; st.toast = null; clearTimeout(tToast); abrirConv(j); },
   // la jugada que marcaron los dos celulares: se quita la repetida (con Deshacer) o se deja como dos
-  quitarrep: (uid) => { const p = st.partido, j = porUid(uid); if (!j) return; const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); p.borradas[uid] = tb; rehacer(p); avisar({ txt: 'Duplicada quitada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb }); subir(); },
+  quitarrep: (uid) => { const p = st.partido, j = porUid(uid); if (!j) return; const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); p.borradas[uid] = tb; rehacer(p); avisar({ txt: 'Duplicada quitada: ' + j.txt, alt: alts(j, 'Duplicada quitada: '), tipo: j.tipo, snap: antes, revive: tb }); subir(); },
   unica: () => { const j = st.partido.jugadas[st.edita]; st.hoja = null; corrige(j, (x) => { x.unica = true; }); },
   // abrir o cerrar una serie de la lista
   serie: (v) => { const p = st.partido || (st.final && st.final.partido); if (!p) return; const k = `${p.id}:${v}`, enJuego = p === st.partido && +v === p.ns && p.nsUsada; st.abre[k] = !(st.abre[k] ?? enJuego); },
@@ -2740,7 +2756,7 @@ const A = {
     if (conYardas(j)) abrirCuanto(j);
   },
   // el nombre desde el aviso (sack a nuestro QB, safety en contra)
-  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = sube(j.ver); rehacer(st.partido); avisar({ ...ta, txt: j.txt + conMarcador(j), id, opc: null }, 5000); subir(); },
+  ponquien: (id) => { const ta = st.toast, j = ta && porUid(ta.uid); if (!j) return; j.id = id; j.ver = sube(j.ver); rehacer(st.partido); avisar({ ...ta, ...avisoDe(j), id, opc: null }, 5000); subir(); },
   tdr: () => { st.sel = 'tdr'; st.lanzo = null; const j = guarda({ k: 'tdr' }); abrirConv(j); },
   conv: (v) => {
     const c = st.conv, j = c && porUid(c.uid); if (!j) { st.hoja = null; return; }
@@ -2767,7 +2783,7 @@ const A = {
     st.hoja = ['td', 'pick6'].includes(k) ? null : CON_NOMBRE.includes(k) && !SIN_QUIEN.includes(k) && !j.id ? 'corrige' : null;
     if (['td', 'pick6', 'tdr', 'pick6c'].includes(k)) abrirConv(j);
   },
-  borrar: () => { const p = st.partido, j = p.jugadas[st.edita], antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); st.hoja = null; p.borradas[j.uid] = tb; rehacer(p); avisar({ txt: 'Borrada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb }); subir(); },
+  borrar: () => { const p = st.partido, j = p.jugadas[st.edita], antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva); st.hoja = null; p.borradas[j.uid] = tb; rehacer(p); avisar({ txt: 'Borrada: ' + j.txt, alt: alts(j, 'Borrada: '), tipo: j.tipo, snap: antes, revive: tb }); subir(); },
   // Deshacer: desde el aviso, regresa lo último que se hizo (guardar, corregir o borrar); sin aviso, quita la última jugada
   deshacer: (v) => {
     const p = st.partido; if (!p) return;
@@ -2779,7 +2795,7 @@ const A = {
     const antes = [JSON.parse(JSON.stringify(j))], tb = sube(j.viva);
     p.borradas[j.uid] = tb; rehacer(p); st.toast = null; clearTimeout(tToast); if (st.hoja === 'cuanto' || st.hoja === 'conv') st.hoja = null;
     // desde «Última» se quita una jugada que ya no estaba a la vista en el aviso: se dice cuál fue, con Deshacer
-    if (v !== 'aviso' && !st.practicando) avisar({ txt: 'Borrada: ' + j.txt, tipo: j.tipo, snap: antes, revive: tb });
+    if (v !== 'aviso' && !st.practicando) avisar({ txt: 'Borrada: ' + j.txt, alt: alts(j, 'Borrada: '), tipo: j.tipo, snap: antes, revive: tb });
     subir();
   },
   // corregir un partido terminado: se abre en Marcar sin dejar de estar terminado

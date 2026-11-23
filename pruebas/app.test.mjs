@@ -69,11 +69,11 @@ test('un partido completo: cada jugada, deshacer, recargar, terminar y las cuent
   await paso('13–8', /Defensa/); // después del pick 6 ellos vuelven a atacar
   await toca(pg, 'res', 'safety'); await toca(pg, 'quien', 'nico');
   await paso('15–8', /Ataque/);
-  await toca(pg, 'mas'); await toca(pg, 'res', 'safetyc');
+  await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'safetyc');
   await paso('15–10', /Defensa/);
   await toca(pg, 'lado', 'O'); // el lado a mano
   await paso('15–10', /Ataque/);
-  await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0');
+  await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0');
   await paso('15–16', /Ataque/);
   // sack a nuestro QB con yardas perdidas, y se deshace
   await toca(pg, 'res', 'sackr'); await pg.locator('.rg-b[data-pm="-1"]').click(); await pg.locator('.rg-b[data-pm="-1"]').click(); await toca(pg, 'rgok');
@@ -1159,6 +1159,27 @@ test('los marcadores de Anotaciones van en un renglón, también los del rival, 
       return [x.textContent, [...r.getClientRects()].filter((q) => q.width > 1).map((q) => Math.round(q.top)).filter((v, i, a) => a.indexOf(v) === i).length, Math.round(x.getBoundingClientRect().height), cs.boxShadow]; }));
     assert.ok(m.length >= 7);
     for (const [t, lineas, alto, sombra] of m) { assert.equal(lineas, 1, `${w}: «${t}» en ${lineas} renglones`); assert.equal(alto, m[0][2], `${w}: «${t}» de ${alto} px`); assert.equal(sombra, 'none', t); }
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
+// 3. el aviso de la jugada guardada cortaba el texto con puntos y se perdían las yardas y la conversión (texto de 407 px en una caja de 255 en iPad y de 200 en el SE);
+// ahora, si el texto entero no cabe, el aviso dice lo mismo más corto (sin quién lanzó, luego sin quién atrapó la conversión, al final sin el marcador, que ya está arriba)
+const salto = async (pg, v) => { await pg.locator(`#tel [data-salto="${v}"]`).click(); await pg.waitForTimeout(150); };
+test('el aviso de la jugada guardada cabe en su renglón con las yardas y la conversión, en 390, 375 e iPad', async () => {
+  for (const [w, h, app] of [[390, 844, 0], [375, 667, 0], [820, 1180, 1]]) {
+    const pg = await telefono(srv.url, app ? { app: { ancho: w, pantalla: h } } : { ancho: w, alto: h }); await sembrar(pg);
+    await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+    const aviso = () => pg.locator('.pant > .pregunta.aviso .txt').evaluate((e) => [e.innerText.replace(/\s+/g, ' '), e.scrollWidth <= e.clientWidth + 1]);
+    // TD de pase de 10 yd con conversión de 1 buena de Rodrigo: el aviso trae las yardas y el +1 enteros
+    await toca(pg, 'res', 'td'); await toca(pg, 'como', 'pase'); await toca(pg, 'quien', 'nicolas'); await salto(pg, 10); await toca(pg, 'rgok'); await toca(pg, 'conv', '1-1'); await toca(pg, 'convq', 'rodrigo');
+    let [t, cabe] = await aviso();
+    assert.ok(cabe && /^TD de Nicolás · 10 yd · \+1/.test(t), `${w}: «${t}» ${cabe ? 'cabe' : 'no cabe'}`);
+    // safety en contra y pick 6 en contra (Más opciones): lo mismo
+    await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'safetyc'); [t, cabe] = await aviso(); assert.ok(cabe && /^Safety en contra/.test(t), `${w}: «${t}» ${cabe ? 'cabe' : 'no cabe'}`);
+    await toca(pg, 'lado', 'O'); await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0'); [t, cabe] = await aviso(); assert.ok(cabe && /^Pick 6 de KAF · \+1 fallida/.test(t), `${w}: «${t}» ${cabe ? 'cabe' : 'no cabe'}`);
+    // con sitio, el aviso dice todo: en iPad (el aviso mide 255 px) sigue sin caber el texto entero, pero la jugada corta sí lleva a quién atrapó
+    await toca(pg, 'res', 'corrida'); await toca(pg, 'quien', 'rodrigo'); await salto(pg, 5); await toca(pg, 'rgok'); [t, cabe] = await aviso(); assert.deepEqual([t, cabe], ['Corrida de Rodrigo · +5 yd', true]);
     assert.deepEqual(pg.errores, []);
     await pg.context().close();
   }
