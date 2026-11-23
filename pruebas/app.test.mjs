@@ -1346,3 +1346,15 @@ test('tocar el centro de una barra de «Lo mío» cuando el promedio está a la 
     await pg.context().close();
   }
 });
+// 13. las pastillas de Líderes no caben en 390 ni en 375 y «Banderas» quedaba cortada en seco en el borde, sin nada que dijera que se desliza; ahora la fila llega hasta
+// la orilla de la pantalla y se desvanece a la derecha, y al deslizar hasta el final la última pastilla queda entera con aire
+test('la fila de categorías de Líderes se desvanece a la derecha para que se vea que se desliza, y al final deja aire', async () => {
+  for (const [w, h] of [[390, 844], [375, 667]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    const m = await pg.locator('.cats').evaluate((c) => { const cs = getComputedStyle(c), r = c.getBoundingClientRect(), ult = c.querySelector('.cat:last-of-type'); const antes = ult.getBoundingClientRect().right > r.right;
+      c.scrollLeft = c.scrollWidth; const u = ult.getBoundingClientRect(); return [c.scrollWidth > c.clientWidth, antes, (cs.webkitMaskImage || cs.maskImage || 'none') !== 'none', Math.round(r.left), Math.round(r.right), u.right <= r.right - 24, u.right > r.right - 60]; });
+    assert.deepEqual(m, [true, true, true, 0, w, true, true], `${w}: [se desliza, la última cortada al inicio, con desvanecido, de orilla a orilla, al final entera y con aire]`);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});
