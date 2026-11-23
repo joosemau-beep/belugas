@@ -1126,3 +1126,25 @@ test('un renglón por etiqueta, cifras hermanas alineadas y radios concéntricos
     await pg.context().close();
   }
 });
+
+// ---------- la revisión final de la app (22-nov, belugas-revision-final): un caso por hallazgo, con lo que midió el revisor ----------
+// 1. la etiqueta de una gráfica tocada cerca del borde de abajo quedaba bajo la barra de pestañas o fuera de la pantalla (WebKit 390: de 765 a 878 en Contra cada
+// rival; Chromium 375: de 645 a 757); ahora la página sube lo justo para verla entera, encima de la barra
+test('la etiqueta de lo tocado nunca queda bajo la barra de pestañas ni fuera de la pantalla', async () => {
+  for (const [w, h] of [[390, 844], [375, 667]]) {
+    const pg = await telefono(srv.url, { ancho: w, alto: h }); await sembrar(pg);
+    const abajo = (sel) => pg.evaluate((sel) => { const c = document.querySelector('#tel .cuerpo'), e = document.querySelector(sel), nav = document.querySelector('#tel .nav').getBoundingClientRect();
+      c.scrollTop += e.getBoundingClientRect().bottom - (nav.top - 6); return e.getBoundingClientRect().bottom <= nav.top; }, sel); // el elemento pegado a la barra, como lo tocó el revisor
+    const mide = () => pg.evaluate(() => { const t = document.querySelector('#tel .tip').getBoundingClientRect(), nav = document.querySelector('#tel .nav').getBoundingClientRect(), c = document.querySelector('#tel .cuerpo').getBoundingClientRect();
+      return [Math.round(t.bottom) <= Math.round(nav.top) - 8, t.top >= c.top, t.bottom <= innerHeight]; });
+    for (const [js, sel] of [[() => { st.met = 'qb'; A.ir('metricas'); pintar(); }, '.cols .col'], [null, '.partida .b2'], [null, '.rvf:nth-child(2)'], [() => { st.pant = 'jugadores'; A.jug('nicolas'); pintar(); }, '.cols .col'], [() => { A.juego('g6'); pintar(); }, '.w[data-w=conex] .pp[data-sel]']]) { // eslint-disable-line no-undef
+      if (js) { await pg.evaluate(js); await pg.evaluate(() => document.querySelectorAll('#tel .w').forEach((x) => x.classList.add('vio'))); }
+      assert.ok(await abajo(sel), `${w}: ${sel} a la vista`);
+      await pg.locator(sel).first().click(); await pg.waitForTimeout(700);
+      assert.deepEqual(await mide(), [true, true, true], `${w} × ${h} · ${sel}`);
+      await pg.keyboard.press('Escape');
+    }
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});

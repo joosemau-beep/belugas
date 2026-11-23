@@ -1584,6 +1584,9 @@ function etiqueta(el) {
   sitio.after(tip);
   const r = el.getBoundingClientRect(), q = tip.getBoundingClientRect();
   tip.style.setProperty('--ax', `${Math.max(14, Math.min(q.width - 14, r.left + r.width / 2 - q.left))}px`);
+  // nunca fuera de la pantalla ni bajo la barra de pestañas (revisión, 22-nov): si queda abajo, la página sube lo justo para verla entera
+  const c = sitio.closest('.cuerpo'), nv = t.querySelector('.nav'), lim = (nv ? nv.getBoundingClientRect().top : c ? c.getBoundingClientRect().bottom : innerHeight) - 8;
+  if (c && q.bottom > lim) c.scrollBy({ top: q.bottom - lim, behavior: 'smooth' });
 }
 // seleccionar uno (o ninguno): la clase .sel, los demás de su grupo atenuados y la etiqueta; la selección vive en st.gsel para sobrevivir al repintado
 function seleccion(el) {
