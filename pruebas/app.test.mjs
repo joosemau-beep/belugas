@@ -971,10 +971,10 @@ test('El equipo: Cómo vamos, Ataque, Defensa y QB con sus mejores, El balón, Q
   assert.deepEqual([await pg.locator('.rs.sel').count(), await pg.locator('.col.sel').count()], [0, 1]);
   await pg.locator('.pp[data-sel]').first().click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'Nicolás 14 pases 1º de 3 · 238 yd · 4 TD Ver ficha ›');
-  await pg.locator('.dos .b2').click(); await pg.waitForTimeout(100);
+  await pg.locator('.partida .b2').click(); await pg.waitForTimeout(100);
   assert.equal(await tip(pg), 'Balones perdidos 8 intercepciones y pick 6 en contra del ataque Ver QB ›');
-  // área de toque de 44 px aunque la pastilla mida 22; teclado: Enter selecciona, aria-pressed lo dice, Escape quita
-  assert.ok(await pg.locator('.rs[data-sel]').first().evaluate((e) => { const a = getComputedStyle(e, '::after'); return parseFloat(a.width) >= 44 && parseFloat(a.height) >= 44; }));
+  // la pastilla se toca en 26 × 44 aunque su círculo mida 22, y no «desborda» su caja; teclado: Enter selecciona, aria-pressed lo dice, Escape quita
+  assert.deepEqual(await pg.locator('.rs[data-sel]').first().evaluate((e) => { const r = e.getBoundingClientRect(), c = getComputedStyle(e, '::before'); return [r.width >= 26, r.height >= 44, parseFloat(c.width), e.scrollWidth <= e.clientWidth + 1]; }), [true, true, 22, true]);
   await pg.locator('.col').nth(0).focus(); await pg.keyboard.press('Enter'); await pg.waitForTimeout(100);
   assert.deepEqual(await pg.locator('.col').nth(0).evaluate((e) => [e.getAttribute('aria-pressed'), e.classList.contains('sel')]), ['true', true]);
   await pg.keyboard.press('Escape'); assert.equal(await pg.locator('[data-sel].sel').count(), 0);
