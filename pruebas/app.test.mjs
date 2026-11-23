@@ -839,7 +839,7 @@ test('Métricas: «por partido» es uno solo, el de Cómo vamos; la defensa dice
 test('Métricas ya no dice «Touchdowns»: los TD de cada quien van en los mejores del ataque y la ficha del partido cuenta el pick 6 como anotación', async () => {
   const pg = await telefono(srv.url); await siembra(pg);
   await toca(pg, 'ir', 'metricas');
-  assert.match(await texto(pg), /1 Nicolás 1 TD · 4 recepciones 57 yd 2 Rodrigo 1 TD · 2 corridas 23 yd 3 Mario 1 recepción 15 yd/); // los TD de ataque, sin el pick 6 de Iker
+  assert.match(await texto(pg), /1 Nicolas 1 TD · 4 recepciones 57 yd 2 Rodrigo 1 TD · 3 corridas 23 yd 3 Iker 1 TD · 1 recepción · 1 corrida 19 yd/); // los TD de ataque (el TD corriendo también es corrida), sin el pick 6 de Iker
   assert.doesNotMatch(await texto(pg), /Touchdowns|TD del ataque/);
   await pg.evaluate(() => { A.juego('g0'); pintar(); }); // eslint-disable-line no-undef
   assert.equal(((await texto(pg)).match(/TD de |Pick 6 de /g) || []).length, 5); // vs Panini: 2 TD del ataque, el pick 6 de Iker y los 2 del rival
