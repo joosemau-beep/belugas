@@ -1184,3 +1184,17 @@ test('el aviso de la jugada guardada cabe en su renglón con las yardas y la con
     await pg.context().close();
   }
 });
+// 4. en «Lo que pasó», «Última: pick 6 de KAF, lanz…» se cortaba con puntos y en el SE su negrita se salía de la pantalla (hasta 431 px en 375); ahora la jugada va en
+// su propio renglón a lo ancho, con la versión corta si la entera no cabe, y Corregir y Deshacer debajo
+test('«Última» en Lo que pasó se lee entera en un renglón, con Corregir y Deshacer debajo', async () => {
+  for (const [w, h, app] of [[390, 844, 0], [375, 667, 0], [820, 1180, 1]]) {
+    const pg = await telefono(srv.url, app ? { app: { ancho: w, pantalla: h } } : { ancho: w, alto: h }); await sembrar(pg);
+    await toca(pg, 'empezar'); await toca(pg, 'rival', 'kaffies'); for (const id of ['mau', 'nicolas', 'rodrigo', 'juancho']) await toca(pg, 'vantoggle', id); await toca(pg, 'vanlisto');
+    await toca(pg, 'mas'); await toca(pg, 'res', 'pick6c'); await toca(pg, 'conv', '1-0'); await toca(pg, 'mkver', 'paso');
+    const m = await pg.locator('.ultima').evaluate((u) => { const t = u.querySelector('.txt'), b = u.querySelector('b').getBoundingClientRect(), bt = [...u.querySelectorAll('button')].map((x) => x.getBoundingClientRect());
+      return [t.innerText.replace(/\s+/g, ' '), t.scrollWidth <= t.clientWidth + 1, b.right <= innerWidth - 16, bt.every((r) => r.top >= t.getBoundingClientRect().bottom - 1), bt.map((r) => r.height >= 44).every(Boolean)]; });
+    assert.deepEqual(m, ['Última: pick 6 de KAF · +1 fallida', true, true, true, true], `${w} × ${h}`);
+    assert.deepEqual(pg.errores, []);
+    await pg.context().close();
+  }
+});

@@ -505,7 +505,9 @@ html:not(.app) .nav { background: transparent; }
 .pregunta.aviso .si { height: 30px; padding: 0 10px; border-radius: 999px; background: rgba(255,255,255,.16); color: #fff; font: 700 12.5px/1 Inter; flex: none; }
 @keyframes avisoIn { from { transform: scale(.97); opacity: 0; } }
 /* abajo del TD: el aviso de la jugada, o «Última · Corregir · Deshacer» si no hay aviso (mismo alto, nada brinca) */
-.ultima { margin-top: 14px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--mut); padding: 0 2px; min-height: 44px; }
+/* «Última: …» en su propio renglón a lo ancho, con Corregir y Deshacer debajo: así la jugada se lee entera (revisión, 22-nov) */
+.ultima { margin-top: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 0 10px; font-size: 13.5px; color: var(--mut); padding: 0 2px; min-height: 44px; }
+.ultima .txt { flex: 1 0 100%; }
 .ultima b { color: var(--ink); font-weight: 600; }
 .ultima button { margin-left: auto; color: var(--acento); font: 700 13.5px/1 Inter; min-height: 44px; padding: 0 0 0 6px; flex: none; }
 .ultima button + button { margin-left: 0; padding-left: 11px; border-left: 1px solid var(--linea); }
@@ -1697,7 +1699,7 @@ function loQueMarcamos(p) {
 function filaPregunta(conUltima) {
   const p = st.partido, ta = st.toast;
   const u = p.jugadas[p.jugadas.length - 1];
-  if (!ta) return u && conUltima ? `<div class="ultima"><span class="corta">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer" data-v="${u.uid}">Deshacer</button></div>` : '';
+  if (!ta) return u && conUltima ? `<div class="ultima"><span class="corta txt" data-alt="${esc(JSON.stringify(u.alt.map((x) => `Última: <b>${x}</b>`)))}">Última: <b>${u.txt}</b></span><button data-a="fila" data-v="${p.jugadas.length - 1}">Corregir</button><button data-a="deshacer" data-v="${u.uid}">Deshacer</button></div>` : '';
   const fila = ta.uid ? p.jugadas.findIndex((j) => j.uid === ta.uid) : -1, btn = ta.accion !== undefined ? ta.accion : fila >= 0 || ta.snap ? ['deshacer', 'Deshacer'] : null;
   const may = (s) => s.charAt(0).toUpperCase() + s.slice(1), txt = may(ta.txt), alt = ta.alt ? ` data-alt="${esc(JSON.stringify(ta.alt.map(may)))}"` : '';
   // las caras opcionales (a quién iba, a quién le hicieron el sack) caben en el renglón sin el ícono: 4 de 30 px
@@ -1718,7 +1720,7 @@ function marcar() {
     <button class="mk-marc" data-a="editar">${eq(`<img src="${LOGO}" alt="">`, 'Belugas')}<strong class="num"><span${sube('nos')}>${p.nos}</span><i>–</i><span${sube('ellos')}>${p.ellos}</span></strong>${eq(rlogo(r), r.corto)}</button>
     <div class="mk-lado" style="--p:${ladoAntes ?? +(p.lado === 'D')}" role="group" aria-label="Quién trae el balón">${[['O', 'Ataque'], ['D', 'Defensa']].map(([v, n]) => `<button data-a="lado" data-v="${v}" aria-pressed="${p.lado === v}"${p.lado === v ? ' class="on"' : ''}>${n}</button>`).join('')}</div></div>
     <div class="cuerpo mk-cuerpo">
-      ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta">Insertar después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
+      ${st.ins && porUid(st.ins) ? `<div class="ultima"><span class="corta txt" data-alt="${esc(JSON.stringify(porUid(st.ins).alt.map((x) => `Insertar después de: <b>${x}</b>`)))}">Insertar después de: <b>${porUid(st.ins).txt}</b></span><button data-a="insno">Cancelar</button></div>` : ''}
       ${puntos}${ver === 'paso' ? `<div class="mk-pag"${anim}>${filaPregunta(true)}${jlista(p, true)}</div>` : `<div class="mk-pag"${anim}><div class="mk-vista mk-tiras"><div class="mk-grandes">${MK_GRANDES[p.lado].map((k) => mkBoton(k, 'mk-grande')).join('')}</div>${td}${MK_MAS[p.lado].length ? '<button class="mk-tira mas" data-a="mas">Más opciones</button>' : ''}</div></div>`}
     </div>${ver === 'marcar' ? filaPregunta() : ''}${nav()}</div>`;
 }
