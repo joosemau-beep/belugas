@@ -1945,6 +1945,13 @@ function compartir(gid) {
   let sale; try { sale = lista ? manda(IMG.blob) : preparaImagen(g).then(manda); } catch (e) { sale = Promise.reject(e); }
   Promise.resolve(sale).catch((e) => { if (!e || e.name !== 'AbortError') return copiaTexto(txt, gid); }); // AbortError = cerró el menú sin mandar
 }
+// «Exportar temporada» (Ajustes): baja o comparte, solo de lectura, lo mismo que el teléfono guarda en belugas.cel (T con todas las jugadas)
+function exportar() {
+  const d = new Date(), p = (n) => String(n).padStart(2, '0'), nombre = `belugas-temporada-${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}.json`;
+  const f = new File([lsGet(LOCAL) || JSON.stringify({ T, partido: null })], nombre, { type: 'application/json' });
+  if (navigator.canShare && navigator.canShare({ files: [f] })) return navigator.share({ files: [f] }).catch(() => {}); // cerrar el menú no es error
+  const a = document.createElement('a'); a.href = URL.createObjectURL(f); a.download = nombre; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
 // arriba de las hojas de llenar: ✕ quita lo que se está poniendo y ✓ lo confirma (en «¿Quién?» tocar a alguien ya guarda: sin «No sé»)
 const X_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>', PALOMITA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 // «¿Quiénes vinieron?»: el círculo con su palomita (o vacío) dibujado entero en un SVG, para que nunca salga un cuadro
@@ -2034,6 +2041,7 @@ function hoja() {
   if (st.hoja === 'ayuda') h = `<h3>Ajustes</h3>
     <button class="aj-fila" data-a="tour"><span>${AYUDA_SVG}</span>Cómo funciona la app<em>›</em></button>
     <button class="aj-fila" data-a="antes"><span><svg viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg></span>Libro de jugadas y pulsera<em>›</em></button>
+    <button class="aj-fila" data-a="exportar"><span><svg viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14"/></svg></span>Exportar temporada<em>›</em></button>
     <div class="ops" style="margin-top:14px"><button class="op prim" data-a="cerrar">Listo</button></div>`;
   // la barrita de arrastre no servía en la página: toda hoja lleva su ✕ arriba a la derecha (Iker, 17-nov)
   if (!h.includes('class="hbar"')) h = /^\s*<h3>/.test(h) ? h.replace(/^\s*<h3>[\s\S]*?<\/h3>/, (t) => barra(t, 'cerrar')) : barra('<span></span>', 'cerrar') + h;
@@ -2702,6 +2710,7 @@ const A = {
   },
   empezar: () => empezar(),
   compartir: (v) => compartir(v),
+  exportar: () => exportar(),
   rivalver: (v) => { st.vanDe = v; st.hoja = 'rival'; },
   rival: (v) => { HOY = v; if (st.vanDe === 'empezar') { st.vanDe = null; st.hoja = null; empezar(); return; }
     st.hoja = st.vanDe || 'editar'; if (st.partido) { st.partido.rival = v; st.partido.metaVer = Date.now(); rehacer(st.partido); subir(); } },

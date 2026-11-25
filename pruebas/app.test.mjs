@@ -2,7 +2,8 @@
 import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { servidor, nubeFalsa, telefono, navegador, toca, marcador, lado, texto, cerrarNavegador } from './apoyo.mjs';
-import { sembrar } from './partidos.mjs';
+import { readFileSync } from 'node:fs';
+import { sembrar, juegos } from './partidos.mjs';
 
 const srv = await servidor();
 after(async () => { await cerrarNavegador(); srv.cerrar(); });
@@ -1357,4 +1358,20 @@ test('la fila de categorías de Líderes se desvanece a la derecha para que se v
     assert.deepEqual(pg.errores, []);
     await pg.context().close();
   }
+});
+
+test('Ajustes › Exportar temporada baja un .json con las jugadas de belugas.cel, con la fecha en el nombre, sin cambiar nada', async () => {
+  const pg = await telefono(srv.url); await sembrar(pg);
+  await pg.evaluate(() => { navigator.canShare = undefined; }); // sin hoja de compartir (computadora): descarga
+  const antes = await pg.evaluate(() => localStorage.getItem('belugas.cel'));
+  await toca(pg, 'ayuda');
+  const [d] = await Promise.all([pg.waitForEvent('download'), toca(pg, 'exportar')]);
+  assert.match(d.suggestedFilename(), /^belugas-temporada-\d{4}-\d{2}-\d{2}\.json$/);
+  const x = JSON.parse(readFileSync(await d.path(), 'utf8')), vivas = Object.values(x.T.juegos);
+  assert.equal(vivas.length, 8);
+  assert.equal(vivas.reduce((n, g) => n + g.jugadas.length, 0), juegos.reduce((n, g) => n + g.jugadas.length, 0));
+  assert.equal(x.T.juegos.g6.jugadas[0].k, 'pase'); // lo que lee el conteo de botones: tipo de jugada (k)
+  assert.equal(await pg.evaluate(() => localStorage.getItem('belugas.cel')), antes); // solo lee
+  assert.deepEqual(pg.errores, []);
+  await pg.context().close();
 });
